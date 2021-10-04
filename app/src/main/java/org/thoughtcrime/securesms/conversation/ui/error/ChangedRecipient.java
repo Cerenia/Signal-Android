@@ -33,7 +33,7 @@ final class ChangedRecipient {
   }
 
   boolean isVerified() {
-    return record.getVerifiedStatus() == IdentityTable.VerifiedStatus.VERIFIED;
+    return IdentityTable.VerifiedStatus.isVerified(record.getVerifiedStatus());
   }
 
   @Override
