@@ -206,10 +206,14 @@ public final class IdentityUtil {
           (!identityRecord.isPresent() ||
               (identityRecord.isPresent() && !identityRecord.get().getIdentityKey().equals(verifiedMessage.getIdentityKey())) ||
               (identityRecord.isPresent() && identityRecord.get().getVerifiedStatus() != IdentityTable.VerifiedStatus.VERIFIED)))
+         (!identityRecord.isPresent() ||
+         (identityRecord.isPresent() && !identityRecord.get().getIdentityKey().equals(verifiedMessage.getIdentityKey())) ||
+         (identityRecord.isPresent() && !IdentityTable.VerifiedStatus.isVerified(identityRecord.get().getVerifiedStatus()))))
       {
         Log.i(TAG, "Setting " + recipient.getId() + " verified status to " + IdentityTable.VerifiedStatus.VERIFIED);
         saveIdentity(verifiedMessage.getDestination().getIdentifier(), verifiedMessage.getIdentityKey());
         identityStore.setVerified(recipient.getId(), verifiedMessage.getIdentityKey(), IdentityTable.VerifiedStatus.VERIFIED);
+        identityStore.setVerified(recipient.getId(), verifiedMessage.getIdentityKey(), IdentityTable.VerifiedStatus.MANUALLY_VERIFIED);
         markIdentityVerified(context, recipient, true, true);
       }
     }
