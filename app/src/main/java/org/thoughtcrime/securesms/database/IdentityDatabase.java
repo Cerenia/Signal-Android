@@ -38,6 +38,7 @@ import org.signal.core.util.CursorUtil;
 import org.thoughtcrime.securesms.util.IdentityUtil;
 import org.signal.core.util.SqlUtil;
 import org.whispersystems.signalservice.api.util.UuidUtil;
+import org.whispersystems.signalservice.internal.push.SignalServiceProtos;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -83,7 +84,8 @@ public class IdentityDatabase extends Database {
         case DIRECTLY_VERIFIED:     return 1;
         case TRUSTINGLY_INTRODUCED: return 2;
         case DUPLEX_VERIFIED:       return 3;
-        case UNVERIFIED:            return 4;
+        case MANUALLY_VERIFIED:     return 4;
+        case UNVERIFIED:            return 5;
         default:         throw new AssertionError();
       }
     }
@@ -94,8 +96,27 @@ public class IdentityDatabase extends Database {
         case 1:  return DIRECTLY_VERIFIED;
         case 2:  return TRUSTINGLY_INTRODUCED;
         case 3:  return DUPLEX_VERIFIED;
-        case 4:  return UNVERIFIED;
+        case 4:  return MANUALLY_VERIFIED;
+        case 5:  return UNVERIFIED;
         default: throw new AssertionError("No such state: " + state);
+      }
+    }
+
+    /**
+     * Much of the code relies on checks of the verification status that are not interested in the finer details.
+     * This function can now be called instead of doing 4 comparisons manually.
+     * Do not use this to decide if trusted introduction is allowed.
+     * @return True is verified, false otherwise.
+     */
+    public static boolean isVerified(VerifiedStatus verifiedStatus){
+      switch (verifiedStatus) {
+        case DIRECTLY_VERIFIED:
+        case TRUSTINGLY_INTRODUCED:
+        case DUPLEX_VERIFIED:
+        case MANUALLY_VERIFIED:
+          return true;
+        default:
+          return false;
       }
     }
   }
