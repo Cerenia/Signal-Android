@@ -71,7 +71,7 @@ public class IdentityDatabase extends Database {
    * trusted introductions mechanism <code>TRUSTINGLY_INTRODUCED</code>. A user that has been trustingly introduced and
    * directly verified is <code>DUPLEX_VERIFIED</code>, the strongest level.
    * A user can always manually reset the trust to be unverified.
-   * @see ... TODO: List where the states are changed, and the mechanisms is implemented.
+   * @see ... Verif
    *
    *
    */
