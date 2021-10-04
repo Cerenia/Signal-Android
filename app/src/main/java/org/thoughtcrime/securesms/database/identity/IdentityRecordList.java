@@ -2,6 +2,8 @@ package org.thoughtcrime.securesms.database.identity;
 
 import androidx.annotation.NonNull;
 
+import org.thoughtcrime.securesms.database.model.IdentityRecord;
+import org.thoughtcrime.securesms.database.IdentityDatabase.VerifiedStatus;
 import org.thoughtcrime.securesms.database.IdentityTable.VerifiedStatus;
 import org.thoughtcrime.securesms.database.model.IdentityRecord;
 import org.thoughtcrime.securesms.recipients.Recipient;
@@ -42,7 +44,7 @@ public final class IdentityRecordList {
 
   private static boolean isVerified(@NonNull Collection<IdentityRecord> identityRecords) {
     for (IdentityRecord identityRecord : identityRecords) {
-      if (identityRecord.getVerifiedStatus() != VerifiedStatus.VERIFIED) {
+      if (!IdentityTable.VerifiedStatus.isVerified(identityRecord.getVerifiedStatus())) {
         return false;
       }
     }
