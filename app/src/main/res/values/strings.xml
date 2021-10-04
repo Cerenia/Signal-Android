@@ -541,6 +541,7 @@
     <string name="ConversationTitleView_directly_verified">QR Verified</string>
     <string name="ConversationTitleView_introduced">Introduced</string>
     <string name="ConversationTitleView_duplex">Strongly Verified</string>
+    <string name="ConversationTitleView_unverified">Strongly Verified</string>  <!-- Should never be visible -->
     <string name="ConversationTitleView_you">You</string>
 
     <!-- ConversationTypingView -->
