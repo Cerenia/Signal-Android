@@ -85,7 +85,10 @@ public class SignalBaseIdentityKeyStore {
         Log.i(TAG, "Replacing existing identity for " + address + " | Existing: " + identityRecord.getIdentityKey().hashCode() + ", New: " + identityKey.hashCode());
         VerifiedStatus verifiedStatus;
 
-        if (identityRecord.getVerifiedStatus() == VerifiedStatus.VERIFIED ||
+        if (identityRecord.getVerifiedStatus() == VerifiedStatus.MANUALLY_VERIFIED ||
+            identityRecord.getVerifiedStatus() == VerifiedStatus.DIRECTLY_VERIFIED ||
+            identityRecord.getVerifiedStatus() == VerifiedStatus.DUPLEX_VERIFIED ||
+            identityRecord.getVerifiedStatus() == VerifiedStatus.TRUSTINGLY_INTRODUCED ||
             identityRecord.getVerifiedStatus() == VerifiedStatus.UNVERIFIED)
         {
           verifiedStatus = VerifiedStatus.UNVERIFIED;
