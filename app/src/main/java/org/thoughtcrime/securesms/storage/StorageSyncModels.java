@@ -237,7 +237,10 @@ public final class StorageSyncModels {
 
   private static IdentityState localToRemoteIdentityState(@NonNull IdentityTable.VerifiedStatus local) {
     switch (local) {
-      case VERIFIED:   return IdentityState.VERIFIED;
+      case MANUALLY_VERIFIED:
+      case DIRECTLY_VERIFIED:
+      case DUPLEX_VERIFIED:
+      case TRUSTINGLY_INTRODUCED: return IdentityState.VERIFIED;
       case UNVERIFIED: return IdentityState.UNVERIFIED;
       default:         return IdentityState.DEFAULT;
     }
