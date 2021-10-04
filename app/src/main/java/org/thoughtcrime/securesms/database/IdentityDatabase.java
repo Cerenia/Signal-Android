@@ -68,7 +68,7 @@ public class IdentityDatabase extends Database {
    * Trusted Introductions: We differentiate between a direct verification <code>DIRECTLY_VERIFIED</code> (via. QR code)
    * and a weaker, manual verification <code>MANUALLY_VERIFIED</code>. Additionally, a user can become verified by the
    * trusted introductions mechanism <code>TRUSTINGLY_INTRODUCED</code>. A user that has been trustingly introduced and
-   * directly verified is duplex_verified, the strongest level.
+   * directly verified is <code>DUPLEX_VERIFIED</code>, the strongest level.
    * A user can always manually reset the trust to be unverified.
    * @see ... TODO: List where the states are changed, and the mechanisms is implemented.
    *
