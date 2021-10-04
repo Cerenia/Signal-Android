@@ -631,6 +631,7 @@
   <string name="ManageProfileFragment_your_name">您的名稱</string>
   <string name="ManageProfileFragment_your_username">您的使用者名稱</string>
   <string name="ManageProfileFragment_failed_to_set_avatar">設定頭像失敗</string>
+  <string name="ManageProfileFragment_badges">徽章</string>
   <!--ManageRecipientActivity-->
   <string name="ManageRecipientActivity_no_groups_in_common">無共同群組</string>
   <plurals name="ManageRecipientActivity_d_groups_in_common">
@@ -650,6 +651,7 @@
   <string name="CustomNotificationsDialogFragment__enabled">已啟用</string>
   <string name="CustomNotificationsDialogFragment__disabled">已停用</string>
   <string name="CustomNotificationsDialogFragment__default">預設值</string>
+  <string name="CustomNotificationsDialogFragment__unknown">未知</string>
   <!--ShareableGroupLinkDialogFragment-->
   <string name="ShareableGroupLinkDialogFragment__shareable_group_link">可分享的群組連結</string>
   <string name="ShareableGroupLinkDialogFragment__manage_and_share">管理與分享</string>
@@ -990,6 +992,7 @@
   <string name="MessageRecord_you_marked_your_safety_number_with_s_unverified">您與 %s 之間的安全碼已標記為未驗證</string>
   <string name="MessageRecord_you_marked_your_safety_number_with_s_unverified_from_another_device">您與 %s 之間的安全碼已在另一台裝置上標記為未驗證</string>
   <string name="MessageRecord_a_message_from_s_couldnt_be_delivered">來自 %s 的一則訊息無法送達</string>
+  <string name="MessageRecord_s_changed_their_number_to_a_new_number">%1$s 已將電話號碼變更為新的號碼。</string>
   <!--Group Calling update messages-->
   <string name="MessageRecord_s_started_a_group_call_s">%1$s 開展了群組通話 · %2$s</string>
   <string name="MessageRecord_s_is_in_the_group_call_s">%1$s 加入了群組通話 · %2$s</string>
@@ -1459,6 +1462,7 @@
   <string name="MessageNotifier_reacted_s_to_s">對「%2$s」表達了 %1$s 心情。</string>
   <string name="MessageNotifier_reacted_s_to_your_video">對您的影片表達了 %1$s 心情。</string>
   <string name="MessageNotifier_reacted_s_to_your_image">對您的圖片表達了 %1$s 心情。</string>
+  <string name="MessageNotifier_reacted_s_to_your_gif">對您的 GIF 表達了 %1$s 心情。</string>
   <string name="MessageNotifier_reacted_s_to_your_file">對您的檔案表達了 %1$s 心情。</string>
   <string name="MessageNotifier_reacted_s_to_your_audio">對您的音訊表達了 %1$s 心情。</string>
   <string name="MessageNotifier_reacted_s_to_your_view_once_media">對您的閱後即焚媒體表達了 %1$s 心情。</string>
@@ -1610,6 +1614,7 @@
   <string name="QuoteView_audio">音訊</string>
   <string name="QuoteView_video">影片</string>
   <string name="QuoteView_photo">照片</string>
+  <string name="QuoteView_gif">GIF</string>
   <string name="QuoteView_view_once_media">閱後即焚媒體</string>
   <string name="QuoteView_sticker">貼圖</string>
   <string name="QuoteView_you">您</string>
@@ -1729,7 +1734,7 @@
   <string name="CreateProfileActivity_group_descriptions_will_be_visible_to_members_of_this_group_and_people_who_have_been_invited">此群組中的成員，以及獲邀加入群組的人，將會見到群組描述。</string>
   <!--EditAboutFragment-->
   <string name="EditAboutFragment_about">關於</string>
-  <string name="EditAboutFragment_write_a_few_words_about_yourself">錯折中行過 尚有點忘我…</string>
+  <string name="EditAboutFragment_write_a_few_words_about_yourself">共你星光中看着瀑布…</string>
   <string name="EditAboutFragment_count">%1$d/%2$d</string>
   <string name="EditAboutFragment_speak_freely">☝️息尚存</string>
   <string name="EditAboutFragment_encrypted">清風不識字</string>
@@ -2867,6 +2872,7 @@
   <string name="ChangeNumberEnterPhoneNumberFragment__new_phone_number">新電話號碼</string>
   <string name="ChangeNumberEnterPhoneNumberFragment__the_phone_number_you_entered_doesnt_match_your_accounts">您所輸入的電話號碼與您的帳戶不符。</string>
   <string name="ChangeNumberEnterPhoneNumberFragment__you_must_specify_your_old_number_country_code">您必須指定您的舊號碼的國碼</string>
+  <string name="ChangeNumberEnterPhoneNumberFragment__you_must_specify_your_old_phone_number">您必須指定您的舊電話號碼</string>
   <string name="ChangeNumberEnterPhoneNumberFragment__you_must_specify_your_new_number_country_code">您必須指定您的新號碼的國碼</string>
   <string name="ChangeNumberEnterPhoneNumberFragment__you_must_specify_your_new_phone_number">您必須指定您的新電話號碼</string>
   <!--ChangeNumberVerifyFragment-->
@@ -2886,8 +2892,13 @@
   <string name="ChangeNumberPinDiffersFragment__update_pin">更新 PIN 碼</string>
   <string name="ChangeNumberPinDiffersFragment__keep_old_pin_question">要保留舊 PIN 碼嗎？</string>
   <!--ChangeNumberLockActivity-->
+  <string name="ChangeNumberLockActivity__it_looks_like_you_tried_to_change_your_number_but_we_were_unable_to_determine_if_it_was_successful_rechecking_now">您似乎曾嘗試變更您的號碼，惟我們未能判斷是否成功。\n\n現正重新檢查…</string>
+  <string name="ChangeNumberLockActivity__change_status_confirmed">變更狀態已確認</string>
+  <string name="ChangeNumberLockActivity__your_number_has_been_confirmed_as_s">您的號碼已確認為 %1$s。若這不是您的新號碼，請重新開始變更號碼過程。</string>
+  <string name="ChangeNumberLockActivity__change_status_unconfirmed">變更狀態未確認</string>
+  <string name="ChangeNumberLockActivity__we_could_not_determine_the_status_of_your_change_number_request">我們無法判斷您變更號碼的請求狀態。\n\n(錯誤：%1$s)</string>
   <string name="ChangeNumberLockActivity__retry">重試</string>
-  <string name="ChangeNumberLockActivity__leave">退出</string>
+  <string name="ChangeNumberLockActivity__leave">離開</string>
   <string name="ChangeNumberLockActivity__submit_debug_log">提交除錯記錄檔</string>
   <!--ChatsSettingsFragment-->
   <string name="ChatsSettingsFragment__keyboard">鍵盤</string>
@@ -3054,6 +3065,7 @@
   <!--PlaybackSpeedToggleTextView-->
   <string name="PlaybackSpeedToggleTextView__p5x">.5x</string>
   <string name="PlaybackSpeedToggleTextView__1x">1x</string>
+  <string name="PlaybackSpeedToggleTextView__1p5x">1.5x</string>
   <string name="PlaybackSpeedToggleTextView__2x">2x</string>
   <!--PaymentRecipientSelectionFragment-->
   <string name="PaymentRecipientSelectionFragment__new_payment">新增付款</string>
@@ -3113,6 +3125,7 @@
   <string name="MediaReviewFragment__add_a_message">新增訊息</string>
   <string name="MediaReviewFragment__add_a_reply">新增回覆</string>
   <string name="MediaReviewFragment__send_to">傳送給</string>
+  <string name="MediaReviewFragment__view_once_message">閱後即焚訊息</string>
   <string name="ImageEditorHud__cancel">取消</string>
   <string name="ImageEditorHud__draw">繪畫</string>
   <string name="ImageEditorHud__write_text">寫字</string>
@@ -3122,14 +3135,25 @@
   <string name="ImageEditorHud__clear_all">全部清除</string>
   <string name="ImageEditorHud__undo">復原</string>
   <string name="ImageEditorHud__toggle_between_marker_and_highlighter">切換彩色筆與螢光筆</string>
+  <string name="ImageEditorHud__delete">刪除</string>
+  <string name="ImageEditorHud__toggle_between_text_styles">切換文字樣式</string>
   <string name="MediaCountIndicatorButton__send">傳送</string>
   <string name="MediaReviewSelectedItem__tap_to_remove">輕觸以移除</string>
   <string name="MediaReviewSelectedItem__tap_to_select">輕觸以選取</string>
   <string name="MediaReviewImagePageFragment__discard">捨棄</string>
   <string name="MediaReviewImagePageFragment__discard_changes">要捨棄變更嗎？</string>
-  <string name="MediaReviewFragment__view_once_message">閱後即焚訊息</string>
   <string name="MediaReviewImagePageFragment__youll_lose_any_changes">您對此照片所作的任何變更將會遺失。</string>
-  <string name="ImageEditorHud__delete">刪除</string>
   <string name="CameraFragment__failed_to_open_camera">無法開啟相機</string>
+  <string name="BadgesOverviewFragment__my_badges">我的徽章</string>
+  <string name="BadgesOverviewFragment__featured_badge">別注徽章</string>
+  <string name="BadgesOverviewFragment__display_badges_on_profile">在個人資料中顯示徽章</string>
+  <string name="BadgesOverviewFragment__failed_to_update_profile">更新個人資料失敗</string>
+  <string name="BadgeSelectionFragment__select_badges">請選擇徽章</string>
+  <string name="SelectFeaturedBadgeFragment__preview">預覽</string>
+  <string name="SelectFeaturedBadgeFragment__select_a_badge">請選擇一個徽章</string>
+  <string name="SelectFeaturedBadgeFragment__you_must_select_a_badge">您必須選取一個徽章</string>
+  <string name="SelectFeaturedBadgeFragment__failed_to_update_profile">更新個人資料失敗</string>
+  <string name="ViewBadgeBottomSheetDialogFragment__become_a_sustainer">成為好心人</string>
+  <string name="ImageView__badge">徽章</string>
   <!--EOF-->
 </resources>
