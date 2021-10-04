@@ -79,11 +79,11 @@ public class IdentityDatabase extends Database {
 
     public int toInt() {
       switch (this) {
-        case DEFAULT:    return 0;
-        case DIRECTLY_VERIFIED:   return 1;
+        case DEFAULT:               return 0;
+        case DIRECTLY_VERIFIED:     return 1;
         case TRUSTINGLY_INTRODUCED: return 2;
-        case DUPLEX_VERIFIED: return 3;
-        case UNVERIFIED: return 4;
+        case DUPLEX_VERIFIED:       return 3;
+        case UNVERIFIED:            return 4;
         default:         throw new AssertionError();
       }
     }
