@@ -363,7 +363,10 @@ public class MultiDeviceContactUpdateJob extends BaseJob {
     VerifiedMessage.VerifiedState state;
 
     switch (identity.get().getVerifiedStatus()) {
-      case VERIFIED:   state = VerifiedMessage.VerifiedState.VERIFIED;   break;
+      case MANUALLY_VERIFIED:
+      case DIRECTLY_VERIFIED:
+      case TRUSTINGLY_INTRODUCED:
+      case DUPLEX_VERIFIED: state = VerifiedMessage.VerifiedState.VERIFIED;   break;
       case UNVERIFIED: state = VerifiedMessage.VerifiedState.UNVERIFIED; break;
       case DEFAULT:    state = VerifiedMessage.VerifiedState.DEFAULT;    break;
       default: throw new AssertionError("Unknown state: " + identity.get().getVerifiedStatus());
