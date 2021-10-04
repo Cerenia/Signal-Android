@@ -204,6 +204,21 @@ public final class RegistrationRepository {
                                                               true,
                                                               now,
                                                               true);
+    ApplicationDependencies.getIdentityStore()
+                           .saveIdentityWithoutSideEffects(selfId,
+                                                           identityKey.getPublicKey(),
+                                                           IdentityDatabase.VerifiedStatus.DIRECTLY_VERIFIED,
+                                                           true,
+                                                           System.currentTimeMillis(),
+                                                           true);
+
+    TextSecurePreferences.setPushServerPassword(context, registrationData.getPassword());
+    TextSecurePreferences.setPushRegistered(context, true);
+    TextSecurePreferences.setSignedPreKeyRegistered(context, true);
+    TextSecurePreferences.setPromptedPushRegistration(context, true);
+    TextSecurePreferences.setUnauthorizedReceived(context, false);
+
+    PinState.onRegistration(context, kbsData, pin, hasPin);
   }
 
   @WorkerThread
