@@ -2611,7 +2611,7 @@
     <string name="verify_display_fragment__successful_match">Successful match</string>
     <string name="verify_display_fragment__failed_to_verify_safety_number">Failed to verify safety number</string>
     <string name="verify_display_fragment__loading">Loading…</string>
-    <string name="verify_display_fragment__mark_as_verified">Mark as verified</string>
+    <string name="verify_display_fragment__mark_as_verified">Mark as manually verified</string>
     <string name="verify_display_fragment__clear_verification">Clear verification</string>
 
     <!-- verify_identity -->
