@@ -38,7 +38,6 @@ import org.signal.core.util.CursorUtil;
 import org.thoughtcrime.securesms.util.IdentityUtil;
 import org.signal.core.util.SqlUtil;
 import org.whispersystems.signalservice.api.util.UuidUtil;
-import org.whispersystems.signalservice.internal.push.SignalServiceProtos;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -76,13 +75,13 @@ public class IdentityDatabase extends Database {
    *
    */
   public enum VerifiedStatus {
-    DEFAULT, DIRECTLY_VERIFIED, TRUSTINGLY_INTRODUCED , DUPLEX_VERIFIED, MANUALLY_VERIFIED, UNVERIFIED;
+    DEFAULT, DIRECTLY_VERIFIED, INTRODUCED, DUPLEX_VERIFIED, MANUALLY_VERIFIED, UNVERIFIED;
 
     public int toInt() {
       switch (this) {
         case DEFAULT:               return 0;
         case DIRECTLY_VERIFIED:     return 1;
-        case TRUSTINGLY_INTRODUCED: return 2;
+        case INTRODUCED: return 2;
         case DUPLEX_VERIFIED:       return 3;
         case MANUALLY_VERIFIED:     return 4;
         case UNVERIFIED:            return 5;
@@ -94,7 +93,7 @@ public class IdentityDatabase extends Database {
       switch (state) {
         case 0:  return DEFAULT;
         case 1:  return DIRECTLY_VERIFIED;
-        case 2:  return TRUSTINGLY_INTRODUCED;
+        case 2:  return INTRODUCED;
         case 3:  return DUPLEX_VERIFIED;
         case 4:  return MANUALLY_VERIFIED;
         case 5:  return UNVERIFIED;
@@ -111,7 +110,7 @@ public class IdentityDatabase extends Database {
     public static boolean isVerified(VerifiedStatus verifiedStatus){
       switch (verifiedStatus) {
         case DIRECTLY_VERIFIED:
-        case TRUSTINGLY_INTRODUCED:
+        case INTRODUCED:
         case DUPLEX_VERIFIED:
         case MANUALLY_VERIFIED:
           return true;

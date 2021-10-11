@@ -240,7 +240,7 @@ public final class StorageSyncModels {
       case MANUALLY_VERIFIED:
       case DIRECTLY_VERIFIED:
       case DUPLEX_VERIFIED:
-      case TRUSTINGLY_INTRODUCED: return IdentityState.VERIFIED;
+      case INTRODUCED: return IdentityState.VERIFIED;
       case UNVERIFIED: return IdentityState.UNVERIFIED;
       default:         return IdentityState.DEFAULT;
     }

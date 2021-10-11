@@ -218,17 +218,23 @@ public class ConversationTitleView extends RelativeLayout {
     final String displayName = recipient.getDisplayNameOrUsername(getContext());
     this.title.setText(displayName);
     Optional<IdentityRecord> identityRecord = ApplicationDependencies.getIdentityStore().getIdentityRecord(recipient.getId());
-    switch (identityRecord.isPresent() ? identityRecord.get().getVerifiedStatus() : IdentityDatabase.VerifiedStatus.DEFAULT){
+    IdentityDatabase.VerifiedStatus verifiedStatus = identityRecord.isPresent() ? identityRecord.get().getVerifiedStatus() : IdentityDatabase.VerifiedStatus.DEFAULT;
+    switch (verifiedStatus){
       case MANUALLY_VERIFIED:
         this.subtitle.setText(R.string.ConversationTitleView_manually_verified);
+        break;
       case DIRECTLY_VERIFIED:
         this.subtitle.setText(R.string.ConversationTitleView_directly_verified);
+        break;
       case DUPLEX_VERIFIED:
         this.subtitle.setText(R.string.ConversationTitleView_duplex);
-      case TRUSTINGLY_INTRODUCED:
+        break;
+      case INTRODUCED:
         this.subtitle.setText(R.string.ConversationTitleView_introduced);
+        break;
       default:
         this.subtitle.setText(R.string.ConversationTitleView_unverified); // Should never be visible in this state
+        break;
     }
     updateSubtitleVisibility();
   }
