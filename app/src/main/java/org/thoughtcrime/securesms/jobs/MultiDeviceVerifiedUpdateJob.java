@@ -130,7 +130,7 @@ public class MultiDeviceVerifiedUpdateJob extends BaseJob {
       case DEFAULT:    verifiedState = VerifiedMessage.VerifiedState.DEFAULT;    break;
       case MANUALLY_VERIFIED:
       case DIRECTLY_VERIFIED:
-      case TRUSTINGLY_INTRODUCED:
+      case INTRODUCED:
       case DUPLEX_VERIFIED: verifiedState = VerifiedMessage.VerifiedState.VERIFIED;   break;
       case UNVERIFIED: verifiedState = VerifiedMessage.VerifiedState.UNVERIFIED; break;
       default: throw new AssertionError("Unknown status: " + verifiedStatus);
