@@ -150,5 +150,6 @@ public class AttachmentKeyboard extends FrameLayout implements InputAwareLayout.
     void onAttachmentMediaClicked(@NonNull Media media);
     void onAttachmentSelectorClicked(@NonNull AttachmentKeyboardButton button);
     void onAttachmentPermissionsRequested();
+    void onIntroductionClicked();
   }
 }
