@@ -75,7 +75,7 @@
     <string name="AttachmentKeyboard_Signal_needs_permission_to_show_your_photos_and_videos">Signal needs permission to show your photos and videos.</string>
     <string name="AttachmentKeyboard_give_access">Give Access</string>
     <string name="AttachmentKeyboard_payment">Payment</string>
-    <string name="AttachmentKeyboard_introduce">Securely Introduce</string>
+    <string name="AttachmentKeyboard_introduce">Introduce</string>
 
     <!-- AttachmentManager -->
     <string name="AttachmentManager_cant_open_media_selection">Can\'t find an app to select media.</string>

@@ -1074,6 +1074,11 @@ public class ConversationParentFragment extends Fragment
                .execute();
   }
 
+  @Override
+  public void onIntroductionClicked(){
+    // TODO
+    Toast.makeText(getApplicationContext(),"Yeah, you clicked a button!", Toast.LENGTH_LONG).show();
+  }
 //////// Event Handlers
 
   @Override
