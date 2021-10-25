@@ -1240,7 +1240,7 @@ public class ConversationParentFragment extends Fragment
         if (recipientRecord.isPresent() && VerifiedStatus.tiUnlocked(recipientRecord.get().getVerifiedStatus())){
 
         } else {
-
+          //attachmentKeyboardStub.get().
         }
 
     }
