@@ -4,7 +4,9 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -96,6 +98,15 @@ public class AttachmentKeyboard extends FrameLayout implements InputAwareLayout.
       buttonAdapter.setButtons(DEFAULT_BUTTONS);
     } else {
       buttonAdapter.setButtons(Stream.of(DEFAULT_BUTTONS).filter(buttonPredicate).toList());
+    }
+  }
+
+  public void onTIclicked(boolean tiAllowed){
+    if(tiAllowed){
+      // TODO: Do TI => Probably open some sharing menu where the contact to be introduced can be picked
+    } else {
+      ((TextView)text).setText(R.string.AttachmentKeyboard_direct_verification_needed_for_trusted_introduction);
+      ((Button)button).setText(R.string.AttachmentKeyboard_verify);
     }
   }
 
