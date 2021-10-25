@@ -1575,9 +1575,9 @@ public class ConversationParentFragment extends Fragment
         recipient.get().isRegistered()                           &&
         !recipient.get().isForceSmsSelection())
     {
-      filterAttachmentKeyboardStub(true);
-    } else {
       filterAttachmentKeyboardStub(false);
+    } else {
+      filterAttachmentKeyboardStub(true);
     }
   }
 
