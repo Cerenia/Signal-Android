@@ -41,8 +41,8 @@ public class AttachmentKeyboard extends FrameLayout implements InputAwareLayout.
   private Callback                        callback;
 
   private RecyclerView mediaList;
-  private View         permissionText;
-  private View         permissionButton;
+  private View text;
+  private View button;
 
   public AttachmentKeyboard(@NonNull Context context) {
     super(context);
@@ -59,8 +59,8 @@ public class AttachmentKeyboard extends FrameLayout implements InputAwareLayout.
 
     this.container        = findViewById(R.id.attachment_keyboard_container);
     this.mediaList        = findViewById(R.id.attachment_keyboard_media_list);
-    this.permissionText   = findViewById(R.id.attachment_keyboard_text);
-    this.permissionButton = findViewById(R.id.attachment_keyboard_permission_button);
+    this.text = findViewById(R.id.attachment_keyboard_text);
+    this.button = findViewById(R.id.attachment_keyboard_permission_button);
 
     RecyclerView buttonList = findViewById(R.id.attachment_keyboard_button_list);
 
@@ -102,13 +102,13 @@ public class AttachmentKeyboard extends FrameLayout implements InputAwareLayout.
   public void onMediaChanged(@NonNull List<Media> media) {
     if (StorageUtil.canReadFromMediaStore()) {
       mediaAdapter.setMedia(media);
-      permissionButton.setVisibility(GONE);
-      permissionText.setVisibility(GONE);
+      button.setVisibility(GONE);
+      text.setVisibility(GONE);
     } else {
-      permissionButton.setVisibility(VISIBLE);
-      permissionText.setVisibility(VISIBLE);
+      button.setVisibility(VISIBLE);
+      text.setVisibility(VISIBLE);
 
-      permissionButton.setOnClickListener(v -> {
+      button.setOnClickListener(v -> {
         if (callback != null) {
           callback.onAttachmentPermissionsRequested();
         }
