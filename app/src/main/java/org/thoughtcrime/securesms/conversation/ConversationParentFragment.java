@@ -320,6 +320,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.Flowable;
@@ -1388,9 +1389,9 @@ public class ConversationParentFragment extends Fragment
         recipient.get().isRegistered()                           &&
         !recipient.get().isForceSmsSelection())
     {
-      attachmentKeyboardStub.get().filterAttachmentKeyboardButtons(null);
+      filterAttachmentKeyboardStub(true);
     } else {
-      attachmentKeyboardStub.get().filterAttachmentKeyboardButtons(btn -> btn != AttachmentKeyboardButton.PAYMENT);
+      filterAttachmentKeyboardStub(false);
     }
   }
 
@@ -1860,6 +1861,19 @@ public class ConversationParentFragment extends Fragment
     return future;
   }
 
+  private void filterAttachmentKeyboardStub(boolean noPayment){
+    boolean noTrustedIntro = !isSecureText || !isSingleConversation();
+    if (noPayment && noTrustedIntro){
+      attachmentKeyboardStub.get().filterAttachmentKeyboardButtons(btn -> btn != AttachmentKeyboardButton.TRUSTED_INTRODUCTION && btn != AttachmentKeyboardButton.PAYMENT);
+    } else if (noPayment){
+      attachmentKeyboardStub.get().filterAttachmentKeyboardButtons(btn -> btn != AttachmentKeyboardButton.PAYMENT);
+    } else if (noTrustedIntro){
+      attachmentKeyboardStub.get().filterAttachmentKeyboardButtons(btn -> btn != AttachmentKeyboardButton.TRUSTED_INTRODUCTION);
+    } else {
+      attachmentKeyboardStub.get().filterAttachmentKeyboardButtons(null);
+    }
+  }
+
   private void initializeViews(View view) {
     toolbar                  = view.findViewById(R.id.toolbar);
     toolbarBackground        = view.findViewById(R.id.toolbar_background);
@@ -1977,9 +1991,7 @@ public class ConversationParentFragment extends Fragment
       quickCameraToggle.setVisibility(View.GONE);
     }
 
-    if (!isSecureText || !isSingleConversation()){
-       attachmentKeyboardStub.get().filterAttachmentKeyboardButtons(btn -> btn != AttachmentKeyboardButton.TRUSTED_INTRODUCTION);
-    }
+    filterAttachmentKeyboardStub(true);
 
     searchNav.setEventListener(this);
 
