@@ -118,6 +118,25 @@ public class IdentityDatabase extends Database {
           return false;
       }
     }
+
+    /**
+     * Adding this in order to be able to change my mind easily on what should unlock a TI.
+     * For now, only direct verification unlocks it, in order not to propagate malicious verifications
+     * further than one connection.
+     *
+     * @param verifiedStatus the verification status to be checked
+     * @return true if strongly enough verified to unlock trusted introduction, false otherwise
+     */
+    public static boolean tiUnlocked(VerifiedStatus verifiedStatus){
+      switch (verifiedStatus) {
+        case DIRECTLY_VERIFIED:
+        case DUPLEX_VERIFIED:
+          return true;
+        default:
+          return false;
+      }
+    }
+
   }
 
   IdentityDatabase(Context context, SignalDatabase databaseHelper) {
