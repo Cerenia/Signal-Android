@@ -107,6 +107,7 @@ public class AttachmentKeyboard extends FrameLayout implements InputAwareLayout.
     } else {
       ((TextView)text).setText(R.string.AttachmentKeyboard_direct_verification_needed_for_trusted_introduction);
       ((Button)button).setText(R.string.AttachmentKeyboard_verify);
+      //button.setOnClickListener(onc -> onc);
       text.setVisibility(VISIBLE);
       button.setVisibility(VISIBLE);
     }
