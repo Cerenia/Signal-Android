@@ -2149,7 +2149,7 @@ public class ConversationParentFragment extends Fragment
       quickCameraToggle.setVisibility(View.GONE);
     }
 
-    if (!isSecureText){
+    if (!isSecureText || !isSingleConversation()){
        attachmentKeyboardStub.get().filterAttachmentKeyboardButtons(btn -> btn != AttachmentKeyboardButton.TRUSTED_INTRODUCTION);
     }
 
