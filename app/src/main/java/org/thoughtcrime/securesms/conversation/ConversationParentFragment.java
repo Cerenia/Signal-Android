@@ -1059,6 +1059,13 @@ public class ConversationParentFragment extends Fragment
       case PAYMENT:
         AttachmentManager.selectPayment(this, recipient.get());
         break;
+      case TRUSTED_INTRODUCTION:
+        Optional<IdentityRecord> recipientRecord = ApplicationDependencies.getIdentityStore().getIdentityRecord(recipient.getId());
+        if (recipientRecord.isPresent() && VerifiedStatus.tiUnlocked(recipientRecord.get().getVerifiedStatus())){
+
+        } else {
+
+        }
 
     }
 
@@ -1968,6 +1975,10 @@ public class ConversationParentFragment extends Fragment
       quickCameraToggle.setOnClickListener(new QuickCameraToggleListener());
     } else {
       quickCameraToggle.setVisibility(View.GONE);
+    }
+
+    if (!isSecureText){
+       attachmentKeyboardStub.get().filterAttachmentKeyboardButtons(btn -> btn != AttachmentKeyboardButton.TRUSTED_INTRODUCTION);
     }
 
     searchNav.setEventListener(this);
