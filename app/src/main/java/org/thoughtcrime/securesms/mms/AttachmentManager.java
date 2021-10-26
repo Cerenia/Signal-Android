@@ -476,7 +476,7 @@ public class AttachmentManager {
   }
 
   public static void selectTI(@NonNull Activity activity, @NonNull RecipientId recipientId){
-    // go to verification activity
+    // TODO: Whatever is the next step in TI.
   }
 
   private @Nullable Uri getSlideUri() {

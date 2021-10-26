@@ -244,7 +244,7 @@ import org.thoughtcrime.securesms.mms.StickerSlide;
 import org.thoughtcrime.securesms.mms.VideoSlide;
 import org.thoughtcrime.securesms.notifications.NotificationChannels;
 import org.thoughtcrime.securesms.payments.CanNotSendPaymentDialog;
-import org.thoughtcrime.securesms.trusted.CanNotIntroduceDialog;
+import org.thoughtcrime.securesms.trustedIntroductions.CanNotIntroduceDialog;
 import org.thoughtcrime.securesms.permissions.Permissions;
 import org.thoughtcrime.securesms.profiles.spoofing.ReviewBannerView;
 import org.thoughtcrime.securesms.profiles.spoofing.ReviewCardDialogFragment;
@@ -1066,7 +1066,7 @@ public class ConversationParentFragment extends Fragment
         if (recipientRecord.isPresent() && VerifiedStatus.tiUnlocked(recipientRecord.get().getVerifiedStatus())){
           AttachmentManager.selectTI(this, recipient.getId());
         } else {
-          org.thoughtcrime.securesms.trusted.CanNotIntroduceDialog.show(this);
+          CanNotIntroduceDialog.show(this, recipient.getId());
         }
     }
 
@@ -1081,12 +1081,7 @@ public class ConversationParentFragment extends Fragment
                .withPermanentDenialDialog(getString(R.string.AttachmentManager_signal_requires_the_external_storage_permission_in_order_to_attach_photos_videos_or_audio))
                .execute();
   }
-
-  @Override
-  public void onVerifyClicked(){
-    // TODO Open the verification activity for this contact
-    Toast.makeText(getApplicationContext(),"Yeah, you clicked a button!", Toast.LENGTH_LONG).show();
-  }
+  
 //////// Event Handlers
 
   @Override
