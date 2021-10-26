@@ -243,7 +243,8 @@ import org.thoughtcrime.securesms.mms.SlideFactory.MediaType;
 import org.thoughtcrime.securesms.mms.StickerSlide;
 import org.thoughtcrime.securesms.mms.VideoSlide;
 import org.thoughtcrime.securesms.notifications.NotificationChannels;
-import org.thoughtcrime.securesms.notifications.v2.ConversationId;
+import org.thoughtcrime.securesms.payments.CanNotSendPaymentDialog;
+import org.thoughtcrime.securesms.trusted.CanNotIntroduceDialog;
 import org.thoughtcrime.securesms.permissions.Permissions;
 import org.thoughtcrime.securesms.profiles.spoofing.ReviewBannerView;
 import org.thoughtcrime.securesms.profiles.spoofing.ReviewCardDialogFragment;
@@ -1065,10 +1066,8 @@ public class ConversationParentFragment extends Fragment
         if (recipientRecord.isPresent() && VerifiedStatus.tiUnlocked(recipientRecord.get().getVerifiedStatus())){
           AttachmentManager.selectTI(this, recipient.getId());
         } else {
-          // TODO: is this the right approach? Could also have a 'cannot do trusted introduction dialog, analogous to the payment thing?'
-          attachmentKeyboardStub.get().onTIclicked();
+          org.thoughtcrime.securesms.trusted.CanNotIntroduceDialog.show(this);
         }
-
     }
 
     container.hideCurrentInput(composeText);

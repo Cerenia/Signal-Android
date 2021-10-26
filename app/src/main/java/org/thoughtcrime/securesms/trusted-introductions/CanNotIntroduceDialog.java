@@ -10,7 +10,7 @@ import org.thoughtcrime.securesms.R;
 
 /**
  * Utility to display a dialog when the user tries to use the introduction functionality with a contact
- * they have not strongly verified. 
+ * they have not strongly verified.
  */
 public final class CanNotIntroduceDialog {
 
