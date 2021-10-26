@@ -101,18 +101,6 @@ public class AttachmentKeyboard extends FrameLayout implements InputAwareLayout.
     }
   }
 
-  public void onTIclicked(){
-    ((TextView)text).setText(R.string.AttachmentKeyboard_direct_verification_needed_for_trusted_introduction);
-    ((Button)button).setText(R.string.AttachmentKeyboard_verify);
-    button.setOnClickListener(v -> {
-      if(callback != null) {
-        callback.onVerifyClicked();
-      }
-    });
-    text.setVisibility(VISIBLE);
-    button.setVisibility(VISIBLE);
-  }
-
   public void onMediaChanged(@NonNull List<Media> media) {
     if (StorageUtil.canReadFromMediaStore()) {
       mediaAdapter.setMedia(media);
@@ -162,6 +150,5 @@ public class AttachmentKeyboard extends FrameLayout implements InputAwareLayout.
     void onAttachmentMediaClicked(@NonNull Media media);
     void onAttachmentSelectorClicked(@NonNull AttachmentKeyboardButton button);
     void onAttachmentPermissionsRequested();
-    void onVerifyClicked();
   }
 }
