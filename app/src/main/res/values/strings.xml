@@ -72,9 +72,7 @@
     <string name="AttachmentKeyboard_contact">Contact</string>
     <string name="AttachmentKeyboard_location">Location</string>
     <string name="AttachmentKeyboard_Signal_needs_permission_to_show_your_photos_and_videos">Signal needs permission to show your photos and videos.</string>
-    <string name="AttachmentKeyboard_direct_verification_needed_for_trusted_introduction">You need to directly verify this contact to unlock the secure introduction functionality.</string>
     <string name="AttachmentKeyboard_give_access">Give Access</string>
-    <string name="AttachmentKeyboard_verify">Verify</string>
     <string name="AttachmentKeyboard_payment">Payment</string>
     <string name="AttachmentKeyboard_introduce">Introduction</string>
 
@@ -3931,6 +3929,10 @@
     <string name="CanNotSendPaymentDialog__cant_send_payment">Can\'t send payment</string>
     <string name="CanNotSendPaymentDialog__to_send_a_payment_to_this_user">To send a payment to this user they need to accept a message request from you. Send them a message to create a message request.</string>
     <string name="CanNotSendPaymentDialog__send_a_message">Send a message</string>
+
+    <!-- CanNotIntroduceDialog -->
+    <string name="CanNotIntroduceDialog__direct_verification_needed_for_trusted_introduction">You need to directly verify this contact to unlock the secure introduction functionality.</string>
+    <string name="CanNotIntroduceDialog__verify">Verify</string>
 
     <!-- GroupsInCommonMessageRequest -->
     <string name="GroupsInCommonMessageRequest__you_have_no_groups_in_common_with_this_person">You have no groups in common with this person. Review requests carefully before accepting to avoid unwanted messages.</string>
