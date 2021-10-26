@@ -101,16 +101,16 @@ public class AttachmentKeyboard extends FrameLayout implements InputAwareLayout.
     }
   }
 
-  public void onTIclicked(boolean tiAllowed){
-    if(tiAllowed){
-      // TODO: Do TI => Probably open some sharing menu where the contact to be introduced can be picked
-    } else {
-      ((TextView)text).setText(R.string.AttachmentKeyboard_direct_verification_needed_for_trusted_introduction);
-      ((Button)button).setText(R.string.AttachmentKeyboard_verify);
-      //button.setOnClickListener(onc -> onc);
-      text.setVisibility(VISIBLE);
-      button.setVisibility(VISIBLE);
-    }
+  public void onTIclicked(){
+    ((TextView)text).setText(R.string.AttachmentKeyboard_direct_verification_needed_for_trusted_introduction);
+    ((Button)button).setText(R.string.AttachmentKeyboard_verify);
+    button.setOnClickListener(v -> {
+      if(callback != null) {
+        callback.onVerifyClicked();
+      }
+    });
+    text.setVisibility(VISIBLE);
+    button.setVisibility(VISIBLE);
   }
 
   public void onMediaChanged(@NonNull List<Media> media) {
