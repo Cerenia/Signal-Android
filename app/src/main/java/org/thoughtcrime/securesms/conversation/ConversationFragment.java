@@ -30,6 +30,7 @@ import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
@@ -61,6 +62,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.ViewKt;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProviders;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -189,6 +191,7 @@ import org.thoughtcrime.securesms.util.StickyHeaderDecoration;
 import org.thoughtcrime.securesms.util.StorageUtil;
 import org.thoughtcrime.securesms.util.TextSecurePreferences;
 import org.thoughtcrime.securesms.util.TopToastPopup;
+import org.thoughtcrime.securesms.util.ThemeUtil;
 import org.thoughtcrime.securesms.util.Util;
 import org.thoughtcrime.securesms.util.ViewUtil;
 import org.thoughtcrime.securesms.util.WindowUtil;
@@ -362,6 +365,7 @@ public class ConversationFragment extends LoggingFragment implements Multiselect
             this::handleReplyMessage
     ).attachToRecyclerView(list);
 
+    setupListLayoutListeners();
     giphyMp4ProjectionRecycler = initializeGiphyMp4();
 
     this.groupViewModel         = new ViewModelProvider(getParentFragment(), (ViewModelProvider.Factory) new ConversationGroupViewModel.Factory()).get(ConversationGroupViewModel.class);
@@ -487,6 +491,35 @@ public class ConversationFragment extends LoggingFragment implements Multiselect
   public void clearFocusedItem() {
     multiselectItemDecoration.setFocusedItem(null);
     list.invalidateItemDecorations();
+  }
+
+  private void setupListLayoutListeners() {
+    list.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> setListVerticalTranslation());
+
+    list.addOnChildAttachStateChangeListener(new RecyclerView.OnChildAttachStateChangeListener() {
+      @Override
+      public void onChildViewAttachedToWindow(@NonNull View view) {
+        setListVerticalTranslation();
+      }
+
+      @Override
+      public void onChildViewDetachedFromWindow(@NonNull View view) {
+        setListVerticalTranslation();
+      }
+    });
+  }
+
+  private void setListVerticalTranslation() {
+    if (list.canScrollVertically(1) || list.canScrollVertically(-1) || list.getChildCount() == 0) {
+      list.setTranslationY(0);
+      reactionsShade.setTranslationY(0);
+      list.setOverScrollMode(RecyclerView.OVER_SCROLL_IF_CONTENT_SCROLLS);
+    } else {
+      int chTop = list.getChildAt(list.getChildCount() - 1).getTop();
+      list.setTranslationY(Math.min(0, -chTop));
+      reactionsShade.setTranslationY(Math.min(0, -chTop));
+      list.setOverScrollMode(RecyclerView.OVER_SCROLL_NEVER);
+    }
   }
 
   private void updateConversationItemTimestamps() {
