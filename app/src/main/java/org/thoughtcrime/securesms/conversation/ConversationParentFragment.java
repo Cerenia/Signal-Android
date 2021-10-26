@@ -1063,8 +1063,9 @@ public class ConversationParentFragment extends Fragment
       case TRUSTED_INTRODUCTION:
         Optional<IdentityRecord> recipientRecord = ApplicationDependencies.getIdentityStore().getIdentityRecord(recipient.getId());
         if (recipientRecord.isPresent() && VerifiedStatus.tiUnlocked(recipientRecord.get().getVerifiedStatus())){
-
+          AttachmentManager.selectTI(this, recipient.getId());
         } else {
+          // TODO: is this the right approach? Could also have a 'cannot do trusted introduction dialog, analogous to the payment thing?'
           attachmentKeyboardStub.get().onTIclicked();
         }
 
