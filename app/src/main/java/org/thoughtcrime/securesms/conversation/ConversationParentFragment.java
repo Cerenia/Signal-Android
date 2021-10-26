@@ -1083,8 +1083,8 @@ public class ConversationParentFragment extends Fragment
   }
 
   @Override
-  public void onIntroductionClicked(){
-    // TODO
+  public void onVerifyClicked(){
+    // TODO Open the verification activity for this contact
     Toast.makeText(getApplicationContext(),"Yeah, you clicked a button!", Toast.LENGTH_LONG).show();
   }
 //////// Event Handlers
