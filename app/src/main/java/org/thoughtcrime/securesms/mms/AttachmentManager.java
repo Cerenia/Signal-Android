@@ -475,6 +475,10 @@ public class AttachmentManager {
         .show();
   }
 
+  public static void selectTI(@NonNull Activity activity, @NonNull RecipientId recipientId){
+    // go to verification activity
+  }
+
   private @Nullable Uri getSlideUri() {
     return slide.isPresent() ? slide.get().getUri() : null;
   }
