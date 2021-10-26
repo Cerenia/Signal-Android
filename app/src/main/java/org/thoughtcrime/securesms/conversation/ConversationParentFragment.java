@@ -1241,7 +1241,7 @@ public class ConversationParentFragment extends Fragment
         if (recipientRecord.isPresent() && VerifiedStatus.tiUnlocked(recipientRecord.get().getVerifiedStatus())){
           AttachmentManager.selectTI(this, recipient.getId());
         } else {
-          CanNotIntroduceDialog.show(this, recipient.getId());
+          CanNotIntroduceDialog.show(this, recipientRecord.get());
         }
     }
 
