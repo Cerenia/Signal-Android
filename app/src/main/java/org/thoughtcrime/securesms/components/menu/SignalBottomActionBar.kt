@@ -5,12 +5,9 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.Animation
-import android.view.animation.AnimationUtils
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.util.ViewUtil
 
@@ -23,20 +20,6 @@ import org.thoughtcrime.securesms.util.ViewUtil
 class SignalBottomActionBar(context: Context, attributeSet: AttributeSet) : LinearLayout(context, attributeSet) {
 
   val items: MutableList<ActionItem> = mutableListOf()
-
-  val enterAnimation: Animation by lazy {
-    AnimationUtils.loadAnimation(context, R.anim.slide_fade_from_bottom).apply {
-      duration = 250
-      interpolator = FastOutSlowInInterpolator()
-    }
-  }
-
-  val exitAnimation: Animation by lazy {
-    AnimationUtils.loadAnimation(context, R.anim.slide_fade_to_bottom).apply {
-      duration = 250
-      interpolator = FastOutSlowInInterpolator()
-    }
-  }
 
   init {
     orientation = HORIZONTAL
@@ -91,7 +74,7 @@ class SignalBottomActionBar(context: Context, attributeSet: AttributeSet) : Line
         view,
         ActionItem(
           iconRes = R.drawable.ic_more_horiz_24,
-          title = context.getString(R.string.SignalBottomActionBar_more),
+          titleRes = R.string.SignalBottomActionBar_more,
           action = {
             SignalContextMenu.Builder(view, parent as ViewGroup)
               .preferredHorizontalPosition(SignalContextMenu.HorizontalPosition.END)
@@ -114,7 +97,7 @@ class SignalBottomActionBar(context: Context, attributeSet: AttributeSet) : Line
     val title: TextView = view.findViewById(R.id.signal_bottom_action_bar_item_title)
 
     icon.setImageResource(item.iconRes)
-    title.text = item.title
+    title.setText(item.titleRes)
     view.setOnClickListener { item.action.run() }
   }
 }
