@@ -3981,6 +3981,7 @@
     <string name="CanNotIntroduceDialog__direct_verification_needed_for_trusted_introduction">You need to directly verify this contact to unlock the secure introduction feature.</string>
     <string name="CanNotIntroduceDialog__verify">Verify</string>
     <string name="CanNotIntroduceDialog__Cant_introduce">Can\'t introduce</string>
+    <string name="CanNotIntroduceDialog__Identity_record_empty">Could not redirect to the verification screen, please try to navigate there manually.</string>
 
     <!-- GroupsInCommonMessageRequest -->
     <string name="GroupsInCommonMessageRequest__you_have_no_groups_in_common_with_this_person">You have no groups in common with this person. Review requests carefully before accepting to avoid unwanted messages.</string>
