@@ -3931,7 +3931,7 @@
     <string name="CanNotSendPaymentDialog__send_a_message">Send a message</string>
 
     <!-- CanNotIntroduceDialog -->
-    <string name="CanNotIntroduceDialog__direct_verification_needed_for_trusted_introduction">You need to directly verify this contact to unlock the secure introduction feature.</string>
+    <string name="CanNotIntroduceDialog__direct_verification_needed_for_trusted_introduction">You need to directly verify this contact through a scan of their QR code to unlock the secure introduction feature.</string>
     <string name="CanNotIntroduceDialog__verify">Verify</string>
     <string name="CanNotIntroduceDialog__Cant_introduce">Can\'t introduce</string>
     <string name="CanNotIntroduceDialog__Identity_record_empty">Could not redirect to the verification screen, please try to navigate there manually.</string>
