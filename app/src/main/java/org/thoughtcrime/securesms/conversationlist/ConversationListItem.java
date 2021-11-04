@@ -17,7 +17,6 @@
 package org.thoughtcrime.securesms.conversationlist;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.Typeface;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -32,16 +31,14 @@ import androidx.annotation.ColorInt;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.WorkerThread;
+import androidx.annotation.Px;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.Transformations;
 
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.resource.bitmap.CenterCrop;
-import com.bumptech.glide.load.resource.bitmap.DownsampleStrategy;
 import com.makeramen.roundedimageview.RoundedDrawable;
 
 import org.signal.core.util.DimensionUnit;
@@ -64,6 +61,7 @@ import org.thoughtcrime.securesms.database.model.LiveUpdateMessage;
 import org.thoughtcrime.securesms.database.model.MessageRecord;
 import org.thoughtcrime.securesms.database.model.ThreadRecord;
 import org.thoughtcrime.securesms.database.model.UpdateDescription;
+import org.thoughtcrime.securesms.glide.GlideLiveDataTarget;
 import org.thoughtcrime.securesms.mms.DecryptableStreamUriLoader;
 import org.thoughtcrime.securesms.mms.GlideRequests;
 import org.thoughtcrime.securesms.recipients.LiveRecipient;
@@ -82,9 +80,6 @@ import org.thoughtcrime.securesms.util.livedata.LiveDataUtil;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import static org.thoughtcrime.securesms.database.model.LiveUpdateMessage.recipientToStringAsync;
 
@@ -122,6 +117,8 @@ public final class ConversationListItem extends ConstraintLayout
   private View                checkContainer;
   private View                uncheckedView;
   private View                checkedView;
+  private int                 thumbSize;
+  private GlideLiveDataTarget thumbTarget;
 
   private int             unreadCount;
   private AvatarImageView contactPhotoImage;
@@ -154,6 +151,8 @@ public final class ConversationListItem extends ConstraintLayout
     this.checkContainer          = findViewById(R.id.conversation_list_item_check_container);
     this.uncheckedView           = findViewById(R.id.conversation_list_item_unchecked);
     this.checkedView             = findViewById(R.id.conversation_list_item_checked);
+    this.thumbSize               = (int) DimensionUnit.SP.toPixels(20f);
+    this.thumbTarget             = new GlideLiveDataTarget(thumbSize, thumbSize);
 
     getLayoutTransition().setDuration(150);
   }
@@ -201,7 +200,7 @@ public final class ConversationListItem extends ConstraintLayout
     this.typingThreads = typingThreads;
     updateTypingIndicator(typingThreads);
 
-    observeDisplayBody(getThreadDisplayBody(getContext(), thread, glideRequests));
+    observeDisplayBody(getThreadDisplayBody(getContext(), thread, glideRequests, thumbSize, thumbTarget));
 
     if (thread.getDate() > 0) {
       CharSequence date = DateUtils.getBriefRelativeTimeSpanString(getContext(), locale, thread.getDate());
@@ -359,6 +358,10 @@ public final class ConversationListItem extends ConstraintLayout
   }
 
   private void observeDisplayBody(@Nullable LiveData<SpannableString> displayBody) {
+    if (displayBody == null && glideRequests != null) {
+      glideRequests.clear(thumbTarget);
+    }
+
     if (this.displayBody != null) {
       this.displayBody.removeObserver(this);
     }
@@ -447,7 +450,12 @@ public final class ConversationListItem extends ConstraintLayout
     badge.setBadgeFromRecipient(recipient);
   }
 
-  private static @NonNull LiveData<SpannableString> getThreadDisplayBody(@NonNull Context context, @NonNull ThreadRecord thread, @NonNull GlideRequests glideRequests) {
+  private static @NonNull LiveData<SpannableString> getThreadDisplayBody(@NonNull Context context,
+                                                                         @NonNull ThreadRecord thread,
+                                                                         @NonNull GlideRequests glideRequests,
+                                                                         @Px int thumbSize,
+                                                                         @NonNull GlideLiveDataTarget thumbTarget)
+  {
     int defaultTint = ContextCompat.getColor(context, R.color.signal_text_secondary);
 
     if (!thread.isMessageRequestAccepted()) {
@@ -519,17 +527,16 @@ public final class ConversationListItem extends ConstraintLayout
       } else if (extra != null && extra.isRemoteDelete()) {
         return emphasisAdded(context, context.getString(thread.isOutgoing() ? R.string.ThreadRecord_you_deleted_this_message : R.string.ThreadRecord_this_message_was_deleted), defaultTint);
       } else {
-        String body = removeNewlines(thread.getBody());
-
-        LiveData<SpannableString> finalBody = recipientToStringAsync(thread.getRecipient().getId(), threadRecipient -> {
-          CharSequence bodyWithMediaIcon = createFinalBodyWithMediaIcon(context, body, thread, glideRequests);
-          if (threadRecipient.isGroup()) {
+        String                    body      = removeNewlines(thread.getBody());
+        LiveData<SpannableString> finalBody = LiveDataUtil.mapAsync(createFinalBodyWithMediaIcon(context, body, thread, glideRequests, thumbSize, thumbTarget), updatedBody -> {
+          if (thread.getRecipient().isGroup()) {
             RecipientId groupMessageSender = thread.getGroupMessageSender();
             if (!groupMessageSender.isUnknown()) {
-              return createGroupMessageUpdateString(context, bodyWithMediaIcon, Recipient.resolved(groupMessageSender), thread.isRead());
+              return createGroupMessageUpdateString(context, updatedBody, Recipient.resolved(groupMessageSender), thread.isRead());
             }
           }
-          return new SpannableString(bodyWithMediaIcon);
+
+          return new SpannableString(updatedBody);
         });
 
         return whileLoadingShow(body, finalBody);
@@ -537,63 +544,56 @@ public final class ConversationListItem extends ConstraintLayout
     }
   }
 
-  @WorkerThread
-  private static CharSequence createFinalBodyWithMediaIcon(@NonNull Context context,
-                                                           @NonNull String body,
-                                                           @NonNull ThreadRecord thread,
-                                                           @NonNull GlideRequests glideRequests)
+  private static LiveData<CharSequence> createFinalBodyWithMediaIcon(@NonNull Context context,
+                                                                     @NonNull String body,
+                                                                     @NonNull ThreadRecord thread,
+                                                                     @NonNull GlideRequests glideRequests,
+                                                                     @Px int thumbSize,
+                                                                     @NonNull GlideLiveDataTarget thumbTarget)
   {
-    if (thread.getSnippetUri() != null) {
-      try {
-        int      thumbSize = (int) DimensionUnit.SP.toPixels(20f);
-        Bitmap   thumb     = glideRequests.asBitmap()
-                                          .load(new DecryptableStreamUriLoader.DecryptableUri(thread.getSnippetUri()))
-                                          .override(thumbSize, thumbSize)
-                                          .transform(
-                                              new OverlayTransformation(ContextCompat.getColor(context, R.color.transparent_black_08)),
-                                              new CenterCrop()
-                                          )
-                                          .submit()
-                                          .get(1, TimeUnit.SECONDS);
-
-        RoundedDrawable drawable = RoundedDrawable.fromBitmap(thumb);
-        drawable.setBounds(0, 0, thumbSize, thumbSize);
-        drawable.setCornerRadius(DimensionUnit.DP.toPixels(4));
-        drawable.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
-
-        CharSequence span = SpanUtil.buildCenteredImageSpan(drawable);
-
-        final String withoutPrefix;
-
-        if (body.startsWith(EmojiStrings.GIF)) {
-          withoutPrefix = body.replace(EmojiStrings.GIF, "");
-        } else if (body.startsWith(EmojiStrings.VIDEO)) {
-          withoutPrefix = body.replace(EmojiStrings.VIDEO, "");
-        } else if (body.startsWith(EmojiStrings.PHOTO)) {
-          withoutPrefix = body.replace(EmojiStrings.PHOTO, "");
-        } else if (thread.getExtra() != null && thread.getExtra().getStickerEmoji() != null && body.startsWith(thread.getExtra().getStickerEmoji())) {
-          withoutPrefix = body.replace(thread.getExtra().getStickerEmoji(), "");
-        } else {
-          withoutPrefix = null;
-        }
-
-        if (withoutPrefix != null) {
-          return new SpannableStringBuilder()
-              .append(span)
-              .append(withoutPrefix);
-        } else {
-          return body;
-        }
-
-      } catch (ExecutionException | InterruptedException e) {
-        return new SpannableString(body);
-      } catch (TimeoutException e) {
-        Log.w(TAG, "Hit a timeout when generating a thumbnail! " + thread.getSnippetUri());
-        return new SpannableString(body);
-      }
-    } else {
-      return new SpannableString(body);
+    if (thread.getSnippetUri() == null) {
+      return LiveDataUtil.just(body);
     }
+
+    final String bodyWithoutMediaPrefix;
+
+    if (body.startsWith(EmojiStrings.GIF)) {
+      bodyWithoutMediaPrefix = body.replace(EmojiStrings.GIF, "");
+    } else if (body.startsWith(EmojiStrings.VIDEO)) {
+      bodyWithoutMediaPrefix = body.replace(EmojiStrings.VIDEO, "");
+    } else if (body.startsWith(EmojiStrings.PHOTO)) {
+      bodyWithoutMediaPrefix = body.replace(EmojiStrings.PHOTO, "");
+    } else if (thread.getExtra() != null && thread.getExtra().getStickerEmoji() != null && body.startsWith(thread.getExtra().getStickerEmoji())) {
+      bodyWithoutMediaPrefix = body.replace(thread.getExtra().getStickerEmoji(), "");
+    } else {
+      return LiveDataUtil.just(body);
+    }
+
+    glideRequests.asBitmap()
+                 .load(new DecryptableStreamUriLoader.DecryptableUri(thread.getSnippetUri()))
+                 .override(thumbSize, thumbSize)
+                 .transform(
+                     new OverlayTransformation(ContextCompat.getColor(context, R.color.transparent_black_08)),
+                     new CenterCrop()
+                 )
+                 .into(thumbTarget);
+
+    return Transformations.map(thumbTarget.getLiveData(), bitmap -> {
+      if (bitmap == null) {
+        return body;
+      }
+
+      RoundedDrawable drawable = RoundedDrawable.fromBitmap(bitmap);
+      drawable.setBounds(0, 0, thumbSize, thumbSize);
+      drawable.setCornerRadius(DimensionUnit.DP.toPixels(4));
+      drawable.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+
+      CharSequence thumbnailSpan = SpanUtil.buildCenteredImageSpan(drawable);
+
+      return new SpannableStringBuilder()
+          .append(thumbnailSpan)
+          .append(bodyWithoutMediaPrefix);
+    });
   }
 
   private static SpannableString createGroupMessageUpdateString(@NonNull Context context,

@@ -213,9 +213,9 @@
   <string name="ConversationActivity_there_is_no_app_available_to_handle_this_link_on_your_device">आपल्या डिव्हाईस वर हा दुवा हाताळण्यासाठी कुठलाही अॅप नाही.</string>
   <string name="ConversationActivity_your_request_to_join_has_been_sent_to_the_group_admin">आपली सामील होण्याची विनंती गट प्रशासकाकडे पाठविली गेली आहे. जेव्हा ते कारवाई करतात तेव्हा आपल्याला सूचित केले जाईल.</string>
   <string name="ConversationActivity_cancel_request">विनंती रद्द करा</string>
-  <string name="ConversationActivity_to_send_audio_messages_allow_signal_access_to_your_microphone">ऑडिओ संदेश पाठविण्यासाठी, Signal यास आपले मायक्रोफोन अॅक्सेस करण्याची अनुमती द्या.</string>
+  <string name="ConversationActivity_to_send_audio_messages_allow_signal_access_to_your_microphone">ऑडिओ संदेश पाठविण्यासाठी, Signal ला आपले मायक्रोफोन अॅक्सेस करण्याची अनुमती द्या.</string>
   <string name="ConversationActivity_signal_requires_the_microphone_permission_in_order_to_send_audio_messages">ऑडिओ संदेश पाठवण्यासाठी Signal ला मायक्रोफोन परवानगीची आवश्यकता असते, पण ती कायमची नाकारली गेली आहे. कृपया अॅप सेटिंग मेनू मध्ये सुरू ठेवा, \"परवानग्या\" निवडा, आणि \"मायक्रोफोन\" सक्षम करा.</string>
-  <string name="ConversationActivity_signal_needs_the_microphone_and_camera_permissions_in_order_to_call_s">%s यास कॉल करण्यासाठी Signal ला मायक्रोफोन आणि कॅमेरा परवानग्यांची आवश्यकता असते, पण ती कायमची नाकारली गेली आहे. कृपया अॅप सेटिंग मेनू मध्ये सुरू ठेवा, \"परवानग्या\" निवडा, आणि \"मायक्रोफोन\" आणि \"कॅमेरा\" सक्षम करा.</string>
+  <string name="ConversationActivity_signal_needs_the_microphone_and_camera_permissions_in_order_to_call_s">%s ला कॉल करण्यासाठी Signal ला मायक्रोफोन आणि कॅमेरा परवानग्यांची आवश्यकता असते, पण ती कायमची नाकारली गेली आहे. कृपया अॅप सेटिंग मेनू मध्ये सुरू ठेवा, \"परवानग्या\" निवडा, आणि \"मायक्रोफोन\" आणि \"कॅमेरा\" सक्षम करा.</string>
   <string name="ConversationActivity_to_capture_photos_and_video_allow_signal_access_to_the_camera">फोटो आणि व्हिडिओ कॅप्चर करण्यासाठी, Signal ला कॅमेरा अॅक्सेसची अनुमती द्या.</string>
   <string name="ConversationActivity_signal_needs_the_camera_permission_to_take_photos_or_video">फोटो किंवा व्हिडिओ काढण्यासाठी Signal ला कॅमेरा परवानगीची आवश्यकता असते, पण ती कायमची नाकारली गेली आहे. कृपया अॅप सेटिंग मेनू मध्ये सुरू ठेवा, \"परवानग्या\" निवडा, आणि \"कॅमेरा\" सक्षम करा.</string>
   <string name="ConversationActivity_signal_needs_camera_permissions_to_take_photos_or_video">फोटो किंवा व्हिडिओ घेण्यासाठी Signal ला कॅमेरा परवानग्यांची गरज आहे</string>
@@ -237,7 +237,7 @@
   <string name="ConversationActivity_you_will_leave_this_group_and_it_will_be_deleted_from_all_of_your_devices">आपण हे गट सोडाल, आणि ते आपल्या सर्व डिव्हाईस वरून हटविले जाईल.</string>
   <string name="ConversationActivity_delete">हटवा</string>
   <string name="ConversationActivity_delete_and_leave">गटातून बाहेत पडा आणि गट हटवा</string>
-  <string name="ConversationActivity__to_call_s_signal_needs_access_to_your_microphone">%1$s कॉल करण्यासाठी, सिग्नलला आपल्या मायक्रोफोन मध्ये प्रवेश करण्याची आवश्यकता आहे</string>
+  <string name="ConversationActivity__to_call_s_signal_needs_access_to_your_microphone">%1$s ला कॉल करण्यासाठी, Signal ला आपल्या मायक्रोफोनचा अॅक्सेस हवा आहे</string>
   <string name="ConversationActivity__more_options_now_in_group_settings">\"गट सेटिंग्ज\" मध्ये आता अधिक पर्याय</string>
   <string name="ConversationActivity_join">सामील व्हा</string>
   <string name="ConversationActivity_full">पूर्ण</string>
@@ -316,16 +316,43 @@
     <item quantity="one">संभाषण इनबॉक्स मध्ये हलवले</item>
     <item quantity="other">%d संभाषण इनबॉक्स मध्ये हलवली</item>
   </plurals>
-  <string name="ConversationListFragment_read">वाचले</string>
-  <string name="ConversationListFragment_unread">वाचले नाही</string>
-  <string name="ConversationListFragment_pin">पिन करा</string>
-  <string name="ConversationListFragment_unpin">अनपिन करा</string>
-  <string name="ConversationListFragment_mute">म्यूट करा</string>
-  <string name="ConversationListFragment_unmute">अनम्यूट करा</string>
+  <plurals name="ConversationListFragment_read_plural">
+    <item quantity="one">वाचले</item>
+    <item quantity="other">वाचले</item>
+  </plurals>
+  <plurals name="ConversationListFragment_unread_plural">
+    <item quantity="one">वाचले नाही</item>
+    <item quantity="other">वाचले नाही</item>
+  </plurals>
+  <plurals name="ConversationListFragment_pin_plural">
+    <item quantity="one">पिन करा</item>
+    <item quantity="other">पिन करा</item>
+  </plurals>
+  <plurals name="ConversationListFragment_unpin_plural">
+    <item quantity="one">अनपिन करा</item>
+    <item quantity="other">अनपिन करा</item>
+  </plurals>
+  <plurals name="ConversationListFragment_mute_plural">
+    <item quantity="one">म्यूट करा</item>
+    <item quantity="other">म्यूट करा</item>
+  </plurals>
+  <plurals name="ConversationListFragment_unmute_plural">
+    <item quantity="one">अनम्यूट करा</item>
+    <item quantity="other">अनम्यूट करा</item>
+  </plurals>
   <string name="ConversationListFragment_select">निवडा</string>
-  <string name="ConversationListFragment_archive">आर्काइव्ह</string>
-  <string name="ConversationListFragment_unarchive">अनआर्काईव्ह</string>
-  <string name="ConversationListFragment_delete">हटवा</string>
+  <plurals name="ConversationListFragment_archive_plural">
+    <item quantity="one">आर्काईव्ह</item>
+    <item quantity="other">आर्काईव्ह</item>
+  </plurals>
+  <plurals name="ConversationListFragment_unarchive_plural">
+    <item quantity="one">अनआर्काईव्ह</item>
+    <item quantity="other">अनआर्काईव्ह</item>
+  </plurals>
+  <plurals name="ConversationListFragment_delete_plural">
+    <item quantity="one">हटवा</item>
+    <item quantity="other">हटवा</item>
+  </plurals>
   <string name="ConversationListFragment_select_all">सर्व निवडा</string>
   <plurals name="ConversationListFragment_s_selected">
     <item quantity="one">%d निवडले</item>
@@ -810,9 +837,15 @@
   <string name="MediaOverviewActivity_Grid_view_description">ग्रिड दृश्य</string>
   <string name="MediaOverviewActivity_List_view_description">यादी दृश्य</string>
   <string name="MediaOverviewActivity_Selected_description">निवडलेले</string>
-  <string name="MediaOverviewActivity_save">जतन करा</string>
   <string name="MediaOverviewActivity_select_all">सर्व निवडा</string>
-  <string name="MediaOverviewActivity_delete">हटवा</string>
+  <plurals name="MediaOverviewActivity_save_plural">
+    <item quantity="one">जतन करा</item>
+    <item quantity="other">जतन करा</item>
+  </plurals>
+  <plurals name="MediaOverviewActivity_delete_plural">
+    <item quantity="one">हटवा</item>
+    <item quantity="other">हटवा</item>
+  </plurals>
   <plurals name="MediaOverviewActivity_d_selected_s">
     <item quantity="one">%1$d निवडले (%2$s)</item>
     <item quantity="other">%1$d निवडले (%2$s)</item>
@@ -843,9 +876,9 @@
   <string name="NotificationBarManager_signal_call_in_progress">Signal कॉल प्रगती मध्ये</string>
   <string name="NotificationBarManager__establishing_signal_call">Signal कॉल प्रस्थापित करत आहे</string>
   <string name="NotificationBarManager__incoming_signal_call">येणारा Signal कॉल</string>
-  <string name="NotificationBarManager__incoming_signal_group_call">येणारे Signal गट काॅल</string>
+  <string name="NotificationBarManager__incoming_signal_group_call">येणारा Signal गट कॉल</string>
   <string name="NotificationBarManager__stopping_signal_call_service">Signal कॉल सेवा बंद करत आहे</string>
-  <string name="NotificationBarManager__decline_call">कॉल नाकारा</string>
+  <string name="NotificationBarManager__decline_call">नकार द्या</string>
   <string name="NotificationBarManager__answer_call">कॉलला उत्तर द्या</string>
   <string name="NotificationBarManager__end_call">कॉल संपवा</string>
   <string name="NotificationBarManager__cancel_call">कॉल रद्द करा</string>
@@ -891,7 +924,7 @@
   <string name="MessageRecord_left_group">आपण गट सोडला आहे.</string>
   <string name="MessageRecord_you_updated_group">आपण गट अद्ययावत केले.</string>
   <string name="MessageRecord_the_group_was_updated">गट अद्यतनित केला गेला.</string>
-  <string name="MessageRecord_you_called_date">आपण · %1$s ला कॉल केला</string>
+  <string name="MessageRecord_you_called_date"> आपण काॅल केला . %1$s</string>
   <string name="MessageRecord_missed_audio_call_date">सुटलेला ऑडिओ कॉल · %1$s</string>
   <string name="MessageRecord_missed_video_call_date">सुटलेला व्हिडिओ कॉल · %1$s</string>
   <string name="MessageRecord_s_updated_group">%s ने गट अद्ययावत केले.</string>
@@ -920,7 +953,7 @@
   <!--GV2 specific-->
   <string name="MessageRecord_you_created_the_group">आपण गट तयार केला.</string>
   <string name="MessageRecord_group_updated">गट अद्यतनित.</string>
-  <string name="MessageRecord_invite_friends_to_this_group">गट लिंक द्वारा मित्रांना यै गटात आमंत्रित करा</string>
+  <string name="MessageRecord_invite_friends_to_this_group">गट लिंक द्वारे मित्रांना या गटात आमंत्रित करा</string>
   <!--GV2 member additions-->
   <string name="MessageRecord_you_added_s">आपण %1$s ला जोडले.</string>
   <string name="MessageRecord_s_added_s">%1$s ने %2$s ला जोडले.</string>
@@ -1051,6 +1084,7 @@
   <string name="MessageRecord_you_marked_your_safety_number_with_s_unverified">%s सोबत आपण आपला सुरक्षितता नंबर असत्यापित म्हणून चिन्हांकित केला आहे</string>
   <string name="MessageRecord_you_marked_your_safety_number_with_s_unverified_from_another_device">%s सोबत आपण आपला सुरक्षितता नंबर दुसऱ्या डिव्हाईस वरून असत्यापित म्हणून चिन्हांकित केला आहे</string>
   <string name="MessageRecord_a_message_from_s_couldnt_be_delivered">%s कडील संदेश डिलिव्हर केला जाऊ शकला नाही</string>
+  <string name="MessageRecord_s_changed_their_number_to_a_new_number">%1$s यांनी त्यांचा नंबर नवीन नंबर वर बदलला.</string>
   <!--Group Calling update messages-->
   <string name="MessageRecord_s_started_a_group_call_s">%1$s ने गट कॉल चालू केला · %2$s</string>
   <string name="MessageRecord_s_is_in_the_group_call_s">%1$s गट कॉलमध्ये  आहे · %2$s</string>
@@ -1221,7 +1255,16 @@
   <string name="WebRtcCallView__reconnecting">पुनःकनेक्ट करत आहे…</string>
   <string name="WebRtcCallView__joining">सामील होत आहे…</string>
   <string name="WebRtcCallView__disconnected">डिसकनेक्ट झाले</string>
-  <string name="WebRtcCallView__s_will_be_notified">%1$s ला अधिसूचित केले जाईल </string>
+  <plurals name="WebRtcCallView__signal_will_ring_s_s_and_d_others">
+    <item quantity="one">Signal %1$s, %2$s आणि इतर %3$d जणांना रिंग देईल</item>
+    <item quantity="other">Signal %1$s, %2$s आणि इतर %3$d जणांना रिंग देईल</item>
+  </plurals>
+  <string name="WebRtcCallView__s_will_be_notified">%1$s ला सुचित केले जाईल </string>
+  <string name="WebRtcCallView__s_and_s_will_be_notified">%1$s आणि %2$s ला सूचित केले जाईल</string>
+  <plurals name="WebRtcCallView__s_s_and_d_others_will_be_notified">
+    <item quantity="one">%1$s, %2$s आणि इतर %3$d जणांना सूचित केले जाईल</item>
+    <item quantity="other">%1$s, %2$s आणि इतर %3$d जणांना सूचित केले जाईल</item>
+  </plurals>
   <string name="WebRtcCallView__s_is_calling_you">%1$s तुम्हाला काॅल करत आहे</string>
   <plurals name="WebRtcCallView__s_is_calling_you_s_s_and_d_others">
     <item quantity="one">%1$s तुम्हाला, %2$s, %3$s आणि इतर %4$d जणांना काॅल करत आहे</item>
@@ -1236,9 +1279,11 @@
     <item quantity="one">%1$s, %2$s, आणि %3$d इतर व्यक्ती गट कॉलमध्ये आहे</item>
     <item quantity="other">%1$s, %2$s, आणि %3$d इतर व्यक्ती कॉलमध्ये आहेत</item>
   </plurals>
+  <string name="WebRtcCallView__flip">स्विच </string>
   <string name="WebRtcCallView__speaker">स्पीकर</string>
   <string name="WebRtcCallView__camera">कॅमेरा</string>
   <string name="WebRtcCallView__mute">म्यूट करा</string>
+  <string name="WebRtcCallView__ring">रिंग</string>
   <string name="WebRtcCallView__end_call">कॉल संपवा</string>
   <!--CallParticipantsListDialog-->
   <plurals name="CallParticipantsListDialog_in_this_call_d_people">
@@ -1287,6 +1332,7 @@
   <string name="RegistrationActivity_signal_needs_access_to_your_contacts_in_order_to_connect_with_friends">आपल्या मित्रांसोबत जोडण्यासाठी, संदेश अदलाबदल करण्यासाठी, आणि सुरक्षित कॉल करण्यासाठी Signal ला आपल्या संपर्काच्या अॅक्सेसची गरज आहे.</string>
   <string name="RegistrationActivity_rate_limited_to_service">या नंबरसोबत आपण खूप प्रयत्न केले आहेत. कृपया नंतर पुन्हा प्रयत्न करा.</string>
   <string name="RegistrationActivity_unable_to_connect_to_service">सेवेसोबत कनेक्ट करण्यात अक्षम. कृपया नेटवर्क कनेक्शन तपासा आणि पुन्हा प्रयत्न करा.</string>
+  <string name="RegistrationActivity_call_requested">कॉलची विनंती केली</string>
   <plurals name="RegistrationActivity_debug_log_hint">
     <item quantity="one">आपण आता डीबग लॉग प्रविष्ट करण्याच्या %d पायरी दूर आहात.</item>
     <item quantity="other">आपण आता डीबग लॉग प्रविष्ट करण्याच्या %d पायऱ्या दूर आहात.</item>
@@ -1571,7 +1617,7 @@
   <string name="WebRtcCallScreen_swipe_up_to_change_views">दृश्य बदल्ण्यासाठी वर स्वाइप करा</string>
   <!--WebRtcCallScreen V2-->
   <string name="WebRtcCallScreen__decline">नकार द्या</string>
-  <string name="WebRtcCallScreen__answer">उत्तर</string>
+  <string name="WebRtcCallScreen__answer">उत्तर द्या</string>
   <string name="WebRtcCallScreen__answer_without_video">विना व्हिडिओ उत्तर द्या</string>
   <!--WebRtcAudioOutputToggle-->
   <string name="WebRtcAudioOutputToggle__audio_output">ऑडिओ आउटपुट</string>
@@ -1833,13 +1879,13 @@
   <!--message_details_header-->
   <string name="message_details_header__issues_need_your_attention">काही समस्यांकडे आपण लक्ष देण्याची गरज आहे.</string>
   <string name="message_details_header__sent">पाठवले :</string>
-  <string name="message_details_header__received">प्राप्त झाले :</string>
+  <string name="message_details_header__received">प्राप्त :</string>
   <string name="message_details_header__disappears">नाहिसे होणार :</string>
   <string name="message_details_header__via">द्वारे :</string>
   <!--message_details_recipient_header-->
   <string name="message_details_recipient_header__pending_send">प्रलंबित</string>
   <string name="message_details_recipient_header__sent_to">याला पाठवले</string>
-  <string name="message_details_recipient_header__sent_from">यावरून पाठवले</string>
+  <string name="message_details_recipient_header__sent_from">याने पाठवले</string>
   <string name="message_details_recipient_header__delivered_to">याला पोहोचवले</string>
   <string name="message_details_recipient_header__read_by">याने वाचले</string>
   <string name="message_details_recipient_header__not_sent">पाठवलेले नाही</string>
@@ -1904,7 +1950,7 @@
   <string name="arrays__name_and_message">नाव आणि संदेश</string>
   <string name="arrays__name_only">फक्त नाव</string>
   <string name="arrays__no_name_or_message">कुठलेही नाव किंवा संदेश नाही</string>
-  <string name="arrays__images">चित्रे</string>
+  <string name="arrays__images">फोटो</string>
   <string name="arrays__audio">ऑडिओ</string>
   <string name="arrays__video">व्हिडिओ</string>
   <string name="arrays__documents">दस्तऐवज</string>
@@ -1913,7 +1959,7 @@
   <string name="arrays__large">मोठे</string>
   <string name="arrays__extra_large">जास्त मोठे</string>
   <string name="arrays__default">पूर्वनिर्धारित</string>
-  <string name="arrays__high">उंच</string>
+  <string name="arrays__high">उच्च</string>
   <string name="arrays__max">कमाल</string>
   <!--plurals.xml-->
   <plurals name="hours_ago">
@@ -2431,7 +2477,7 @@
     <item quantity="other">%1$d प्रयत्न उर्वरित.</item>
   </plurals>
   <!--CalleeMustAcceptMessageRequestDialogFragment-->
-  <string name="CalleeMustAcceptMessageRequestDialogFragment__s_will_get_a_message_request_from_you">%1$sला तुमच्याकडून एक संदेश विनंती मिळेल. एकदा आपली संदेश विनंती स्वीकारल्यानंतर आपण कॉल करू शकता.</string>
+  <string name="CalleeMustAcceptMessageRequestDialogFragment__s_will_get_a_message_request_from_you">%1$s ला तुमच्याकडून एक संदेश विनंती मिळेल. एकदा आपली संदेश विनंती स्वीकारल्यानंतर आपण कॉल करू शकता.</string>
   <!--KBS Megaphone-->
   <string name="KbsMegaphone__create_a_pin">PIN तयार करा.</string>
   <string name="KbsMegaphone__pins_keep_information_thats_stored_with_signal_encrytped">Signal सोबत संचयित केलेली माहिती PIN एन्क्रिप्टेड ठेवतात.</string>
@@ -2912,7 +2958,7 @@
   <!--QualitySelectorBottomSheetDialog-->
   <string name="QualitySelectorBottomSheetDialog__standard">मानक</string>
   <string name="QualitySelectorBottomSheetDialog__faster_less_data">जलद, कमी डेटा</string>
-  <string name="QualitySelectorBottomSheetDialog__high">उंच</string>
+  <string name="QualitySelectorBottomSheetDialog__high">उच्च</string>
   <string name="QualitySelectorBottomSheetDialog__slower_more_data">हळू, अधिक डेटा</string>
   <string name="QualitySelectorBottomSheetDialog__photo_quality">फोटो दर्जा</string>
   <!--AppSettingsFragment-->
@@ -2934,6 +2980,7 @@
   <string name="ChangeNumberEnterPhoneNumberFragment__the_phone_number_you_entered_doesnt_match_your_accounts">आपण प्रविष्ट केलेला फोन नंबर आपल्या खात्याशी जुळत नाही.</string>
   <!--ChangeNumberVerifyFragment-->
   <string name="ChangeNumberVerifyFragment__change_number">फोन नंबर बदला</string>
+  <string name="ChangeNumberVerifyFragment__verifying_s">%1$s सत्यापित करत आहे…</string>
   <!--ChangeNumberConfirmFragment-->
   <string name="ChangeNumberConfirmFragment__change_number">नंबर बदला</string>
   <string name="ChangeNumberConfirmFragment__edit_number">नंबर संपादित करा</string>
@@ -2999,7 +3046,9 @@
   <string name="HelpFragment__licenced_under_the_gplv3">GPLv3 खाली परवानाधारक</string>
   <!--DataAndStorageSettingsFragment-->
   <string name="DataAndStorageSettingsFragment__media_quality">मिडिया दर्जा</string>
-  <string name="DataAndStorageSettingsFragment__high">उंच</string>
+  <string name="DataAndStorageSettingsFragment__sent_media_quality">मिडिया पाठवण्याचा दर्जा</string>
+  <string name="DataAndStorageSettingsFragment__sending_high_quality_media_will_use_more_data">मिडिया पाठवताना उच्च दर्जा हा पर्याय निवडल्यास अधिक डेटा वापरला जाईल.</string>
+  <string name="DataAndStorageSettingsFragment__high">उच्च</string>
   <string name="DataAndStorageSettingsFragment__standard">मानक</string>
   <string name="DataAndStorageSettingsFragment__calls">कॉल</string>
   <!--ChatColorSelectionFragment-->
@@ -3155,6 +3204,7 @@
   <string name="DSLSettingsToolbar__navigate_up">वर नॅव्हिगेट करा</string>
   <string name="MultiselectForwardFragment__forward_to">यांना फॉर्वर्ड करा</string>
   <string name="MultiselectForwardFragment__add_a_message">संदेश जोडा</string>
+  <string name="MultiselectForwardFragment__forwarded_messages_are_now">फॉर्वर्ड केलेले संदेश आत्ता विनाविलंब  पाठवले जातील.</string>
   <plurals name="MultiselectForwardFragment_send_d_messages">
     <item quantity="one">%1$d संदेश पाठवा</item>
     <item quantity="other">%1$d संदेश पाठवा</item>
@@ -3166,6 +3216,10 @@
   <plurals name="MultiselectForwardFragment_messages_failed_to_send">
     <item quantity="one">संदेश पाठवण्यात अयशस्वी</item>
     <item quantity="other">संदेश पाठवण्यात अयशस्वी</item>
+  </plurals>
+  <plurals name="MultiselectForwardFragment__couldnt_forward_messages">
+    <item quantity="one">संदेश फॉर्वर्ड करण्यात अयशस्वी कारण ते आता उपलब्ध नाहीत.</item>
+    <item quantity="other">संदेश फॉर्वर्ड करण्यात अयशस्वी कारण ते आता उपलब्ध नाहीत.</item>
   </plurals>
   <!--Media V2-->
   <string name="MediaReviewFragment__add_a_message">संदेश जोडा</string>
@@ -3184,11 +3238,14 @@
   <string name="MediaReviewSelectedItem__tap_to_select">निवडण्यासाठी टॅप करा</string>
   <string name="MediaReviewImagePageFragment__discard">टाकून द्या</string>
   <string name="MediaReviewImagePageFragment__discard_changes">बदल रद्द करायचे ?</string>
+  <string name="MediaReviewImagePageFragment__youll_lose_any_changes">या फोटोमध्ये केलेले कोणतेही बदल तुम्ही गमावाल.</string>
   <string name="SelectFeaturedBadgeFragment__preview">पुनरावलोकन</string>
   <string name="SubscribeFragment__signal_is_powered_by_people_like_you">Signal आपल्यासारख्या लोकांद्वारा समर्थित आहे.</string>
   <string name="SubscribeFragment__donation_amount">देणगी रक्कम</string>
+  <string name="SubscribeFragment__cancel_subscription">सब्स्क्रिप्शन रद्द करा</string>
   <string name="SubscribeFragment__not_now">आता नाही</string>
   <string name="SubscribeFragment__confirm">पुष्टी करा</string>
+  <string name="SubscribeFragment__your_subscription_has_been_cancelled">तुमचे सब्स्क्रिप्शन रद्द केले</string>
   <string name="SubscribeFragment__update">अद्यतन</string>
   <string name="Subscription__s_per_month">%s/महिना</string>
   <string name="SubscribeThanksForYourSupportBottomSheetDialogFragment__done">ठीक</string>

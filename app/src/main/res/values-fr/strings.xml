@@ -316,16 +316,43 @@
     <item quantity="one">La conversation a été déplacée vers la boîte de réception</item>
     <item quantity="other">%d conversations ont été déplacées vers la boîte de réception</item>
   </plurals>
-  <string name="ConversationListFragment_read">Lu</string>
-  <string name="ConversationListFragment_unread">Non lu</string>
-  <string name="ConversationListFragment_pin">Épingler</string>
-  <string name="ConversationListFragment_unpin">Désépingler</string>
-  <string name="ConversationListFragment_mute">Sourdine</string>
-  <string name="ConversationListFragment_unmute">Réactiver les notifications</string>
+  <plurals name="ConversationListFragment_read_plural">
+    <item quantity="one">Lue</item>
+    <item quantity="other">Lues</item>
+  </plurals>
+  <plurals name="ConversationListFragment_unread_plural">
+    <item quantity="one">Non lue</item>
+    <item quantity="other">Non lues</item>
+  </plurals>
+  <plurals name="ConversationListFragment_pin_plural">
+    <item quantity="one">Épingler</item>
+    <item quantity="other">Épingler</item>
+  </plurals>
+  <plurals name="ConversationListFragment_unpin_plural">
+    <item quantity="one">Désépingler</item>
+    <item quantity="other">Désépingler</item>
+  </plurals>
+  <plurals name="ConversationListFragment_mute_plural">
+    <item quantity="one">Désactiver</item>
+    <item quantity="other">Désactiver</item>
+  </plurals>
+  <plurals name="ConversationListFragment_unmute_plural">
+    <item quantity="one">Réactiver</item>
+    <item quantity="other">Réactiver</item>
+  </plurals>
   <string name="ConversationListFragment_select">Sélectionner</string>
-  <string name="ConversationListFragment_archive">Archiver</string>
-  <string name="ConversationListFragment_unarchive">Désarchiver</string>
-  <string name="ConversationListFragment_delete">Supprimer</string>
+  <plurals name="ConversationListFragment_archive_plural">
+    <item quantity="one">Archiver</item>
+    <item quantity="other">Archiver</item>
+  </plurals>
+  <plurals name="ConversationListFragment_unarchive_plural">
+    <item quantity="one">Désarchiver</item>
+    <item quantity="other">Désarchiver</item>
+  </plurals>
+  <plurals name="ConversationListFragment_delete_plural">
+    <item quantity="one">Supprimer</item>
+    <item quantity="other">Supprimer</item>
+  </plurals>
   <string name="ConversationListFragment_select_all">Tout sélectionner</string>
   <plurals name="ConversationListFragment_s_selected">
     <item quantity="one">%d sélectionnée</item>
@@ -706,7 +733,7 @@
   <string name="ShareableGroupLinkDialogFragment__share">Partager</string>
   <string name="ShareableGroupLinkDialogFragment__reset_link">Réinitialiser le lien</string>
   <string name="ShareableGroupLinkDialogFragment__member_requests">Demandes de membres</string>
-  <string name="ShareableGroupLinkDialogFragment__approve_new_members">Approuver de nouveaux membres</string>
+  <string name="ShareableGroupLinkDialogFragment__approve_new_members">Approuver les nouveaux membres</string>
   <string name="ShareableGroupLinkDialogFragment__require_an_admin_to_approve_new_members_joining_via_the_group_link">Exiger qu’un administrateur approuve les nouveaux membres qui se joignent grâce au lien du groupe.</string>
   <string name="ShareableGroupLinkDialogFragment__are_you_sure_you_want_to_reset_the_group_link">Voulez-vous vraiment réinitialiser le lien du groupe ? Personne ne pourra plus se joindre au groupe grâce au lien actuel.</string>
   <!--GroupLinkShareQrDialogFragment-->
@@ -811,9 +838,19 @@
   <string name="MediaOverviewActivity_Grid_view_description">Vue en grille</string>
   <string name="MediaOverviewActivity_List_view_description">Vue en liste</string>
   <string name="MediaOverviewActivity_Selected_description">Sélectionné</string>
-  <string name="MediaOverviewActivity_save">Enregistrer</string>
   <string name="MediaOverviewActivity_select_all">Tout sélectionner</string>
-  <string name="MediaOverviewActivity_delete">Supprimer</string>
+  <plurals name="MediaOverviewActivity_save_plural">
+    <item quantity="one">Enregistré</item>
+    <item quantity="other">Enregistrés</item>
+  </plurals>
+  <plurals name="MediaOverviewActivity_delete_plural">
+    <item quantity="one">Supprimé</item>
+    <item quantity="other">Supprimés</item>
+  </plurals>
+  <plurals name="MediaOverviewActivity_d_selected_s">
+    <item quantity="one">%1$d sélectionnée (%2$s)</item>
+    <item quantity="other">%1$d sélectionnées (%2$s)</item>
+  </plurals>
   <string name="MediaOverviewActivity_file">Fichier</string>
   <string name="MediaOverviewActivity_audio">Son</string>
   <string name="MediaOverviewActivity_video">Vidéo</string>
@@ -911,7 +948,7 @@
     <item quantity="other">%1$s membres n’ont pas pu être ajoutés au Nouveau groupe et ont été supprimé du groupe.</item>
   </plurals>
   <!--Profile change updates-->
-  <string name="MessageRecord_changed_their_profile_name_to">%1$s a changé son nom de profil à %2$s.</string>
+  <string name="MessageRecord_changed_their_profile_name_to">%1$s a changé son nom de profil en %2$s.</string>
   <string name="MessageRecord_changed_their_profile_name_from_to">%1$s a changé son nom de profil de %2$s à %3$s.</string>
   <string name="MessageRecord_changed_their_profile">%1$s a changé son profil.</string>
   <!--GV2 specific-->
@@ -1313,8 +1350,8 @@
   <string name="RegistrationActivity_next">Suivant</string>
   <string name="RegistrationActivity_continue">Poursuivre</string>
   <string name="RegistrationActivity_take_privacy_with_you_be_yourself_in_every_message">La confidentialité dans votre poche.\nPour que chaque message reflète qui vous êtes.</string>
-  <string name="RegistrationActivity_enter_your_phone_number_to_get_started">Saisissez votre numéro de téléphone pour commencer</string>
-  <string name="RegistrationActivity_enter_your_phone_number">Saisissez votre numéro de téléphone</string>
+  <string name="RegistrationActivity_enter_your_phone_number_to_get_started">Saisir votre numéro de téléphone pour commencer</string>
+  <string name="RegistrationActivity_enter_your_phone_number">Saisir votre numéro de téléphone</string>
   <string name="RegistrationActivity_you_will_receive_a_verification_code">Vous recevrez un code de confirmation. Les frais de l’opérateur peuvent s’appliquer.</string>
   <string name="RegistrationActivity_enter_the_code_we_sent_to_s">Saisissez le code que nous avons envoyé au %s</string>
   <string name="RegistrationActivity_make_sure_your_phone_has_a_cellular_signal">Afin de recevoir un texto ou un appel, assurez-vous que votre téléphone est connecté au réseau cellulaire</string>
@@ -1895,6 +1932,16 @@
   <string name="HelpFragment__debug_log">Journal de débogage :</string>
   <string name="HelpFragment__could_not_upload_logs">Impossible de téléverser les journaux</string>
   <string name="HelpFragment__please_be_as_descriptive_as_possible">Veuillez nous donner autant de détails que possible, afin de nous aider à comprendre la situation.</string>
+  <string-array name="HelpFragment__categories_2">
+    <item>-- Veuillez sélectionner une option --</item>
+    <item>Quelque chose ne fonctionne pas</item>
+    <item>Proposition de fonction</item>
+    <item>Question</item>
+    <item>Rétroaction</item>
+    <item>Autre</item>
+    <item>Paiements (MobileCoin)</item>
+    <item>Dons (pourvoyeurs &amp; et Boost Signal)</item>
+  </string-array>
   <!--ReactWithAnyEmojiBottomSheetDialogFragment-->
   <string name="ReactWithAnyEmojiBottomSheetDialogFragment__this_message">Ce message</string>
   <string name="ReactWithAnyEmojiBottomSheetDialogFragment__recently_used">Utilisés récemment</string>
@@ -2769,7 +2816,7 @@
   <string name="CallParticipant__s_on_another_device">%1$s (sur un autre appareil)</string>
   <!--DeleteAccountFragment-->
   <string name="DeleteAccountFragment__deleting_your_account_will">Supprimer votre compte implique :</string>
-  <string name="DeleteAccountFragment__enter_your_phone_number">Saisissez votre numéro de téléphone</string>
+  <string name="DeleteAccountFragment__enter_your_phone_number">Saisir votre numéro de téléphone</string>
   <string name="DeleteAccountFragment__delete_account">Supprimer le compte</string>
   <string name="DeleteAccountFragment__delete_your_account_info_and_profile_photo">Supprimer les renseignements de votre compte et votre photo de profil</string>
   <string name="DeleteAccountFragment__delete_all_your_messages">Supprimer tous vos messages</string>
@@ -3269,6 +3316,7 @@ Nouvelle tentative…</string>
   <string name="SubscribeFragment__you_will_be_charged_the_full_amount">Le montant total du prix du nouvel abonnement vous sera facturé aujourd’hui. Votre abonnement sera renouvelé %1$s.</string>
   <string name="Subscription__s_per_month">%s/mois</string>
   <string name="Subscription__s_per_month_dot_renews_s">%1$s/mois · Renouvellement %2$s</string>
+  <string name="Subscription__s_per_month_dot_expires_s">%1$s/mois · Expire %2$s </string>
   <string name="SubscribeLearnMoreBottomSheetDialogFragment__signal_is_a_non_profit_with_no">Signal est une fondation à but non lucratif sans annonceurs ni investisseurs, soutenue uniquement par les gens qui l\'utilisent et l\'apprécient. Faites un don mensuel récurrent et recevez un badge de profil pour afficher votre soutien.</string>
   <string name="SubscribeLearnMoreBottomSheetDialogFragment__why_contribute">Pourquoi contribuer ?</string>
   <string name="SubscribeLearnMoreBottomSheetDialogFragment__the_team_at_signal_is_committed">L\'équipe de Signal est dévouée à la mission de développement de technologies de protection des renseignements personnels à code source ouvert, qui protègent la liberté d\'expression et rendent possible une communication sécurisée au niveau mondial. Votre don soutien cette cause. Sans pubs. Sans traçage. Sans déconner.</string>
@@ -3304,6 +3352,7 @@ Nouvelle tentative…</string>
   <string name="SubscribeFragment__processing_payment">Traitement du paiement…</string>
   <string name="DonationsErrors__payment_failed">Échec de paiement</string>
   <string name="DonationsErrors__your_payment">Votre paiement n’a pas pu être traité et vous n’avez pas été débité. Veuillez réessayer.</string>
+  <string name="DonationsErrors__redemption_still_pending">Récupération encore en cours</string>
   <string name="DonationsErrors__you_might_not_see_your_badge_right_away">Vous ne verrez peut-être pas votre badge tout de suite, mais nous y travaillons !</string>
   <string name="DonationsErrors__google_pay_unavailable">Google Pay indisponible</string>
   <string name="DonationsErrors__you_have_to_set_up_google_pay_to_donate_in_app">Vous devez configurer Google Pay pour faire un don dans l’application.</string>

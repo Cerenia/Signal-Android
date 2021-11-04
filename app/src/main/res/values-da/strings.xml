@@ -170,7 +170,7 @@
   <string name="ConversationItem_received_key_exchange_message_tap_to_process">Nøgleudvekslingsbesked modtaget. Tryk for at fortsætte.</string>
   <string name="ConversationItem_group_action_left">%1$s har forladt gruppen.</string>
   <string name="ConversationItem_send_paused">Afsendelse sat på pause</string>
-  <string name="ConversationItem_click_to_approve_unencrypted">Fejl ved afsendelse, tryk for at sende usikret SMS</string>
+  <string name="ConversationItem_click_to_approve_unencrypted">Fejl ved afsendelse. Tryk for at sende usikret SMS</string>
   <string name="ConversationItem_click_to_approve_unencrypted_sms_dialog_title">Benyt ukrypteret SMS?</string>
   <string name="ConversationItem_click_to_approve_unencrypted_mms_dialog_title">Benyt ukrypteret MMS?</string>
   <string name="ConversationItem_click_to_approve_unencrypted_dialog_message">Denne besked vil <b>ikke</b> blive krypteret, da modtageren ikke længere bruger Signal.\n\nSend usikret besked?</string>
@@ -316,16 +316,43 @@
     <item quantity="one">Samtale flyttet til inbox</item>
     <item quantity="other">Flyttet %d samtaler til indbakke</item>
   </plurals>
-  <string name="ConversationListFragment_read">Læst</string>
-  <string name="ConversationListFragment_unread">Ulæst</string>
-  <string name="ConversationListFragment_pin">Fastgør</string>
-  <string name="ConversationListFragment_unpin">Frigør</string>
-  <string name="ConversationListFragment_mute">Ignorer</string>
-  <string name="ConversationListFragment_unmute">Ignorer ikke længere</string>
+  <plurals name="ConversationListFragment_read_plural">
+    <item quantity="one">Læst</item>
+    <item quantity="other">Læste</item>
+  </plurals>
+  <plurals name="ConversationListFragment_unread_plural">
+    <item quantity="one">Ulæst</item>
+    <item quantity="other">Ulæste</item>
+  </plurals>
+  <plurals name="ConversationListFragment_pin_plural">
+    <item quantity="one">Fastgør</item>
+    <item quantity="other">Fastgør</item>
+  </plurals>
+  <plurals name="ConversationListFragment_unpin_plural">
+    <item quantity="one">Frigør</item>
+    <item quantity="other">Frigør</item>
+  </plurals>
+  <plurals name="ConversationListFragment_mute_plural">
+    <item quantity="one">Ignorer</item>
+    <item quantity="other">Ignorer</item>
+  </plurals>
+  <plurals name="ConversationListFragment_unmute_plural">
+    <item quantity="one">Ignorer ikke</item>
+    <item quantity="other">Ignorer ikke</item>
+  </plurals>
   <string name="ConversationListFragment_select">Vælg</string>
-  <string name="ConversationListFragment_archive">Arkivér</string>
-  <string name="ConversationListFragment_unarchive">Ophæv arkivering</string>
-  <string name="ConversationListFragment_delete">Slet</string>
+  <plurals name="ConversationListFragment_archive_plural">
+    <item quantity="one">Arkiver</item>
+    <item quantity="other">Arkiver</item>
+  </plurals>
+  <plurals name="ConversationListFragment_unarchive_plural">
+    <item quantity="one">Ophæv arkivering</item>
+    <item quantity="other">Ophæv arkivering</item>
+  </plurals>
+  <plurals name="ConversationListFragment_delete_plural">
+    <item quantity="one">Slet</item>
+    <item quantity="other">Slet</item>
+  </plurals>
   <string name="ConversationListFragment_select_all">Vælg alle</string>
   <plurals name="ConversationListFragment_s_selected">
     <item quantity="one">%d valgt</item>
@@ -372,7 +399,7 @@
   <string name="BackupsPreferenceFragment__test_your_backup_passphrase">Test dit kodeord for backup og bekræft, at det matcher</string>
   <string name="BackupsPreferenceFragment__turn_on">Aktiver</string>
   <string name="BackupsPreferenceFragment__turn_off">Deaktiver</string>
-  <string name="BackupsPreferenceFragment__to_restore_a_backup">For at gendanne fra backup, skal du installere Signal igen. Åbn appen og tryk \"Gendan backup\", vælg derefter en backup-fil. %1$s</string>
+  <string name="BackupsPreferenceFragment__to_restore_a_backup">For at gendanne fra backup skal du installere Signal igen. Åbn appen og tryk på \"Gendan backup.\" Vælg derefter en backup-fil. %1$s</string>
   <string name="BackupsPreferenceFragment__learn_more">Læs mere</string>
   <string name="BackupsPreferenceFragment__in_progress">I gang…</string>
   <string name="BackupsPreferenceFragment__d_so_far">%1$d indtil videre…</string>
@@ -811,9 +838,15 @@
   <string name="MediaOverviewActivity_Grid_view_description">Gittervisning</string>
   <string name="MediaOverviewActivity_List_view_description">Listevisning</string>
   <string name="MediaOverviewActivity_Selected_description">Valgte</string>
-  <string name="MediaOverviewActivity_save">Gem</string>
   <string name="MediaOverviewActivity_select_all">Vælg alle</string>
-  <string name="MediaOverviewActivity_delete">Slet</string>
+  <plurals name="MediaOverviewActivity_save_plural">
+    <item quantity="one">Gem</item>
+    <item quantity="other">Gem</item>
+  </plurals>
+  <plurals name="MediaOverviewActivity_delete_plural">
+    <item quantity="one">Slet</item>
+    <item quantity="other">Slet</item>
+  </plurals>
   <plurals name="MediaOverviewActivity_d_selected_s">
     <item quantity="one">%1$d valgt (%2$s)</item>
     <item quantity="other">%1$d valgte (%2$s)</item>
@@ -868,11 +901,11 @@
   <string name="MediaSendActivity_an_item_was_removed_because_it_exceeded_the_size_limit">Et element blev fjernet, fordi det oversteg max. grænsen</string>
   <string name="MediaSendActivity_an_item_was_removed_because_it_had_an_unknown_type">Et element blev fjernet, fordi det havde en ukendt type</string>
   <string name="MediaSendActivity_an_item_was_removed_because_it_exceeded_the_size_limit_or_had_an_unknown_type">Et element blev fjernet, fordi det overskred størrelsesgrænsen eller havde en ukendt type</string>
-  <string name="MediaSendActivity_camera_unavailable">Kameraet er ikke tilgængeligt.</string>
+  <string name="MediaSendActivity_camera_unavailable">Kamera er ikke tilgængeligt.</string>
   <string name="MediaSendActivity_message_to_s">Besked til %s</string>
   <string name="MediaSendActivity_message">Besked</string>
   <string name="MediaSendActivity_select_recipients">Vælg modtagere</string>
-  <string name="MediaSendActivity_signal_needs_access_to_your_contacts">Signal kræver tilladelse til at tilgå dine kontakter, for at kunne vise dem</string>
+  <string name="MediaSendActivity_signal_needs_access_to_your_contacts">Signal kræver tilladelse til at tilgå dine kontakter for at kunne vise dem.</string>
   <string name="MediaSendActivity_signal_needs_contacts_permission_in_order_to_show_your_contacts_but_it_has_been_permanently_denied">Signal kræver tilladelse til at tilgå dine kontakter, hvilket er blevet nægtet. Gå venligst til appindstillinger, vælg \"Tilladelser\" og tilvælg \"Kontakter\".</string>
   <plurals name="MediaSendActivity_cant_share_more_than_n_items">
     <item quantity="one">Du kan ikke dele flere end %d fil.</item>
@@ -926,7 +959,7 @@
   <string name="MessageRecord_you_added_s">Du tilføjede %1$s.</string>
   <string name="MessageRecord_s_added_s">%1$s tilføjede %2$s</string>
   <string name="MessageRecord_s_added_you">%1$s tilføjede dig til gruppen</string>
-  <string name="MessageRecord_you_joined_the_group">Du er medlem af gruppen.</string>
+  <string name="MessageRecord_you_joined_the_group">Du tilmeldte dig gruppen.</string>
   <string name="MessageRecord_s_joined_the_group">%1$s tilsluttede sig gruppen.</string>
   <!--GV2 member removals-->
   <string name="MessageRecord_you_removed_s">Du fjernede %1$s.</string>
@@ -1864,7 +1897,7 @@ nummer (%s) er ugyldigt</string>
   <string name="message_details_header__issues_need_your_attention">Nogle ting kræver din opmærksomhed</string>
   <string name="message_details_header__sent">Sendt:</string>
   <string name="message_details_header__received">Modtaget:</string>
-  <string name="message_details_header__disappears">Forsvinder:</string>
+  <string name="message_details_header__disappears">Forsvinder om:</string>
   <string name="message_details_header__via">Via:</string>
   <!--message_details_recipient_header-->
   <string name="message_details_recipient_header__pending_send">Afventer</string>
@@ -2376,7 +2409,7 @@ nummer (%s) er ugyldigt</string>
   <string name="InsightsDashboardFragment__your_insights_percentage_is_calculated_based_on">Procentværdien for din indsigt er beregnet ud fra antallet af sendte beskeder, der de seneste %1$d dage ikke er udløbet eller blevet slettet</string>
   <string name="InsightsDashboardFragment__start_a_conversation">Start en samtale</string>
   <string name="InsightsDashboardFragment__invite_your_contacts">Begynd at kommunikere sikkert og aktiver nye funktioner, der ikke har samme begrænsninger som ukrypterede SMS-beskeder, ved at invitere flere kontakter til at bruge Signal.</string>
-  <string name="InsightsDashboardFragment__this_stat_was_generated_locally">Disse statistikker blev genereret lokalt på din enhed, og kan kun ses af dig. De bliver ikke videredelt.</string>
+  <string name="InsightsDashboardFragment__this_stat_was_generated_locally">Disse statistikker blev genereret lokalt på din enhed og kan kun ses af dig. De bliver aldrig sendt nogen steder hen.</string>
   <string name="InsightsDashboardFragment__encrypted_messages">Krypterede beskeder</string>
   <string name="InsightsDashboardFragment__cancel">Annuller</string>
   <string name="InsightsDashboardFragment__send">Send</string>
@@ -2630,7 +2663,7 @@ nummer (%s) er ugyldigt</string>
   <string name="DeviceTransferSetup__retry">Prøv igen</string>
   <string name="DeviceTransferSetup__submit_debug_logs">Indsend fejlsøgningslogger</string>
   <string name="DeviceTransferSetup__verify_code">Bekræft kode</string>
-  <string name="DeviceTransferSetup__verify_that_the_code_below_matches_on_both_of_your_devices">Bekræft, at nedenstående kode matcher på begge dine enheder. Tryk derefter på Fortsæt.</string>
+  <string name="DeviceTransferSetup__verify_that_the_code_below_matches_on_both_of_your_devices">Kontroller, at koden nedenfor er den samme på begge jeres enheder. Tryk derefter på Fortsæt.</string>
   <string name="DeviceTransferSetup__the_numbers_do_not_match">Numrene stemmer ikke overens</string>
   <string name="DeviceTransferSetup__continue">Fortsæt</string>
   <string name="DeviceTransferSetup__number_is_not_the_same">Nummeret er ikke det samme</string>
@@ -3021,7 +3054,7 @@ nummer (%s) er ugyldigt</string>
   <string name="PrivacySettingsFragment__block_screenshots_in_the_recents_list_and_inside_the_app">Blokér skærmbilleder i listen \"Seneste apps\" og i Signal</string>
   <string name="PrivacySettingsFragment__signal_message_and_calls">Signal-beskeder og opkald, videresend altid opkald og forseglet afsender</string>
   <string name="PrivacySettingsFragment__default_timer_for_new_changes">Standardtimer for nye chats</string>
-  <string name="PrivacySettingsFragment__set_a_default_disappearing_message_timer_for_all_new_chats_started_by_you">Indstil en timer for forsvindende beskeder der skal gælde som standard for alle nye chats, du starter.</string>
+  <string name="PrivacySettingsFragment__set_a_default_disappearing_message_timer_for_all_new_chats_started_by_you">Indstil en timer for forsvindende beskeder, der skal gælde som standard for alle nye chats startet af dig.</string>
   <!--AdvancedPrivacySettingsFragment-->
   <string name="AdvancedPrivacySettingsFragment__show_status_icon">Vis statusikon</string>
   <string name="AdvancedPrivacySettingsFragment__show_an_icon">Vis et ikon i beskedoplysninger, når de blev leveret ved hjælp af forseglet afsender.</string>

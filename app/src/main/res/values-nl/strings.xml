@@ -74,8 +74,7 @@
   <!--BlockedUsersActivity-->
   <string name="BlockedUsersActivity__blocked_users">Geblokkeerde personen</string>
   <string name="BlockedUsersActivity__add_blocked_user">Contactpersoon aan blokkeerlijst toevoegen</string>
-  <string name="BlockedUsersActivity__blocked_users_will">Geblokkeerde personen kunnen nergens aan zien dat ze geblokkeerd zijn; ze lijken je nog steeds te kunnen bellen, berichten lijken nog steeds te worden afgeleverd en je profielfoto verdwijnt niet. Je zult hun oproepen en berichten echter niet zien.
-</string>
+  <string name="BlockedUsersActivity__blocked_users_will">Geblokkeerde personen kunnen niet zien dat ze geblokkeerd zijn: het lijkt voor hen alsof je telefoon over gaat, en alsof berichten worden afgeleverd. Je huidige profielnaam en -foto blijven voor geblokkeerde personen zichtbaar maar worden niet bijgewerkt als je een nieuwe foto of naam instelt.</string>
   <string name="BlockedUsersActivity__no_blocked_users">Je hebt geen personen geblokkeerd</string>
   <string name="BlockedUsersActivity__block_user">Persoon blokkeren?</string>
   <string name="BlockedUserActivity__s_will_not_be_able_to">“%1$s” kan jou nog steeds bellen of berichten sturen en weet dus niet dat hij of zijn geblokkeerd is, maar je zult die oproepen en berichten niet zien.</string>
@@ -90,7 +89,7 @@
   <string name="BlockUnblockDialog_group_members_wont_be_able_to_add_you">Groepsleden zullen je niet langer aan deze groep kunnen toevoegen.</string>
   <string name="BlockUnblockDialog_group_members_will_be_able_to_add_you">Groepsleden zullen je weer aan deze groep kunnen toevoegen.</string>
   <string name="BlockUnblockDialog_you_will_be_able_to_call_and_message_each_other">Jullie zullen weer berichten naar elkaar kunnen verzenden, kunnen bellen, en je profielnaam, -foto en -omschrijving zullen voor hem of haar weer worden bijgewerkt.</string>
-  <string name="BlockUnblockDialog_blocked_people_wont_be_able_to_call_you_or_send_you_messages">Geblokkeerde personen kunnen nergens aan zien dat ze geblokkeerd zijn; ze lijken je nog steeds te kunnen bellen, berichten lijken nog steeds te worden afgeleverd en je profielfoto verdwijnt niet. Je zult hun oproepen en berichten echter niet zien.</string>
+  <string name="BlockUnblockDialog_blocked_people_wont_be_able_to_call_you_or_send_you_messages">Geblokkeerde personen kunnen niet zien dat ze geblokkeerd zijn: het lijkt voor hen alsof je telefoon over gaat en alsof berichten worden afgeleverd. Je huidige profielnaam en -foto blijven voor geblokkeerde personen zichtbaar maar worden ze niet bijgewerkt als je een nieuwe foto of naam instelt.</string>
   <string name="BlockUnblockDialog_unblock_s">%1$s deblokkeren?</string>
   <string name="BlockUnblockDialog_block">Blokkeren</string>
   <string name="BlockUnblockDialog_block_and_leave">Blokkeren en verlaten</string>
@@ -288,7 +287,7 @@
   <string name="ConversationFragment_you_can_swipe_to_the_left_reply">Je kunt elk bericht naar links vegen om snel een reactie te schijven</string>
   <string name="ConversationFragment_outgoing_view_once_media_files_are_automatically_removed">Uitgaande eenmaligeweergave-media worden onmiddellijk gewist zodra ze zijn verzonden. Je kunt je eigen media dus niet terugzien. — Gebruik eenmaligeweergave-berichten niet ter beveiliging, want Signal kan niet garanderen dat een bericht op het apparaat van een ander daadwerkelijk wordt gewist.</string>
   <string name="ConversationFragment_you_already_viewed_this_message">Je hebt dit eenmaligeweergave-bericht al weergegeven</string>
-  <string name="ConversationFragment__you_can_add_notes_for_yourself_in_this_conversation">Je kunt in dit speciale gesprek notities voor jezelf achterlaten.\nAls je de Signal app op een ander apparaat gekoppeld hebt, dan worden alle notities van na het moment van koppelen gesynchroniseerd. Je kunt dus notities toevoegen en teruglezen vanaf al je gekoppelde apparaten.</string>
+  <string name="ConversationFragment__you_can_add_notes_for_yourself_in_this_conversation">Je kunt in dit speciale gesprek notities voor jezelf achterlaten.\nEn als je gebruik maakt van gekoppelde apparaten, dan zullen noties vanaf het moment van koppelen worden gesynchroniseerd. Je kunt dus notities toevoegen en teruglezen vanaf al je gekoppelde apparaten.</string>
   <string name="ConversationFragment__d_group_members_have_the_same_name">%1$d groepsleden hebben dezelfde naam.</string>
   <string name="ConversationFragment__tap_to_review">Tik hier om ze te vergelijken</string>
   <string name="ConversationFragment__review_requests_carefully">Overweeg dit gespreksverzoek zorgvuldig:</string>
@@ -317,16 +316,43 @@
     <item quantity="one">Gesprek naar postvak IN verplaatst</item>
     <item quantity="other"> %d gesprekken naar postvak IN verplaatst</item>
   </plurals>
-  <string name="ConversationListFragment_read">Gelezen</string>
-  <string name="ConversationListFragment_unread">Voor mij markeren als ongelezen</string>
-  <string name="ConversationListFragment_pin">Vastprikken</string>
-  <string name="ConversationListFragment_unpin">Maak los</string>
-  <string name="ConversationListFragment_mute">Dempen</string>
-  <string name="ConversationListFragment_unmute">Niet langer dempen</string>
+  <plurals name="ConversationListFragment_read_plural">
+    <item quantity="one">Gelezen</item>
+    <item quantity="other">Gelezen</item>
+  </plurals>
+  <plurals name="ConversationListFragment_unread_plural">
+    <item quantity="one">Ongelezen</item>
+    <item quantity="other">Ongelezen</item>
+  </plurals>
+  <plurals name="ConversationListFragment_pin_plural">
+    <item quantity="one">Vastprikken</item>
+    <item quantity="other">Vastprikken</item>
+  </plurals>
+  <plurals name="ConversationListFragment_unpin_plural">
+    <item quantity="one">Losmaken</item>
+    <item quantity="other">Losmaken</item>
+  </plurals>
+  <plurals name="ConversationListFragment_mute_plural">
+    <item quantity="one">Meldingen dempen</item>
+    <item quantity="other">Meldingen dempen</item>
+  </plurals>
+  <plurals name="ConversationListFragment_unmute_plural">
+    <item quantity="one">Meldingen niet langer dempen</item>
+    <item quantity="other">Meldingen niet langer dempen</item>
+  </plurals>
   <string name="ConversationListFragment_select">Selecteren</string>
-  <string name="ConversationListFragment_archive">Gesprek archiveren</string>
-  <string name="ConversationListFragment_unarchive">Dearchiveren</string>
-  <string name="ConversationListFragment_delete">Gesprek wissen</string>
+  <plurals name="ConversationListFragment_archive_plural">
+    <item quantity="one">Archiveren</item>
+    <item quantity="other">Archiveren</item>
+  </plurals>
+  <plurals name="ConversationListFragment_unarchive_plural">
+    <item quantity="one">Dearchiveren</item>
+    <item quantity="other">Dearchiveren</item>
+  </plurals>
+  <plurals name="ConversationListFragment_delete_plural">
+    <item quantity="one">Wissen</item>
+    <item quantity="other">Wissen</item>
+  </plurals>
   <string name="ConversationListFragment_select_all">Alles selecteren</string>
   <plurals name="ConversationListFragment_s_selected">
     <item quantity="one">%d geselecteerd</item>
@@ -370,7 +396,7 @@
   <string name="BackupsPreferenceFragment__last_backup">Meest recente back-upbestand: %1$s</string>
   <string name="BackupsPreferenceFragment__backup_folder">Back-updirectory</string>
   <string name="BackupsPreferenceFragment__verify_backup_passphrase">Back-upwachtwoord verifiëren</string>
-  <string name="BackupsPreferenceFragment__test_your_backup_passphrase">Test je back-upwachtwoord om na te gaan of je het juiste wachtwoord onthouden hebt</string>
+  <string name="BackupsPreferenceFragment__test_your_backup_passphrase">Test je back-upwachtwoord om na te gaan of je het juiste wachtwoord hebt onthouden</string>
   <string name="BackupsPreferenceFragment__turn_on">Inschakelen</string>
   <string name="BackupsPreferenceFragment__turn_off">Uitschakelen</string>
   <string name="BackupsPreferenceFragment__to_restore_a_backup">Om je gegevens uit een bestaand back-upbestand terug te plaatsen moet je Signal opnieuw installeren. Open dan de net geïnstalleerde Signal app en tik op “Back-upgegevens terugzetten”. %1$s</string>
@@ -813,9 +839,16 @@
   <string name="MediaOverviewActivity_Grid_view_description">Rasterweergave</string>
   <string name="MediaOverviewActivity_List_view_description">Lijstweergave</string>
   <string name="MediaOverviewActivity_Selected_description">Geselecteerd</string>
-  <string name="MediaOverviewActivity_save">Opslaan</string>
   <string name="MediaOverviewActivity_select_all">Alles selecteren</string>
-  <string name="MediaOverviewActivity_delete">Gesprek wissen</string>
+  <plurals name="MediaOverviewActivity_save_plural">
+    <item quantity="one">Onversleuteld opslaan
+</item>
+    <item quantity="other">Onversleuteld opslaan</item>
+  </plurals>
+  <plurals name="MediaOverviewActivity_delete_plural">
+    <item quantity="one">Wissen</item>
+    <item quantity="other">Wissen</item>
+  </plurals>
   <plurals name="MediaOverviewActivity_d_selected_s">
     <item quantity="one">%1$d geselecteerd (%2$s)</item>
     <item quantity="other">%1$d geselecteerd (%2$s)</item>
@@ -1362,7 +1395,7 @@ Tot slot moet Signal de telefoonstatus kunnen lezen om te voorkomen dat Signal-o
   <string name="SharedContactView_invite_to_signal">Uitnodigen voor Signal</string>
   <string name="SharedContactView_message">Signal-gesprek openen</string>
   <!--SignalBottomActionBar-->
-  <string name="SignalBottomActionBar_more">Meer opties weergeven</string>
+  <string name="SignalBottomActionBar_more">Meer opties</string>
   <!--SignalPinReminders-->
   <string name="SignalPinReminders_well_remind_you_again_later">Correct! Signal zal je later opnieuw vragen of je je pincode nog weet.</string>
   <string name="SignalPinReminders_well_remind_you_again_tomorrow">Correct! Signal zal je morgen opnieuw vragen of je je pincode nog weet.</string>
@@ -3134,7 +3167,7 @@ Tot slot moet Signal de telefoonstatus kunnen lezen om te voorkomen dat Signal-o
   <string name="ConversationSettingsFragment__video">Video-oproep</string>
   <string name="ConversationSettingsFragment__audio">Audio-oproep</string>
   <string name="ConversationSettingsFragment__call">Bellen</string>
-  <string name="ConversationSettingsFragment__mute">Dempen</string>
+  <string name="ConversationSettingsFragment__mute">Meldingen dempen</string>
   <string name="ConversationSettingsFragment__muted">Gedempt</string>
   <string name="ConversationSettingsFragment__search">Zoeken</string>
   <string name="ConversationSettingsFragment__disappearing_messages">Verlopende berichten</string>
@@ -3153,7 +3186,7 @@ Tot slot moet Signal de telefoonstatus kunnen lezen om te voorkomen dat Signal-o
   <string name="ConversationSettingsFragment__group_link">Groepsverwijzing voor deze groep</string>
   <string name="ConversationSettingsFragment__add_as_a_contact">Als contactpersoon toevoegen</string>
   <string name="ConversationSettingsFragment__unmute">Niet langer dempen</string>
-  <string name="ConversationSettingsFragment__conversation_muted_until_s">Gesprek dedempt tot %1$s</string>
+  <string name="ConversationSettingsFragment__conversation_muted_until_s">Gesprek gedempt tot %1$s</string>
   <string name="ConversationSettingsFragment__conversation_muted_forever">Gesprek voor onbepaalde tijd gedempt</string>
   <string name="ConversationSettingsFragment__copied_phone_number_to_clipboard">Telefoonnummer naar klembord gekopieerd.</string>
   <string name="ConversationSettingsFragment__phone_number">Telefoonnummer</string>
