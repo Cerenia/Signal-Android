@@ -1063,11 +1063,23 @@ public class ConversationParentFragment extends Fragment
         break;
       case TRUSTED_INTRODUCTION:
         Optional<IdentityRecord> recipientRecord = ApplicationDependencies.getIdentityStore().getIdentityRecord(recipient.getId());
-        if (recipientRecord.isPresent() && VerifiedStatus.tiUnlocked(recipientRecord.get().getVerifiedStatus())){
-          AttachmentManager.selectTI(this, recipient.getId());
+        CanNotIntroduceDialog.ConversationType conversationType;
+        if (!isSecureText){
+          conversationType = CanNotIntroduceDialog.ConversationType.SMS;
+        } else if (!isSingleConversation()){
+          // Dialogue for Group (at some point this can be implemented)
+          conversationType = CanNotIntroduceDialog.ConversationType.GROUP;
+        } else if (!(recipientRecord.isPresent() && VerifiedStatus.tiUnlocked(recipientRecord.get().getVerifiedStatus()))){
+          // Uverified signal contact
+          // Guarenteed to have a recipient Record at this point and be unverified
+          conversationType = CanNotIntroduceDialog.ConversationType.SINGLE_SECURE_TEXT;
         } else {
-          CanNotIntroduceDialog.show(this, recipientRecord.get());
+          // TI allowed
+          AttachmentManager.selectTI(this, recipient.getId());
+          return;
         }
+        // For any unsupported TI, show the dialogue
+        CanNotIntroduceDialog.show(this, recipientRecord.isPresent() ? recipientRecord.get() : null, conversationType);
     }
 
     container.hideCurrentInput(composeText);
