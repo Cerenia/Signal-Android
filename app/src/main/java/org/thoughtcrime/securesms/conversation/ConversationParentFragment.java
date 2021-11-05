@@ -2029,13 +2029,8 @@ public class ConversationParentFragment extends Fragment
   }
 
   private void filterAttachmentKeyboardStub(boolean noPayment){
-    boolean noTrustedIntro = !isSecureText || !isSingleConversation();
-    if (noPayment && noTrustedIntro){
-      attachmentKeyboardStub.get().filterAttachmentKeyboardButtons(btn -> btn != AttachmentKeyboardButton.TRUSTED_INTRODUCTION && btn != AttachmentKeyboardButton.PAYMENT);
-    } else if (noPayment){
+   if (noPayment){
       attachmentKeyboardStub.get().filterAttachmentKeyboardButtons(btn -> btn != AttachmentKeyboardButton.PAYMENT);
-    } else if (noTrustedIntro){
-      attachmentKeyboardStub.get().filterAttachmentKeyboardButtons(btn -> btn != AttachmentKeyboardButton.TRUSTED_INTRODUCTION);
     } else {
       attachmentKeyboardStub.get().filterAttachmentKeyboardButtons(null);
     }
