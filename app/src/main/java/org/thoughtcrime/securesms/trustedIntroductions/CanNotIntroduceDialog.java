@@ -24,7 +24,7 @@ public final class CanNotIntroduceDialog {
         GROUP,
         SINGLE_SECURE_TEXT;
 
-        private static void setNegativeButtonNotSupported(AlertDialog.Builder b){
+        static void setNegativeButtonNotSupported(AlertDialog.Builder b){
             b.setNegativeButton(android.R.string.ok, (dialog, which) -> dialog.dismiss());
         }
     }
@@ -58,7 +58,6 @@ public final class CanNotIntroduceDialog {
                                 Toast.makeText(context, R.string.CanNotIntroduceDialog__Identity_record_empty, Toast.LENGTH_LONG).show();
                             }
                         });
-
         }
         builder.show();
     }
