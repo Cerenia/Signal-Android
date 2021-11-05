@@ -72,7 +72,6 @@ public class IdentityDatabase extends Database {
    * A user can always manually reset the trust to be unverified.
    * @see ... Verif
    *
-   *
    */
   public enum VerifiedStatus {
     DEFAULT, DIRECTLY_VERIFIED, INTRODUCED, DUPLEX_VERIFIED, MANUALLY_VERIFIED, UNVERIFIED;
@@ -131,6 +130,20 @@ public class IdentityDatabase extends Database {
       switch (verifiedStatus) {
         case DIRECTLY_VERIFIED:
         case DUPLEX_VERIFIED:
+          return true;
+        default:
+          return false;
+      }
+    }
+
+    /**
+     * Returns true for any non-trivial positive verification status.
+     */
+    public static boolean stronglyVerified(VerifiedStatus verifiedStatus){
+      switch (verifiedStatus){
+        case DIRECTLY_VERIFIED:
+        case DUPLEX_VERIFIED:
+        case INTRODUCED:
           return true;
         default:
           return false;

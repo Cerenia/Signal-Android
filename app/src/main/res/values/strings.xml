@@ -3985,6 +3985,13 @@
     <string name="CanNotIntroduceDialog__Cant_introduce">Introduction not possible</string>
     <string name="CanNotIntroduceDialog__Identity_record_empty">Could not redirect to the verification screen, please try to navigate there manually.</string>
 
+    <!-- ClearVerificationDialog -->
+    <string name="ClearVerificationDialog__Positive">Clear</string>
+    <string name="ClearVerificationDialog__Title">Clear Verification?</string>
+    <string name="ClearVerificationDialog__Clear_directly_verified">Are you sure you want to clear the QR-verified status of this contact? Restoring this state will necessitate rescanning the QR code on your contact\'s device.</string>
+    <string name="ClearVerificationDialog__Clear_introduced">Are you sure you want to clear the introduction of this contact? Restoring this state will necessitate a fresh introduction of this contact by a verified third party.</string>
+    <string name="ClearVerificationDialog__Clear_duplex">Are you sure you want to clear the double verification status of this contact? Restoring this state will necessitate both a rescann of your contact\'s QR code *and* a fresh introduction of this contact by a verified third party. </string>
+
     <!-- GroupsInCommonMessageRequest -->
     <string name="GroupsInCommonMessageRequest__you_have_no_groups_in_common_with_this_person">You have no groups in common with this person. Review requests carefully before accepting to avoid unwanted messages.</string>
     <string name="GroupsInCommonMessageRequest__none_of_your_contacts_or_people_you_chat_with_are_in_this_group">None of your contacts or people you chat with are in this group. Review requests carefully before accepting to avoid unwanted messages.</string>
