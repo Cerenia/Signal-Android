@@ -3931,6 +3931,8 @@
     <string name="CanNotSendPaymentDialog__send_a_message">Send a message</string>
 
     <!-- CanNotIntroduceDialog -->
+    <string name="CanNotIntroduceDialog__Group_not_yet_supported">Trusted introductions for groups are not yet supported.</string>
+    <string name="CanNotIntroduceDialog__SMS_contact_not_applicable">Trusted introductions can only happen over a secured conversation. Invite your contact to use Signal and verify them to unlock the feature.</string>
     <string name="CanNotIntroduceDialog__direct_verification_needed_for_trusted_introduction">You need to directly verify this contact through a scan of their QR code to unlock the secure introduction feature.</string>
     <string name="CanNotIntroduceDialog__verify">Verify</string>
     <string name="CanNotIntroduceDialog__Cant_introduce">Can\'t introduce</string>
