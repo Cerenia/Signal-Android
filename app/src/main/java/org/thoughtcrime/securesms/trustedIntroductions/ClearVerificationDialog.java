@@ -36,10 +36,11 @@ public class ClearVerificationDialog {
 
     /**
      * @param context Caller context.
+     * @param cb Calling Fragment which implements the Callback.
      * @param status The contacts verification status. Must be strongly verified (@see IdentityDatabase)
      * @return Returns the users decision. If true, clear, otherwise don't.
      */
-    public static boolean show(@NonNull Context context, IdentityDatabase.VerifiedStatus status) {
+    public static void show(@NonNull Context context, Callback cb, IdentityDatabase.VerifiedStatus status) {
         assert IdentityDatabase.VerifiedStatus.stronglyVerified(status): "Unsupported Verification status";
 
         clearVerification = false;
@@ -57,10 +58,16 @@ public class ClearVerificationDialog {
             default:
                 assert false;
         }
-        builder.setNegativeButton(android.R.string.cancel, ClearVerificationDialog::userInteraction)
-                .setPositiveButton(R.string.ClearVerificationDialog__Positive, ClearVerificationDialog::userInteraction)
+        builder.setNegativeButton(android.R.string.cancel, (intf, which) -> intf.dismiss())
+                .setPositiveButton(R.string.ClearVerificationDialog__Positive, (intf, which) -> {
+                    cb.onClearVerification();
+                    intf.dismiss();
+                })
                 .show();
-        return clearVerification;
+    }
+
+    public interface Callback {
+        void onClearVerification();
     }
 }
 
