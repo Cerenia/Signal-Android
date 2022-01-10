@@ -6,8 +6,8 @@ import com.google.protobuf.ByteString;
 
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.crypto.UnidentifiedAccessUtil;
-import org.thoughtcrime.securesms.database.DatabaseFactory;
 import org.thoughtcrime.securesms.database.PaymentDatabase;
+import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.jobmanager.Data;
 import org.thoughtcrime.securesms.jobmanager.Job;
@@ -19,6 +19,7 @@ import org.thoughtcrime.securesms.util.TextSecurePreferences;
 import org.whispersystems.libsignal.util.guava.Optional;
 import org.whispersystems.signalservice.api.messages.multidevice.OutgoingPaymentMessage;
 import org.whispersystems.signalservice.api.messages.multidevice.SignalServiceSyncMessage;
+import org.whispersystems.signalservice.api.push.SignalServiceAddress;
 import org.whispersystems.signalservice.api.push.exceptions.PushNetworkException;
 import org.whispersystems.signalservice.api.push.exceptions.ServerRejectedException;
 
@@ -77,7 +78,7 @@ public final class MultiDeviceOutgoingPaymentSyncJob extends BaseJob {
       return;
     }
 
-    PaymentDatabase.PaymentTransaction payment = DatabaseFactory.getPaymentDatabase(context).getPayment(uuid);
+    PaymentDatabase.PaymentTransaction payment = SignalDatabase.payments().getPayment(uuid);
 
     if (payment == null) {
       Log.w(TAG, "Payment not found " + uuid);
@@ -88,9 +89,9 @@ public final class MultiDeviceOutgoingPaymentSyncJob extends BaseJob {
 
     boolean defrag = payment.isDefrag();
 
-    Optional<UUID> uuid;
+    Optional<SignalServiceAddress> uuid;
     if (!defrag && payment.getPayee().hasRecipientId()) {
-      uuid = Optional.of(Recipient.resolved(payment.getPayee().requireRecipientId()).requireUuid());
+      uuid = Optional.of(new SignalServiceAddress(Recipient.resolved(payment.getPayee().requireRecipientId()).requireAci()));
     } else {
       uuid = Optional.absent();
     }

@@ -3,7 +3,8 @@ package org.thoughtcrime.securesms.database
 import android.app.Application
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import net.zetetic.database.sqlcipher.SQLiteDatabase
+import org.hamcrest.MatcherAssert.assertThat
+import org.hamcrest.Matchers
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
@@ -15,10 +16,14 @@ import org.junit.runner.RunWith
 import org.signal.storageservice.protos.groups.local.DecryptedGroup
 import org.signal.storageservice.protos.groups.local.DecryptedMember
 import org.signal.zkgroup.groups.GroupMasterKey
+import org.thoughtcrime.securesms.conversation.colors.AvatarColor
 import org.thoughtcrime.securesms.database.model.Mention
+import org.thoughtcrime.securesms.database.model.MessageId
 import org.thoughtcrime.securesms.database.model.MessageRecord
+import org.thoughtcrime.securesms.database.model.ReactionRecord
 import org.thoughtcrime.securesms.groups.GroupId
 import org.thoughtcrime.securesms.mms.IncomingMediaMessage
+import org.thoughtcrime.securesms.notifications.profiles.NotificationProfile
 import org.thoughtcrime.securesms.recipients.Recipient
 import org.thoughtcrime.securesms.recipients.RecipientId
 import org.thoughtcrime.securesms.sms.IncomingTextMessage
@@ -27,6 +32,7 @@ import org.whispersystems.libsignal.IdentityKey
 import org.whispersystems.libsignal.SignalProtocolAddress
 import org.whispersystems.libsignal.state.SessionRecord
 import org.whispersystems.libsignal.util.guava.Optional
+import org.whispersystems.signalservice.api.push.ACI
 import org.whispersystems.signalservice.api.util.UuidUtil
 import java.util.UUID
 
@@ -42,18 +48,22 @@ class RecipientDatabaseTest_merges {
   private lateinit var mmsDatabase: MessageDatabase
   private lateinit var sessionDatabase: SessionDatabase
   private lateinit var mentionDatabase: MentionDatabase
+  private lateinit var reactionDatabase: ReactionDatabase
+  private lateinit var notificationProfileDatabase: NotificationProfileDatabase
 
   @Before
   fun setup() {
-    recipientDatabase = DatabaseFactory.getRecipientDatabase(context)
-    identityDatabase = DatabaseFactory.getIdentityDatabase(context)
-    groupReceiptDatabase = DatabaseFactory.getGroupReceiptDatabase(context)
-    groupDatabase = DatabaseFactory.getGroupDatabase(context)
-    threadDatabase = DatabaseFactory.getThreadDatabase(context)
-    smsDatabase = DatabaseFactory.getSmsDatabase(context)
-    mmsDatabase = DatabaseFactory.getMmsDatabase(context)
-    sessionDatabase = DatabaseFactory.getSessionDatabase(context)
-    mentionDatabase = DatabaseFactory.getMentionDatabase(context)
+    recipientDatabase = SignalDatabase.recipients
+    identityDatabase = SignalDatabase.identities
+    groupReceiptDatabase = SignalDatabase.groupReceipts
+    groupDatabase = SignalDatabase.groups
+    threadDatabase = SignalDatabase.threads
+    smsDatabase = SignalDatabase.sms
+    mmsDatabase = SignalDatabase.mms
+    sessionDatabase = SignalDatabase.sessions
+    mentionDatabase = SignalDatabase.mentions
+    reactionDatabase = SignalDatabase.reactions
+    notificationProfileDatabase = SignalDatabase.notificationProfiles
 
     ensureDbEmpty()
   }
@@ -62,8 +72,9 @@ class RecipientDatabaseTest_merges {
   @Test
   fun getAndPossiblyMerge_general() {
     // Setup
-    val recipientIdAci: RecipientId = recipientDatabase.getOrInsertFromUuid(ACI_A)
+    val recipientIdAci: RecipientId = recipientDatabase.getOrInsertFromAci(ACI_A)
     val recipientIdE164: RecipientId = recipientDatabase.getOrInsertFromE164(E164_A)
+    val recipientIdAciB: RecipientId = recipientDatabase.getOrInsertFromAci(ACI_B)
 
     val smsId1: Long = smsDatabase.insertMessageInbox(smsMessage(sender = recipientIdAci, time = 0, body = "0")).get().messageId
     val smsId2: Long = smsDatabase.insertMessageInbox(smsMessage(sender = recipientIdE164, time = 1, body = "1")).get().messageId
@@ -90,6 +101,17 @@ class RecipientDatabaseTest_merges {
 
     sessionDatabase.store(SignalProtocolAddress(ACI_A.toString(), 1), SessionRecord())
 
+    reactionDatabase.addReaction(MessageId(smsId1, false), ReactionRecord("a", recipientIdAci, 1, 1))
+    reactionDatabase.addReaction(MessageId(mmsId1, true), ReactionRecord("b", recipientIdE164, 1, 1))
+
+    val profile1: NotificationProfile = notificationProfile(name = "Test")
+    val profile2: NotificationProfile = notificationProfile(name = "Test2")
+
+    notificationProfileDatabase.addAllowedRecipient(profileId = profile1.id, recipientId = recipientIdAci)
+    notificationProfileDatabase.addAllowedRecipient(profileId = profile1.id, recipientId = recipientIdE164)
+    notificationProfileDatabase.addAllowedRecipient(profileId = profile2.id, recipientId = recipientIdE164)
+    notificationProfileDatabase.addAllowedRecipient(profileId = profile2.id, recipientId = recipientIdAciB)
+
     // Merge
     val retrievedId: RecipientId = recipientDatabase.getAndPossiblyMerge(ACI_A, E164_A, true)
     val retrievedThreadId: Long = threadDatabase.getThreadIdFor(retrievedId)!!
@@ -97,7 +119,7 @@ class RecipientDatabaseTest_merges {
 
     // Recipient validation
     val retrievedRecipient = Recipient.resolved(retrievedId)
-    assertEquals(ACI_A, retrievedRecipient.requireUuid())
+    assertEquals(ACI_A, retrievedRecipient.requireAci())
     assertEquals(E164_A, retrievedRecipient.requireE164())
 
     val existingE164Recipient = Recipient.resolved(recipientIdE164)
@@ -154,13 +176,30 @@ class RecipientDatabaseTest_merges {
 
     // Session validation
     assertNotNull(sessionDatabase.load(SignalProtocolAddress(ACI_A.toString(), 1)))
+
+    // Reaction validation
+    val reactionsSms: List<ReactionRecord> = reactionDatabase.getReactions(MessageId(smsId1, false))
+    val reactionsMms: List<ReactionRecord> = reactionDatabase.getReactions(MessageId(mmsId1, true))
+
+    assertEquals(1, reactionsSms.size)
+    assertEquals(ReactionRecord("a", recipientIdAci, 1, 1), reactionsSms[0])
+
+    assertEquals(1, reactionsMms.size)
+    assertEquals(ReactionRecord("b", recipientIdAci, 1, 1), reactionsMms[0])
+
+    // Notification Profile validation
+    val updatedProfile1: NotificationProfile = notificationProfileDatabase.getProfile(profile1.id)!!
+    val updatedProfile2: NotificationProfile = notificationProfileDatabase.getProfile(profile2.id)!!
+
+    assertThat("Notification Profile 1 should now only contain ACI $recipientIdAci", updatedProfile1.allowedMembers, Matchers.containsInAnyOrder(recipientIdAci))
+    assertThat("Notification Profile 2 should now contain ACI A ($recipientIdAci) and ACI B ($recipientIdAciB)", updatedProfile2.allowedMembers, Matchers.containsInAnyOrder(recipientIdAci, recipientIdAciB))
   }
 
   private val context: Application
     get() = InstrumentationRegistry.getInstrumentation().targetContext.applicationContext as Application
 
   private fun ensureDbEmpty() {
-    DatabaseFactory.getInstance(context).rawDatabase.rawQuery("SELECT COUNT(*) FROM ${RecipientDatabase.TABLE_NAME}", null).use { cursor ->
+    SignalDatabase.rawDatabase.rawQuery("SELECT COUNT(*) FROM ${RecipientDatabase.TABLE_NAME}", null).use { cursor ->
       assertTrue(cursor.moveToFirst())
       assertEquals(0, cursor.getLong(0))
     }
@@ -194,14 +233,17 @@ class RecipientDatabaseTest_merges {
   }
 
   private fun getMention(messageId: Long): MentionModel {
-    val db: SQLiteDatabase = DatabaseFactory.getInstance(context).rawDatabase
-    db.rawQuery("SELECT * FROM ${MentionDatabase.TABLE_NAME}").use { cursor ->
+    SignalDatabase.rawDatabase.rawQuery("SELECT * FROM ${MentionDatabase.TABLE_NAME} WHERE ${MentionDatabase.MESSAGE_ID} = $messageId").use { cursor ->
       cursor.moveToFirst()
       return MentionModel(
         recipientId = RecipientId.from(CursorUtil.requireLong(cursor, MentionDatabase.RECIPIENT_ID)),
         threadId = CursorUtil.requireLong(cursor, MentionDatabase.THREAD_ID)
       )
     }
+  }
+
+  private fun notificationProfile(name: String): NotificationProfile {
+    return (notificationProfileDatabase.createProfile(name = name, emoji = "", color = AvatarColor.A210, System.currentTimeMillis()) as NotificationProfileDatabase.NotificationProfileChangeResult.Success).notificationProfile
   }
 
   /** The normal mention model doesn't have a threadId, so we need to do it ourselves for the test */
@@ -211,8 +253,8 @@ class RecipientDatabaseTest_merges {
   )
 
   companion object {
-    val ACI_A = UUID.fromString("3436efbe-5a76-47fa-a98a-7e72c948a82e")
-    val ACI_B = UUID.fromString("8de7f691-0b60-4a68-9cd9-ed2f8453f9ed")
+    val ACI_A = ACI.from(UUID.fromString("3436efbe-5a76-47fa-a98a-7e72c948a82e"))
+    val ACI_B = ACI.from(UUID.fromString("8de7f691-0b60-4a68-9cd9-ed2f8453f9ed"))
 
     val E164_A = "+12221234567"
     val E164_B = "+13331234567"

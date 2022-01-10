@@ -16,13 +16,14 @@ import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.components.ContactFilterView;
 import org.thoughtcrime.securesms.contacts.ContactsCursorLoader.DisplayMode;
 import org.thoughtcrime.securesms.conversation.ConversationIntents;
-import org.thoughtcrime.securesms.database.DatabaseFactory;
+import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.payments.CanNotSendPaymentDialog;
 import org.thoughtcrime.securesms.payments.preferences.model.PayeeParcelable;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.util.ViewUtil;
 import org.thoughtcrime.securesms.util.concurrent.SimpleTask;
+import org.thoughtcrime.securesms.util.navigation.SafeNavigation;
 import org.whispersystems.libsignal.util.guava.Optional;
 
 import java.util.function.Consumer;
@@ -106,7 +107,7 @@ public class PaymentRecipientSelectionFragment extends LoggingFragment implement
 
   private void createPayment(@NonNull RecipientId recipientId) {
     hideKeyboard();
-    Navigation.findNavController(requireView()).navigate(PaymentRecipientSelectionFragmentDirections.actionPaymentRecipientSelectionToCreatePayment(new PayeeParcelable(recipientId)));
+    SafeNavigation.safeNavigate(Navigation.findNavController(requireView()), PaymentRecipientSelectionFragmentDirections.actionPaymentRecipientSelectionToCreatePayment(new PayeeParcelable(recipientId)));
   }
 
   private void showWarningDialog(@NonNull RecipientId recipientId) {
@@ -116,7 +117,7 @@ public class PaymentRecipientSelectionFragment extends LoggingFragment implement
 
   private void openConversation(@NonNull RecipientId recipientId) {
     SimpleTask.run(getViewLifecycleOwner().getLifecycle(),
-                   () -> DatabaseFactory.getThreadDatabase(requireContext()).getThreadIdIfExistsFor(recipientId),
+                   () -> SignalDatabase.threads().getThreadIdIfExistsFor(recipientId),
                    threadId -> startActivity(ConversationIntents.createBuilder(requireContext(), recipientId, threadId).build()));
   }
 }

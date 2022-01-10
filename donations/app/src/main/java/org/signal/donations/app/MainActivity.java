@@ -80,7 +80,7 @@ public class MainActivity extends AppCompatActivity implements GooglePayApi.Paym
   }
 
   @Override
-  public void onError() {
+  public void onError(@NonNull GooglePayApi.GooglePayException googlePayException) {
     Toast.makeText(this, "ERROR", Toast.LENGTH_SHORT).show();
     donateButton.setClickable(true);
   }

@@ -13,8 +13,8 @@ import org.thoughtcrime.securesms.badges.models.Badge;
 import org.thoughtcrime.securesms.crypto.IdentityKeyUtil;
 import org.thoughtcrime.securesms.crypto.ProfileKeyUtil;
 import org.thoughtcrime.securesms.crypto.UnidentifiedAccessUtil;
-import org.thoughtcrime.securesms.database.DatabaseFactory;
 import org.thoughtcrime.securesms.database.RecipientDatabase;
+import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.keyvalue.SignalStore;
 import org.thoughtcrime.securesms.payments.MobileCoinPublicAddress;
@@ -284,7 +284,7 @@ public final class ProfileUtil {
 
     ProfileKey                  profileKey     = ProfileKeyUtil.getSelfProfileKey();
     SignalServiceAccountManager accountManager = ApplicationDependencies.getSignalServiceAccountManager();
-    String                      avatarPath     = accountManager.setVersionedProfile(Recipient.self().getUuid().get(),
+    String                      avatarPath     = accountManager.setVersionedProfile(Recipient.self().requireAci(),
                                                                                     profileKey,
                                                                                     profileName.serialize(),
                                                                                     about,
@@ -292,8 +292,8 @@ public final class ProfileUtil {
                                                                                     Optional.fromNullable(paymentsAddress),
                                                                                     avatar,
                                                                                     badgeIds).orNull();
-
-    DatabaseFactory.getRecipientDatabase(context).setProfileAvatar(Recipient.self().getId(), avatarPath);
+    SignalStore.registrationValues().markHasUploadedProfile();
+    SignalDatabase.recipients().setProfileAvatar(Recipient.self().getId(), avatarPath);
   }
 
   private static @Nullable SignalServiceProtos.PaymentAddress getSelfPaymentsAddressProtobuf() {
@@ -321,8 +321,8 @@ public final class ProfileUtil {
 
   private static @NonNull SignalServiceAddress toSignalServiceAddress(@NonNull Context context, @NonNull Recipient recipient) throws IOException {
     if (recipient.getRegistered() == RecipientDatabase.RegisteredState.NOT_REGISTERED) {
-      if (recipient.hasUuid()) {
-        return new SignalServiceAddress(recipient.requireUuid(), recipient.getE164().orNull());
+      if (recipient.hasAci()) {
+        return new SignalServiceAddress(recipient.requireAci(), recipient.getE164().orNull());
       } else {
         throw new IOException(recipient.getId() + " not registered!");
       }

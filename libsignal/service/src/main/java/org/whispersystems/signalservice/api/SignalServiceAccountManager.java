@@ -32,6 +32,8 @@ import org.whispersystems.signalservice.api.messages.multidevice.DeviceInfo;
 import org.whispersystems.signalservice.api.payments.CurrencyConversions;
 import org.whispersystems.signalservice.api.profiles.ProfileAndCredential;
 import org.whispersystems.signalservice.api.profiles.SignalServiceProfileWrite;
+import org.whispersystems.signalservice.api.push.ACI;
+import org.whispersystems.signalservice.api.push.AccountIdentifier;
 import org.whispersystems.signalservice.api.push.ContactTokenDetails;
 import org.whispersystems.signalservice.api.push.SignedPreKeyEntity;
 import org.whispersystems.signalservice.api.push.exceptions.NoContentException;
@@ -59,6 +61,7 @@ import org.whispersystems.signalservice.internal.contacts.entities.DiscoveryRequ
 import org.whispersystems.signalservice.internal.contacts.entities.DiscoveryResponse;
 import org.whispersystems.signalservice.internal.crypto.ProvisioningCipher;
 import org.whispersystems.signalservice.internal.push.AuthCredentials;
+import org.whispersystems.signalservice.internal.push.CdshAuthResponse;
 import org.whispersystems.signalservice.internal.push.ProfileAvatarData;
 import org.whispersystems.signalservice.internal.push.PushServiceSocket;
 import org.whispersystems.signalservice.internal.push.RemoteAttestationUtil;
@@ -121,19 +124,21 @@ public class SignalServiceAccountManager {
 
   /**
    * Construct a SignalServiceAccountManager.
-   *
-   * @param configuration The URL for the Signal Service.
-   * @param uuid The Signal Service UUID.
+   *  @param configuration The URL for the Signal Service.
+   * @param aci The Signal Service UUID.
    * @param e164 The Signal Service phone number.
    * @param password A Signal Service password.
    * @param signalAgent A string which identifies the client software.
    */
   public SignalServiceAccountManager(SignalServiceConfiguration configuration,
-                                     UUID uuid, String e164, String password,
-                                     String signalAgent, boolean automaticNetworkRetry)
+                                     ACI aci,
+                                     String e164,
+                                     String password,
+                                     String signalAgent,
+                                     boolean automaticNetworkRetry)
   {
     this(configuration,
-         new StaticCredentialsProvider(uuid, e164, password),
+         new StaticCredentialsProvider(aci, e164, password),
          signalAgent,
          new GroupsV2Operations(ClientZkOperations.create(configuration)),
          automaticNetworkRetry);
@@ -169,10 +174,6 @@ public class SignalServiceAccountManager {
    */
   public void removeRegistrationLockV1() throws IOException {
     this.pushServiceSocket.removeRegistrationLockV1();
-  }
-
-  public UUID getOwnUuid() throws IOException {
-    return this.pushServiceSocket.getOwnUuid();
   }
 
   public WhoAmIResponse getWhoAmI() throws IOException {
@@ -405,45 +406,14 @@ public class SignalServiceAccountManager {
   }
 
   /**
-   * Checks whether a contact is currently registered with the server.
-   *
-   * @param e164number The contact to check.
-   * @return An optional ContactTokenDetails, present if registered, absent if not.
-   * @throws IOException
+   * @return True if the identifier corresponds to a registered user, otherwise false.
    */
-  public Optional<ContactTokenDetails> getContact(String e164number) throws IOException {
-    String              contactToken        = createDirectoryServerToken(e164number, true);
-    ContactTokenDetails contactTokenDetails = this.pushServiceSocket.getContactTokenDetails(contactToken);
-
-    if (contactTokenDetails != null) {
-      contactTokenDetails.setNumber(e164number);
-    }
-
-    return Optional.fromNullable(contactTokenDetails);
-  }
-
-  /**
-   * Checks which contacts in a set are registered with the server.
-   *
-   * @param e164numbers The contacts to check.
-   * @return A list of ContactTokenDetails for the registered users.
-   * @throws IOException
-   */
-  public List<ContactTokenDetails> getContacts(Set<String> e164numbers)
-      throws IOException
-  {
-    Map<String, String>       contactTokensMap = createDirectoryServerTokenMap(e164numbers);
-    List<ContactTokenDetails> activeTokens     = this.pushServiceSocket.retrieveDirectory(contactTokensMap.keySet());
-
-    for (ContactTokenDetails activeToken : activeTokens) {
-      activeToken.setNumber(contactTokensMap.get(activeToken.getToken()));
-    }
-
-    return activeTokens;
+  public boolean isIdentifierRegistered(AccountIdentifier identifier) throws IOException {
+    return pushServiceSocket.isIdentifierRegistered(identifier);
   }
 
   @SuppressWarnings("SameParameterValue")
-  public Map<String, UUID> getRegisteredUsers(KeyStore iasKeyStore, Set<String> e164numbers, String mrenclave)
+  public Map<String, ACI> getRegisteredUsers(KeyStore iasKeyStore, Set<String> e164numbers, String mrenclave)
       throws IOException, Quote.InvalidQuoteFormatException, UnauthenticatedQuoteException, SignatureException, UnauthenticatedResponseException, InvalidKeyException
   {
     if (e164numbers.isEmpty()) {
@@ -470,14 +440,14 @@ public class SignalServiceAccountManager {
       DiscoveryResponse response = this.pushServiceSocket.getContactDiscoveryRegisteredUsers(authorization, request, cookies, mrenclave);
       byte[]            data     = ContactDiscoveryCipher.getDiscoveryResponseData(response, attestations.values());
 
-      HashMap<String, UUID> results         = new HashMap<>(addressBook.size());
-      DataInputStream       uuidInputStream = new DataInputStream(new ByteArrayInputStream(data));
+      HashMap<String, ACI> results         = new HashMap<>(addressBook.size());
+      DataInputStream      uuidInputStream = new DataInputStream(new ByteArrayInputStream(data));
 
       for (String candidate : addressBook) {
         long candidateUuidHigh = uuidInputStream.readLong();
         long candidateUuidLow  = uuidInputStream.readLong();
         if (candidateUuidHigh != 0 || candidateUuidLow != 0) {
-          results.put('+' + candidate, new UUID(candidateUuidHigh, candidateUuidLow));
+          results.put('+' + candidate, ACI.from(new UUID(candidateUuidHigh, candidateUuidLow)));
         }
       }
 
@@ -487,13 +457,14 @@ public class SignalServiceAccountManager {
     }
   }
 
-  public Map<String, UUID> getRegisteredUsersWithCdsh(Set<String> e164numbers, String hexPublicKey, String hexCodeHash)
+  public Map<String, ACI> getRegisteredUsersWithCdsh(Set<String> e164numbers, String hexPublicKey, String hexCodeHash)
       throws IOException
   {
-    CdshService                                service = new CdshService(configuration, hexPublicKey, hexCodeHash);
-    Single<ServiceResponse<Map<String, UUID>>> result  = service.getRegisteredUsers(e164numbers);
+    CdshAuthResponse                          auth    = pushServiceSocket.getCdshAuth();
+    CdshService                               service = new CdshService(configuration, hexPublicKey, hexCodeHash);
+    Single<ServiceResponse<Map<String, ACI>>> result  = service.getRegisteredUsers(auth.getUsername(), auth.getPassword(), e164numbers);
 
-    ServiceResponse<Map<String, UUID>> response;
+    ServiceResponse<Map<String, ACI>> response;
     try {
       response = result.blockingGet();
     } catch (Exception e) {
@@ -698,7 +669,7 @@ public class SignalServiceAccountManager {
                                                        .setProvisioningVersion(ProvisioningVersion.CURRENT_VALUE);
 
     String e164 = credentials.getE164();
-    UUID   uuid = credentials.getUuid();
+    ACI    aci  = credentials.getAci();
 
     if (e164 != null) {
       message.setNumber(e164);
@@ -706,8 +677,8 @@ public class SignalServiceAccountManager {
       throw new AssertionError("Missing phone number!");
     }
 
-    if (uuid != null) {
-      message.setUuid(uuid.toString());
+    if (aci != null) {
+      message.setUuid(aci.toString());
     } else {
       Log.w(TAG, "[addDevice] Missing UUID.");
     }
@@ -747,7 +718,7 @@ public class SignalServiceAccountManager {
   /**
    * @return The avatar URL path, if one was written.
    */
-  public Optional<String> setVersionedProfile(UUID uuid,
+  public Optional<String> setVersionedProfile(ACI aci,
                                               ProfileKey profileKey,
                                               String name,
                                               String about,
@@ -774,22 +745,22 @@ public class SignalServiceAccountManager {
                                                 new ProfileCipherOutputStreamFactory(profileKey));
     }
 
-    return this.pushServiceSocket.writeProfile(new SignalServiceProfileWrite(profileKey.getProfileKeyVersion(uuid).serialize(),
+    return this.pushServiceSocket.writeProfile(new SignalServiceProfileWrite(profileKey.getProfileKeyVersion(aci.uuid()).serialize(),
                                                                              ciphertextName,
                                                                              ciphertextAbout,
                                                                              ciphertextEmoji,
                                                                              ciphertextMobileCoinAddress,
                                                                              hasAvatar,
-                                                                             profileKey.getCommitment(uuid).serialize(),
+                                                                             profileKey.getCommitment(aci.uuid()).serialize(),
                                                                              visibleBadgeIds),
                                                                              profileAvatarData);
   }
 
-  public Optional<ProfileKeyCredential> resolveProfileKeyCredential(UUID uuid, ProfileKey profileKey, Locale locale)
+  public Optional<ProfileKeyCredential> resolveProfileKeyCredential(ACI aci, ProfileKey profileKey, Locale locale)
       throws NonSuccessfulResponseCodeException, PushNetworkException
   {
     try {
-      ProfileAndCredential credential = this.pushServiceSocket.retrieveVersionedProfileAndCredential(uuid, profileKey, Optional.absent(), locale).get(10, TimeUnit.SECONDS);
+      ProfileAndCredential credential = this.pushServiceSocket.retrieveVersionedProfileAndCredential(aci.uuid(), profileKey, Optional.absent(), locale).get(10, TimeUnit.SECONDS);
       return credential.getProfileKeyCredential();
     } catch (InterruptedException | TimeoutException e) {
       throw new PushNetworkException(e);

@@ -1,6 +1,5 @@
 package org.thoughtcrime.securesms.jobs;
 
-import android.net.Uri;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
@@ -9,12 +8,12 @@ import androidx.annotation.Nullable;
 import org.signal.core.util.logging.Log;
 import org.signal.zkgroup.profiles.ProfileKey;
 import org.signal.zkgroup.profiles.ProfileKeyCredential;
-import org.thoughtcrime.securesms.BuildConfig;
+import org.thoughtcrime.securesms.badges.BadgeRepository;
 import org.thoughtcrime.securesms.badges.Badges;
 import org.thoughtcrime.securesms.badges.models.Badge;
 import org.thoughtcrime.securesms.crypto.ProfileKeyUtil;
-import org.thoughtcrime.securesms.database.DatabaseFactory;
 import org.thoughtcrime.securesms.database.RecipientDatabase;
+import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.jobmanager.Data;
 import org.thoughtcrime.securesms.jobmanager.Job;
@@ -23,10 +22,7 @@ import org.thoughtcrime.securesms.keyvalue.SignalStore;
 import org.thoughtcrime.securesms.profiles.ProfileName;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.util.ProfileUtil;
-import org.thoughtcrime.securesms.util.ScreenDensity;
-import org.thoughtcrime.securesms.util.TextSecurePreferences;
 import org.thoughtcrime.securesms.util.Util;
-import org.whispersystems.libsignal.util.Pair;
 import org.whispersystems.libsignal.util.guava.Optional;
 import org.whispersystems.signalservice.api.crypto.InvalidCiphertextException;
 import org.whispersystems.signalservice.api.profiles.ProfileAndCredential;
@@ -34,9 +30,10 @@ import org.whispersystems.signalservice.api.profiles.SignalServiceProfile;
 import org.whispersystems.signalservice.api.push.exceptions.PushNetworkException;
 
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 
@@ -51,13 +48,28 @@ public class RefreshOwnProfileJob extends BaseJob {
 
   private static final String TAG = Log.tag(RefreshOwnProfileJob.class);
 
+  private static final String SUBSCRIPTION_QUEUE = ProfileUploadJob.QUEUE + "_Subscription";
+  private static final String BOOST_QUEUE        = ProfileUploadJob.QUEUE + "_Boost";
+
   public RefreshOwnProfileJob() {
+    this(ProfileUploadJob.QUEUE);
+  }
+
+  private RefreshOwnProfileJob(@NonNull String queue) {
     this(new Parameters.Builder()
-                       .addConstraint(NetworkConstraint.KEY)
-                       .setQueue(ProfileUploadJob.QUEUE)
-                       .setMaxInstancesForFactory(1)
-                       .setMaxAttempts(10)
-                       .build());
+             .addConstraint(NetworkConstraint.KEY)
+             .setQueue(queue)
+             .setMaxInstancesForFactory(1)
+             .setMaxAttempts(10)
+             .build());
+  }
+
+  public static @NonNull RefreshOwnProfileJob forSubscription() {
+    return new RefreshOwnProfileJob(SUBSCRIPTION_QUEUE);
+  }
+
+  public static @NonNull RefreshOwnProfileJob forBoost() {
+    return new RefreshOwnProfileJob(BOOST_QUEUE);
   }
 
 
@@ -77,7 +89,7 @@ public class RefreshOwnProfileJob extends BaseJob {
 
   @Override
   protected void onRun() throws Exception {
-    if (!TextSecurePreferences.isPushRegistered(context) || TextUtils.isEmpty(TextSecurePreferences.getLocalNumber(context))) {
+    if (!SignalStore.account().isRegistered() || TextUtils.isEmpty(SignalStore.account().getE164())) {
       Log.w(TAG, "Not yet registered!");
       return;
     }
@@ -111,7 +123,7 @@ public class RefreshOwnProfileJob extends BaseJob {
                                        @NonNull ProfileKey recipientProfileKey,
                                        @NonNull ProfileKeyCredential credential)
   {
-    RecipientDatabase recipientDatabase = DatabaseFactory.getRecipientDatabase(context);
+    RecipientDatabase recipientDatabase = SignalDatabase.recipients();
     recipientDatabase.setProfileKeyCredential(recipient.getId(), recipientProfileKey, credential);
   }
 
@@ -136,7 +148,7 @@ public class RefreshOwnProfileJob extends BaseJob {
       ProfileName profileName   = ProfileName.fromSerialized(plaintextName);
 
       Log.d(TAG, "Saving " + (!Util.isEmpty(plaintextName) ? "non-" : "") + "empty name.");
-      DatabaseFactory.getRecipientDatabase(context).setProfileName(Recipient.self().getId(), profileName);
+      SignalDatabase.recipients().setProfileName(Recipient.self().getId(), profileName);
     } catch (InvalidCiphertextException | IOException e) {
       Log.w(TAG, e);
     }
@@ -151,7 +163,7 @@ public class RefreshOwnProfileJob extends BaseJob {
       Log.d(TAG, "Saving " + (!Util.isEmpty(plaintextAbout) ? "non-" : "") + "empty about.");
       Log.d(TAG, "Saving " + (!Util.isEmpty(plaintextEmoji) ? "non-" : "") + "empty emoji.");
 
-      DatabaseFactory.getRecipientDatabase(context).setAbout(Recipient.self().getId(), plaintextAbout, plaintextEmoji);
+      SignalDatabase.recipients().setAbout(Recipient.self().getId(), plaintextAbout, plaintextEmoji);
     } catch (InvalidCiphertextException | IOException e) {
       Log.w(TAG, e);
     }
@@ -167,7 +179,7 @@ public class RefreshOwnProfileJob extends BaseJob {
       return;
     }
 
-    DatabaseFactory.getRecipientDatabase(context).setCapabilities(Recipient.self().getId(), capabilities);
+    SignalDatabase.recipients().setCapabilities(Recipient.self().getId(), capabilities);
   }
 
   private void setProfileBadges(@Nullable List<SignalServiceProfile.Badge> badges) {
@@ -175,9 +187,77 @@ public class RefreshOwnProfileJob extends BaseJob {
       return;
     }
 
-    DatabaseFactory.getRecipientDatabase(context)
-                   .setBadges(Recipient.self().getId(),
-                              badges.stream().map(Badges::fromServiceBadge).collect(Collectors.toList()));
+    Set<String> localDonorBadgeIds  = Recipient.self()
+                                               .getBadges()
+                                               .stream()
+                                               .filter(badge -> badge.getCategory() == Badge.Category.Donor)
+                                               .map(Badge::getId)
+                                               .collect(Collectors.toSet());
+
+    Set<String> remoteDonorBadgeIds = badges.stream()
+                                            .filter(badge -> Objects.equals(badge.getCategory(), Badge.Category.Donor.getCode()))
+                                            .map(SignalServiceProfile.Badge::getId)
+                                            .collect(Collectors.toSet());
+
+    boolean remoteHasSubscriptionBadges = remoteDonorBadgeIds.stream().anyMatch(RefreshOwnProfileJob::isSubscription);
+    boolean localHasSubscriptionBadges  = localDonorBadgeIds.stream().anyMatch(RefreshOwnProfileJob::isSubscription);
+    boolean remoteHasBoostBadges        = remoteDonorBadgeIds.stream().anyMatch(RefreshOwnProfileJob::isBoost);
+    boolean localHasBoostBadges         = localDonorBadgeIds.stream().anyMatch(RefreshOwnProfileJob::isBoost);
+
+    if (!remoteHasSubscriptionBadges && localHasSubscriptionBadges) {
+      Badge mostRecentExpiration = Recipient.self()
+                                            .getBadges()
+                                            .stream()
+                                            .filter(badge -> badge.getCategory() == Badge.Category.Donor)
+                                            .filter(badge -> isSubscription(badge.getId()))
+                                            .max(Comparator.comparingLong(Badge::getExpirationTimestamp))
+                                            .get();
+
+      Log.d(TAG, "Marking subscription badge as expired, should notify next time the conversation list is open.", true);
+      SignalStore.donationsValues().setExpiredBadge(mostRecentExpiration);
+
+      if (!SignalStore.donationsValues().isUserManuallyCancelled()) {
+        Log.d(TAG, "Detected an unexpected subscription expiry.", true);
+        MultiDeviceSubscriptionSyncRequestJob.enqueue();
+        SignalStore.donationsValues().setShouldCancelSubscriptionBeforeNextSubscribeAttempt(true);
+      }
+    } else if (!remoteHasBoostBadges && localHasBoostBadges) {
+      Badge mostRecentExpiration = Recipient.self()
+                                            .getBadges()
+                                            .stream()
+                                            .filter(badge -> badge.getCategory() == Badge.Category.Donor)
+                                            .filter(badge -> isBoost(badge.getId()))
+                                            .max(Comparator.comparingLong(Badge::getExpirationTimestamp))
+                                            .get();
+
+      Log.d(TAG, "Marking boost badge as expired, should notify next time the conversation list is open.", true);
+      SignalStore.donationsValues().setExpiredBadge(mostRecentExpiration);
+    }
+
+    boolean userHasVisibleBadges   = badges.stream().anyMatch(SignalServiceProfile.Badge::isVisible);
+    boolean userHasInvisibleBadges = badges.stream().anyMatch(b -> !b.isVisible());
+
+    List<Badge> appBadges = badges.stream().map(Badges::fromServiceBadge).collect(Collectors.toList());
+
+    if (userHasVisibleBadges && userHasInvisibleBadges) {
+      boolean displayBadgesOnProfile = SignalStore.donationsValues().getDisplayBadgesOnProfile();
+      Log.d(TAG, "Detected mixed visibility of badges. Telling the server to mark them all " +
+                 (displayBadgesOnProfile ? "" : "not") +
+                 " visible.", true);
+
+      BadgeRepository badgeRepository = new BadgeRepository(context);
+      badgeRepository.setVisibilityForAllBadges(displayBadgesOnProfile, appBadges).blockingSubscribe();
+    } else {
+      SignalDatabase.recipients().setBadges(Recipient.self().getId(), appBadges);
+    }
+  }
+
+  private static boolean isSubscription(String badgeId) {
+    return !Objects.equals(badgeId, Badge.BOOST_BADGE_ID);
+  }
+
+  private static boolean isBoost(String badgeId) {
+    return Objects.equals(badgeId, Badge.BOOST_BADGE_ID);
   }
 
   public static final class Factory implements Job.Factory<RefreshOwnProfileJob> {

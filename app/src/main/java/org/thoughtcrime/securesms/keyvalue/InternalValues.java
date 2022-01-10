@@ -2,6 +2,7 @@ package org.thoughtcrime.securesms.keyvalue;
 
 import androidx.annotation.NonNull;
 
+import org.signal.ringrtc.CallManager;
 import org.thoughtcrime.securesms.BuildConfig;
 import org.thoughtcrime.securesms.util.FeatureFlags;
 
@@ -23,6 +24,7 @@ public final class InternalValues extends SignalStoreValues {
   public static final String REMOVE_SENDER_KEY_MINIMUM            = "internal.remove_sender_key_minimum";
   public static final String DELAY_RESENDS                        = "internal.delay_resends";
   public static final String CALLING_SERVER                       = "internal.calling_server";
+  public static final String AUDIO_PROCESSING_METHOD              = "internal.audio_processing_method";
   public static final String SHAKE_TO_REPORT                      = "internal.shake_to_report";
   public static final String DISABLE_STORAGE_SERVICE              = "internal.disable_storage_service";
 
@@ -152,5 +154,16 @@ public final class InternalValues extends SignalStoreValues {
       internalServer = null;
     }
     return internalServer != null ? internalServer : BuildConfig.SIGNAL_SFU_URL;
+  }
+
+  /**
+   * Setting to override the default handling of hardware/software AEC.
+   */
+  public synchronized CallManager.AudioProcessingMethod audioProcessingMethod() {
+    if (FeatureFlags.internalUser()) {
+      return CallManager.AudioProcessingMethod.values()[getInteger(AUDIO_PROCESSING_METHOD, CallManager.AudioProcessingMethod.Default.ordinal())];
+    } else {
+      return CallManager.AudioProcessingMethod.Default;
+    }
   }
 }

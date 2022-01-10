@@ -14,6 +14,8 @@ import com.google.i18n.phonenumbers.ShortNumberInfo;
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.groups.GroupId;
+import org.thoughtcrime.securesms.keyvalue.SignalStore;
+import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.util.SetUtil;
 import org.thoughtcrime.securesms.util.StringUtil;
 import org.thoughtcrime.securesms.util.TextSecurePreferences;
@@ -48,9 +50,9 @@ public class PhoneNumberFormatter {
   private final Pattern         ALPHA_PATTERN   = Pattern.compile("[a-zA-Z]");
 
   public static @NonNull PhoneNumberFormatter get(Context context) {
-    String localNumber = TextSecurePreferences.getLocalNumber(context);
+    String localNumber = SignalStore.account().getE164();
 
-    if (!TextUtils.isEmpty(localNumber)) {
+    if (!Util.isEmpty(localNumber)) {
       Pair<String, PhoneNumberFormatter> cached = cachedFormatter.get();
 
       if (cached != null && cached.first().equals(localNumber)) return cached.second();
@@ -140,20 +142,28 @@ public class PhoneNumberFormatter {
       return phoneNumberUtil.format(parsedNumber, PhoneNumberUtil.PhoneNumberFormat.E164);
     } catch (NumberParseException e) {
       Log.w(TAG, e);
-      if (bareNumber.charAt(0) == '+')
+      if (bareNumber.charAt(0) == '+') {
         return bareNumber;
+      }
 
-      String localNumberImprecise = localNumber.isPresent() ? localNumber.get().getE164Number() : "";
+      if (localNumber.isPresent()) {
+        String localNumberImprecise = localNumber.get().getE164Number();
 
-      if (localNumberImprecise.charAt(0) == '+')
-        localNumberImprecise = localNumberImprecise.substring(1);
+        if (localNumberImprecise.charAt(0) == '+') {
+          localNumberImprecise = localNumberImprecise.substring(1);
+        }
 
-      if (localNumberImprecise.length() == bareNumber.length() || bareNumber.length() > localNumberImprecise.length())
-        return "+" + number;
+        if (localNumberImprecise.length() == bareNumber.length() || bareNumber.length() > localNumberImprecise.length()) {
+          return "+" + number;
+        }
 
-      int difference = localNumberImprecise.length() - bareNumber.length();
+        int difference = localNumberImprecise.length() - bareNumber.length();
 
-      return "+" + localNumberImprecise.substring(0, difference) + bareNumber;
+        return "+" + localNumberImprecise.substring(0, difference) + bareNumber;
+      } else {
+        String countryCode = String.valueOf(phoneNumberUtil.getCountryCodeForRegion(localCountryCode));
+        return "+" + (bareNumber.startsWith(countryCode) ? bareNumber : countryCode + bareNumber);
+      }
     }
   }
 

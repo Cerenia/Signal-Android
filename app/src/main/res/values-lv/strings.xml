@@ -304,6 +304,7 @@
   <string name="ConversationFragment_not_now">Ne tagad</string>
   <string name="ConversationFragment_your_safety_number_with_s_changed">Jūsu drošības numurs ar %s ir mainījies</string>
   <string name="ConversationFragment_your_safety_number_with_s_changed_likey_because_they_reinstalled_signal">Jūsu drošības numurs ar %s ir mainījies, iespējams, tāpēc, ka viņi pārinstalēja signālu vai nomainīja ierīces. Pieskarieties \"Verificēt\", lai apstiprinātu jauno drošības numuru. Tas nav obligāti darāms.</string>
+  <!--Message shown to indicate which notification profile is on/active-->
   <plurals name="ConversationListFragment_delete_selected_conversations">
     <item quantity="zero">Vai izdzēst izvēlētās sarunas?</item>
     <item quantity="one">Vai izdzēst izvēlētās sarunu?</item>
@@ -329,6 +330,9 @@
   </plurals>
   <string name="ConversationListFragment_select">Atlasīt</string>
   <string name="ConversationListFragment_select_all">Atzīmēt visus</string>
+  <!--Show in conversation list overflow menu to open selection bottom sheet-->
+  <!--Tooltip shown after you have created your first notification profile-->
+  <!--Message shown in top toast to indicate the named profile is on-->
   <!--ConversationListItem-->
   <string name="ConversationListItem_key_exchange_message">Atslēgapmaiņas ziņa</string>
   <!--ConversationListItemAction-->
@@ -374,6 +378,7 @@
   <string name="BackupsPreferenceFragment__learn_more">Lasīt vairāk</string>
   <string name="BackupsPreferenceFragment__in_progress">Progresā</string>
   <string name="BackupsPreferenceFragment__d_so_far">pagaidām %1$d …</string>
+  <!--Show percentage of completion of backup-->
   <string name="BackupsPreferenceFragment_signal_requires_external_storage_permission_in_order_to_create_backups">Lai izveidotu dublikātus (rezerves kopijas), Signālam nepieciešama pieeja ārējai datu noliktavai,  bet tā tiek pastāvīgi liegta. Lūdzu, dodieties uz lietotnes iestatījumiem, izvēlieties \"Atļaujas\" un iespējojiet \"Noiktava\".</string>
   <!--CustomDefaultPreference-->
   <string name="CustomDefaultPreference_using_custom">Lieto pielāgojamu: %s</string>
@@ -409,14 +414,9 @@
   <string name="DeviceListItem_today">Šodien</string>
   <!--DocumentView-->
   <string name="DocumentView_unnamed_file">Bezvārda fails</string>
-  <!--DonateMegaphone-->
-  <string name="DonateMegaphone_donate_to_signal">Ziedot/dāvināt Signālam</string>
-  <string name="DonateMegaphone_Signal_is_powered_by_people_like_you_show_your_support_today">Signālu veido un darbina tādi paši cilvēki kā jūs. Atbalstiet jau šodien!</string>
-  <string name="DonateMegaphone_donate">Ziedojiet</string>
-  <string name="DonateMegaphone_no_thanks">Nē, paldies</string>
   <!--GroupCallingMegaphone-->
-  <string name="GroupCallingMegaphone__introducing_group_calls">Iepazīstināšana ar grupu zvaniem</string>
-  <string name="GroupCallingMegaphone__open_a_new_group_to_start">Atveriet/izveidojiet jaunu grupu, lai sāktu bezmaksas šifrētu grupas zvanu</string>
+  <!-- Removed by excludeNonTranslatables <string name="GroupCallingMegaphone__introducing_group_calls">Iepazīstināšana ar grupu zvaniem</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="GroupCallingMegaphone__open_a_new_group_to_start">Atveriet/izveidojiet jaunu grupu, lai sāktu bezmaksas šifrētu grupas zvanu</string> -->
   <!--DozeReminder-->
   <string name="DozeReminder_optimize_for_missing_play_services">Optimizē situācijai, kurā iztrūkst proprietārie Google Play pakalpojumi</string>
   <string name="DozeReminder_this_device_does_not_support_play_services_tap_to_disable_system_battery">Par laimi šajā ierīcē nav Google Play pakalpojumi. Pieskaries, lai atspējotu sistēmas baterijas optimizāciju, kas traucē Signālam saņemt ziņas, kamēr tas ir neaktīvs (darbojas fonā).</string>
@@ -548,9 +548,9 @@
   <string name="LeaveGroupDialog_before_you_leave_you_must_choose_at_least_one_new_admin_for_this_group">Pirms aiziešanas šai grupai jāizvēlas vismaz viens jauns administrators.</string>
   <string name="LeaveGroupDialog_choose_admin">Izvēlieties adminu</string>
   <!--LinkPreviewsMegaphone-->
-  <string name="LinkPreviewsMegaphone_disable">Atspējot</string>
-  <string name="LinkPreviewsMegaphone_preview_any_link">Priekšskatīt jebkuru saiti</string>
-  <string name="LinkPreviewsMegaphone_you_can_now_retrieve_link_previews_directly_from_any_website">Tagad jūs varat izgūt saišu priekšskatījumus tieši no jebkuras vietnes nosūtītajām ziņām.</string>
+  <!-- Removed by excludeNonTranslatables <string name="LinkPreviewsMegaphone_disable">Atspējot</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="LinkPreviewsMegaphone_preview_any_link">Priekšskatīt jebkuru saiti</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="LinkPreviewsMegaphone_you_can_now_retrieve_link_previews_directly_from_any_website">Tagad jūs varat izgūt saišu priekšskatījumus tieši no jebkuras vietnes nosūtītajām ziņām.</string> -->
   <!--LinkPreviewView-->
   <string name="LinkPreviewView_no_link_preview_available">Saites priekšskatījums nav pieejams</string>
   <string name="LinkPreviewView_this_group_link_is_not_active">Šī grupas saite nav aktīva.</string>
@@ -846,8 +846,8 @@
   <string name="MediaOverviewActivity_sent_by_s_to_s">%1$s nosūtīja %2$s</string>
   <string name="MediaOverviewActivity_sent_by_you_to_s">Jūs nosūtījāt %1$s </string>
   <!--Megaphones-->
-  <string name="Megaphones_introducing_reactions">Iepazīstinām ar reakcijām</string>
-  <string name="Megaphones_tap_and_hold_any_message_to_quicky_share_how_you_feel">Pieskarieties un turiet jebkuru ziņojumu, lai ātri kopīgotu savas domas.</string>
+  <!-- Removed by excludeNonTranslatables <string name="Megaphones_introducing_reactions">Iepazīstinām ar reakcijām</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="Megaphones_tap_and_hold_any_message_to_quicky_share_how_you_feel">Pieskarieties un turiet jebkuru ziņojumu, lai ātri kopīgotu savas domas.</string> -->
   <string name="Megaphones_remind_me_later">Atgādināt vēlāk</string>
   <string name="Megaphones_verify_your_signal_pin">Signal PIN verificēšana</string>
   <string name="Megaphones_well_occasionally_ask_you_to_verify_your_pin">Dažreiz mēs Jums pieprasīsim pārbaudīt jūsu PIN, lai Jūs to atcerētos.</string>
@@ -1312,8 +1312,6 @@ tālruņa numurs
   <string name="RegistrationActivity_play_services_error">Google Play pakalpojumu kļūme</string>
   <string name="RegistrationActivity_google_play_services_is_updating_or_unavailable">Google Play pakalpojumi tiek aktualizēti vai īslaicīgi nav pieejami. Lūdzu, mēģiniet vēlreiz.</string>
   <string name="RegistrationActivity_terms_and_privacy">Noteikumi &amp; privātuma politika</string>
-  <string name="RegistrationActivity_signal_needs_access_to_your_contacts_and_media_in_order_to_connect_with_friends">Signal ir nepieciešama piekļuve Jūsu kontaktpersonām un multividei, lai sazinātos ar draugiem, apmainītos ar ziņām un veiktu drošus zvanus</string>
-  <string name="RegistrationActivity_signal_needs_access_to_your_contacts_in_order_to_connect_with_friends">Lietotnei Signal ir nepieciešama piekļuve jūsu kontaktpersonām, lai jūs varētu sazināties ar draugiem, apmainīties ar ziņām un veikt drošus zvanus</string>
   <string name="RegistrationActivity_rate_limited_to_service">Pārāk daudz šī numura reģistrēšanas mēģinājumu. Vēlāk mēģiniet vēlreiz.</string>
   <string name="RegistrationActivity_unable_to_connect_to_service">Nevar izveidot savienojumu ar pakalpojumu. Lūdzu, pārbaudiet tīkla savienojumu un mēģiniet vēlreiz.</string>
   <plurals name="RegistrationActivity_debug_log_hint">
@@ -1708,6 +1706,12 @@ Saņemts nederīgas protokola versijas atslēgas apmaiņas ziņojums.
   <string name="QuoteView_original_missing">Oriģinālā ziņa netika atrasta</string>
   <!--conversation_fragment-->
   <string name="conversation_fragment__scroll_to_the_bottom_content_description">Ritināt līdz apakšai </string>
+  <!--BubbleOptOutTooltip-->
+  <!--Message to inform the user of what Android chat bubbles are-->
+  <!--Button to dismiss the tooltip for opting out of using Android bubbles-->
+  <string name="BubbleOptOutTooltip__not_now">Ne tagad</string>
+  <!--Button to move to the system settings to control the use of Android bubbles-->
+  <string name="BubbleOptOutTooltip__turn_off">Izslēgt</string>
   <!--safety_number_change_dialog-->
   <string name="safety_number_change_dialog__safety_number_changes">Drošības numura izmaiņas</string>
   <string name="safety_number_change_dialog__accept">Apstiprināt</string>
@@ -2365,7 +2369,6 @@ Saņemts nederīgas protokola versijas atslēgas apmaiņas ziņojums.
   <string name="Insights__title">Ieskati</string>
   <string name="InsightsDashboardFragment__title">Ieskati</string>
   <string name="InsightsDashboardFragment__signal_protocol_automatically_protected">Signāla protokols automātiski pasargājis %1$dno %% no tavām izejošajām ziņām pēdējo %2$d dienu laikā. Sarunas starp Signāla lietotājiem vienmēr tiek šifrētas no viena gala līdz otram (end-to-end).</string>
-  <string name="InsightsDashboardFragment__boost_your_signal">Uzlabot (boost) Signālu</string>
   <string name="InsightsDashboardFragment__not_enough_data">Nav pietiekami datu</string>
   <string name="InsightsDashboardFragment__your_insights_percentage_is_calculated_based_on">Jūsu Ieskatu procenti tiek aprēķināti balstoties uz izejošo ziņu skaita pēdējās %1$d dienās, kuras nav pagaisušas vai izdzēstas.</string>
   <string name="InsightsDashboardFragment__start_a_conversation">Sākt sarunu</string>
@@ -2478,15 +2481,15 @@ Saņemts nederīgas protokola versijas atslēgas apmaiņas ziņojums.
   <string name="KbsMegaphone__pins_keep_information_thats_stored_with_signal_encrytped">PIN noglabā Signal informāciju šifrētā veidā.</string>
   <string name="KbsMegaphone__create_pin">Izveidot PINu</string>
   <!--Research Megaphone-->
-  <string name="ResearchMegaphone_tell_signal_what_you_think">Paudiet savu viedokli par Signal</string>
-  <string name="ResearchMegaphone_to_make_signal_the_best_messaging_app_on_the_planet">Lai padarītu Signal par labāko ziņapmaiņas lietotni uz planētas, mēs ar prieku uzklausīsim jūsu atsauksmes.</string>
-  <string name="ResearchMegaphone_learn_more">Lasīt vairāk</string>
-  <string name="ResearchMegaphone_dismiss">Nerādīt</string>
-  <string name="ResearchMegaphoneDialog_signal_research">Signal izpēte</string>
-  <string name="ResearchMegaphoneDialog_we_believe_in_privacy"><![CDATA[<p><b>Mēs ticam privātumam.</b></p><p>Lietotne Signal jūs neizseko un neapkopo jūsu datus. Lai uzlabotu Signal atbilstoši katra lietotāja vēlmēm, mēs ņemam vērā lietotāju atsauksmes, <b>un mēs labprāt uzklausīsim arī jūsu viedokli un ieteikumus.</b></p><p>Mēs veicam aptauju, lai noskaidrotu, kā lietotni Signal izmantojat jūs. Mūsu aptaujā netiek apkopoti dati, pēc kuriem jūs varētu identificēt. Ja vēlaties sniegt papildu atsauksmes, jums ir iespēja norādīt savu kontaktinformāciju.</p><p>Ja jums ir dažas minūtes laika un viedoklis, ko paust, mēs labprāt to uzklausīsim.</p>]]></string>
-  <string name="ResearchMegaphoneDialog_take_the_survey">Piekrist aptaujai</string>
-  <string name="ResearchMegaphoneDialog_no_thanks">Nē, paldies</string>
-  <string name="ResearchMegaphoneDialog_the_survey_is_hosted_by_alchemer_at_the_secure_domain">Šo aptauju rīko uzņēmums Alchemer drošā domēnā surveys.signalusers.org</string>
+  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphone_tell_signal_what_you_think">Paudiet savu viedokli par Signal</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphone_to_make_signal_the_best_messaging_app_on_the_planet">Lai padarītu Signal par labāko ziņapmaiņas lietotni uz planētas, mēs ar prieku uzklausīsim jūsu atsauksmes.</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphone_learn_more">Lasīt vairāk</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphone_dismiss">Nerādīt</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphoneDialog_signal_research">Signal izpēte</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphoneDialog_we_believe_in_privacy"><![CDATA[<p><b>Mēs ticam privātumam.</b></p><p>Lietotne Signal jūs neizseko un neapkopo jūsu datus. Lai uzlabotu Signal atbilstoši katra lietotāja vēlmēm, mēs ņemam vērā lietotāju atsauksmes, <b>un mēs labprāt uzklausīsim arī jūsu viedokli un ieteikumus.</b></p><p>Mēs veicam aptauju, lai noskaidrotu, kā lietotni Signal izmantojat jūs. Mūsu aptaujā netiek apkopoti dati, pēc kuriem jūs varētu identificēt. Ja vēlaties sniegt papildu atsauksmes, jums ir iespēja norādīt savu kontaktinformāciju.</p><p>Ja jums ir dažas minūtes laika un viedoklis, ko paust, mēs labprāt to uzklausīsim.</p>]]></string> -->
+  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphoneDialog_take_the_survey">Piekrist aptaujai</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphoneDialog_no_thanks">Nē, paldies</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphoneDialog_the_survey_is_hosted_by_alchemer_at_the_secure_domain">Šo aptauju rīko uzņēmums Alchemer drošā domēnā surveys.signalusers.org</string> -->
   <!--transport_selection_list_item-->
   <string name="transport_selection_list_item__transport_icon">Transporta ikona</string>
   <string name="ConversationListFragment_loading">Notiek ielāde…</string>
@@ -2536,7 +2539,6 @@ Saņemts nederīgas protokola versijas atslēgas apmaiņas ziņojums.
   <string name="BackupDialog_verify">Verificēt</string>
   <string name="BackupDialog_you_successfully_entered_your_backup_passphrase">Jūs sekmīgi ievadījāt rezerves ieejas paroli</string>
   <string name="BackupDialog_passphrase_was_not_correct">Parole nav pareiza</string>
-  <string name="LocalBackupJob_creating_backup">Tiek veidota rezerves kopija…</string>
   <string name="LocalBackupJobApi29_backup_failed">Dublēšana neizdevās</string>
   <string name="LocalBackupJobApi29_your_backup_directory_has_been_deleted_or_moved">Jūsu dublējumu direktorijs ir dzēsts vai pārvietots.</string>
   <string name="LocalBackupJobApi29_your_backup_file_is_too_large">Jūsu dublējuma fails ir pārāk liels saglabāšanai šajā apjomā.</string>
@@ -2658,6 +2660,7 @@ Saņemts nederīgas protokola versijas atslēgas apmaiņas ziņojums.
   <string name="DeviceTransfer__transferring_data">Notiek datu pārsūtīšana</string>
   <string name="DeviceTransfer__keep_both_devices_near_each_other">Turiet abas ierīces tuvu vienu otrai. Neslēdziet ārā nevienu no ierīcēm un neaizveriet lietotni Signal. Pārsūtīšana ir pilnībā šifrēta.</string>
   <string name="DeviceTransfer__d_messages_so_far">Pagaidām %1$d ziņas…</string>
+  <!--Filled in with total percentage of messages transferred-->
   <string name="DeviceTransfer__cancel">Atcelt</string>
   <string name="DeviceTransfer__try_again">Mēģiniet vēlreiz</string>
   <string name="DeviceTransfer__stop_transfer_question">Vai pārtraukt nosūtīšanu?</string>
@@ -2707,6 +2710,7 @@ Saņemts nederīgas protokola versijas atslēgas apmaiņas ziņojums.
   <string name="RecipientBottomSheet_block">Bloķēt</string>
   <string name="RecipientBottomSheet_unblock">Atbloķēt</string>
   <string name="RecipientBottomSheet_add_to_contacts">Pievienot kontaktiem</string>
+  <!--Error message that displays when a user tries to tap to view system contact details but has no app that supports it-->
   <string name="RecipientBottomSheet_add_to_a_group">Pievienot grupai</string>
   <string name="RecipientBottomSheet_add_to_another_group">Pievienot citai grupai</string>
   <string name="RecipientBottomSheet_view_safety_number">Skatīt drošības numuru</string>
@@ -2807,6 +2811,12 @@ Saņemts nederīgas protokola versijas atslēgas apmaiņas ziņojums.
   <string name="DeleteAccountFragment__failed_to_delete_account">Neizdevās izdzēst kontu. Vai jums ir savienojumus ar tīklu?</string>
   <string name="DeleteAccountFragment__failed_to_delete_local_data">Neizdevās izdzēst lokālos datus. Tos var manuāli dzēst sistēmas lietojumprogrammas iestatījumos.</string>
   <string name="DeleteAccountFragment__launch_app_settings">Atvērt lietotnes iestatījumus</string>
+  <!--Title of progress dialog shown when a user deletes their account and the process is leaving all groups-->
+  <!--Title of progress dialog shown when a user deletes their account and the process has left all groups-->
+  <!--Message of progress dialog shown when a user deletes their account and the process is leaving groups-->
+  <!--Message of progress dialog shown when a user deletes their account and the process has left all groups-->
+  <!--Title of error dialog shown when a network error occurs during account deletion-->
+  <!--Message of error dialog shown when a network error occurs during account deletion-->
   <!--DeleteAccountCountryPickerFragment-->
   <string name="DeleteAccountCountryPickerFragment__search_countries">Meklēt valstis</string>
   <!--CreateGroupActivity-->
@@ -2991,6 +3001,12 @@ Saņemts nederīgas protokola versijas atslēgas apmaiņas ziņojums.
   <string name="NotificationsSettingsFragment__calls">Zvani</string>
   <string name="NotificationsSettingsFragment__notify_when">Paziņot, ja…</string>
   <string name="NotificationsSettingsFragment__contact_joins_signal">Kontaktpersona pievienojas lietotnei Signal</string>
+  <!--Notification preference header-->
+  <!--Notification preference option header-->
+  <!--Notification preference summary text-->
+  <!--NotificationProfilesFragment-->
+  <!--Title for notification profiles screen that shows all existing profiles-->
+  <!--Button text to create a notification profile-->
   <!--PrivacySettingsFragment-->
   <string name="PrivacySettingsFragment__blocked">Bloķēti</string>
   <string name="PrivacySettingsFragment__d_contacts">%1$d kontaktpersonas</string>
@@ -3083,6 +3099,8 @@ Saņemts nederīgas protokola versijas atslēgas apmaiņas ziņojums.
   <string name="AddAProfilePhotoMegaphone__choose_a_look_and_color">Izvēlieties izskatu un krāsu vai pielāgojiet savus iniciāļus.</string>
   <string name="AddAProfilePhotoMegaphone__not_now">Ne tagad</string>
   <string name="AddAProfilePhotoMegaphone__add_photo">Pievienot fotoattēlu</string>
+  <!--BecomeASustainerMegaphone-->
+  <string name="BecomeASustainerMegaphone__no_thanks">Nē, paldies</string>
   <!--KeyboardPagerFragment-->
   <string name="KeyboardPagerFragment_emoji">Emocijzīme</string>
   <string name="KeyboardPagerFragment_open_emoji_search">Atvērt emocijzīmju meklēšanu</string>
@@ -3204,15 +3222,109 @@ Saņemts nederīgas protokola versijas atslēgas apmaiņas ziņojums.
   <string name="MediaReviewImagePageFragment__discard">Atmest</string>
   <string name="SelectFeaturedBadgeFragment__preview">Priekšskatīt</string>
   <string name="SubscribeFragment__signal_is_powered_by_people_like_you">Signal attīsta un uzlabo tādi cilvēki kā jūs.</string>
-  <string name="SubscribeFragment__donation_amount">Ziedojuma summa</string>
   <string name="SubscribeFragment__not_now">Ne tagad</string>
   <string name="SubscribeFragment__confirm">Apstiprināt</string>
   <string name="SubscribeFragment__update">Aktualizēt</string>
   <string name="SubscribeThanksForYourSupportBottomSheetDialogFragment__done">Darīts</string>
   <string name="Boost__enter_custom_amount">Ievadīt pielāgotu summu</string>
+  <!--Displayed on "My Support" screen when user badge failed to be added to their account-->
   <string name="ExpiredBadgeBottomSheetDialogFragment__not_now">Ne tagad</string>
   <string name="Subscription__contact_support">Sazināties ar atbalstu</string>
   <string name="SubscribeFragment__processing_payment">Maksājums tiek apstrādāts…</string>
-  <string name="DonationsErrors__payment_failed">Maksājums neizdevās</string>
+  <!--Displayed in notification when user payment fails to process on Stripe-->
+  <!--Displayed on "My Support" screen when user subscription payment method failed.-->
+  <string name="NetworkFailure__retry">Mēģināt vēlreiz</string>
+  <!--Title of create notification profile screen-->
+  <!--Hint text for create/edit notification profile name-->
+  <string name="EditNotificationProfileFragment__profile_name">Profila nosaukums</string>
+  <!--Name has a max length, this shows how many characters are used out of the max-->
+  <string name="EditNotificationProfileFragment__count">%1$d/%2$d</string>
+  <!--Call to action button to continue to the next step-->
+  <string name="EditNotificationProfileFragment__next">Nākošais/Tālāk</string>
+  <!--Call to action button once the profile is named to create the profile and continue to the customization steps-->
+  <string name="EditNotificationProfileFragment__create">Izveidot</string>
+  <!--Call to action button once the profile name is edited-->
+  <string name="EditNotificationProfileFragment__save">Saglabāt</string>
+  <!--Title of edit notification profile screen-->
+  <!--Error message shown when attempting to create or edit a profile name to an existing profile name-->
+  <!--Preset selectable name for a profile name, shown as list in edit/create screen-->
+  <string name="EditNotificationProfileFragment__work">Darba</string>
+  <!--Preset selectable name for a profile name, shown as list in edit/create screen-->
+  <!--Preset selectable name for a profile name, shown as list in edit/create screen-->
+  <!--Preset selectable name for a profile name, shown as list in edit/create screen-->
+  <!--Preset selectable name for a profile name, shown as list in edit/create screen-->
+  <!--Error message shown when attempting to next/save without a profile name-->
+  <!--Title for add recipients to notification profile screen in create flow-->
+  <!--Description of what the user should be doing with this screen-->
+  <!--Button text that launches the contact picker to select from-->
+  <!--Call to action button on contact picker for adding to profile-->
+  <string name="SelectRecipientsFragment__add">Pievienot</string>
+  <!--Notification profiles home fragment, shown when no profiles have been created yet-->
+  <!--Header shown above list of all notification profiles-->
+  <!--Button that starts the create new notification profile flow-->
+  <!--Profile active status, indicating the current profile is on for an unknown amount of time-->
+  <string name="NotificationProfilesFragment__on">Ieslēgts</string>
+  <!--Button use to permanently delete a notification profile-->
+  <!--Snakbar message shown when removing a recipient from a profile-->
+  <!--Snackbar button text that will undo the recipient remove-->
+  <string name="NotificationProfileDetails__undo">Atsaukt</string>
+  <!--Dialog message shown to confirm deleting a profile-->
+  <!--Dialog button to delete profile-->
+  <string name="NotificationProfileDetails__delete">Dzēst</string>
+  <!--Title/accessibility text for edit icon to edit profile emoji/name-->
+  <!--Schedule description if all days are selected-->
+  <!--Profile status on if it is the active profile-->
+  <string name="NotificationProfileDetails__on">Ieslēgts</string>
+  <!--Profile status on if it is not the active profile-->
+  <string name="NotificationProfileDetails__off">Izslēgts</string>
+  <!--Description of hours for schedule (start to end) times-->
+  <string name="NotificationProfileDetails__s_to_s">%1$s %2$s</string>
+  <!--Section header for exceptions to the notification profile-->
+  <!--Profile exception to allow all calls through the profile restrictions-->
+  <!--Profile exception to allow all @mentions through the profile restrictions-->
+  <!--Section header for showing schedule information-->
+  <!--If member list is long, will truncate the list and show an option to then see all when tapped-->
+  <string name="NotificationProfileDetails__see_all">Skatīt visus</string>
+  <!--Title for add schedule to profile in create flow-->
+  <!--Descriptor text indicating what the user can do with this screen-->
+  <!--Text shown next to toggle switch to enable/disable schedule-->
+  <!--Label for showing the start time for the schedule-->
+  <string name="EditNotificationProfileSchedule__start">Sākt</string>
+  <!--Label for showing the end time for the schedule-->
+  <string name="EditNotificationProfileSchedule__end">Beigt</string>
+  <!--First letter of Sunday-->
+  <!--First letter of Monday-->
+  <!--First letter of Tuesday-->
+  <!--First letter of Wednesday-->
+  <!--First letter of Thursday-->
+  <!--First letter of Friday-->
+  <!--First letter of Saturday-->
+  <!--Title of select time dialog shown when setting start time for schedule-->
+  <!--Title of select time dialog shown when setting end time for schedule-->
+  <!--If in edit mode, call to action button text show to save schedule to profile-->
+  <string name="EditNotificationProfileSchedule__save">Saglabāt</string>
+  <!--If in create mode, call to action button text to show to skip enabling a schedule-->
+  <string name="EditNotificationProfileSchedule__skip">Izlaist</string>
+  <!--If in create mode, call to action button text to show to use the enabled schedule and move to the next screen-->
+  <string name="EditNotificationProfileSchedule__next">Nākošais/Tālāk</string>
+  <!--Error message shown if trying to save/use a schedule with no days selected-->
+  <!--Title for final screen shown after completing a profile creation-->
+  <!--Call to action button to press to close the created screen and move to the profile details screen-->
+  <string name="NotificationProfileCreated__done">Darīts</string>
+  <!--Descriptor text shown to indicate how to manually turn a profile on/off-->
+  <!--Descriptor text shown to indicate you can add a schedule later since you did not add one during create flow-->
+  <!--Descriptor text shown to indicate your profile will follow the schedule set during create flow-->
+  <!--Button text shown in profile selection bottom sheet to create a new profile-->
+  <!--Manual enable option to manually enable a profile for 1 hour-->
+  <!--Manual enable option to manually enable a profile until a set time (currently 6pm or 8am depending on what is next)-->
+  <string name="NotificationProfileSelection__until_s">Līdz %1$s</string>
+  <!--Option to view profile details-->
+  <!--Descriptor text indicating how long a profile will be on when there is a time component associated with it-->
+  <!--Title for notification profile megaphone-->
+  <!--Description for notification profile megaphone-->
+  <!--Call to action button to create a profile from megaphone-->
+  <!--Button to dismiss notification profile megaphone-->
+  <string name="NotificationProfilesMegaphone__not_now">Ne tagad</string>
+  <!--Displayed in a toast when we fail to open the ringtone picker-->
   <!--EOF-->
 </resources>

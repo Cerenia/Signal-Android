@@ -3,49 +3,36 @@ package org.thoughtcrime.securesms.components.settings.app
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import androidx.activity.viewModels
 import androidx.navigation.NavDirections
+import io.reactivex.rxjava3.subjects.PublishSubject
+import io.reactivex.rxjava3.subjects.Subject
 import org.thoughtcrime.securesms.MainActivity
 import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.components.settings.DSLSettingsActivity
+import org.thoughtcrime.securesms.components.settings.app.notifications.profiles.EditNotificationProfileScheduleFragmentArgs
+import org.thoughtcrime.securesms.components.settings.app.subscription.DonationPaymentComponent
 import org.thoughtcrime.securesms.components.settings.app.subscription.DonationPaymentRepository
-import org.thoughtcrime.securesms.components.settings.app.subscription.SubscriptionsRepository
-import org.thoughtcrime.securesms.components.settings.app.subscription.boost.BoostRepository
-import org.thoughtcrime.securesms.components.settings.app.subscription.boost.BoostViewModel
-import org.thoughtcrime.securesms.components.settings.app.subscription.subscribe.SubscribeViewModel
-import org.thoughtcrime.securesms.dependencies.ApplicationDependencies
 import org.thoughtcrime.securesms.help.HelpFragment
 import org.thoughtcrime.securesms.keyvalue.SettingsValues
 import org.thoughtcrime.securesms.keyvalue.SignalStore
 import org.thoughtcrime.securesms.service.KeyCachingService
 import org.thoughtcrime.securesms.util.CachedInflater
 import org.thoughtcrime.securesms.util.DynamicTheme
-import org.thoughtcrime.securesms.util.FeatureFlags
+import org.thoughtcrime.securesms.util.navigation.safeNavigate
 
 private const val START_LOCATION = "app.settings.start.location"
+private const val START_ARGUMENTS = "app.settings.start.arguments"
 private const val NOTIFICATION_CATEGORY = "android.intent.category.NOTIFICATION_PREFERENCES"
 private const val STATE_WAS_CONFIGURATION_UPDATED = "app.settings.state.configuration.updated"
 
-class AppSettingsActivity : DSLSettingsActivity() {
+class AppSettingsActivity : DSLSettingsActivity(), DonationPaymentComponent {
 
   private var wasConfigurationUpdated = false
 
-  private val donationRepository: DonationPaymentRepository by lazy { DonationPaymentRepository(this) }
-  private val subscribeViewModel: SubscribeViewModel by viewModels(
-    factoryProducer = {
-      SubscribeViewModel.Factory(SubscriptionsRepository(ApplicationDependencies.getDonationsService()), donationRepository, FETCH_SUBSCRIPTION_TOKEN_REQUEST_CODE)
-    }
-  )
-
-  private val boostViewModel: BoostViewModel by viewModels(
-    factoryProducer = {
-      BoostViewModel.Factory(BoostRepository(), donationRepository, FETCH_BOOST_TOKEN_REQUEST_CODE)
-    }
-  )
+  override val donationPaymentRepository: DonationPaymentRepository by lazy { DonationPaymentRepository(this) }
+  override val googlePayResultPublisher: Subject<DonationPaymentComponent.GooglePayResult> = PublishSubject.create()
 
   override fun onCreate(savedInstanceState: Bundle?, ready: Boolean) {
-    warmDonationViewModels()
-
     if (intent?.hasExtra(ARG_NAV_GRAPH) != true) {
       intent?.putExtra(ARG_NAV_GRAPH, R.navigation.app_settings)
     }
@@ -64,6 +51,13 @@ class AppSettingsActivity : DSLSettingsActivity() {
         StartLocation.NOTIFICATIONS -> AppSettingsFragmentDirections.actionDirectToNotificationsSettingsFragment()
         StartLocation.CHANGE_NUMBER -> AppSettingsFragmentDirections.actionDirectToChangeNumberFragment()
         StartLocation.SUBSCRIPTIONS -> AppSettingsFragmentDirections.actionDirectToSubscriptions()
+        StartLocation.BOOST -> AppSettingsFragmentDirections.actionAppSettingsFragmentToBoostsFragment()
+        StartLocation.MANAGE_SUBSCRIPTIONS -> AppSettingsFragmentDirections.actionDirectToManageDonations()
+        StartLocation.NOTIFICATION_PROFILES -> AppSettingsFragmentDirections.actionDirectToNotificationProfiles()
+        StartLocation.CREATE_NOTIFICATION_PROFILE -> AppSettingsFragmentDirections.actionDirectToCreateNotificationProfiles()
+        StartLocation.NOTIFICATION_PROFILE_DETAILS -> AppSettingsFragmentDirections.actionDirectToNotificationProfileDetails(
+          EditNotificationProfileScheduleFragmentArgs.fromBundle(intent.getBundleExtra(START_ARGUMENTS)!!).profileId
+        )
       }
     }
 
@@ -72,7 +66,7 @@ class AppSettingsActivity : DSLSettingsActivity() {
     }
 
     startingAction?.let {
-      navController.navigate(it)
+      navController.safeNavigate(it)
     }
 
     SignalStore.settings().onConfigurationSettingChanged.observe(this) { key ->
@@ -90,6 +84,12 @@ class AppSettingsActivity : DSLSettingsActivity() {
     }
   }
 
+  override fun onNewIntent(intent: Intent?) {
+    super.onNewIntent(intent)
+    finish()
+    startActivity(intent)
+  }
+
   override fun onSaveInstanceState(outState: Bundle) {
     super.onSaveInstanceState(outState)
     outState.putBoolean(STATE_WAS_CONFIGURATION_UPDATED, wasConfigurationUpdated)
@@ -105,15 +105,10 @@ class AppSettingsActivity : DSLSettingsActivity() {
 
   override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
     super.onActivityResult(requestCode, resultCode, data)
-    subscribeViewModel.onActivityResult(requestCode, resultCode, data)
-    boostViewModel.onActivityResult(requestCode, resultCode, data)
+    googlePayResultPublisher.onNext(DonationPaymentComponent.GooglePayResult(requestCode, resultCode, data))
   }
 
   companion object {
-
-    private const val FETCH_SUBSCRIPTION_TOKEN_REQUEST_CODE = 1000
-    private const val FETCH_BOOST_TOKEN_REQUEST_CODE = 2000
-
     @JvmStatic
     fun home(context: Context): Intent = getIntentForStartLocation(context, StartLocation.HOME)
 
@@ -138,17 +133,32 @@ class AppSettingsActivity : DSLSettingsActivity() {
     @JvmStatic
     fun subscriptions(context: Context): Intent = getIntentForStartLocation(context, StartLocation.SUBSCRIPTIONS)
 
+    @JvmStatic
+    fun boost(context: Context): Intent = getIntentForStartLocation(context, StartLocation.BOOST)
+
+    @JvmStatic
+    fun manageSubscriptions(context: Context): Intent = getIntentForStartLocation(context, StartLocation.MANAGE_SUBSCRIPTIONS)
+
+    @JvmStatic
+    fun notificationProfiles(context: Context): Intent = getIntentForStartLocation(context, StartLocation.NOTIFICATION_PROFILES)
+
+    @JvmStatic
+    fun createNotificationProfile(context: Context): Intent = getIntentForStartLocation(context, StartLocation.CREATE_NOTIFICATION_PROFILE)
+
+    @JvmStatic
+    fun notificationProfileDetails(context: Context, profileId: Long): Intent {
+      val arguments = EditNotificationProfileScheduleFragmentArgs.Builder(profileId, false)
+        .build()
+        .toBundle()
+
+      return getIntentForStartLocation(context, StartLocation.NOTIFICATION_PROFILE_DETAILS)
+        .putExtra(START_ARGUMENTS, arguments)
+    }
+
     private fun getIntentForStartLocation(context: Context, startLocation: StartLocation): Intent {
       return Intent(context, AppSettingsActivity::class.java)
         .putExtra(ARG_NAV_GRAPH, R.navigation.app_settings)
         .putExtra(START_LOCATION, startLocation.code)
-    }
-  }
-
-  private fun warmDonationViewModels() {
-    if (FeatureFlags.donorBadges()) {
-      subscribeViewModel
-      boostViewModel
     }
   }
 
@@ -159,7 +169,12 @@ class AppSettingsActivity : DSLSettingsActivity() {
     PROXY(3),
     NOTIFICATIONS(4),
     CHANGE_NUMBER(5),
-    SUBSCRIPTIONS(6);
+    SUBSCRIPTIONS(6),
+    BOOST(7),
+    MANAGE_SUBSCRIPTIONS(8),
+    NOTIFICATION_PROFILES(9),
+    CREATE_NOTIFICATION_PROFILE(10),
+    NOTIFICATION_PROFILE_DETAILS(11);
 
     companion object {
       fun fromCode(code: Int?): StartLocation {

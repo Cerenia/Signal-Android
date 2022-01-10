@@ -1,12 +1,9 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-kapt'
 apply plugin: 'com.google.protobuf'
 apply plugin: 'androidx.navigation.safeargs'
-apply plugin: 'witness'
 apply plugin: 'org.jlleitschuh.gradle.ktlint'
 apply from: 'translations.gradle'
-apply from: 'witness-verifications.gradle'
 apply plugin: 'org.jetbrains.kotlin.android'
 apply plugin: 'app.cash.exhaustive'
 apply plugin: 'kotlin-parcelize'
@@ -22,12 +19,6 @@ repositories {
         url "https://raw.github.com/signalapp/maven/master/sqlcipher/release/"
         content {
             includeGroupByRegex "org\\.signal.*"
-        }
-    }
-    maven { // textdrawable
-        url 'https://dl.bintray.com/amulyakhare/maven'
-        content {
-            includeGroupByRegex "com\\.amulyakhare.*"
         }
     }
     maven {
@@ -46,7 +37,6 @@ repositories {
             includeVersion "cn.carbswang.android", "NumberPickerView", "1.0.9"
             includeVersion "com.takisoft.fix", "colorpicker", "0.9.1"
             includeVersion "com.codewaves.stickyheadergrid", "stickyheadergrid", "0.9.4"
-            includeVersion "com.amulyakhare", "com.amulyakhare.textdrawable", "1.0.1"
             includeVersion "com.google.android", "flexbox", "0.3.0"
         }
     }
@@ -54,7 +44,7 @@ repositories {
 
 protobuf {
     protoc {
-        artifact = 'com.google.protobuf:protoc:3.10.0'
+        artifact = 'com.google.protobuf:protoc:3.18.0'
     }
     generateProtoTasks {
         all().each { task ->
@@ -67,8 +57,8 @@ protobuf {
     }
 }
 
-def canonicalVersionCode = 946
-def canonicalVersionName = "5.25.8"
+def canonicalVersionCode = 984
+def canonicalVersionName = "5.29.0"
 
 def postFixSize = 100
 def abiPostFix = ['universal'   : 0,
@@ -80,16 +70,9 @@ def abiPostFix = ['universal'   : 0,
 def keystores = [ 'debug'  : loadKeystoreProperties('keystore.debug.properties') ]
 
 def selectableVariants = [
-        'internalProdFlipper',
-        'internalProdPerf',
-        'internalProdRelease',
-        'internalStagingFlipper',
-        'internalStagingPerf',
-        'internalStagingRelease',
         'nightlyProdFlipper',
         'nightlyProdPerf',
         'nightlyProdRelease',
-        'nightlyStagingPerf',
         'playProdDebug',
         'playProdFlipper',
         'playProdPerf',
@@ -145,7 +128,7 @@ android {
 
         buildConfigField "long", "BUILD_TIMESTAMP", getLastCommitTimestamp() + "L"
         buildConfigField "String", "GIT_HASH", "\"${getGitHash()}\""
-        buildConfigField "String", "SIGNAL_URL", "\"https://textsecure-service.whispersystems.org\""
+        buildConfigField "String", "SIGNAL_URL", "\"https://chat.signal.org\""
         buildConfigField "String", "STORAGE_URL", "\"https://storage.signal.org\""
         buildConfigField "String", "SIGNAL_CDN_URL", "\"https://cdn.signal.org\""
         buildConfigField "String", "SIGNAL_CDN2_URL", "\"https://cdn2.signal.org\""
@@ -160,18 +143,18 @@ android {
         buildConfigField "int", "CONTENT_PROXY_PORT", "443"
         buildConfigField "String", "SIGNAL_AGENT", "\"OWA\""
         buildConfigField "String", "CDSH_PUBLIC_KEY", "\"2fe57da347cd62431528daac5fbb290730fff684afc4cfc2ed90995f58cb3b74\""
-        buildConfigField "String", "CDSH_CODE_HASH", "\"ec31a51880d19a5e9e0fed404740c1a3ff53a553125564b745acce475f0fded8\""
+        buildConfigField "String", "CDSH_CODE_HASH", "\"ec58c0d7561de8d5657f3a4b22a635eaa305204e9359dcc80a99dfd0c5f1cbf2\""
         buildConfigField "String", "CDS_MRENCLAVE", "\"c98e00a4e3ff977a56afefe7362a27e4961e4f19e211febfbb19b897e6b80b15\""
         buildConfigField "org.thoughtcrime.securesms.KbsEnclave", "KBS_ENCLAVE", "new org.thoughtcrime.securesms.KbsEnclave(\"fe7c1bfae98f9b073d220366ea31163ee82f6d04bead774f71ca8e5c40847bfe\"," +
                                                                                                 "\"fe7c1bfae98f9b073d220366ea31163ee82f6d04bead774f71ca8e5c40847bfe\", " +
                                                                                                 "\"a3baab19ef6ce6f34ab9ebb25ba722725ae44a8872dc0ff08ad6d83a9489de87\")";
         buildConfigField "org.thoughtcrime.securesms.KbsEnclave[]", "KBS_FALLBACKS", "new org.thoughtcrime.securesms.KbsEnclave[0]"
         buildConfigField "String", "UNIDENTIFIED_SENDER_TRUST_ROOT", "\"BXu6QIKVz5MA8gstzfOgRQGqyLqOwNKHL6INkv3IHWMF\""
-        buildConfigField "String", "ZKGROUP_SERVER_PUBLIC_PARAMS", "\"AMhf5ywVwITZMsff/eCyudZx9JDmkkkbV6PInzG4p8x3VqVJSFiMvnvlEKWuRob/1eaIetR31IYeAbm0NdOuHH8Qi+Rexi1wLlpzIo1gstHWBfZzy1+qHRV5A4TqPp15YzBPm0WSggW6PbSn+F4lf57VCnHF7p8SvzAA2ZZJPYJURt8X7bbg+H3i+PEjH9DXItNEqs2sNcug37xZQDLm7X36nOoGPs54XsEGzPdEV+itQNGUFEjY6X9Uv+Acuks7NpyGvCoKxGwgKgE5XyJ+nNKlyHHOLb6N1NuHyBrZrgtY\""
+        buildConfigField "String", "ZKGROUP_SERVER_PUBLIC_PARAMS", "\"AMhf5ywVwITZMsff/eCyudZx9JDmkkkbV6PInzG4p8x3VqVJSFiMvnvlEKWuRob/1eaIetR31IYeAbm0NdOuHH8Qi+Rexi1wLlpzIo1gstHWBfZzy1+qHRV5A4TqPp15YzBPm0WSggW6PbSn+F4lf57VCnHF7p8SvzAA2ZZJPYJURt8X7bbg+H3i+PEjH9DXItNEqs2sNcug37xZQDLm7X36nOoGPs54XsEGzPdEV+itQNGUFEjY6X9Uv+Acuks7NpyGvCoKxGwgKgE5XyJ+nNKlyHHOLb6N1NuHyBrZrgtY/JYJHRooo5CEqYKBqdFnmbTVGEkCvJKxLnjwKWf+fEPoWeQFj5ObDjcKMZf2Jm2Ae69x+ikU5gBXsRmoF94GXQ==\""
         buildConfigField "String[]", "LANGUAGES", "new String[]{\"" + autoResConfig().collect { s -> s.replace('-r', '_') }.join('", "') + '"}'
         buildConfigField "int", "CANONICAL_VERSION_CODE", "$canonicalVersionCode"
         buildConfigField "String", "DEFAULT_CURRENCIES", "\"EUR,AUD,GBP,CAD,CNY\""
-        buildConfigField "int[]", "MOBILE_COIN_REGIONS", "new int[]{44,49,33,41}"
+        buildConfigField "int[]", "MOBILE_COIN_BLACKLIST", "new int[]{98,963,53,850,7}"
         buildConfigField "String", "GIPHY_API_KEY", "\"3o6ZsYH6U6Eri53TXy\""
         buildConfigField "String", "RECAPTCHA_PROOF_URL", "\"https://signalcaptchas.org/challenge/generate.html\""
 
@@ -202,6 +185,16 @@ android {
 
     testOptions {
         execution 'ANDROIDX_TEST_ORCHESTRATOR'
+    }
+
+    sourceSets {
+        test {
+            java.srcDirs += "$projectDir/src/testShared"
+        }
+
+        androidTest {
+            java.srcDirs += "$projectDir/src/testShared"
+        }
     }
 
     compileOptions {
@@ -299,14 +292,6 @@ android {
             buildConfigField "String", "BUILD_DISTRIBUTION_TYPE", "\"website\""
         }
 
-        internal {
-            dimension 'distribution'
-            ext.websiteUpdateUrl = "null"
-            buildConfigField "boolean", "PLAY_STORE_DISABLED", "false"
-            buildConfigField "String", "NOPLAY_UPDATE_URL", "$ext.websiteUpdateUrl"
-            buildConfigField "String", "BUILD_DISTRIBUTION_TYPE", "\"internal\""
-        }
-
         nightly {
             dimension 'distribution'
             versionNameSuffix "-nightly-untagged-${getDateSuffix()}"
@@ -340,7 +325,7 @@ android {
 
             applicationIdSuffix ".staging"
 
-            buildConfigField "String", "SIGNAL_URL", "\"https://textsecure-service-staging.whispersystems.org\""
+            buildConfigField "String", "SIGNAL_URL", "\"https://chat.staging.signal.org\""
             buildConfigField "String", "STORAGE_URL", "\"https://storage-staging.signal.org\""
             buildConfigField "String", "SIGNAL_CDN_URL", "\"https://cdn-staging.signal.org\""
             buildConfigField "String", "SIGNAL_CDN2_URL", "\"https://cdn2-staging.signal.org\""
@@ -352,7 +337,7 @@ android {
                                                                                                     "\"a3baab19ef6ce6f34ab9ebb25ba722725ae44a8872dc0ff08ad6d83a9489de87\")"
             buildConfigField "org.thoughtcrime.securesms.KbsEnclave[]", "KBS_FALLBACKS", "new org.thoughtcrime.securesms.KbsEnclave[0]"
             buildConfigField "String", "UNIDENTIFIED_SENDER_TRUST_ROOT", "\"BbqY1DzohE4NUZoVF+L18oUPrK3kILllLEJh2UnPSsEx\""
-            buildConfigField "String", "ZKGROUP_SERVER_PUBLIC_PARAMS", "\"ABSY21VckQcbSXVNCGRYJcfWHiAMZmpTtTELcDmxgdFbtp/bWsSxZdMKzfCp8rvIs8ocCU3B37fT3r4Mi5qAemeGeR2X+/YmOGR5ofui7tD5mDQfstAI9i+4WpMtIe8KC3wU5w3Inq3uNWVmoGtpKndsNfwJrCg0Hd9zmObhypUnSkfYn2ooMOOnBpfdanRtrvetZUayDMSC5iSRcXKpdlukrpzzsCIvEwjwQlJYVPOQPj4V0F4UXXBdHSLK05uoPBCQG8G9rYIGedYsClJXnbrgGYG3eMTG5hnx4X4ntARB\""
+            buildConfigField "String", "ZKGROUP_SERVER_PUBLIC_PARAMS", "\"ABSY21VckQcbSXVNCGRYJcfWHiAMZmpTtTELcDmxgdFbtp/bWsSxZdMKzfCp8rvIs8ocCU3B37fT3r4Mi5qAemeGeR2X+/YmOGR5ofui7tD5mDQfstAI9i+4WpMtIe8KC3wU5w3Inq3uNWVmoGtpKndsNfwJrCg0Hd9zmObhypUnSkfYn2ooMOOnBpfdanRtrvetZUayDMSC5iSRcXKpdlukrpzzsCIvEwjwQlJYVPOQPj4V0F4UXXBdHSLK05uoPBCQG8G9rYIGedYsClJXnbrgGYG3eMTG5hnx4X4ntARBgELuMWWUEEfSK0mjXg+/2lPmWcTZWR9nkqgQQP0tbzuiPm74H2wMO4u1Wafe+UwyIlIT9L7KLS19Aw8r4sPrXQ==\""
             buildConfigField "String", "MOBILE_COIN_ENVIRONMENT", "\"testnet\""
             buildConfigField "String", "RECAPTCHA_PROOF_URL", "\"https://signalcaptchas.org/staging/challenge/generate.html\""
 
@@ -393,6 +378,7 @@ android {
     }
 
     lintOptions {
+        checkReleaseBuilds false
         abortOnError true
         baseline file("lint-baseline.xml")
         disable "LintError"
@@ -460,12 +446,12 @@ dependencies {
     implementation project(':libsignal-service')
     implementation project(':paging')
     implementation project(':core-util')
+    implementation project(':glide-config')
     implementation project(':video')
     implementation project(':device-transfer')
     implementation project(':image-editor')
     implementation project(':donations')
 
-    implementation libs.signal.zkgroup.android
     implementation libs.signal.client.android
     implementation libs.google.protobuf.javalite
 
@@ -487,8 +473,6 @@ dependencies {
     implementation libs.apache.httpclient.android
     implementation libs.photoview
     implementation libs.glide.glide
-    kapt libs.glide.compiler
-    kapt libs.androidx.annotation
     implementation libs.roundedimageview
     implementation libs.materialish.progress
     implementation libs.greenrobot.eventbus
@@ -496,7 +480,6 @@ dependencies {
     implementation libs.floatingactionbutton
     implementation libs.google.zxing.android.integration
     implementation libs.time.duration.picker
-    implementation libs.textdrawable
     implementation libs.google.zxing.core
     implementation (libs.subsampling.scale.image.view) {
         exclude group: 'com.android.support', module: 'support-annotations'
@@ -533,6 +516,7 @@ dependencies {
 
     flipperImplementation libs.facebook.flipper
     flipperImplementation libs.facebook.soloader
+    flipperImplementation libs.square.leakcanary
 
     testImplementation testLibs.junit.junit
     testImplementation testLibs.assertj.core
@@ -562,12 +546,9 @@ dependencies {
 
     implementation libs.rxjava3.rxandroid
     implementation libs.rxjava3.rxkotlin
+    implementation libs.rxdogtag
 
     androidTestUtil 'androidx.test:orchestrator:1.4.0'
-}
-
-dependencyVerification {
-    configuration = '(play|website)(Prod|Staging)(Debug|Release)RuntimeClasspath'
 }
 
 def getLastCommitTimestamp() {
@@ -613,7 +594,8 @@ def getCurrentGitTag() {
     def output = stdout.toString().trim()
 
     if (output != null && output.size() > 0) {
-        return output.split('\n')[0];
+        def tags = output.split('\n').toList()
+        return tags.stream().filter(t -> t.contains('nightly')).findFirst().orElse(tags.get(0))
     } else {
         return null
     }

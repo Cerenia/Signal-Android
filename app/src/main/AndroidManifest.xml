@@ -380,7 +380,7 @@
               android:label="@string/AndroidManifest__change_passphrase"
               android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize"/>
 
-    <activity android:name=".VerifyIdentityActivity"
+    <activity android:name=".verify.VerifyIdentityActivity"
               android:theme="@style/Signal.DayNight.NoActionBar"
               android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize"/>
 
@@ -399,7 +399,7 @@
             android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize"/>
 
         <activity android:name=".components.settings.conversation.ConversationSettingsActivity"
-            android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize"
+            android:configChanges="touchscreen|keyboard|keyboardHidden|screenLayout|screenSize"
             android:theme="@style/Signal.DayNight.ConversationSettings"
             android:windowSoftInputMode="stateAlwaysHidden">
         </activity>
@@ -769,22 +769,6 @@
         <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/file_provider_paths" />
 
     </provider>
-
-    <provider android:name=".database.DatabaseContentProviders$Conversation"
-              android:authorities="${applicationId}.database.conversation"
-              android:exported="false" />
-
-    <provider android:name=".database.DatabaseContentProviders$Attachment"
-              android:authorities="${applicationId}.database.attachment"
-              android:exported="false" />
-
-    <provider android:name=".database.DatabaseContentProviders$Sticker"
-              android:authorities="${applicationId}.database.sticker"
-              android:exported="false" />
-
-    <provider android:name=".database.DatabaseContentProviders$StickerPack"
-              android:authorities="${applicationId}.database.stickerpack"
-              android:exported="false" />
 
     <receiver android:name=".service.BootReceiver">
         <intent-filter>

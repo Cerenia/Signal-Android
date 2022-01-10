@@ -4,6 +4,7 @@ import android.app.Application;
 
 import androidx.annotation.NonNull;
 
+import org.jetbrains.annotations.NotNull;
 import org.signal.core.util.concurrent.SignalExecutors;
 import org.thoughtcrime.securesms.database.model.MessageId;
 import org.thoughtcrime.securesms.util.concurrent.SerialExecutor;
@@ -20,7 +21,7 @@ import java.util.concurrent.Executor;
  *
  * A replacement for the observer system in {@link Database}. We should move to this over time.
  */
-public final class DatabaseObserver {
+public class DatabaseObserver {
 
   private final Application application;
   private final Executor    executor;
@@ -31,9 +32,12 @@ public final class DatabaseObserver {
   private final Map<UUID, Set<Observer>>        paymentObservers;
   private final Set<Observer>                   allPaymentsObservers;
   private final Set<Observer>                   chatColorsObservers;
+  private final Set<Observer>                   stickerObservers;
   private final Set<Observer>                   stickerPackObservers;
+  private final Set<Observer>                   attachmentObservers;
   private final Set<MessageObserver>            messageUpdateObservers;
   private final Map<Long, Set<MessageObserver>> messageInsertObservers;
+  private final Set<Observer>                   notificationProfileObservers;
 
   public DatabaseObserver(Application application) {
     this.application                  = application;
@@ -44,9 +48,12 @@ public final class DatabaseObserver {
     this.paymentObservers             = new HashMap<>();
     this.allPaymentsObservers         = new HashSet<>();
     this.chatColorsObservers          = new HashSet<>();
+    this.stickerObservers             = new HashSet<>();
     this.stickerPackObservers         = new HashSet<>();
+    this.attachmentObservers          = new HashSet<>();
     this.messageUpdateObservers       = new HashSet<>();
     this.messageInsertObservers       = new HashMap<>();
+    this.notificationProfileObservers = new HashSet<>();
   }
 
   public void registerConversationListObserver(@NonNull Observer listener) {
@@ -85,9 +92,21 @@ public final class DatabaseObserver {
     });
   }
 
+  public void registerStickerObserver(@NonNull Observer listener) {
+    executor.execute(() -> {
+      stickerObservers.add(listener);
+    });
+  }
+
   public void registerStickerPackObserver(@NonNull Observer listener) {
     executor.execute(() -> {
       stickerPackObservers.add(listener);
+    });
+  }
+
+  public void registerAttachmentObserver(@NonNull Observer listener) {
+    executor.execute(() -> {
+      attachmentObservers.add(listener);
     });
   }
 
@@ -103,6 +122,12 @@ public final class DatabaseObserver {
     });
   }
 
+  public void registerNotificationProfileObserver(@NotNull Observer listener) {
+    executor.execute(() -> {
+      notificationProfileObservers.add(listener);
+    });
+  }
+
   public void unregisterObserver(@NonNull Observer listener) {
     executor.execute(() -> {
       conversationListObservers.remove(listener);
@@ -110,7 +135,10 @@ public final class DatabaseObserver {
       unregisterMapped(verboseConversationObservers, listener);
       unregisterMapped(paymentObservers, listener);
       chatColorsObservers.remove(listener);
+      stickerObservers.remove(listener);
       stickerPackObservers.remove(listener);
+      attachmentObservers.remove(listener);
+      notificationProfileObservers.remove(listener);
     });
   }
 
@@ -127,11 +155,6 @@ public final class DatabaseObserver {
         notifyMapped(conversationObservers, threadId);
         notifyMapped(verboseConversationObservers, threadId);
       }
-
-      for (long threadId : threadIds) {
-        application.getContentResolver().notifyChange(DatabaseContentProviders.Conversation.getUriForThread(threadId), null);
-        application.getContentResolver().notifyChange(DatabaseContentProviders.Conversation.getVerboseUriForThread(threadId), null);
-      }
     });
   }
 
@@ -139,9 +162,6 @@ public final class DatabaseObserver {
     executor.execute(() -> {
       notifyMapped(conversationObservers, threadId);
       notifyMapped(verboseConversationObservers, threadId);
-
-      application.getContentResolver().notifyChange(DatabaseContentProviders.Conversation.getUriForThread(threadId), null);
-      application.getContentResolver().notifyChange(DatabaseContentProviders.Conversation.getVerboseUriForThread(threadId), null);
     });
   }
 
@@ -150,18 +170,12 @@ public final class DatabaseObserver {
       for (long threadId : threadIds) {
         notifyMapped(verboseConversationObservers, threadId);
       }
-
-      for (long threadId : threadIds) {
-        application.getContentResolver().notifyChange(DatabaseContentProviders.Conversation.getVerboseUriForThread(threadId), null);
-      }
     });
   }
 
   public void notifyVerboseConversationListeners(long threadId) {
     executor.execute(() -> {
       notifyMapped(verboseConversationObservers, threadId);
-
-      application.getContentResolver().notifyChange(DatabaseContentProviders.Conversation.getVerboseUriForThread(threadId), null);
     });
   }
 
@@ -193,11 +207,21 @@ public final class DatabaseObserver {
     });
   }
 
+  public void notifyStickerObservers() {
+    executor.execute(() -> {
+      notifySet(stickerObservers);
+    });
+  }
+
   public void notifyStickerPackObservers() {
     executor.execute(() -> {
       notifySet(stickerPackObservers);
+    });
+  }
 
-      application.getContentResolver().notifyChange(DatabaseContentProviders.StickerPack.CONTENT_URI, null);
+  public void notifyAttachmentObservers() {
+    executor.execute(() -> {
+      notifySet(attachmentObservers);
     });
   }
 
@@ -214,6 +238,12 @@ public final class DatabaseObserver {
       if (listeners != null) {
         listeners.stream().forEach(l -> l.onMessageChanged(messageId));
       }
+    });
+  }
+
+  public void notifyNotificationProfileObservers() {
+    executor.execute(() -> {
+      notifySet(notificationProfileObservers);
     });
   }
 

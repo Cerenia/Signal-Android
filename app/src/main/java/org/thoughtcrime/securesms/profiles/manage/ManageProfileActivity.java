@@ -17,11 +17,14 @@ import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.reactions.any.ReactWithAnyEmojiBottomSheetDialogFragment;
 import org.thoughtcrime.securesms.util.DynamicNoActionBarTheme;
 import org.thoughtcrime.securesms.util.DynamicTheme;
+import org.thoughtcrime.securesms.util.navigation.SafeNavigation;
 
 /**
  * Activity that manages the local user's profile, as accessed via the settings.
  */
 public class ManageProfileActivity extends PassphraseRequiredActivity implements ReactWithAnyEmojiBottomSheetDialogFragment.Callback {
+
+  public static final int RESULT_BECOME_A_SUSTAINER = 12382;
 
   private final DynamicTheme dynamicTheme = new DynamicNoActionBarTheme();
 
@@ -61,13 +64,13 @@ public class ManageProfileActivity extends PassphraseRequiredActivity implements
       navController.setGraph(graph, extras != null ? extras : new Bundle());
 
       if (extras != null && extras.getBoolean(START_AT_USERNAME, false)) {
-        NavDirections action = ManageProfileFragmentDirections.actionManageUsername();
-        navController.navigate(action);
+        NavDirections  action = ManageProfileFragmentDirections.actionManageUsername();
+        SafeNavigation.safeNavigate(navController, action);
       }
 
       if (extras != null && extras.getBoolean(START_AT_AVATAR, false)) {
         NavDirections action = ManageProfileFragmentDirections.actionManageProfileFragmentToAvatarPicker(null, null);
-        navController.navigate(action);
+        SafeNavigation.safeNavigate(navController, action);
       }
     }
   }

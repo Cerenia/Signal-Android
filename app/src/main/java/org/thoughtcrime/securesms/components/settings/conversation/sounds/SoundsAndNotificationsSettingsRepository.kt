@@ -2,23 +2,32 @@ package org.thoughtcrime.securesms.components.settings.conversation.sounds
 
 import android.content.Context
 import org.signal.core.util.concurrent.SignalExecutors
-import org.thoughtcrime.securesms.database.DatabaseFactory
 import org.thoughtcrime.securesms.database.RecipientDatabase
+import org.thoughtcrime.securesms.database.SignalDatabase
 import org.thoughtcrime.securesms.notifications.NotificationChannels
 import org.thoughtcrime.securesms.recipients.Recipient
 import org.thoughtcrime.securesms.recipients.RecipientId
 
 class SoundsAndNotificationsSettingsRepository(private val context: Context) {
 
+  fun ensureCustomChannelConsistency(complete: () -> Unit) {
+    SignalExecutors.BOUNDED.execute {
+      if (NotificationChannels.supported()) {
+        NotificationChannels.ensureCustomChannelConsistency(context)
+      }
+      complete()
+    }
+  }
+
   fun setMuteUntil(recipientId: RecipientId, muteUntil: Long) {
     SignalExecutors.BOUNDED.execute {
-      DatabaseFactory.getRecipientDatabase(context).setMuted(recipientId, muteUntil)
+      SignalDatabase.recipients.setMuted(recipientId, muteUntil)
     }
   }
 
   fun setMentionSetting(recipientId: RecipientId, mentionSetting: RecipientDatabase.MentionSetting) {
     SignalExecutors.BOUNDED.execute {
-      DatabaseFactory.getRecipientDatabase(context).setMentionSetting(recipientId, mentionSetting)
+      SignalDatabase.recipients.setMentionSetting(recipientId, mentionSetting)
     }
   }
 

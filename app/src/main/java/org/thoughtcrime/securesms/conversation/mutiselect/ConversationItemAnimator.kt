@@ -5,6 +5,7 @@ import android.animation.AnimatorSet
 import android.animation.ValueAnimator
 import androidx.core.animation.doOnEnd
 import androidx.recyclerview.widget.RecyclerView
+import org.signal.core.util.logging.Log
 import org.thoughtcrime.securesms.conversation.ConversationAdapter
 
 /**
@@ -18,11 +19,6 @@ class ConversationItemAnimator(
   private val shouldPlayMessageAnimations: () -> Boolean,
   private val isParentFilled: () -> Boolean
 ) : RecyclerView.ItemAnimator() {
-
-  private enum class Operation {
-    ADD,
-    CHANGE
-  }
 
   private data class TweeningInfo(
     val startValue: Float,
@@ -45,7 +41,8 @@ class ConversationItemAnimator(
     if (viewHolder is ConversationAdapter.HeaderViewHolder &&
       !pendingSlideAnimations.containsKey(viewHolder) &&
       !slideAnimations.containsKey(viewHolder) &&
-      shouldPlayMessageAnimations()
+      shouldPlayMessageAnimations() &&
+      isParentFilled()
     ) {
       pendingSlideAnimations[viewHolder] = TweeningInfo(0f, viewHolder.itemView.height.toFloat())
       dispatchAnimationStarted(viewHolder)
@@ -62,16 +59,12 @@ class ConversationItemAnimator(
       return false
     }
 
-    return animateSlide(viewHolder, preLayoutInfo, postLayoutInfo, Operation.ADD)
+    return animateSlide(viewHolder, preLayoutInfo, postLayoutInfo)
   }
 
-  private fun animateSlide(viewHolder: RecyclerView.ViewHolder, preLayoutInfo: ItemHolderInfo?, postLayoutInfo: ItemHolderInfo, operation: Operation): Boolean {
+  private fun animateSlide(viewHolder: RecyclerView.ViewHolder, preLayoutInfo: ItemHolderInfo?, postLayoutInfo: ItemHolderInfo): Boolean {
     if (isInMultiSelectMode() || !shouldPlayMessageAnimations()) {
-      dispatchAnimationFinished(viewHolder)
-      return false
-    }
-
-    if (operation == Operation.CHANGE && !isParentFilled() || slideAnimations.containsKey(viewHolder)) {
+      Log.d(TAG, "Dropping slide animation: (${isInMultiSelectMode()}, ${shouldPlayMessageAnimations()}) :: ${viewHolder.absoluteAdapterPosition}")
       dispatchAnimationFinished(viewHolder)
       return false
     }
@@ -88,6 +81,7 @@ class ConversationItemAnimator(
     }.toFloat()
 
     if (translationY == 0f) {
+      viewHolder.itemView.translationY = 0f
       dispatchAnimationFinished(viewHolder)
       return false
     }
@@ -100,15 +94,15 @@ class ConversationItemAnimator(
   }
 
   override fun animatePersistence(viewHolder: RecyclerView.ViewHolder, preLayoutInfo: ItemHolderInfo, postLayoutInfo: ItemHolderInfo): Boolean {
-    val isInMultiSelectMode = isInMultiSelectMode()
-    return if (!isInMultiSelectMode && shouldPlayMessageAnimations()) {
+    return if (!isInMultiSelectMode() && shouldPlayMessageAnimations() && isParentFilled()) {
       if (pendingSlideAnimations.contains(viewHolder) || slideAnimations.containsKey(viewHolder)) {
         dispatchAnimationFinished(viewHolder)
         false
       } else {
-        animateSlide(viewHolder, preLayoutInfo, postLayoutInfo, Operation.CHANGE)
+        animateSlide(viewHolder, preLayoutInfo, postLayoutInfo)
       }
     } else {
+      Log.d(TAG, "Dropping persistence animation: (${isInMultiSelectMode()}, ${shouldPlayMessageAnimations()}, ${isParentFilled()}) :: ${viewHolder.absoluteAdapterPosition}")
       dispatchAnimationFinished(viewHolder)
       false
     }
@@ -123,6 +117,7 @@ class ConversationItemAnimator(
   }
 
   override fun runPendingAnimations() {
+    Log.d(TAG, "Starting ${pendingSlideAnimations.size} animations.")
     runPendingSlideAnimations()
   }
 
@@ -183,7 +178,7 @@ class ConversationItemAnimator(
     slideAnimations[item]?.sharedAnimator?.cancel()
   }
 
-  fun endSlideAnimations() {
+  private fun endSlideAnimations() {
     slideAnimations.values.map { it.sharedAnimator }.forEach {
       it.cancel()
     }
@@ -191,7 +186,12 @@ class ConversationItemAnimator(
 
   private fun dispatchFinishedWhenDone() {
     if (!isRunning) {
+      Log.d(TAG, "Finished running animations.")
       dispatchAnimationsFinished()
     }
+  }
+
+  companion object {
+    private val TAG = Log.tag(ConversationItemAnimator::class.java)
   }
 }

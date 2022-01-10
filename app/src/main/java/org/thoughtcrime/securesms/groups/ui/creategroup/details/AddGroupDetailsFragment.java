@@ -49,6 +49,7 @@ import org.thoughtcrime.securesms.util.BitmapUtil;
 import org.thoughtcrime.securesms.util.ExpirationUtil;
 import org.thoughtcrime.securesms.util.FeatureFlags;
 import org.thoughtcrime.securesms.util.ViewUtil;
+import org.thoughtcrime.securesms.util.navigation.SafeNavigation;
 import org.thoughtcrime.securesms.util.text.AfterTextChanged;
 import org.thoughtcrime.securesms.util.views.LearnMoreTextView;
 
@@ -104,6 +105,7 @@ public class AddGroupDetailsFragment extends LoggingFragment {
     View                addLater                 = view.findViewById(R.id.add_later);
     TextView            disappearingMessageValue = view.findViewById(R.id.group_disappearing_messages_value);
 
+    members.initializeAdapter(getViewLifecycleOwner());
     avatarPlaceholder = VectorDrawableCompat.create(getResources(), R.drawable.ic_camera_outline_32_ultramarine, requireActivity().getTheme());
 
     if (savedInstanceState == null) {
@@ -133,7 +135,7 @@ public class AddGroupDetailsFragment extends LoggingFragment {
       gv2Warning.setVisibility(nonGv2CapableMembers.isEmpty() ? View.GONE : View.VISIBLE);
       gv2Warning.setText(requireContext().getResources().getQuantityString(R.plurals.AddGroupDetailsFragment__d_members_do_not_support_new_groups_so_this_group_cannot_be_created, nonGv2CapableMembers.size(), nonGv2CapableMembers.size()));
       gv2Warning.setLearnMoreVisible(true);
-      gv2Warning.setOnLinkClickListener(v -> NonGv2MemberDialog.showNonGv2Members(requireContext(), nonGv2CapableMembers));
+      gv2Warning.setOnLinkClickListener(v -> NonGv2MemberDialog.showNonGv2Members(requireContext(), getViewLifecycleOwner(), nonGv2CapableMembers));
     });
     viewModel.getAvatar().observe(getViewLifecycleOwner(), avatarBytes -> {
       if (avatarBytes == null) {
@@ -274,7 +276,7 @@ public class AddGroupDetailsFragment extends LoggingFragment {
   private void showAvatarPicker() {
     Media media = viewModel.getAvatarMedia();
 
-    Navigation.findNavController(requireView()).navigate(AddGroupDetailsFragmentDirections.actionAddGroupDetailsFragmentToAvatarPicker(null, media).setIsNewGroup(true));
+    SafeNavigation.safeNavigate(Navigation.findNavController(requireView()), AddGroupDetailsFragmentDirections.actionAddGroupDetailsFragmentToAvatarPicker(null, media).setIsNewGroup(true));
   }
 
   public interface Callback {

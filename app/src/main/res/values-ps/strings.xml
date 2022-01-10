@@ -297,6 +297,7 @@
   <string name="ConversationFragment_not_now">اوس نه</string>
   <string name="ConversationFragment_your_safety_number_with_s_changed">ستاسې د خوندیتوب شمېره له %s سره بدله شوې ده</string>
   <string name="ConversationFragment_your_safety_number_with_s_changed_likey_because_they_reinstalled_signal">ستاسې د خوندیتوب شمېره له %s سره بدله شوې ده، احتمال لري چې هغوی Signal له سره انسټال کړی وي یا هم وسیله یې بدله کړې وي. د نوي خوندیتوب د شمېرې د تصدیق لپاره پر تایید باندې کلیک وکړئ. دا کار اختیاري ده.</string>
+  <!--Message shown to indicate which notification profile is on/active-->
   <plurals name="ConversationListFragment_delete_selected_conversations">
     <item quantity="one">غواړئ ټاکل شوی پیغام پاک کړئ؟</item>
     <item quantity="other">غواړئ ټاکل شوي پیغامونه پاک کړئ؟</item>
@@ -318,6 +319,9 @@
   </plurals>
   <string name="ConversationListFragment_select">ټاکل</string>
   <string name="ConversationListFragment_select_all">ټول وټاکئ</string>
+  <!--Show in conversation list overflow menu to open selection bottom sheet-->
+  <!--Tooltip shown after you have created your first notification profile-->
+  <!--Message shown in top toast to indicate the named profile is on-->
   <!--ConversationListItem-->
   <string name="ConversationListItem_key_exchange_message">د کلید د تبادلې پیغام</string>
   <!--ConversationListItemAction-->
@@ -363,6 +367,7 @@
   <string name="BackupsPreferenceFragment__learn_more">لا زیات زده کړئ </string>
   <string name="BackupsPreferenceFragment__in_progress">د پرمختګ په حال کې ده…</string>
   <string name="BackupsPreferenceFragment__d_so_far">%1$d تر اوسه پورې…</string>
+  <!--Show percentage of completion of backup-->
   <string name="BackupsPreferenceFragment_signal_requires_external_storage_permission_in_order_to_create_backups">د بک اپونو د رامنځته کولو لپاره Signal د بهرنۍ زیرمې اجازې ته اړتیا لري، خو هغه د تل لپاره رد شوې ده.، نو مهرباني وکړئ د اپلیکیشن تنظیماتو ته ورشئ، \"اجازې\" وټاکئ او \"زیرمه\" فعاله کړئ.</string>
   <!--CustomDefaultPreference-->
   <string name="CustomDefaultPreference_using_custom">د سفارشي حالت کارولو لپاره: %s</string>
@@ -398,14 +403,9 @@
   <string name="DeviceListItem_today">نن ورځ</string>
   <!--DocumentView-->
   <string name="DocumentView_unnamed_file">بې نومه فایل</string>
-  <!--DonateMegaphone-->
-  <string name="DonateMegaphone_donate_to_signal">Signal سره مرسته کول</string>
-  <string name="DonateMegaphone_Signal_is_powered_by_people_like_you_show_your_support_today">Signal ستاسې په څیر خلکو له خوا ځواکمن شوی دی. همدا نن مو خپل ملاتړ وښیئ!</string>
-  <string name="DonateMegaphone_donate">مرسته کول</string>
-  <string name="DonateMegaphone_no_thanks">نه مننه</string>
   <!--GroupCallingMegaphone-->
-  <string name="GroupCallingMegaphone__introducing_group_calls">د ګروپي زنګ وهلو پیژندنه</string>
-  <string name="GroupCallingMegaphone__open_a_new_group_to_start">یو نوی ګروپ پرانیزئ تر څو وړیا انکریپټ شوی ګروپی زنګ پیل کړئ</string>
+  <!-- Removed by excludeNonTranslatables <string name="GroupCallingMegaphone__introducing_group_calls">د ګروپي زنګ وهلو پیژندنه</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="GroupCallingMegaphone__open_a_new_group_to_start">یو نوی ګروپ پرانیزئ تر څو وړیا انکریپټ شوی ګروپی زنګ پیل کړئ</string> -->
   <!--DozeReminder-->
   <string name="DozeReminder_optimize_for_missing_play_services">د له لاسه ورکړل شوي Play Services مطلوب ګرځول</string>
   <string name="DozeReminder_this_device_does_not_support_play_services_tap_to_disable_system_battery">دغه وسیله د Play له خدماتو نه ملاتړ نه کوي. د سیستم د بطري د مطلوبیت د غیر فعالولو لپاره کلیک وکړئ کوم چې کله هغه غیرفعال وي نو Signal نه پریږدي چې پیغامونه راولي.</string>
@@ -524,9 +524,9 @@
   <string name="LeaveGroupDialog_before_you_leave_you_must_choose_at_least_one_new_admin_for_this_group">وړاندې تر دې چې ولاړ شئ، نو باید کم تر کمه یو کس د دې ګروپ د اډمین په توګه وټاکئ.</string>
   <string name="LeaveGroupDialog_choose_admin">د اډمین ټاکنه</string>
   <!--LinkPreviewsMegaphone-->
-  <string name="LinkPreviewsMegaphone_disable">غیرفعالول</string>
-  <string name="LinkPreviewsMegaphone_preview_any_link">له وړاندې نه د هر لینک کتل</string>
-  <string name="LinkPreviewsMegaphone_you_can_now_retrieve_link_previews_directly_from_any_website">اوس تاسې کولای شئ له هرې وېب پاڼې څخه د لیږل شویو پیغامونو د لینک له وړاندې لیدل مستقیماً تر لاسه کړئ.</string>
+  <!-- Removed by excludeNonTranslatables <string name="LinkPreviewsMegaphone_disable">غیرفعالول</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="LinkPreviewsMegaphone_preview_any_link">له وړاندې نه د هر لینک کتل</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="LinkPreviewsMegaphone_you_can_now_retrieve_link_previews_directly_from_any_website">اوس تاسې کولای شئ له هرې وېب پاڼې څخه د لیږل شویو پیغامونو د لینک له وړاندې لیدل مستقیماً تر لاسه کړئ.</string> -->
   <!--LinkPreviewView-->
   <string name="LinkPreviewView_no_link_preview_available">هېڅ ډول د لینک له وړاندې کتل نشته</string>
   <string name="LinkPreviewView_this_group_link_is_not_active">د دغه ګروپ لینک فعال نه دی</string>
@@ -809,8 +809,8 @@
   <string name="MediaOverviewActivity_sent_by_s_to_s">د %1$s له خوا %2$s ته لیږل شوی</string>
   <string name="MediaOverviewActivity_sent_by_you_to_s">ستاسې له خوا %1$s ته لیږل شوی</string>
   <!--Megaphones-->
-  <string name="Megaphones_introducing_reactions">د غبرګونونو پیژندنه</string>
-  <string name="Megaphones_tap_and_hold_any_message_to_quicky_share_how_you_feel">پر هر پیغام باندې کلیک وکړئ او ویې نیسئ تر څو خپل احساس په چټکۍ سره شریک کړئ.</string>
+  <!-- Removed by excludeNonTranslatables <string name="Megaphones_introducing_reactions">د غبرګونونو پیژندنه</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="Megaphones_tap_and_hold_any_message_to_quicky_share_how_you_feel">پر هر پیغام باندې کلیک وکړئ او ویې نیسئ تر څو خپل احساس په چټکۍ سره شریک کړئ.</string> -->
   <string name="Megaphones_remind_me_later">وروسته یې را په یاد کړه</string>
   <string name="Megaphones_verify_your_signal_pin">د Signal اړوند PIN تایید کړئ</string>
   <string name="Megaphones_well_occasionally_ask_you_to_verify_your_pin">موږ به کله نا کله له تاسې دا وغواړو چې خپل PIN مو تایید کړئ تر څو مو په یاد پاتې شی.</string>
@@ -1291,8 +1291,6 @@
   <string name="RegistrationActivity_play_services_error">د Play خدماتو تېروتنه</string>
   <string name="RegistrationActivity_google_play_services_is_updating_or_unavailable">د Google Play خدمات د اپډېټ کېدو په حال کې دي یا په مؤقت ډول موجود نه دي. مهرباني وکړئ بیا کوښښ وکړئ. </string>
   <string name="RegistrationActivity_terms_and_privacy">شرایط او ضوابط؛ د محرمیت تګلاره</string>
-  <string name="RegistrationActivity_signal_needs_access_to_your_contacts_and_media_in_order_to_connect_with_friends">Signal اړتیا لري ستاسو مخاطبينو او میډیا ته لاسرسی ولري ترڅو وکولای شئ له خپلو ملګرو سره وصل شئ، پیغامونه سره تبادله کړئ او خوندي اړيکې ټینګې کړئ</string>
-  <string name="RegistrationActivity_signal_needs_access_to_your_contacts_in_order_to_connect_with_friends">Signal اړتیا لري ستاسو مخاطبينو ته لاسرسی ولري ترڅو وکولای شئ له خپلو ملګرو سره وصل شئ، پیغامونه سره تبادله کړئ او خوندي اړيکې ټینګې کړئ</string>
   <string name="RegistrationActivity_rate_limited_to_service">تاسو ډېر ځله کوښښ کړی چې دغه شمېره ثبت کړئ. مهرباني وکړئ وروسته بیا کوښښ وکړئ.</string>
   <string name="RegistrationActivity_unable_to_connect_to_service">نشئ کولای له خدمتاتو سره وصل شئ. مهرباني وکړئ خپل اتصال چک کړئ او بیا کوښښ وکړئ.</string>
   <string name="RegistrationActivity_call_requested">د اړیکې نیولو غوښتنه شوې</string>
@@ -1684,6 +1682,12 @@
   <string name="QuoteView_original_missing">اصلي پیغام و نه موندل شو</string>
   <!--conversation_fragment-->
   <string name="conversation_fragment__scroll_to_the_bottom_content_description">ښکته ولاړ شئ</string>
+  <!--BubbleOptOutTooltip-->
+  <!--Message to inform the user of what Android chat bubbles are-->
+  <!--Button to dismiss the tooltip for opting out of using Android bubbles-->
+  <string name="BubbleOptOutTooltip__not_now">اوس نه</string>
+  <!--Button to move to the system settings to control the use of Android bubbles-->
+  <string name="BubbleOptOutTooltip__turn_off">خاموشه یې کړئ</string>
   <!--safety_number_change_dialog-->
   <string name="safety_number_change_dialog__safety_number_changes">د خوندیتوب د شمېرې بدلونونه</string>
   <string name="safety_number_change_dialog__accept">منل</string>
@@ -2343,7 +2347,6 @@
   <string name="Insights__title">لیدلوري</string>
   <string name="InsightsDashboardFragment__title">لیدلوري</string>
   <string name="InsightsDashboardFragment__signal_protocol_automatically_protected">د Signal پروتوکول په اتومات ډول په تیرو %2$d ورځو کې ستاسې %1$d%% تلونکي پیغامونه خوندي کړي دي. د Signal د کاروونکو تر منځ محاورې تل په سرتاسري بڼه سره انکریپټ شوي دي.</string>
-  <string name="InsightsDashboardFragment__boost_your_signal">د Signal پیاوړی کول</string>
   <string name="InsightsDashboardFragment__not_enough_data">کافي ډیټا نشته</string>
   <string name="InsightsDashboardFragment__your_insights_percentage_is_calculated_based_on">ستاسې د لیدلوري فیصدي په تیرو %1$d ورځو کې د تلونکو نه ورک کېدونکو یا نه پاک شویو تلونکو پیغامونو له مخې محاسبه کېږی.</string>
   <string name="InsightsDashboardFragment__start_a_conversation">محاوره پیل کړئ</string>
@@ -2449,15 +2452,15 @@
   <string name="KbsMegaphone__pins_keep_information_thats_stored_with_signal_encrytped">PINs هغه معلومات ساتي کوم چې له Signal سره په انکریپټ ډول زیرمه شوي دي.</string>
   <string name="KbsMegaphone__create_pin">د PIN جوړول</string>
   <!--Research Megaphone-->
-  <string name="ResearchMegaphone_tell_signal_what_you_think">دا چې تاسې څه فکر کوئ نو Signal ته ووایاست</string>
-  <string name="ResearchMegaphone_to_make_signal_the_best_messaging_app_on_the_planet">د دې لپاه چې Signal په نړۍ کې د پیغام لیږلو لپاره غوره اپلیکیشن وګرځوو، نو موږ ستاسې نظریات په ورین تندي منو.</string>
-  <string name="ResearchMegaphone_learn_more">لا زیات زده کړئ</string>
-  <string name="ResearchMegaphone_dismiss">مرخص کول</string>
-  <string name="ResearchMegaphoneDialog_signal_research">د Signal څېړنه</string>
-  <string name="ResearchMegaphoneDialog_we_believe_in_privacy"><![CDATA[<p><b>موږ پر محرمیت باندې باور لرو. </b></p><p>Signal تاسې نه تعقیبوي نه هم ستاسې ډیټا را ټولوي. د هر چا لپاره د Signal د ښه والي په خاطر، موږ د کارن پر فیډبک باندې تکیه کوو، <b> او هغو سره مینه کوو. </b></p><p> موږ داسې یوه سروې پر لاره اچولې تر څو پوه شو چې تاسې له Signal څخه څرنګه کار اخلئ. زموږ سروې ستاسې داسې کومه ډیټا نه را ټولوي چې له کبله یې تاسې وپیژندل شئ. که چیرته د اضافي فیډبک له شریکولو سره لېواله یاست، نو تاسې به دا غوراوی ولری چې د اړیکو معلومات وړاندې کړئ. </p><p> که چیرته تاسې څو دقیقې وخت او کوم فیډبک ولری، نو موږ به یې په مینه له تاسې واورو.</p>]]></string>
-  <string name="ResearchMegaphoneDialog_take_the_survey">سروې واخلئ</string>
-  <string name="ResearchMegaphoneDialog_no_thanks">نه مننه</string>
-  <string name="ResearchMegaphoneDialog_the_survey_is_hosted_by_alchemer_at_the_secure_domain">د دغې سروې کوربه توب د Alchemer له خوا په خوندي ډومین کې کېږي surveys.signalusers.org</string>
+  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphone_tell_signal_what_you_think">دا چې تاسې څه فکر کوئ نو Signal ته ووایاست</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphone_to_make_signal_the_best_messaging_app_on_the_planet">د دې لپاه چې Signal په نړۍ کې د پیغام لیږلو لپاره غوره اپلیکیشن وګرځوو، نو موږ ستاسې نظریات په ورین تندي منو.</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphone_learn_more">لا زیات زده کړئ</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphone_dismiss">مرخص کول</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphoneDialog_signal_research">د Signal څېړنه</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphoneDialog_we_believe_in_privacy"><![CDATA[<p><b>موږ پر محرمیت باندې باور لرو. </b></p><p>Signal تاسې نه تعقیبوي نه هم ستاسې ډیټا را ټولوي. د هر چا لپاره د Signal د ښه والي په خاطر، موږ د کارن پر فیډبک باندې تکیه کوو، <b> او هغو سره مینه کوو. </b></p><p> موږ داسې یوه سروې پر لاره اچولې تر څو پوه شو چې تاسې له Signal څخه څرنګه کار اخلئ. زموږ سروې ستاسې داسې کومه ډیټا نه را ټولوي چې له کبله یې تاسې وپیژندل شئ. که چیرته د اضافي فیډبک له شریکولو سره لېواله یاست، نو تاسې به دا غوراوی ولری چې د اړیکو معلومات وړاندې کړئ. </p><p> که چیرته تاسې څو دقیقې وخت او کوم فیډبک ولری، نو موږ به یې په مینه له تاسې واورو.</p>]]></string> -->
+  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphoneDialog_take_the_survey">سروې واخلئ</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphoneDialog_no_thanks">نه مننه</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphoneDialog_the_survey_is_hosted_by_alchemer_at_the_secure_domain">د دغې سروې کوربه توب د Alchemer له خوا په خوندي ډومین کې کېږي surveys.signalusers.org</string> -->
   <!--transport_selection_list_item-->
   <string name="transport_selection_list_item__transport_icon">د لېږد ایکن</string>
   <string name="ConversationListFragment_loading">را ښکته کېږي…</string>
@@ -2507,7 +2510,6 @@
   <string name="BackupDialog_verify">تایید </string>
   <string name="BackupDialog_you_successfully_entered_your_backup_passphrase">تاسې په بریا سره خپل د بک اپ پټ عبارت دننه کړ</string>
   <string name="BackupDialog_passphrase_was_not_correct">پټ عبارت سم نه و</string>
-  <string name="LocalBackupJob_creating_backup">بک اپ د رامنځته کولو په حال کې ده…</string>
   <string name="LocalBackupJobApi29_backup_failed">بک اپ تر سره نشو</string>
   <string name="LocalBackupJobApi29_your_backup_directory_has_been_deleted_or_moved">ستاسې د بک اپ ډایریکټوري له منځه تللي یا هم انتقال شوې ده.</string>
   <string name="LocalBackupJobApi29_your_backup_file_is_too_large">ستاسې د بک اپ فایل ډېر زیات ستر دی چې په دې حجم کې یې زیرمه کړو.</string>
@@ -2629,6 +2631,7 @@
   <string name="DeviceTransfer__transferring_data">د ډیټا لیږل</string>
   <string name="DeviceTransfer__keep_both_devices_near_each_other">دواړه وسیلې د یوه بل تر څنګ کېږدئ. هېڅ یوه وسیله بنده نه کړئ او په دواړو کې Signal خلاص پریږدئ. دا لیږد په سرتاسري ډول سره انکریپټ دی.</string>
   <string name="DeviceTransfer__d_messages_so_far">%1$d پیغامونه تر اوسه پورې…</string>
+  <!--Filled in with total percentage of messages transferred-->
   <string name="DeviceTransfer__cancel">لغوه کول</string>
   <string name="DeviceTransfer__try_again">بیا هڅه وکړئ</string>
   <string name="DeviceTransfer__stop_transfer_question">غواړئ لیږد ودروئ؟</string>
@@ -2678,6 +2681,7 @@
   <string name="RecipientBottomSheet_block">بلاک کول</string>
   <string name="RecipientBottomSheet_unblock">له بلاک څخه ایستل</string>
   <string name="RecipientBottomSheet_add_to_contacts">مخاطبینو کې اضافه کول</string>
+  <!--Error message that displays when a user tries to tap to view system contact details but has no app that supports it-->
   <string name="RecipientBottomSheet_add_to_a_group">یوه ګروپ کې اضافه کول</string>
   <string name="RecipientBottomSheet_add_to_another_group">بل ګروپ ته اضافه کول</string>
   <string name="RecipientBottomSheet_view_safety_number">د خوندیتوب د شمېرې لیدل</string>
@@ -2776,6 +2780,12 @@
   <string name="DeleteAccountFragment__failed_to_delete_account">د اکاونټ له منځه وړل تر سره نشو. ایا له انټرنېټ سره وصل یاست؟</string>
   <string name="DeleteAccountFragment__failed_to_delete_local_data">د سیمه ایزې ډیټا پاکول تر سره نشو. تاسې کولای شئ هغه د سیستم د اپلیکیشن په تنظیماتو کې په خپل لاس پاک کړئ.</string>
   <string name="DeleteAccountFragment__launch_app_settings">د اپلیکیشن تنظیمات پرانیزئ</string>
+  <!--Title of progress dialog shown when a user deletes their account and the process is leaving all groups-->
+  <!--Title of progress dialog shown when a user deletes their account and the process has left all groups-->
+  <!--Message of progress dialog shown when a user deletes their account and the process is leaving groups-->
+  <!--Message of progress dialog shown when a user deletes their account and the process has left all groups-->
+  <!--Title of error dialog shown when a network error occurs during account deletion-->
+  <!--Message of error dialog shown when a network error occurs during account deletion-->
   <!--DeleteAccountCountryPickerFragment-->
   <string name="DeleteAccountCountryPickerFragment__search_countries">د هېوادونو پلټنه</string>
   <!--CreateGroupActivity-->
@@ -2984,6 +2994,12 @@
   <string name="NotificationsSettingsFragment__calls">ټلیفوني اړیکې</string>
   <string name="NotificationsSettingsFragment__notify_when">خبر راکړئ کله چې…</string>
   <string name="NotificationsSettingsFragment__contact_joins_signal">مخاطب له Signal سره یو ځای شو</string>
+  <!--Notification preference header-->
+  <!--Notification preference option header-->
+  <!--Notification preference summary text-->
+  <!--NotificationProfilesFragment-->
+  <!--Title for notification profiles screen that shows all existing profiles-->
+  <!--Button text to create a notification profile-->
   <!--PrivacySettingsFragment-->
   <string name="PrivacySettingsFragment__blocked">بلاک شوي</string>
   <string name="PrivacySettingsFragment__d_contacts">%1$d مخاطبین</string>
@@ -3076,6 +3092,8 @@
   <string name="AddAProfilePhotoMegaphone__choose_a_look_and_color">خپل ظاهر او رنګ وټاکه یا هم د خپل نوم لومړني توري سفارشي کړه.</string>
   <string name="AddAProfilePhotoMegaphone__not_now">اوس نه</string>
   <string name="AddAProfilePhotoMegaphone__add_photo">د انځور اضافه کول</string>
+  <!--BecomeASustainerMegaphone-->
+  <string name="BecomeASustainerMegaphone__no_thanks">نه مننه</string>
   <!--KeyboardPagerFragment-->
   <string name="KeyboardPagerFragment_emoji">Emoji</string>
   <string name="KeyboardPagerFragment_open_emoji_search">د emoji د پلټنې پرانیستل</string>
@@ -3245,7 +3263,6 @@
   <string name="ImageView__badge">بج</string>
   <string name="SubscribeFragment__signal_is_powered_by_people_like_you">Signal ستاسې په څیر خلکو له خوا ځواکمن شوی دی.</string>
   <string name="SubscribeFragment__support_technology_that_is_built_for_you">هغې تکنالوژي څخه ملاتړ کوي کوم چې ستاسې لپاره جوړه شوې ده - نه ستاسې د ډیټا لپاره - د هغو خلکو له ټولنې سره په یو ځای کېدو کوم چې ساتنه او پالنه یې کوي.</string>
-  <string name="SubscribeFragment__donation_amount">د مرستې مقدار</string>
   <string name="SubscribeFragment__more_payment_options">د زیاتو پرداختونو غوراوي</string>
   <string name="SubscribeFragment__cancel_subscription">ګډون لغوه کړئ</string>
   <string name="SubscribeFragment__confirm_cancellation">غواړئ لغوه کول تایید کړئ؟</string>
@@ -3259,11 +3276,8 @@
   <string name="Subscription__s_per_month_dot_renews_s">%1$s په میاشت کې. %2$s کې نوی کېږي</string>
   <string name="SubscribeLearnMoreBottomSheetDialogFragment__signal_is_a_non_profit_with_no">Signal یو غیرانتفاعي پروګرام دی چې هېڅ اعلان ورکوونکی یا پانګه وال نه لري او یوازې د هغو کسانو له خوا چې کاروي یې او ورته ارزښت ورکوي، ساتل کېږي. هره میاشت خپله مرسته وکړئ او د خپل ملاتړ د ښودلو په خاطر د پروفایل بج تر لاسه کړئ.</string>
   <string name="SubscribeLearnMoreBottomSheetDialogFragment__why_contribute">ولې مرسته وکړئ؟</string>
-  <string name="SubscribeLearnMoreBottomSheetDialogFragment__the_team_at_signal_is_committed">د Signal ټیم د ازادي سرچینې د محرمیت تکنالوژۍ د جوړولو ماموریت ته ژمن دی کوم چې ازاده څرګندونه خوندي کوي او په نړیواله کچه مکالمې خوندي ساتي. ستاسې مرسته له دې ماموریت سره مرسته کولای شي. د اعلانونو نشتوالی. د تعقیب کوونکو نشتوالی. د ساعتیري نشتوالی.</string>
-  <string name="SubscribeLearnMoreBottomSheetDialogFragment__your_contribution_helps_pay">ستاسې مالي مرسته موږ سره مرسته کوي تر څو د هغه اپلیکیشن د پراختیا، سرورونو او بانډویټ لپاره چې په میلیونونو کسان یې په نړۍ کې د شخصي او همزمان محاورو لپاره کاروي، پرداخت وکړو.</string>
   <string name="SubscribeThanksForYourSupportBottomSheetDialogFragment__thanks_for_your_support">ستاسې له مرستې څخه مننه!</string>
   <string name="SubscribeThanksForYourSupportBottomSheetDialogFragment__thanks_for_the_boost">له پیاوړتیا څخه مننه!</string>
-  <string name="SubscribeThanksForYourSupportBottomSheetDialogFragment__youve_earned_a_s_badge">تاسې %s بج تر لاسه کړل! ستاسې د بج ښودل به هغو خلکو ته چې تاسې چټ ورسره کوئ دا وښیې چې تاسې له Signal سره مرسته کوئ.</string>
   <string name="SubscribeThanksForYourSupportBottomSheetDialogFragment__display_on_profile">پر پروفایل ښودل</string>
   <string name="SubscribeThanksForYourSupportBottomSheetDialogFragment__make_featured_badge">ځانګړی بج جوړول</string>
   <string name="SubscribeThanksForYourSupportBottomSheetDialogFragment__done">تر سره شو</string>
@@ -3279,13 +3293,104 @@
   <string name="MySupportPreference__add_a_signal_boost">د Signal پیاوړی کوونکی اضافه کړئ</string>
   <string name="MySupportPreference__s_per_month">%1$s په میاشت کې</string>
   <string name="MySupportPreference__renews_s">%1$s کې نوی کېږي</string>
+  <!--Displayed on "My Support" screen when user badge failed to be added to their account-->
   <string name="ExpiredBadgeBottomSheetDialogFragment__your_badge_has_expired">ستاسې بج منقضي شوی دی</string>
-  <string name="ExpiredBadgeBottomSheetDialogFragment__your_s_badge_has_expired">ستاسې %1$s بج منقضي شوی دی او نور به ستاسې پر پروفایل باندې نورو ته د لیدو وړ نه وي. </string>
-  <string name="ExpiredBadgeBottomSheetDialogFragment__to_continue_supporting">که غواړئ چې له هغې تکنالوژۍ سره خپلې مرستې ته ادامه ورکړئ کوم چې ستاسې لپاره جوړه شوې ده - نه ستاسې د ډیټا لپاره - نو بیا د میاشتني ګډون وال کېدو په اړه غور وکړئ.</string>
-  <string name="ExpiredBadgeBottomSheetDialogFragment__become_a_subscriber">یو ګډون وال واوسئ</string>
   <string name="ExpiredBadgeBottomSheetDialogFragment__not_now">اوس نه</string>
   <string name="Subscription__contact_support">مرستې سره اړیکه ونیسئ</string>
   <string name="SubscribeFragment__processing_payment">پرداخت د پروسیس په حال کې دی…</string>
-  <string name="DonationsErrors__payment_failed">پرداخت تر سره نشو</string>
+  <!--Displayed in notification when user payment fails to process on Stripe-->
+  <!--Displayed on "My Support" screen when user subscription payment method failed.-->
+  <string name="NetworkFailure__retry">بیا هڅه وکړئ</string>
+  <!--Title of create notification profile screen-->
+  <!--Hint text for create/edit notification profile name-->
+  <string name="EditNotificationProfileFragment__profile_name">د پروفایل نوم</string>
+  <!--Name has a max length, this shows how many characters are used out of the max-->
+  <string name="EditNotificationProfileFragment__count">%1$d/%2$d</string>
+  <!--Call to action button to continue to the next step-->
+  <string name="EditNotificationProfileFragment__next">بل</string>
+  <!--Call to action button once the profile is named to create the profile and continue to the customization steps-->
+  <string name="EditNotificationProfileFragment__create">رامنځته کول</string>
+  <!--Call to action button once the profile name is edited-->
+  <string name="EditNotificationProfileFragment__save">ثبت</string>
+  <!--Title of edit notification profile screen-->
+  <!--Error message shown when attempting to create or edit a profile name to an existing profile name-->
+  <!--Preset selectable name for a profile name, shown as list in edit/create screen-->
+  <string name="EditNotificationProfileFragment__work">کار</string>
+  <!--Preset selectable name for a profile name, shown as list in edit/create screen-->
+  <!--Preset selectable name for a profile name, shown as list in edit/create screen-->
+  <!--Preset selectable name for a profile name, shown as list in edit/create screen-->
+  <!--Preset selectable name for a profile name, shown as list in edit/create screen-->
+  <!--Error message shown when attempting to next/save without a profile name-->
+  <!--Title for add recipients to notification profile screen in create flow-->
+  <!--Description of what the user should be doing with this screen-->
+  <!--Button text that launches the contact picker to select from-->
+  <!--Call to action button on contact picker for adding to profile-->
+  <string name="SelectRecipientsFragment__add">اضافه کول</string>
+  <!--Notification profiles home fragment, shown when no profiles have been created yet-->
+  <!--Header shown above list of all notification profiles-->
+  <!--Button that starts the create new notification profile flow-->
+  <!--Profile active status, indicating the current profile is on for an unknown amount of time-->
+  <string name="NotificationProfilesFragment__on">روښانه </string>
+  <!--Button use to permanently delete a notification profile-->
+  <!--Snakbar message shown when removing a recipient from a profile-->
+  <!--Snackbar button text that will undo the recipient remove-->
+  <string name="NotificationProfileDetails__undo">بیرته پاک کول</string>
+  <!--Dialog message shown to confirm deleting a profile-->
+  <!--Dialog button to delete profile-->
+  <string name="NotificationProfileDetails__delete">پاکول</string>
+  <!--Title/accessibility text for edit icon to edit profile emoji/name-->
+  <!--Schedule description if all days are selected-->
+  <!--Profile status on if it is the active profile-->
+  <string name="NotificationProfileDetails__on">روښانه </string>
+  <!--Profile status on if it is not the active profile-->
+  <string name="NotificationProfileDetails__off">خاموش</string>
+  <!--Description of hours for schedule (start to end) times-->
+  <string name="NotificationProfileDetails__s_to_s">%1$s څخه %2$s ته</string>
+  <!--Section header for exceptions to the notification profile-->
+  <!--Profile exception to allow all calls through the profile restrictions-->
+  <!--Profile exception to allow all @mentions through the profile restrictions-->
+  <!--Section header for showing schedule information-->
+  <!--If member list is long, will truncate the list and show an option to then see all when tapped-->
+  <string name="NotificationProfileDetails__see_all">د ټولو لیدل</string>
+  <!--Title for add schedule to profile in create flow-->
+  <!--Descriptor text indicating what the user can do with this screen-->
+  <!--Text shown next to toggle switch to enable/disable schedule-->
+  <!--Label for showing the start time for the schedule-->
+  <string name="EditNotificationProfileSchedule__start">پیل</string>
+  <!--Label for showing the end time for the schedule-->
+  <!--First letter of Sunday-->
+  <!--First letter of Monday-->
+  <!--First letter of Tuesday-->
+  <!--First letter of Wednesday-->
+  <!--First letter of Thursday-->
+  <!--First letter of Friday-->
+  <!--First letter of Saturday-->
+  <!--Title of select time dialog shown when setting start time for schedule-->
+  <!--Title of select time dialog shown when setting end time for schedule-->
+  <!--If in edit mode, call to action button text show to save schedule to profile-->
+  <string name="EditNotificationProfileSchedule__save">ثبت</string>
+  <!--If in create mode, call to action button text to show to skip enabling a schedule-->
+  <string name="EditNotificationProfileSchedule__skip">ترې تیر شئ</string>
+  <!--If in create mode, call to action button text to show to use the enabled schedule and move to the next screen-->
+  <string name="EditNotificationProfileSchedule__next">بل</string>
+  <!--Error message shown if trying to save/use a schedule with no days selected-->
+  <!--Title for final screen shown after completing a profile creation-->
+  <!--Call to action button to press to close the created screen and move to the profile details screen-->
+  <string name="NotificationProfileCreated__done">تر سره شو</string>
+  <!--Descriptor text shown to indicate how to manually turn a profile on/off-->
+  <!--Descriptor text shown to indicate you can add a schedule later since you did not add one during create flow-->
+  <!--Descriptor text shown to indicate your profile will follow the schedule set during create flow-->
+  <!--Button text shown in profile selection bottom sheet to create a new profile-->
+  <!--Manual enable option to manually enable a profile for 1 hour-->
+  <!--Manual enable option to manually enable a profile until a set time (currently 6pm or 8am depending on what is next)-->
+  <string name="NotificationProfileSelection__until_s">تر اوسه %1$s</string>
+  <!--Option to view profile details-->
+  <!--Descriptor text indicating how long a profile will be on when there is a time component associated with it-->
+  <!--Title for notification profile megaphone-->
+  <!--Description for notification profile megaphone-->
+  <!--Call to action button to create a profile from megaphone-->
+  <!--Button to dismiss notification profile megaphone-->
+  <string name="NotificationProfilesMegaphone__not_now">اوس نه</string>
+  <!--Displayed in a toast when we fail to open the ringtone picker-->
   <!--EOF-->
 </resources>

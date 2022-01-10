@@ -54,14 +54,21 @@ class SignalBottomActionBar(context: Context, attributeSet: AttributeSet) : Line
     present(this.items)
   }
 
+  override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+    super.onSizeChanged(w, h, oldw, oldh)
+
+    if (w != oldw) {
+      present(items)
+    }
+  }
+
   private fun present(items: List<ActionItem>) {
     if (width == 0) {
-      post { present(items) }
       return
     }
 
     val widthDp: Float = ViewUtil.pxToDp(width.toFloat())
-    val minButtonWidthDp = 70
+    val minButtonWidthDp = 80
     val maxButtons: Int = (widthDp / minButtonWidthDp).toInt()
     val usableButtonCount = when {
       items.size <= maxButtons -> items.size

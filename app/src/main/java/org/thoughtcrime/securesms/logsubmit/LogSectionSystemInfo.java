@@ -14,26 +14,23 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
 import org.thoughtcrime.securesms.BuildConfig;
+import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.emoji.EmojiFiles;
-import org.thoughtcrime.securesms.emoji.EmojiSource;
 import org.thoughtcrime.securesms.keyvalue.SignalStore;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.util.AppSignatureUtil;
 import org.thoughtcrime.securesms.util.ByteUnit;
-import org.thoughtcrime.securesms.util.CensorshipUtil;
 import org.thoughtcrime.securesms.util.DeviceProperties;
 import org.thoughtcrime.securesms.util.ScreenDensity;
 import org.thoughtcrime.securesms.util.ServiceUtil;
 import org.thoughtcrime.securesms.util.TextSecurePreferences;
 import org.thoughtcrime.securesms.util.Util;
 import org.thoughtcrime.securesms.util.VersionTracker;
+import org.whispersystems.signalservice.api.push.ACI;
 
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Locale;
-import java.util.Map;
-import java.util.UUID;
 
 public class LogSectionSystemInfo implements LogSection {
 
@@ -64,10 +61,10 @@ public class LogSectionSystemInfo implements LogSection {
     builder.append("MemInfo       : ").append(getMemoryInfo(context)).append("\n");
     builder.append("OS Host       : ").append(Build.HOST).append("\n");
     builder.append("RecipientId   : ").append(SignalStore.registrationValues().isRegistrationComplete() ? Recipient.self().getId() : "N/A").append("\n");
-    builder.append("UUID          : ").append(getCensoredUuid(context)).append("\n");
-    builder.append("Censored      : ").append(CensorshipUtil.isCensored(context)).append("\n");
+    builder.append("ACI           : ").append(getCensoredAci(context)).append("\n");
+    builder.append("Censored      : ").append(ApplicationDependencies.getSignalServiceNetworkAccess().isCensored()).append("\n");
     builder.append("Play Services : ").append(getPlayServicesString(context)).append("\n");
-    builder.append("FCM           : ").append(!TextSecurePreferences.isFcmDisabled(context)).append("\n");
+    builder.append("FCM           : ").append(SignalStore.account().isFcmEnabled()).append("\n");
     builder.append("BkgRestricted : ").append(Build.VERSION.SDK_INT >= 28 ? DeviceProperties.isBackgroundRestricted(context) : "N/A").append("\n");
     builder.append("Locale        : ").append(Locale.getDefault().toString()).append("\n");
     builder.append("Linked Devices: ").append(TextSecurePreferences.isMultiDevice(context)).append("\n");
@@ -166,12 +163,12 @@ public class LogSectionSystemInfo implements LogSection {
     }
   }
 
-  private static String getCensoredUuid(@NonNull Context context) {
-    UUID uuid = TextSecurePreferences.getLocalUuid(context);
+  private static String getCensoredAci(@NonNull Context context) {
+    ACI aci = SignalStore.account().getAci();
 
-    if (uuid != null) {
-      String uuidString = uuid.toString();
-      String lastTwo    = uuidString.substring(uuidString.length() - 2);
+    if (aci != null) {
+      String aciString = aci.toString();
+      String lastTwo   = aciString.substring(aciString.length() - 2);
 
       return "********-****-****-****-**********" + lastTwo;
     } else {

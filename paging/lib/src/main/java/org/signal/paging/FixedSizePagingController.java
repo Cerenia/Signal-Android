@@ -142,10 +142,20 @@ class FixedSizePagingController<Key, Data> implements PagingController<Key> {
         return;
       }
 
+      if (invalidated) {
+        Log.w(TAG, "Invalidated! Just before individual change was loaded for position " + position);
+        return;
+      }
+
       Data item = dataSource.load(key);
 
       if (item == null) {
         Log.w(TAG, "Notified of key " + key + " but the loaded item was null!");
+        return;
+      }
+
+      if (invalidated) {
+        Log.w(TAG, "Invalidated! Just after individual change was loaded for position " + position);
         return;
       }
 
@@ -165,6 +175,11 @@ class FixedSizePagingController<Key, Data> implements PagingController<Key> {
         return;
       }
 
+      if (invalidated) {
+        Log.w(TAG, "Invalidated! Just before individual insert was loaded for position " + position);
+        return;
+      }
+
       Data item = dataSource.load(key);
 
       if (item == null) {
@@ -172,14 +187,30 @@ class FixedSizePagingController<Key, Data> implements PagingController<Key> {
         return;
       }
 
+      if (invalidated) {
+        Log.w(TAG, "Invalidated! Just after individual insert was loaded for position " + position);
+        return;
+      }
+
       List<Data> updatedList = new CompressedList<>(data);
 
       updatedList.add(position, item);
-      keyToPosition.put(dataSource.getKey(item), position);
+      rebuildKeyToPositionMap(keyToPosition, updatedList, dataSource);
 
       data = updatedList;
       liveData.postValue(updatedList);
     });
+  }
+
+  private void rebuildKeyToPositionMap(@NonNull Map<Key, Integer> map, @NonNull List<Data> dataList, @NonNull PagedDataSource<Key, Data> dataSource) {
+    map.clear();
+
+    for (int i = 0, len = dataList.size(); i < len; i++) {
+      Data item = dataList.get(i);
+      if (item != null) {
+        map.put(dataSource.getKey(item), i);
+      }
+    }
   }
 
   private static String buildLog(int aroundIndex, String message) {

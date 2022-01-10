@@ -8,6 +8,7 @@ import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import org.signal.core.util.concurrent.SignalExecutors
+import org.signal.ringrtc.CallManager
 import org.thoughtcrime.securesms.BuildConfig
 import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.components.settings.DSLConfiguration
@@ -15,8 +16,8 @@ import org.thoughtcrime.securesms.components.settings.DSLSettingsAdapter
 import org.thoughtcrime.securesms.components.settings.DSLSettingsFragment
 import org.thoughtcrime.securesms.components.settings.DSLSettingsText
 import org.thoughtcrime.securesms.components.settings.configure
-import org.thoughtcrime.securesms.database.DatabaseFactory
 import org.thoughtcrime.securesms.database.LocalMetricsDatabase
+import org.thoughtcrime.securesms.database.SignalDatabase
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies
 import org.thoughtcrime.securesms.jobs.DownloadLatestEmojiDataJob
 import org.thoughtcrime.securesms.jobs.RefreshAttributesJob
@@ -24,8 +25,11 @@ import org.thoughtcrime.securesms.jobs.RefreshOwnProfileJob
 import org.thoughtcrime.securesms.jobs.RemoteConfigRefreshJob
 import org.thoughtcrime.securesms.jobs.RotateProfileKeyJob
 import org.thoughtcrime.securesms.jobs.StorageForcePushJob
+import org.thoughtcrime.securesms.jobs.SubscriptionReceiptRequestResponseJob
+import org.thoughtcrime.securesms.keyvalue.SignalStore
 import org.thoughtcrime.securesms.payments.DataExportUtil
 import org.thoughtcrime.securesms.util.ConversationUtil
+import org.thoughtcrime.securesms.util.FeatureFlags
 import org.thoughtcrime.securesms.util.concurrent.SimpleTask
 
 class InternalSettingsFragment : DSLSettingsFragment(R.string.preferences__internal_preferences) {
@@ -317,6 +321,30 @@ class InternalSettingsFragment : DSLSettingsFragment(R.string.preferences__inter
             }
           )
         }
+
+      sectionHeaderPref(R.string.preferences__internal_audio)
+
+      radioListPref(
+        title = DSLSettingsText.from(R.string.preferences__internal_audio_processing_method),
+        listItems = CallManager.AudioProcessingMethod.values().map { it.name }.toTypedArray(),
+        selected = CallManager.AudioProcessingMethod.values().indexOf(state.audioProcessingMethod),
+        onSelected = {
+          viewModel.setInternalAudioProcessingMethod(CallManager.AudioProcessingMethod.values()[it])
+        }
+      )
+
+      dividerPref()
+
+      if (FeatureFlags.donorBadges() && SignalStore.donationsValues().getSubscriber() != null) {
+        sectionHeaderPref(R.string.preferences__internal_badges)
+
+        clickPref(
+          title = DSLSettingsText.from(R.string.preferences__internal_badges_enqueue_redemption),
+          onClick = {
+            enqueueSubscriptionRedemption()
+          }
+        )
+      }
     }
   }
 
@@ -385,18 +413,22 @@ class InternalSettingsFragment : DSLSettingsFragment(R.string.preferences__inter
   }
 
   private fun clearAllSenderKeyState() {
-    DatabaseFactory.getSenderKeyDatabase(requireContext()).deleteAll()
-    DatabaseFactory.getSenderKeySharedDatabase(requireContext()).deleteAll()
+    SignalDatabase.senderKeys.deleteAll()
+    SignalDatabase.senderKeyShared.deleteAll()
     Toast.makeText(context, "Deleted all sender key state.", Toast.LENGTH_SHORT).show()
   }
 
   private fun clearAllSenderKeySharedState() {
-    DatabaseFactory.getSenderKeySharedDatabase(requireContext()).deleteAll()
+    SignalDatabase.senderKeyShared.deleteAll()
     Toast.makeText(context, "Deleted all sender key shared state.", Toast.LENGTH_SHORT).show()
   }
 
   private fun clearAllLocalMetricsState() {
     LocalMetricsDatabase.getInstance(ApplicationDependencies.getApplication()).clear()
     Toast.makeText(context, "Cleared all local metrics state.", Toast.LENGTH_SHORT).show()
+  }
+
+  private fun enqueueSubscriptionRedemption() {
+    SubscriptionReceiptRequestResponseJob.createSubscriptionContinuationJobChain().enqueue()
   }
 }

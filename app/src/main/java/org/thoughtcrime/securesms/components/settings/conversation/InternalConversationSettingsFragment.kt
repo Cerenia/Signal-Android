@@ -1,6 +1,5 @@
 package org.thoughtcrime.securesms.components.settings.conversation
 
-import android.content.Context
 import android.graphics.Color
 import android.text.TextUtils
 import android.widget.Toast
@@ -15,19 +14,21 @@ import org.thoughtcrime.securesms.components.settings.DSLSettingsAdapter
 import org.thoughtcrime.securesms.components.settings.DSLSettingsFragment
 import org.thoughtcrime.securesms.components.settings.DSLSettingsText
 import org.thoughtcrime.securesms.components.settings.configure
-import org.thoughtcrime.securesms.database.DatabaseFactory
-import org.thoughtcrime.securesms.dependencies.ApplicationDependencies
+import org.thoughtcrime.securesms.database.SignalDatabase
 import org.thoughtcrime.securesms.groups.GroupId
+import org.thoughtcrime.securesms.keyvalue.SignalStore
 import org.thoughtcrime.securesms.recipients.Recipient
 import org.thoughtcrime.securesms.recipients.RecipientForeverObserver
 import org.thoughtcrime.securesms.recipients.RecipientId
+import org.thoughtcrime.securesms.subscription.Subscriber
 import org.thoughtcrime.securesms.util.Base64
 import org.thoughtcrime.securesms.util.Hex
 import org.thoughtcrime.securesms.util.SpanUtil
 import org.thoughtcrime.securesms.util.Util
 import org.thoughtcrime.securesms.util.livedata.Store
+import org.whispersystems.signalservice.api.push.ACI
+import org.whispersystems.signalservice.api.push.PNI
 import java.util.Objects
-import java.util.UUID
 
 /**
  * Shows internal details about a recipient that you can view from the conversation settings.
@@ -60,11 +61,18 @@ class InternalConversationSettingsFragment : DSLSettingsFragment(
       )
 
       if (!recipient.isGroup) {
-        val uuid = recipient.uuid.transform(UUID::toString).or("null")
+        val aci = recipient.aci.transform(ACI::toString).or("null")
         longClickPref(
-          title = DSLSettingsText.from("UUID"),
-          summary = DSLSettingsText.from(uuid),
-          onLongClick = { copyToClipboard(uuid) }
+          title = DSLSettingsText.from("ACI"),
+          summary = DSLSettingsText.from(aci),
+          onLongClick = { copyToClipboard(aci) }
+        )
+
+        val pni = recipient.pni.transform(PNI::toString).or("null")
+        longClickPref(
+          title = DSLSettingsText.from("PNI"),
+          summary = DSLSettingsText.from(pni),
+          onLongClick = { copyToClipboard(pni) }
         )
       }
 
@@ -132,7 +140,7 @@ class InternalConversationSettingsFragment : DSLSettingsFragment(
             MaterialAlertDialogBuilder(requireContext())
               .setTitle("Are you sure?")
               .setNegativeButton(android.R.string.cancel) { d, _ -> d.dismiss() }
-              .setPositiveButton(android.R.string.ok) { _, _ -> DatabaseFactory.getRecipientDatabase(requireContext()).setProfileSharing(recipient.id, false) }
+              .setPositiveButton(android.R.string.ok) { _, _ -> SignalDatabase.recipients.setProfileSharing(recipient.id, false) }
               .show()
           }
         )
@@ -145,14 +153,37 @@ class InternalConversationSettingsFragment : DSLSettingsFragment(
               .setTitle("Are you sure?")
               .setNegativeButton(android.R.string.cancel) { d, _ -> d.dismiss() }
               .setPositiveButton(android.R.string.ok) { _, _ ->
-                if (recipient.hasUuid()) {
-                  DatabaseFactory.getSessionDatabase(context).deleteAllFor(recipient.requireUuid().toString())
+                if (recipient.hasAci()) {
+                  SignalDatabase.sessions.deleteAllFor(recipient.requireAci().toString())
                 }
                 if (recipient.hasE164()) {
-                  DatabaseFactory.getSessionDatabase(context).deleteAllFor(recipient.requireE164())
+                  SignalDatabase.sessions.deleteAllFor(recipient.requireE164())
                 }
               }
               .show()
+          }
+        )
+      }
+
+      if (recipient.isSelf) {
+        sectionHeaderPref(DSLSettingsText.from("Donations"))
+
+        val subscriber: Subscriber? = SignalStore.donationsValues().getSubscriber()
+        val summary = if (subscriber != null) {
+          """currency code: ${subscriber.currencyCode}
+            |subscriber id: ${subscriber.subscriberId.serialize()}
+          """.trimMargin()
+        } else {
+          "None"
+        }
+
+        longClickPref(
+          title = DSLSettingsText.from("Subscriber ID"),
+          summary = DSLSettingsText.from(summary),
+          onLongClick = {
+            if (subscriber != null) {
+              copyToClipboard(subscriber.subscriberId.serialize())
+            }
           }
         )
       }
@@ -205,9 +236,8 @@ class InternalConversationSettingsFragment : DSLSettingsFragment(
       liveRecipient.observeForever(this)
 
       SignalExecutors.BOUNDED.execute {
-        val context: Context = ApplicationDependencies.getApplication()
-        val threadId: Long? = DatabaseFactory.getThreadDatabase(context).getThreadIdFor(recipientId)
-        val groupId: GroupId? = DatabaseFactory.getGroupDatabase(context).getGroup(recipientId).transform { it.id }.orNull()
+        val threadId: Long? = SignalDatabase.threads.getThreadIdFor(recipientId)
+        val groupId: GroupId? = SignalDatabase.groups.getGroup(recipientId).transform { it.id }.orNull()
         store.update { state -> state.copy(threadId = threadId, groupId = groupId) }
       }
     }

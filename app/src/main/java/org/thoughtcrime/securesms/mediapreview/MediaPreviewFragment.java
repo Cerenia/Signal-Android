@@ -11,7 +11,7 @@ import androidx.fragment.app.Fragment;
 
 import org.thoughtcrime.securesms.attachments.Attachment;
 import org.thoughtcrime.securesms.attachments.AttachmentId;
-import org.thoughtcrime.securesms.database.DatabaseFactory;
+import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.mms.PartUriParser;
 import org.thoughtcrime.securesms.util.MediaUtil;
 import org.thoughtcrime.securesms.util.concurrent.SimpleTask;
@@ -85,15 +85,13 @@ public abstract class MediaPreviewFragment extends Fragment {
     return null;
   }
 
-  public void checkMediaStillAvailable() {
+  private void checkMediaStillAvailable() {
     if (attachmentId == null) {
       attachmentId = new PartUriParser(Objects.requireNonNull(requireArguments().getParcelable(DATA_URI))).getPartId();
     }
 
-    final Context context = requireContext().getApplicationContext();
-
     SimpleTask.run(getViewLifecycleOwner().getLifecycle(),
-                   () -> DatabaseFactory.getAttachmentDatabase(context).hasAttachment(attachmentId),
+                   () -> SignalDatabase.attachments().hasAttachment(attachmentId),
                    hasAttachment -> { if (!hasAttachment) events.mediaNotAvailable(); });
   }
 

@@ -35,6 +35,8 @@ import org.signal.core.util.logging.Log;
 import org.signal.storageservice.protos.groups.local.DecryptedGroup;
 import org.signal.storageservice.protos.groups.local.DecryptedGroupChange;
 import org.thoughtcrime.securesms.R;
+import org.thoughtcrime.securesms.components.emoji.EmojiProvider;
+import org.thoughtcrime.securesms.components.emoji.parsing.EmojiParser;
 import org.thoughtcrime.securesms.database.MmsSmsColumns;
 import org.thoughtcrime.securesms.database.SmsDatabase;
 import org.thoughtcrime.securesms.database.documents.IdentityKeyMismatch;
@@ -42,6 +44,8 @@ import org.thoughtcrime.securesms.database.documents.NetworkFailure;
 import org.thoughtcrime.securesms.database.model.databaseprotos.DecryptedGroupV2Context;
 import org.thoughtcrime.securesms.database.model.databaseprotos.GroupCallUpdateDetails;
 import org.thoughtcrime.securesms.database.model.databaseprotos.ProfileChangeDetails;
+import org.thoughtcrime.securesms.emoji.EmojiSource;
+import org.thoughtcrime.securesms.emoji.JumboEmoji;
 import org.thoughtcrime.securesms.groups.GroupMigrationMembershipChange;
 import org.thoughtcrime.securesms.profiles.ProfileName;
 import org.thoughtcrime.securesms.recipients.Recipient;
@@ -54,6 +58,7 @@ import org.thoughtcrime.securesms.util.StringUtil;
 import org.thoughtcrime.securesms.util.Util;
 import org.whispersystems.libsignal.util.guava.Function;
 import org.whispersystems.signalservice.api.groupsv2.DecryptedGroupUtil;
+import org.whispersystems.signalservice.api.push.ACI;
 import org.whispersystems.signalservice.api.util.UuidUtil;
 
 import java.io.IOException;
@@ -90,6 +95,8 @@ public abstract class MessageRecord extends DisplayRecord {
   private final boolean                  remoteDelete;
   private final long                     notifiedTimestamp;
   private final long                     receiptTimestamp;
+
+  protected Boolean isJumboji = null;
 
   MessageRecord(long id, String body, Recipient conversationRecipient,
                 Recipient individualRecipient, int recipientDeviceId,
@@ -240,7 +247,7 @@ public abstract class MessageRecord extends DisplayRecord {
 
   private static boolean selfCreatedGroup(@NonNull DecryptedGroupChange change) {
     return change.getRevision() == 0 &&
-           change.getEditor().equals(UuidUtil.toByteString(Recipient.self().requireUuid()));
+           change.getEditor().equals(UuidUtil.toByteString(Recipient.self().requireAci().uuid()));
   }
 
   public static @NonNull UpdateDescription getGv2ChangeDescription(@NonNull Context context, @NonNull String body) {
@@ -248,7 +255,7 @@ public abstract class MessageRecord extends DisplayRecord {
       ShortStringDescriptionStrategy descriptionStrategy     = new ShortStringDescriptionStrategy(context);
       byte[]                         decoded                 = Base64.decode(body);
       DecryptedGroupV2Context        decryptedGroupV2Context = DecryptedGroupV2Context.parseFrom(decoded);
-      GroupsV2UpdateMessageProducer  updateMessageProducer   = new GroupsV2UpdateMessageProducer(context, descriptionStrategy, Recipient.self().getUuid().get());
+      GroupsV2UpdateMessageProducer  updateMessageProducer   = new GroupsV2UpdateMessageProducer(context, descriptionStrategy, Recipient.self().requireAci().uuid());
 
       if (decryptedGroupV2Context.hasChange() && (decryptedGroupV2Context.getGroupState().getRevision() != 0 || decryptedGroupV2Context.hasPreviousGroupState())) {
         return UpdateDescription.concatWithNewLines(updateMessageProducer.describeChanges(decryptedGroupV2Context.getPreviousGroupState(), decryptedGroupV2Context.getChange()));
@@ -279,7 +286,7 @@ public abstract class MessageRecord extends DisplayRecord {
     }
 
     DecryptedGroup groupState = decryptedGroupV2Context.getGroupState();
-    boolean        invited    = DecryptedGroupUtil.findPendingByUuid(groupState.getPendingMembersList(), Recipient.self().requireUuid()).isPresent();
+    boolean        invited    = DecryptedGroupUtil.findPendingByUuid(groupState.getPendingMembersList(), Recipient.self().requireAci().uuid()).isPresent();
 
     if (decryptedGroupV2Context.hasChange()) {
       UUID changeEditor = UuidUtil.fromByteStringOrNull(decryptedGroupV2Context.getChange().getEditor());
@@ -301,7 +308,7 @@ public abstract class MessageRecord extends DisplayRecord {
                                                           @NonNull Function<Recipient, String> stringGenerator,
                                                           @DrawableRes int iconResource)
   {
-    return UpdateDescription.mentioning(Collections.singletonList(recipient.getUuid().or(UuidUtil.UNKNOWN_UUID)),
+    return UpdateDescription.mentioning(Collections.singletonList(recipient.getAci().or(ACI.UNKNOWN)),
                                         () -> stringGenerator.apply(recipient.resolve()),
                                         iconResource);
   }
@@ -369,10 +376,11 @@ public abstract class MessageRecord extends DisplayRecord {
   public static @NonNull UpdateDescription getGroupCallUpdateDescription(@NonNull Context context, @NonNull String body, boolean withTime) {
     GroupCallUpdateDetails groupCallUpdateDetails = GroupCallUpdateDetailsUtil.parse(body);
 
-    List<UUID> joinedMembers = Stream.of(groupCallUpdateDetails.getInCallUuidsList())
-                                     .map(UuidUtil::parseOrNull)
-                                     .withoutNulls()
-                                     .toList();
+    List<ACI> joinedMembers = Stream.of(groupCallUpdateDetails.getInCallUuidsList())
+                                    .map(UuidUtil::parseOrNull)
+                                    .withoutNulls()
+                                    .map(ACI::from)
+                                    .toList();
 
     UpdateDescription.StringFactory stringFactory = new GroupCallUpdateMessageFactory(context, joinedMembers, withTime, groupCallUpdateDetails);
 
@@ -407,11 +415,11 @@ public abstract class MessageRecord extends DisplayRecord {
    }
 
    @Override
-   public @NonNull String describe(@NonNull UUID uuid) {
-     if (UuidUtil.UNKNOWN_UUID.equals(uuid)) {
+   public @NonNull String describe(@NonNull ACI aci) {
+     if (aci.isUnknown()) {
        return context.getString(R.string.MessageRecord_unknown);
      }
-     return Recipient.resolved(RecipientId.from(uuid, null)).getDisplayName(context);
+     return Recipient.resolved(RecipientId.from(aci, null)).getDisplayName(context);
    }
  }
 
@@ -598,6 +606,18 @@ public abstract class MessageRecord extends DisplayRecord {
     } else {
       return receiptTimestamp;
     }
+  }
+
+  public boolean isJumbomoji(Context context) {
+    if (isJumboji == null) {
+      if (getBody().length() <= EmojiSource.getLatest().getMaxEmojiLength() * JumboEmoji.MAX_JUMBOJI_COUNT) {
+        EmojiParser.CandidateList candidates = EmojiProvider.getCandidates(getDisplayBody(context));
+        isJumboji = candidates != null && candidates.allEmojis && candidates.size() <= JumboEmoji.MAX_JUMBOJI_COUNT;
+      } else {
+        isJumboji = false;
+      }
+    }
+    return isJumboji;
   }
 
   public static final class InviteAddState {

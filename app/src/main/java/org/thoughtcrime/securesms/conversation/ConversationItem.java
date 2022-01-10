@@ -67,6 +67,7 @@ import org.thoughtcrime.securesms.BindableConversationItem;
 import org.thoughtcrime.securesms.MediaPreviewActivity;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.attachments.DatabaseAttachment;
+import org.thoughtcrime.securesms.badges.BadgeImageView;
 import org.thoughtcrime.securesms.components.AlertView;
 import org.thoughtcrime.securesms.components.AudioView;
 import org.thoughtcrime.securesms.components.AvatarImageView;
@@ -87,8 +88,8 @@ import org.thoughtcrime.securesms.conversation.colors.Colorizer;
 import org.thoughtcrime.securesms.conversation.mutiselect.MultiselectCollection;
 import org.thoughtcrime.securesms.conversation.mutiselect.MultiselectPart;
 import org.thoughtcrime.securesms.database.AttachmentDatabase;
-import org.thoughtcrime.securesms.database.DatabaseFactory;
 import org.thoughtcrime.securesms.database.MessageDatabase;
+import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.database.model.MediaMmsMessageRecord;
 import org.thoughtcrime.securesms.database.model.MessageRecord;
 import org.thoughtcrime.securesms.database.model.MmsMessageRecord;
@@ -137,12 +138,10 @@ import org.whispersystems.libsignal.util.guava.Optional;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * A view that displays an individual conversation item within a conversation
@@ -183,6 +182,7 @@ public final class ConversationItem extends RelativeLayout implements BindableCo
             private   AvatarImageView            contactPhoto;
             private   AlertView                  alertView;
             protected ReactionsConversationView  reactionsView;
+            protected BadgeImageView             badgeImageView;
 
   private @NonNull  Set<MultiselectPart>                    batchSelected = new HashSet<>();
   private @NonNull  Outliner                                outliner      = new Outliner();
@@ -202,6 +202,7 @@ public final class ConversationItem extends RelativeLayout implements BindableCo
   private int     defaultBubbleColorForWallpaper;
   private int     measureCalls;
   private boolean updatingFooter;
+  private boolean canCollapseFooter;
 
   private final PassthroughClickListener        passthroughClickListener     = new PassthroughClickListener();
   private final AttachmentDownloadClickListener downloadClickListener        = new AttachmentDownloadClickListener();
@@ -264,6 +265,7 @@ public final class ConversationItem extends RelativeLayout implements BindableCo
     this.reply                   =                    findViewById(R.id.reply_icon_wrapper);
     this.replyIcon               =                    findViewById(R.id.reply_icon);
     this.reactionsView           =                    findViewById(R.id.reactions_view);
+    this.badgeImageView          =                    findViewById(R.id.badge);
 
     setOnClickListener(new ClickListener(null));
 
@@ -307,6 +309,9 @@ public final class ConversationItem extends RelativeLayout implements BindableCo
     this.canPlayContent         = false;
     this.mediaItem              = null;
     this.colorizer              = colorizer;
+    this.measureCalls           = 0;
+    this.updatingFooter         = false;
+    this.canCollapseFooter      = true;
 
     this.recipient.observeForever(this);
     this.conversationRecipient.observeForever(this);
@@ -326,6 +331,10 @@ public final class ConversationItem extends RelativeLayout implements BindableCo
     setMessageSpacing(context, messageRecord, previousMessageRecord, nextMessageRecord, groupThread);
     setReactions(messageRecord);
     setFooter(messageRecord, nextMessageRecord, locale, groupThread, hasWallpaper);
+
+    if (audioViewStub.resolved()) {
+      audioViewStub.get().setOnLongClickListener(passthroughClickListener);
+    }
   }
 
   @Override
@@ -397,8 +406,7 @@ public final class ConversationItem extends RelativeLayout implements BindableCo
     int defaultBottomMargin   = readDimen(R.dimen.message_bubble_bottom_padding);
     int collapsedBottomMargin = readDimen(R.dimen.message_bubble_collapsed_bottom_padding);
 
-    if (!updatingFooter                                                &&
-        getActiveFooter(messageRecord) == footer                       &&
+    if (getActiveFooter(messageRecord) == footer                       &&
         !hasAudio(messageRecord)                                       &&
         isFooterVisible(messageRecord, nextMessageRecord, groupThread) &&
         !bodyText.isJumbomoji()                                        &&
@@ -409,29 +417,37 @@ public final class ConversationItem extends RelativeLayout implements BindableCo
       int      availableWidth     = getAvailableMessageBubbleWidth(bodyText);
       int      collapsedTopMargin = -1 * (dateView.getMeasuredHeight() + ViewUtil.dpToPx(4));
 
-      if (bodyText.isSingleLine() && !messageRecord.isFailed()) {
-        int maxBubbleWidth  = hasBigImageLinkPreview(messageRecord) || hasThumbnail(messageRecord) ? readDimen(R.dimen.media_bubble_max_width) : getMaxBubbleWidth();
-        int bodyMargins     = ViewUtil.getLeftMargin(bodyText) + ViewUtil.getRightMargin(bodyText);
-        int sizeWithMargins = bodyText.getMeasuredWidth() + ViewUtil.dpToPx(6) + footerWidth + bodyMargins;
-        int minSize         = Math.min(maxBubbleWidth, Math.max(bodyText.getMeasuredWidth() + ViewUtil.dpToPx(6) + footerWidth + bodyMargins, bodyBubble.getMeasuredWidth()));
+      if (!updatingFooter) {
+        if (bodyText.isSingleLine() && !messageRecord.isFailed()) {
+          int maxBubbleWidth  = hasBigImageLinkPreview(messageRecord) || hasThumbnail(messageRecord) ? readDimen(R.dimen.media_bubble_max_width) : getMaxBubbleWidth();
+          int bodyMargins     = ViewUtil.getLeftMargin(bodyText) + ViewUtil.getRightMargin(bodyText);
+          int sizeWithMargins = bodyText.getMeasuredWidth() + ViewUtil.dpToPx(6) + footerWidth + bodyMargins;
+          int minSize         = Math.min(maxBubbleWidth, Math.max(bodyText.getMeasuredWidth() + ViewUtil.dpToPx(6) + footerWidth + bodyMargins, bodyBubble.getMeasuredWidth()));
 
-        if (hasQuote(messageRecord) && sizeWithMargins < availableWidth) {
-          ViewUtil.setTopMargin(footer, collapsedTopMargin);
-          ViewUtil.setBottomMargin(footer, collapsedBottomMargin);
-          needsMeasure   = true;
-          updatingFooter = true;
-        } else if (sizeWithMargins != bodyText.getMeasuredWidth() && sizeWithMargins <= minSize) {
-          bodyBubble.getLayoutParams().width = minSize;
-          ViewUtil.setTopMargin(footer, collapsedTopMargin);
-          ViewUtil.setBottomMargin(footer, collapsedBottomMargin);
-          needsMeasure   = true;
-          updatingFooter = true;
+          if (hasQuote(messageRecord) && sizeWithMargins < availableWidth) {
+            ViewUtil.setTopMargin(footer, collapsedTopMargin);
+            ViewUtil.setBottomMargin(footer, collapsedBottomMargin);
+            needsMeasure   = true;
+            updatingFooter = true;
+          } else if (sizeWithMargins != bodyText.getMeasuredWidth() && sizeWithMargins <= minSize) {
+            bodyBubble.getLayoutParams().width = minSize;
+            ViewUtil.setTopMargin(footer, collapsedTopMargin);
+            ViewUtil.setBottomMargin(footer, collapsedBottomMargin);
+            needsMeasure   = true;
+            updatingFooter = true;
+          }
         }
       }
 
-      if (!updatingFooter && !messageRecord.isFailed() && bodyText.getLastLineWidth() + ViewUtil.dpToPx(6) + footerWidth <= bodyText.getMeasuredWidth()) {
-        ViewUtil.setTopMargin(footer, collapsedTopMargin);
-        ViewUtil.setBottomMargin(footer, collapsedBottomMargin);
+      if (!messageRecord.isFailed() && canCollapseFooter && !bodyText.isSingleLine()) {
+        if (bodyText.getLastLineWidth() + ViewUtil.dpToPx(6) + footerWidth <= bodyText.getMeasuredWidth()) {
+          ViewUtil.setTopMargin(footer, collapsedTopMargin);
+          ViewUtil.setBottomMargin(footer, collapsedBottomMargin);
+        } else {
+          ViewUtil.setTopMargin(footer, defaultTopMargin);
+          ViewUtil.setBottomMargin(footer, defaultBottomMargin);
+          canCollapseFooter = false;
+        }
         updatingFooter = true;
         needsMeasure   = true;
       }
@@ -459,6 +475,12 @@ public final class ConversationItem extends RelativeLayout implements BindableCo
 
       if (activeFooter.getVisibility() != GONE && activeFooter.getMeasuredWidth() != availableWidth) {
         activeFooter.getLayoutParams().width = availableWidth;
+        needsMeasure = true;
+      }
+
+      int desiredWidth = audioViewStub.get().getMeasuredWidth() + ViewUtil.getLeftMargin(audioViewStub.get()) + ViewUtil.getRightMargin(audioViewStub.get());
+      if (bodyBubble.getMeasuredWidth() != desiredWidth) {
+        bodyBubble.getLayoutParams().width = desiredWidth;
         needsMeasure = true;
       }
     }
@@ -1051,6 +1073,8 @@ public final class ConversationItem extends RelativeLayout implements BindableCo
       ViewUtil.updateLayoutParamsIfNonNull(groupSenderHolder, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 
       footer.setVisibility(VISIBLE);
+    } else if (hasNoBubble(messageRecord)) {
+      bodyBubble.setBackgroundColor(Color.TRANSPARENT);
     } else if (hasThumbnail(messageRecord)) {
       mediaThumbnailStub.require().setVisibility(View.VISIBLE);
       if (audioViewStub.resolved())     audioViewStub.get().setVisibility(View.GONE);
@@ -1250,6 +1274,8 @@ public final class ConversationItem extends RelativeLayout implements BindableCo
     });
 
     contactPhoto.setAvatar(glideRequests, recipient, false);
+    badgeImageView.setBadgeFromRecipient(recipient, glideRequests);
+    badgeImageView.setClickable(false);
   }
 
   private void linkifyMessageBody(@NonNull Spannable messageBody,
@@ -1486,8 +1512,10 @@ public final class ConversationItem extends RelativeLayout implements BindableCo
 
       if (!next.isPresent() || next.get().isUpdate() || !current.getRecipient().equals(next.get().getRecipient())) {
         contactPhoto.setVisibility(VISIBLE);
+        badgeImageView.setVisibility(VISIBLE);
       } else {
         contactPhoto.setVisibility(GONE);
+        badgeImageView.setVisibility(GONE);
       }
     } else {
       if (groupSenderHolder != null) {
@@ -1496,6 +1524,10 @@ public final class ConversationItem extends RelativeLayout implements BindableCo
 
       if (contactPhotoHolder != null) {
         contactPhotoHolder.setVisibility(GONE);
+      }
+
+      if (badgeImageView != null) {
+        badgeImageView.setVisibility(GONE);
       }
     }
   }
@@ -2094,8 +2126,8 @@ public final class ConversationItem extends RelativeLayout implements BindableCo
     if (message > -1) builder.setMessage(message);
 
     builder.setPositiveButton(R.string.yes, (dialogInterface, i) -> {
-      MessageDatabase db = messageRecord.isMms() ? DatabaseFactory.getMmsDatabase(context)
-                                                 : DatabaseFactory.getSmsDatabase(context);
+      MessageDatabase db = messageRecord.isMms() ? SignalDatabase.mms()
+                                                 : SignalDatabase.sms();
 
       db.markAsInsecure(messageRecord.getId());
       db.markAsOutbox(messageRecord.getId());
@@ -2113,9 +2145,9 @@ public final class ConversationItem extends RelativeLayout implements BindableCo
 
     builder.setNegativeButton(R.string.no, (dialogInterface, i) -> {
       if (messageRecord.isMms()) {
-        DatabaseFactory.getMmsDatabase(context).markAsSentFailed(messageRecord.getId());
+        SignalDatabase.mms().markAsSentFailed(messageRecord.getId());
       } else {
-        DatabaseFactory.getSmsDatabase(context).markAsSentFailed(messageRecord.getId());
+        SignalDatabase.sms().markAsSentFailed(messageRecord.getId());
       }
     });
     builder.show();

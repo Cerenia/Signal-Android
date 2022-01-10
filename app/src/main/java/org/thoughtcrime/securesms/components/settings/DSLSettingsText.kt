@@ -53,6 +53,9 @@ sealed class DSLSettingsText {
     override fun modify(context: Context, charSequence: CharSequence): CharSequence {
       return SpanUtil.color(textColor, charSequence)
     }
+
+    override fun equals(other: Any?): Boolean = textColor == (other as? ColorModifier)?.textColor
+    override fun hashCode(): Int = textColor
   }
 
   object CenterModifier : Modifier {
@@ -62,12 +65,20 @@ sealed class DSLSettingsText {
   }
 
   object Title2BoldModifier : TextAppearanceModifier(R.style.TextAppearance_Signal_Title2_Bold)
-  object Body1Modifier : TextAppearanceModifier(R.style.Signal_Text_Body)
   object Body1BoldModifier : TextAppearanceModifier(R.style.TextAppearance_Signal_Body1_Bold)
 
   open class TextAppearanceModifier(@StyleRes private val textAppearance: Int) : Modifier {
     override fun modify(context: Context, charSequence: CharSequence): CharSequence {
       return SpanUtil.textAppearance(context, textAppearance, charSequence)
+    }
+
+    override fun equals(other: Any?): Boolean = textAppearance == (other as? TextAppearanceModifier)?.textAppearance
+    override fun hashCode(): Int = textAppearance
+  }
+
+  object BoldModifier : Modifier {
+    override fun modify(context: Context, charSequence: CharSequence): CharSequence {
+      return SpanUtil.bold(charSequence)
     }
   }
 }

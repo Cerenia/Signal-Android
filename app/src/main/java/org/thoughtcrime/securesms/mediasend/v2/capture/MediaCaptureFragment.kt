@@ -8,6 +8,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.LiveData
+import androidx.navigation.fragment.findNavController
 import app.cash.exhaustive.Exhaustive
 import org.signal.core.util.logging.Log
 import org.thoughtcrime.securesms.R
@@ -59,15 +60,13 @@ class MediaCaptureFragment : Fragment(R.layout.fragment_container), CameraFragme
           Toast.makeText(requireContext(), R.string.MediaSendActivity_camera_unavailable, Toast.LENGTH_SHORT).show()
         }
         is MediaCaptureEvent.MediaCaptureRendered -> {
-          captureChildFragment.fadeOutControls {
-            if (isFirst()) {
-              sharedViewModel.addCameraFirstCapture(event.media)
-            } else {
-              sharedViewModel.addMedia(event.media)
-            }
-
-            navigator.goToReview(view)
+          if (isFirst()) {
+            sharedViewModel.addCameraFirstCapture(event.media)
+          } else {
+            sharedViewModel.addMedia(event.media)
           }
+
+          navigator.goToReview(findNavController())
         }
       }
     }
@@ -99,7 +98,13 @@ class MediaCaptureFragment : Fragment(R.layout.fragment_container), CameraFragme
 
   override fun onCameraError() {
     Log.w(TAG, "Camera Error.")
-    Toast.makeText(requireContext(), R.string.MediaSendActivity_camera_unavailable, Toast.LENGTH_SHORT).show()
+
+    val context = this.context
+    if (context != null) {
+      Toast.makeText(context, R.string.MediaSendActivity_camera_unavailable, Toast.LENGTH_SHORT).show()
+    } else {
+      Log.w(TAG, "Could not post toast, fragment not attached to a context.")
+    }
   }
 
   override fun onImageCaptured(data: ByteArray, width: Int, height: Int) {
@@ -116,9 +121,10 @@ class MediaCaptureFragment : Fragment(R.layout.fragment_container), CameraFragme
   }
 
   override fun onGalleryClicked() {
+    val controller = findNavController()
     requestPermissionsForGallery {
       captureChildFragment.fadeOutControls {
-        navigator.goToGallery(requireView())
+        navigator.goToGallery(controller)
       }
     }
   }
@@ -133,8 +139,9 @@ class MediaCaptureFragment : Fragment(R.layout.fragment_container), CameraFragme
   }
 
   override fun onCameraCountButtonClicked() {
+    val controller = findNavController()
     captureChildFragment.fadeOutControls {
-      navigator.goToReview(requireView())
+      navigator.goToReview(controller)
     }
   }
 

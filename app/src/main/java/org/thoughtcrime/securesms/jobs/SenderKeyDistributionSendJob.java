@@ -4,9 +4,8 @@ import androidx.annotation.NonNull;
 
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.crypto.UnidentifiedAccessUtil;
-import org.thoughtcrime.securesms.crypto.storage.SignalSenderKeyStore;
-import org.thoughtcrime.securesms.database.DatabaseFactory;
 import org.thoughtcrime.securesms.database.GroupDatabase;
+import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.groups.GroupId;
 import org.thoughtcrime.securesms.jobmanager.Data;
@@ -77,7 +76,7 @@ public final class SenderKeyDistributionSendJob extends BaseJob {
 
   @Override
   protected void onRun() throws Exception {
-    GroupDatabase groupDatabase = DatabaseFactory.getGroupDatabase(context);
+    GroupDatabase groupDatabase = SignalDatabase.groups();
 
     if (!groupDatabase.isCurrentMember(groupId, recipientId)) {
       Log.w(TAG, recipientId + " is no longer a member of " + groupId + "! Not sending.");
@@ -102,7 +101,7 @@ public final class SenderKeyDistributionSendJob extends BaseJob {
     SenderKeyDistributionMessage           message        = messageSender.getOrCreateNewGroupSession(distributionId);
     List<Optional<UnidentifiedAccessPair>> access         = UnidentifiedAccessUtil.getAccessFor(context, Collections.singletonList(recipient));
 
-    SendMessageResult result = messageSender.sendSenderKeyDistributionMessage(address, access, message, groupId.getDecodedId()).get(0);
+    SendMessageResult result = messageSender.sendSenderKeyDistributionMessage(distributionId, address, access, message, groupId.getDecodedId()).get(0);
 
     if (result.isSuccess()) {
       List<SignalProtocolAddress> addresses = result.getSuccess()

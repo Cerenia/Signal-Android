@@ -103,10 +103,8 @@ sealed class ConversationSettingsViewModel(
 
   override fun onCleared() {
     cleared = true
-    store.update { state ->
-      openedMediaCursors.forEach { it.ensureClosed() }
-      state.copy(sharedMedia = null)
-    }
+    openedMediaCursors.forEach { it.ensureClosed() }
+    store.clear()
   }
 
   private fun Cursor?.ensureClosed() {
@@ -140,7 +138,7 @@ sealed class ConversationSettingsViewModel(
             isSearchAvailable = true
           ),
           disappearingMessagesLifespan = recipient.expiresInSeconds,
-          canModifyBlockedState = !recipient.isSelf,
+          canModifyBlockedState = !recipient.isSelf && RecipientUtil.isBlockable(recipient),
           specificSettingsState = state.requireRecipientSettingsState().copy(
             contactLinkState = when {
               recipient.isSelf -> ContactLinkState.NONE

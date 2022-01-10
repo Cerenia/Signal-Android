@@ -92,6 +92,7 @@
   <string name="BlockUnblockDialog_unblock_s">%1$s ကို ဘလော့ဖြည်မည်လား?</string>
   <string name="BlockUnblockDialog_block">ဘလော့မည်</string>
   <string name="BlockUnblockDialog_block_and_leave">ဘလော့ပြီး ထွက်မည်</string>
+  <string name="BlockUnblockDialog_report_spam_and_block">တိုင်ကြားပီး ဘလော့မည်</string>
   <!--BucketedThreadMedia-->
   <string name="BucketedThreadMedia_Today">ယနေ့ </string>
   <string name="BucketedThreadMedia_Yesterday">မနေ့က </string>
@@ -167,6 +168,7 @@
   <string name="ConversationItem_error_network_not_delivered">ပို့ဆောင်မှု မအောင်မြင်ပါ</string>
   <string name="ConversationItem_received_key_exchange_message_tap_to_process">အလဲအလှယ်စာတိုသော့ရရှိပါသည်၊ ဆက်လက်လုပ်ဆောင်ရန် နှိပ်ပါ။ </string>
   <string name="ConversationItem_group_action_left">%1$s အဖွဲ့မှထွက်သွားသည်။ </string>
+  <string name="ConversationItem_send_paused">áá±áá­á¯á·áá¾á¯áá­á¯ áááºááá·áºáá²á·áááº</string>
   <string name="ConversationItem_click_to_approve_unencrypted">ပို့ရန် မအောင်မြင်ပါ၊ လုံခြုံမှုမရှိသော အရန်အတွက် အသာထိပါ။</string>
   <string name="ConversationItem_click_to_approve_unencrypted_sms_dialog_title">မလုံခြုံသောဖုန်းစာတိုပို့စနစ်ကိုပြန်သုံးမလား? </string>
   <string name="ConversationItem_click_to_approve_unencrypted_mms_dialog_title">မလုံခြုံသော ရုပ်သံပုံပါ စာပို့စနစ်ကို ပြန်သုံးမလား? </string>
@@ -234,6 +236,7 @@
   <string name="ConversationActivity_join">ပူးပေါင်း</string>
   <string name="ConversationActivity_full">ပြည့်နေသည်</string>
   <string name="ConversationActivity_error_sending_media">မီဒီယာပို့ခြင်းအမှား</string>
+  <string name="ConversationActivity__reported_as_spam_and_blocked">áá­á¯ááºáá¼á¬á¸áá®á¸ ááá±á¬á·áááº</string>
   <!--ConversationAdapter-->
   <plurals name="ConversationAdapter_n_unread_messages">
     <item quantity="other">မဖတ်ရသေးသည့် စာတို %d </item>
@@ -282,6 +285,7 @@
   <string name="ConversationFragment_not_now">အခုမဟုတ်သေးပါ။</string>
   <string name="ConversationFragment_your_safety_number_with_s_changed">သင်၏လုံခြုံရေးနံပါတ်%s ပြောင်းလဲသွားတယ်</string>
   <string name="ConversationFragment_your_safety_number_with_s_changed_likey_because_they_reinstalled_signal">သင်၏လုံခြုံရေးနံပါတ်%s သူတို့ Signal reinstall သို့မဟုတ် ထုတ်ကုန်ပြောင်းလဲသောကြောင့် ပြောင်းလဲသွားတယ်။ လုံခြုံရေးနံပါတ်အသစ်ကိုအတည်ပြုရန် အတည်ပြုကိုနှိပ်ပါ။ ဒါက optional ကိုဖြစ်ပါတယ်။</string>
+  <!--Message shown to indicate which notification profile is on/active-->
   <plurals name="ConversationListFragment_delete_selected_conversations">
     <item quantity="other">ရွေးထားသည့် စာတိုကိုဖျက်မလား? </item>
   </plurals>
@@ -297,8 +301,14 @@
   <plurals name="ConversationListFragment_moved_conversations_to_inbox">
     <item quantity="other">ပြောစကား %d ကို စာပုံးထဲသို့ရွေ့သည်</item>
   </plurals>
+  <plurals name="ConversationListFragment_read_plural">
+    <item quantity="other">ဖတ်သည်</item>
+  </plurals>
   <string name="ConversationListFragment_select">ရွေးမယ်</string>
   <string name="ConversationListFragment_select_all">အားလုံးကို ရွေးမယ်</string>
+  <!--Show in conversation list overflow menu to open selection bottom sheet-->
+  <!--Tooltip shown after you have created your first notification profile-->
+  <!--Message shown in top toast to indicate the named profile is on-->
   <!--ConversationListItem-->
   <string name="ConversationListItem_key_exchange_message">ကီးအလဲအလှယ် စာသား</string>
   <!--ConversationListItemAction-->
@@ -342,6 +352,7 @@
   <string name="BackupsPreferenceFragment__learn_more">ထပ်မံလေ့လာရန်</string>
   <string name="BackupsPreferenceFragment__in_progress">ဆောင်ရွက်ဆဲ</string>
   <string name="BackupsPreferenceFragment__d_so_far">%1$d ထိလုပ်ဆောင်ပြီး…</string>
+  <!--Show percentage of completion of backup-->
   <string name="BackupsPreferenceFragment_signal_requires_external_storage_permission_in_order_to_create_backups">သင်၏ အပလီကေးရှင်းပြင်ပ ဖုန်းထဲတွင် သိမ်းထားခွင့်အား  Signal ကို ပေးရန်လိုအပ်ပါသည်။သို့သော် လုံးဝခွင့်မပြုပါဟု ရွေးထားပြီး ဖြစ်နေသဖြင့် အပ်ပလီကေးရှင်း အပြင်အဆင်သို့ သွား၍ ခွင့်ပြုချက်များကို ရွေးချယ်ကာ သိုလှောင်မှုခွင့်ပြုချက်ကို အသုံးပြုနိုင်အောင် ပြုလုပ်ပါ။</string>
   <!--CustomDefaultPreference-->
   <string name="CustomDefaultPreference_using_custom">အထူးပြုသုံး %s</string>
@@ -377,14 +388,9 @@
   <string name="DeviceListItem_today">ယနေ့ </string>
   <!--DocumentView-->
   <string name="DocumentView_unnamed_file">အမည်မဖော်သောဖိုင်</string>
-  <!--DonateMegaphone-->
-  <string name="DonateMegaphone_donate_to_signal">Signal ကိုလှူဒါန်းပါ</string>
-  <string name="DonateMegaphone_Signal_is_powered_by_people_like_you_show_your_support_today">သင့်လိုမျိုး သုံးသူများက Signal ကို ပံ့ပိုးပါသည်။ ဒီနေ့သင်၏ ထောက်ခံမှုကိုပြလိုက်ပါ!</string>
-  <string name="DonateMegaphone_donate">လှူဒါန်းပါ</string>
-  <string name="DonateMegaphone_no_thanks">ရပါတယ်ကျေးဇူးပါ</string>
   <!--GroupCallingMegaphone-->
-  <string name="GroupCallingMegaphone__introducing_group_calls">အုပ်စုလိုက် ခေါ်ဆိုမှုများကို မိတ်ဆက်ပေးခြင်း</string>
-  <string name="GroupCallingMegaphone__open_a_new_group_to_start">အခမဲ့ စာဝှက်ထားသော အုပ်စုခေါ်ဆိုမှုကို စတင်ရန် အုပ်စုအသစ်တစ်ခုကိုဖွင့်ပါ</string>
+  <!-- Removed by excludeNonTranslatables <string name="GroupCallingMegaphone__introducing_group_calls">အုပ်စုလိုက် ခေါ်ဆိုမှုများကို မိတ်ဆက်ပေးခြင်း</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="GroupCallingMegaphone__open_a_new_group_to_start">အခမဲ့ စာဝှက်ထားသော အုပ်စုခေါ်ဆိုမှုကို စတင်ရန် အုပ်စုအသစ်တစ်ခုကိုဖွင့်ပါ</string> -->
   <!--DozeReminder-->
   <string name="DozeReminder_optimize_for_missing_play_services">မပါရှိသေးသော Play Service များကို  ရှာဖွေပါ </string>
   <string name="DozeReminder_this_device_does_not_support_play_services_tap_to_disable_system_battery">ဤဖုန်းသည် Play Services အသုံးပြု၍မရပါ။ Signal အသုံးမပြုသည့်အချိန်တွင် သတင်းစကားများပြန်လည် ထုတ်ယူရာတွင် အနှောက်အယှက်ပြုသည့်အတွက် ဘက်ထရီ အသုံးပြုမှုစောင့် ကြည့်သည့်စနစ်ကို ပိတ်ထားပေးပါ။ </string>
@@ -489,9 +495,9 @@
   <string name="LeaveGroupDialog_before_you_leave_you_must_choose_at_least_one_new_admin_for_this_group">သင်မထွက်ခွာမီ ဤအုပ်စုအတွက် အနည်းဆုံး အက်မင် အသစ်တစ်ယောက်ကိုရွေးချယ်ပါ။</string>
   <string name="LeaveGroupDialog_choose_admin">အက်မင် ရွေးချယ်ပါ။</string>
   <!--LinkPreviewsMegaphone-->
-  <string name="LinkPreviewsMegaphone_disable">ပိတ်ပါ။</string>
-  <string name="LinkPreviewsMegaphone_preview_any_link">မည်သည့် လင့်ခ်ကိုမဆို ကြိုတင် ဖွင့်ကြည့်ပါ။</string>
-  <string name="LinkPreviewsMegaphone_you_can_now_retrieve_link_previews_directly_from_any_website">သင်ပို့လိုက်သော မက်ဆေ့ချ်များတွင်ပါဝင်သော ဝက်ဘ်ဆိုက်မှ ကြိုတင် ဖွင့်ကြည့်နိုင်သော လင့်ခ်များကို တိုက်ရိုက်ရယူနိုင်သည်။</string>
+  <!-- Removed by excludeNonTranslatables <string name="LinkPreviewsMegaphone_disable">ပိတ်ပါ။</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="LinkPreviewsMegaphone_preview_any_link">မည်သည့် လင့်ခ်ကိုမဆို ကြိုတင် ဖွင့်ကြည့်ပါ။</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="LinkPreviewsMegaphone_you_can_now_retrieve_link_previews_directly_from_any_website">သင်ပို့လိုက်သော မက်ဆေ့ချ်များတွင်ပါဝင်သော ဝက်ဘ်ဆိုက်မှ ကြိုတင် ဖွင့်ကြည့်နိုင်သော လင့်ခ်များကို တိုက်ရိုက်ရယူနိုင်သည်။</string> -->
   <!--LinkPreviewView-->
   <string name="LinkPreviewView_no_link_preview_available">လင့်ခ်ကို ကြိုကြည့်ခြင်း မရရှိပါ</string>
   <string name="LinkPreviewView_this_group_link_is_not_active">ဤအဖွဲ့လင့်ခ်ကို အသုံးမပြုတော့ပါ။</string>
@@ -750,8 +756,8 @@
   <string name="MediaOverviewActivity_sent_by_s_to_s">%1$s မှ %2$s သို့ ပို့ခဲ့သည်</string>
   <string name="MediaOverviewActivity_sent_by_you_to_s">သင်မှ %1$s သို့ ပို့ခဲ့သည်</string>
   <!--Megaphones-->
-  <string name="Megaphones_introducing_reactions">တုံ့ပြန်မှုများကို မိတ်ဆက်ပါသည်</string>
-  <string name="Megaphones_tap_and_hold_any_message_to_quicky_share_how_you_feel">မည်သည့်မက်ဆေ့ချ်ကိုမဆို နှိပ်ဆွဲပြီး သင်၏ ခံစားချက်ကို လျင်မြန်စွာမျှဝေလိုက်ပါ။</string>
+  <!-- Removed by excludeNonTranslatables <string name="Megaphones_introducing_reactions">တုံ့ပြန်မှုများကို မိတ်ဆက်ပါသည်</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="Megaphones_tap_and_hold_any_message_to_quicky_share_how_you_feel">မည်သည့်မက်ဆေ့ချ်ကိုမဆို နှိပ်ဆွဲပြီး သင်၏ ခံစားချက်ကို လျင်မြန်စွာမျှဝေလိုက်ပါ။</string> -->
   <string name="Megaphones_remind_me_later">နောက်မှပြန်သတိပေးပါ</string>
   <string name="Megaphones_verify_your_signal_pin">သင်၏ Signal ပင်နံပါတ်ကို အတည်ပြုပါ</string>
   <string name="Megaphones_well_occasionally_ask_you_to_verify_your_pin">ကျွန်ုပ်တို့သည် သင်၏ ပင်နံပါတ်ကို မှတ်မိစေရန် သင်၏ ပင်နံပါတ်ကိုအတည်ပြုရန် မကြာခဏ ကျွန်ုပ်တို့တောင်းဆိုပါမည်။</string>
@@ -1156,8 +1162,6 @@
   <string name="RegistrationActivity_play_services_error">Google Play အသုံးပြု၍မရပါ</string>
   <string name="RegistrationActivity_google_play_services_is_updating_or_unavailable">Google Play Serivice ကို အဆင့်မြှင့်တင်နေခြင်း၊ သို့၊ အသုံးပြု၍ မရခြင်းဖြစ်နေပါသည်။ ပြန်လည် စမ်းသပ်ကြည့်ပါ။</string>
   <string name="RegistrationActivity_terms_and_privacy">လိုက်နာဆောင်ရွက်ရမည့် အချက်များ</string>
-  <string name="RegistrationActivity_signal_needs_access_to_your_contacts_and_media_in_order_to_connect_with_friends">မိမိ၏ မိတ်ဆွေများနှင့် အဆက်အသွယ်လုပ်ရန်၊ စာတိုများအပြန်အလှန်ပေးပို့ရန်၊ စိတ်ချလုံခြုံသော ဖုန်းခေါ်ဆိုမှုများ ပြုလုပ်နိုင်ရန် မိမိ၏ အဆက်အသွယ်များနှင့် ရုပ်/သံ/ပုံ ပါသော ဖိုင်များကို Signalမှ အသုံးပြုခွင့်ရရန် လိုအပ်သည်</string>
-  <string name="RegistrationActivity_signal_needs_access_to_your_contacts_in_order_to_connect_with_friends">မိမိ၏ မိတ်ဆွေများနှင့် အဆက်အသွယ်လုပ်ရန်၊ မက်ဆေ့ချ်များအပြန်အလှန်ပေးပို့ရန်၊ စိတ်ချလုံခြုံသော ဖုန်းခေါ်ဆိုမှုများ ပြုလုပ်နိုင်ရန် အဆက်အသွယ်များကို Signal မှ အသုံးပြုခွင့်ရရန် လိုအပ်သည်</string>
   <string name="RegistrationActivity_rate_limited_to_service">ဤနံပတ်ဖြင့် မှတ်ပုံတင်ခြင်းကို အကြိမ်ပေါင်းများစွာ ကြိုးစားပြီးပါပြီ။ ကျေးဇူးပြူ၍ နောင်အခါမှ ပြန်လည်ကြိုးစားပါ။</string>
   <string name="RegistrationActivity_unable_to_connect_to_service">ဝန်ဆောင်မှုနှင့် ဆက်သွယ်၍ မရနိုင်ပါ။ အင်တာနက်ချိတ်ဆက်မှုအား နောက်တစ်ကြိမ် စစ်ဆေး၍ ပြန်လည်ကြိုးစားကြည့်ပါ။</string>
   <plurals name="RegistrationActivity_debug_log_hint">
@@ -1534,6 +1538,12 @@
   <string name="QuoteView_original_missing">မူရင်းစာကိုမတွေ့ပါ</string>
   <!--conversation_fragment-->
   <string name="conversation_fragment__scroll_to_the_bottom_content_description">အောက်သို့ ဆွဲလိုက်ပါ</string>
+  <!--BubbleOptOutTooltip-->
+  <!--Message to inform the user of what Android chat bubbles are-->
+  <!--Button to dismiss the tooltip for opting out of using Android bubbles-->
+  <string name="BubbleOptOutTooltip__not_now">ယခု မလုပ်ဆောင်သေးပါ။</string>
+  <!--Button to move to the system settings to control the use of Android bubbles-->
+  <string name="BubbleOptOutTooltip__turn_off">ပိတ်မည်</string>
   <!--safety_number_change_dialog-->
   <string name="safety_number_change_dialog__safety_number_changes">လုံခြုံရေးနံပါတ်အပြောင်းအလဲများ</string>
   <string name="safety_number_change_dialog__accept">လက်ခံမယ်</string>
@@ -1891,6 +1901,8 @@
   <string name="preferences_data_and_storage__calls">ဖုန်းခေါ်ဆိုမှုများ</string>
   <string name="preferences_data_and_storage__use_less_data_for_calls">ခေါ်ဆိုမှုများအတွက် ဒေတာလျော့သုံးမယ်</string>
   <string name="preferences_data_and_storage__never">ဘယ်တော့မှမ</string>
+  <string name="preferences_data_and_storage__wifi_and_mobile_data">ဝိုင်ဖိုင် နှင့် အင်တာနက်</string>
+  <string name="preferences_data_and_storage__mobile_data_only">အင်တာနက်</string>
   <string name="preference_data_and_storage__using_less_data_may_improve_calls_on_bad_networks">မကောင်းသော ချိတ်ဆက်မှုလိုင်းပေါ်တွင် ဒေတာပိုနည်းစွာသုံးလျှင် ခေါ်ဆိုမှုများ ပိုကြည်လင်ကောင်းမွန် နိုင်ပါသည်</string>
   <string name="preferences_notifications__messages">စာများ</string>
   <string name="preferences_notifications__events">ပွဲများ</string>
@@ -2161,7 +2173,6 @@
   <string name="Insights__title">ထင်မြင်ချက်များ</string>
   <string name="InsightsDashboardFragment__title">ထင်မြင်ချက်များ</string>
   <string name="InsightsDashboardFragment__signal_protocol_automatically_protected">Signal Protocol သည် အလိုအလျောက် လွန်ခဲ့သော %2$d ရက်တွင်းရှိ သင်၏ %1$d%% အထွက်စာများကို ကာကွယ်ထားပေးပါသည်။ Signal အသုံးပြုသူများအကြား စကားပြောဆိုမှုများကို အစမှအဆုံးထိ အမြဲ ကုဒ်ဖြင့်စာဝှက်ထားပါသည်။</string>
-  <string name="InsightsDashboardFragment__boost_your_signal">Signal မြှင့်တင်ခြင်း</string>
   <string name="InsightsDashboardFragment__not_enough_data">ဒေတာ မလုံလောက်ပါ</string>
   <string name="InsightsDashboardFragment__your_insights_percentage_is_calculated_based_on">သင်၏ ထင်မြင်ချက် ရာခိုင်နှုန်းသည် လွန်ခဲ့သည့် %1$d ရက်အတွင်း မဖျောက်ကွယ်ထားသော သို့မဟုတ် မဖျက်သိမ်းထားသော မက်ဆေ့ချ်များပေါ်မူ၍ တွက်ထားပါသည်။</string>
   <string name="InsightsDashboardFragment__start_a_conversation">စကားစပြောပါ</string>
@@ -2260,15 +2271,15 @@
   <string name="KbsMegaphone__pins_keep_information_thats_stored_with_signal_encrytped">ပင်နံပါတ်အသုံးပြုချင်းသည် Signal ဖြင့်သိမ်းထားသောသတင်းအချက်အလက်များကို ကုဒ်ဖြင့်သိမ်းဆည်းသည်။</string>
   <string name="KbsMegaphone__create_pin">ပင်နံပါတ်ဖန်တီးပါ</string>
   <!--Research Megaphone-->
-  <string name="ResearchMegaphone_tell_signal_what_you_think">Signal ပေါ်ထင်မြင်ချက်များ ကျွန်ုပ်တို့ကို ပြောပြပေးပါ</string>
-  <string name="ResearchMegaphone_to_make_signal_the_best_messaging_app_on_the_planet">Signal ကိုကမ္ဘာပေါ်ရှိ အကောင်းဆုံးစာတိုပေးပို့ရေးအက်ပ် ဖြစ်စေရန် သင်၏အကြံပေးချက်များကို ကျွန်ုပ်တို့ကြားချင်ပါသည်။</string>
-  <string name="ResearchMegaphone_learn_more">ထပ်မံလေ့လာရန်</string>
-  <string name="ResearchMegaphone_dismiss">ဖယ်လိုက်မယ်</string>
-  <string name="ResearchMegaphoneDialog_signal_research">Signal သုတေသန</string>
-  <string name="ResearchMegaphoneDialog_we_believe_in_privacy"><![CDATA[<p><b> ကျွန်ုပ်တို့သည် ပုဂ္ဂိုလ်ရေးလုံခြုံမှုကို ယုံကြည်ပါသည်။ </b></p><p> Signal သည် သင့်ခြေရာမလိုက်ပါ သို့မဟုတ် သင့်ဒေတာမကောက်ပါ။ အားလုံးအတွက် Signal ကိုတိုးတက်စေရန် ကျွန်ုပ်တို့သည် သုံးသူများ၏ တုံ့ပြန်ချက်ကို အားကိုးပါသည်။ <b> ကျွန်ုပ်တို့သည် သင်၏အကြံပေးချက်များကိုလည်း ကြားချင်ပါသည်။ </b></p><p> သင်မှ Signal ကိုမည်ကဲ့သို့ အသုံးပြုသည်ကို ကျွန်ုပ်တို့ စစ်တမ်းကောက်နေပါသည်။ ၎င်းစစ်တမ်းသည် သင့်ကို ဖေါ်ထုတ်နိုင်သည့် ဒေတာများမကောက်ပါ။ သင်မှ ထပ်မံ အကြံပေးချင်လျှင် သင့်အား ဆက်သွယ်နိုင်သည့် အချက်အလက်များ ပေးနိုင်ပါသည်။ </p><p> မိနစ်အချိန်ပိုင်း နှင့် အကြံပြုချက်များ ရှိလျှင် ကျွှန်ုပ်တို့ သင့်ထံမှ ကြားချင်ပါသည်။</p>]]></string>
-  <string name="ResearchMegaphoneDialog_take_the_survey">စစ်တမ်းကောက်ယူမည်</string>
-  <string name="ResearchMegaphoneDialog_no_thanks">မလုပ်တော့ပါ</string>
-  <string name="ResearchMegaphoneDialog_the_survey_is_hosted_by_alchemer_at_the_secure_domain">Alchemer မှ စစ်တမ်းကို လုံခြုံသော ဆာဗာဒိုမိန်း surveys.signalusers.org တွင် ဆောင်ရွက်ပါသည်။</string>
+  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphone_tell_signal_what_you_think">Signal ပေါ်ထင်မြင်ချက်များ ကျွန်ုပ်တို့ကို ပြောပြပေးပါ</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphone_to_make_signal_the_best_messaging_app_on_the_planet">Signal ကိုကမ္ဘာပေါ်ရှိ အကောင်းဆုံးစာတိုပေးပို့ရေးအက်ပ် ဖြစ်စေရန် သင်၏အကြံပေးချက်များကို ကျွန်ုပ်တို့ကြားချင်ပါသည်။</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphone_learn_more">ထပ်မံလေ့လာရန်</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphone_dismiss">ဖယ်လိုက်မယ်</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphoneDialog_signal_research">Signal သုတေသန</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphoneDialog_we_believe_in_privacy"><![CDATA[<p><b> ကျွန်ုပ်တို့သည် ပုဂ္ဂိုလ်ရေးလုံခြုံမှုကို ယုံကြည်ပါသည်။ </b></p><p> Signal သည် သင့်ခြေရာမလိုက်ပါ သို့မဟုတ် သင့်ဒေတာမကောက်ပါ။ အားလုံးအတွက် Signal ကိုတိုးတက်စေရန် ကျွန်ုပ်တို့သည် သုံးသူများ၏ တုံ့ပြန်ချက်ကို အားကိုးပါသည်။ <b> ကျွန်ုပ်တို့သည် သင်၏အကြံပေးချက်များကိုလည်း ကြားချင်ပါသည်။ </b></p><p> သင်မှ Signal ကိုမည်ကဲ့သို့ အသုံးပြုသည်ကို ကျွန်ုပ်တို့ စစ်တမ်းကောက်နေပါသည်။ ၎င်းစစ်တမ်းသည် သင့်ကို ဖေါ်ထုတ်နိုင်သည့် ဒေတာများမကောက်ပါ။ သင်မှ ထပ်မံ အကြံပေးချင်လျှင် သင့်အား ဆက်သွယ်နိုင်သည့် အချက်အလက်များ ပေးနိုင်ပါသည်။ </p><p> မိနစ်အချိန်ပိုင်း နှင့် အကြံပြုချက်များ ရှိလျှင် ကျွှန်ုပ်တို့ သင့်ထံမှ ကြားချင်ပါသည်။</p>]]></string> -->
+  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphoneDialog_take_the_survey">စစ်တမ်းကောက်ယူမည်</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphoneDialog_no_thanks">မလုပ်တော့ပါ</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphoneDialog_the_survey_is_hosted_by_alchemer_at_the_secure_domain">Alchemer မှ စစ်တမ်းကို လုံခြုံသော ဆာဗာဒိုမိန်း surveys.signalusers.org တွင် ဆောင်ရွက်ပါသည်။</string> -->
   <!--transport_selection_list_item-->
   <string name="transport_selection_list_item__transport_icon">ပုံသင်္ကေတကို ပို့ဆောင်ပါ။</string>
   <string name="ConversationListFragment_loading">လုပ်ဆောင်နေသည်…</string>
@@ -2318,7 +2329,6 @@
   <string name="BackupDialog_verify">စစ်ဆေးအတည်ပြုသည်</string>
   <string name="BackupDialog_you_successfully_entered_your_backup_passphrase">သင်၏အရန်ကူးထားသောစကားဝှက်ကို အောင်မြင်စွာထည့်ပြီးပါပြီ</string>
   <string name="BackupDialog_passphrase_was_not_correct">စကားဝှက်သည်မမှန်ပါ</string>
-  <string name="LocalBackupJob_creating_backup">အရန်သိမ်းဆည်းမှုများ ဖန်တီးနေပါသည်…</string>
   <string name="LocalBackupJobApi29_backup_failed">အရန်သိမ်းဆည်းမှုများ မအောင်မြင်ပါ</string>
   <string name="LocalBackupJobApi29_your_backup_directory_has_been_deleted_or_moved">သင်၏ အရန်သိမ်းဆည်းမှုများ၏ လမ်းညွှန်အား ဖျက်ထားသည် သို့မဟုတ် ပြောင်းရွှေ့သွားသည်</string>
   <string name="LocalBackupJobApi29_your_backup_file_is_too_large">သင်၏ အရန်သိမ်းဆည်းထားသောဖိုင်ကို သိမ်းဆည်းရန် အလွန်ကြီးမားသည်</string>
@@ -2438,6 +2448,7 @@
   <string name="DeviceTransfer__transferring_data">ဒေတာများ လွှဲပြောင်းနေပါသည်</string>
   <string name="DeviceTransfer__keep_both_devices_near_each_other">စက် ၂ ခုလုံးအား နီးကပ်စွာ ထားရှိပေးပါ။ စက်များမပိတ်၍ Signal အားဖွင့်ထားပါ။ လွှဲပြောင်းမှုများကို အစအဆုံး ကုဒ်ဖြင့်ပြောင်းလဲထားပါသည်။</string>
   <string name="DeviceTransfer__d_messages_so_far">မက်ဆေ့ %1$d ခု လုပ်ဆောင်ပြီး…</string>
+  <!--Filled in with total percentage of messages transferred-->
   <string name="DeviceTransfer__cancel">ပယ်ဖျက်မယ်</string>
   <string name="DeviceTransfer__try_again">ထပ်မံကြိုးစားမည် </string>
   <string name="DeviceTransfer__stop_transfer_question">လွှဲပြောင်းခြင်း ရပ်မည်လား?</string>
@@ -2487,6 +2498,7 @@
   <string name="RecipientBottomSheet_block">ပိတ်ပယ်မယ်</string>
   <string name="RecipientBottomSheet_unblock">ပြန်ဖွင့်မယ်</string>
   <string name="RecipientBottomSheet_add_to_contacts">အဆက်အသွယ်စာရင်းထဲထည့်မယ်</string>
+  <!--Error message that displays when a user tries to tap to view system contact details but has no app that supports it-->
   <string name="RecipientBottomSheet_add_to_a_group">အဖွဲ့တစ်ဖွဲ့ထဲသို့ ထည့်မယ်</string>
   <string name="RecipientBottomSheet_add_to_another_group">အခြား အဖွဲ့သို့ထည့်မယ်</string>
   <string name="RecipientBottomSheet_view_safety_number">လုံခြုံရေးနံပါတ်ကိုကြည့်မယ်</string>
@@ -2581,6 +2593,12 @@
   <string name="DeleteAccountFragment__failed_to_delete_account">အကောင့်ဖျက်ခြင်း မအောင်မြင်ပါ။ သင့်တွင် လိုင်းချိတ်ဆက်မှု ရှိပါသလား?</string>
   <string name="DeleteAccountFragment__failed_to_delete_local_data">စက်တွင်းရှိဒေတာဖျက်ခြင်း မအောင်မြင်ပါ။ စနစ် အပ္ပလီကေးရှင်း အပြင်အဆင်များထဲတွင် သင်ကိုယ်တိုင်သွား ရှင်းနိုင်ပါသည်။</string>
   <string name="DeleteAccountFragment__launch_app_settings">ဖုန်းဆက်တင်ကိုဖွင့်မည်</string>
+  <!--Title of progress dialog shown when a user deletes their account and the process is leaving all groups-->
+  <!--Title of progress dialog shown when a user deletes their account and the process has left all groups-->
+  <!--Message of progress dialog shown when a user deletes their account and the process is leaving groups-->
+  <!--Message of progress dialog shown when a user deletes their account and the process has left all groups-->
+  <!--Title of error dialog shown when a network error occurs during account deletion-->
+  <!--Message of error dialog shown when a network error occurs during account deletion-->
   <!--DeleteAccountCountryPickerFragment-->
   <string name="DeleteAccountCountryPickerFragment__search_countries">နိုင်ငံများ ကို ရှာဖွေပါ</string>
   <!--CreateGroupActivity-->
@@ -2707,6 +2725,7 @@
   <string name="GroupsInCommonMessageRequest__okay">အိုကေ</string>
   <!--GroupDescriptionDialog-->
   <!--QualitySelectorBottomSheetDialog-->
+  <string name="QualitySelectorBottomSheetDialog__standard">အသင့်အတင့်</string>
   <string name="QualitySelectorBottomSheetDialog__high">မြင့်သော</string>
   <!--AppSettingsFragment-->
   <string name="AppSettingsFragment__invite_your_friends">သူငယ်ချင်းများကို ဖိတ်ပါ။</string>
@@ -2735,6 +2754,12 @@
   <string name="NotificationsSettingsFragment__calls">ဖုန်းခေါ်ဆိုမှုများ</string>
   <string name="NotificationsSettingsFragment__notify_when">ဖြစ်ခဲ့လျှင် အသိပေးပါ…</string>
   <string name="NotificationsSettingsFragment__contact_joins_signal">အဆက်အသွယ်သည် Signal ပေါ်သို့ တက်ရောက်ပါမည်။</string>
+  <!--Notification preference header-->
+  <!--Notification preference option header-->
+  <!--Notification preference summary text-->
+  <!--NotificationProfilesFragment-->
+  <!--Title for notification profiles screen that shows all existing profiles-->
+  <!--Button text to create a notification profile-->
   <!--PrivacySettingsFragment-->
   <string name="PrivacySettingsFragment__blocked">ပိတ်ပယ်ထားသည်</string>
   <string name="PrivacySettingsFragment__messaging">မက်ဆေ့ချ်ပေးပို့ခြင်း</string>
@@ -2743,10 +2768,14 @@
   <!--AdvancedPrivacySettingsFragment-->
   <!--ExpireTimerSettingsFragment-->
   <string name="ExpireTimerSettingsFragment__off">ပိတ်ထားမယ်</string>
+  <string name="ExpireTimerSettingsFragment__4_weeks">4 ပတ်</string>
   <string name="ExpireTimerSettingsFragment__1_week">၁ ပတ်</string>
   <string name="ExpireTimerSettingsFragment__1_day">၁ ရက်</string>
   <string name="ExpireTimerSettingsFragment__8_hours">၈ နာရီ</string>
   <string name="ExpireTimerSettingsFragment__1_hour">၁ နာရီ</string>
+  <string name="ExpireTimerSettingsFragment__5_minutes">5 မိနစ်</string>
+  <string name="ExpireTimerSettingsFragment__30_seconds">30 စက္ကန့်</string>
+  <string name="ExpireTimerSettingsFragment__custom_time">စိတ်ကြိုက် အချိန်</string>
   <string name="ExpireTimerSettingsFragment__set">တပ်ဆင်မယ်</string>
   <string name="ExpireTimerSettingsFragment__save">သိမ်းမယ်</string>
   <string name="CustomExpireTimerSelectorView__minutes">မိနစ်</string>
@@ -2756,7 +2785,9 @@
   <string name="HelpSettingsFragment__version">ဗားရှင်း</string>
   <string name="HelpSettingsFragment__terms_amp_privacy_policy">လိုက်နာဆောင်ရွက်ရမည့် အချက်များ</string>
   <!--DataAndStorageSettingsFragment-->
+  <string name="DataAndStorageSettingsFragment__media_quality">ဓာတ်ပုံ အရည်အသွေး</string>
   <string name="DataAndStorageSettingsFragment__high">မြင့်သော</string>
+  <string name="DataAndStorageSettingsFragment__standard">အသင့်အတင့်</string>
   <string name="DataAndStorageSettingsFragment__calls">ဖုန်းခေါ်ဆိုမှုများ</string>
   <!--ChatColorSelectionFragment-->
   <string name="ChatColorSelectionFragment__chat_color">စကားပြောဆိုမှု၏ အရောင်</string>
@@ -2774,6 +2805,8 @@
   <string name="ChatColorsMegaphone__not_now">ယခု မလုပ်ဆောင်သေးပါ။</string>
   <!--AddAProfilePhotoMegaphone-->
   <string name="AddAProfilePhotoMegaphone__not_now">ယခု မလုပ်ဆောင်သေးပါ။</string>
+  <!--BecomeASustainerMegaphone-->
+  <string name="BecomeASustainerMegaphone__no_thanks">မလုပ်လိုပါ။</string>
   <!--KeyboardPagerFragment-->
   <string name="KeyboardPagerFragment_stickers">စတစ်ကာများ </string>
   <string name="KeyboardPagerFragment_backspace">Backspace</string>
@@ -2845,9 +2878,102 @@
   <string name="SubscribeFragment__confirm">အတည်ပြုသည် </string>
   <string name="SubscribeFragment__update">အပ်ဒိတ်မယ်</string>
   <string name="SubscribeThanksForYourSupportBottomSheetDialogFragment__done">ပြီးပါပြီ</string>
+  <!--Displayed on "My Support" screen when user badge failed to be added to their account-->
   <string name="ExpiredBadgeBottomSheetDialogFragment__not_now">ယခု မလုပ်ဆောင်သေးပါ။</string>
   <string name="Subscription__contact_support">ပံ့ပိုးမှုစင်တာသို့ ဆက်သွယ်ပါ</string>
   <string name="SubscribeFragment__processing_payment">ငွေပေးချေမှု လုပ်ဆောင်နေသည်…</string>
-  <string name="DonationsErrors__payment_failed">ငွေပေးချေမှု မအောင်မြင်ပါ</string>
+  <!--Displayed in notification when user payment fails to process on Stripe-->
+  <!--Displayed on "My Support" screen when user subscription payment method failed.-->
+  <string name="NetworkFailure__retry">ထပ်ကြိုးစားပါ</string>
+  <!--Title of create notification profile screen-->
+  <!--Hint text for create/edit notification profile name-->
+  <string name="EditNotificationProfileFragment__profile_name">ပရိုဖိုင်း အမည်</string>
+  <!--Name has a max length, this shows how many characters are used out of the max-->
+  <string name="EditNotificationProfileFragment__count">%1$d/%2$d</string>
+  <!--Call to action button to continue to the next step-->
+  <string name="EditNotificationProfileFragment__next">နောက်ထက်</string>
+  <!--Call to action button once the profile is named to create the profile and continue to the customization steps-->
+  <string name="EditNotificationProfileFragment__create">ဖန်တီးပါ</string>
+  <!--Call to action button once the profile name is edited-->
+  <string name="EditNotificationProfileFragment__save">သိမ်းမယ်</string>
+  <!--Title of edit notification profile screen-->
+  <!--Error message shown when attempting to create or edit a profile name to an existing profile name-->
+  <!--Preset selectable name for a profile name, shown as list in edit/create screen-->
+  <string name="EditNotificationProfileFragment__work">အလုပ်</string>
+  <!--Preset selectable name for a profile name, shown as list in edit/create screen-->
+  <!--Preset selectable name for a profile name, shown as list in edit/create screen-->
+  <!--Preset selectable name for a profile name, shown as list in edit/create screen-->
+  <!--Preset selectable name for a profile name, shown as list in edit/create screen-->
+  <!--Error message shown when attempting to next/save without a profile name-->
+  <!--Title for add recipients to notification profile screen in create flow-->
+  <!--Description of what the user should be doing with this screen-->
+  <!--Button text that launches the contact picker to select from-->
+  <!--Call to action button on contact picker for adding to profile-->
+  <string name="SelectRecipientsFragment__add">ပေါင်းထည့်မယ်</string>
+  <!--Notification profiles home fragment, shown when no profiles have been created yet-->
+  <!--Header shown above list of all notification profiles-->
+  <!--Button that starts the create new notification profile flow-->
+  <!--Profile active status, indicating the current profile is on for an unknown amount of time-->
+  <string name="NotificationProfilesFragment__on">ဖွင့်ထားမယ်</string>
+  <!--Button use to permanently delete a notification profile-->
+  <!--Snakbar message shown when removing a recipient from a profile-->
+  <!--Snackbar button text that will undo the recipient remove-->
+  <!--Dialog message shown to confirm deleting a profile-->
+  <!--Dialog button to delete profile-->
+  <string name="NotificationProfileDetails__delete">ဖျက်မယ်</string>
+  <!--Title/accessibility text for edit icon to edit profile emoji/name-->
+  <!--Schedule description if all days are selected-->
+  <!--Profile status on if it is the active profile-->
+  <string name="NotificationProfileDetails__on">ဖွင့်ထားမယ်</string>
+  <!--Profile status on if it is not the active profile-->
+  <string name="NotificationProfileDetails__off">ပိတ်ထားမယ်</string>
+  <!--Description of hours for schedule (start to end) times-->
+  <string name="NotificationProfileDetails__s_to_s">%1$s မှ %2$s သို့</string>
+  <!--Section header for exceptions to the notification profile-->
+  <!--Profile exception to allow all calls through the profile restrictions-->
+  <!--Profile exception to allow all @mentions through the profile restrictions-->
+  <!--Section header for showing schedule information-->
+  <!--If member list is long, will truncate the list and show an option to then see all when tapped-->
+  <string name="NotificationProfileDetails__see_all">အားလုံးကို ကြည့်မယ်</string>
+  <!--Title for add schedule to profile in create flow-->
+  <!--Descriptor text indicating what the user can do with this screen-->
+  <!--Text shown next to toggle switch to enable/disable schedule-->
+  <!--Label for showing the start time for the schedule-->
+  <string name="EditNotificationProfileSchedule__start">စမယ်</string>
+  <!--Label for showing the end time for the schedule-->
+  <!--First letter of Sunday-->
+  <!--First letter of Monday-->
+  <!--First letter of Tuesday-->
+  <!--First letter of Wednesday-->
+  <!--First letter of Thursday-->
+  <!--First letter of Friday-->
+  <!--First letter of Saturday-->
+  <!--Title of select time dialog shown when setting start time for schedule-->
+  <!--Title of select time dialog shown when setting end time for schedule-->
+  <!--If in edit mode, call to action button text show to save schedule to profile-->
+  <string name="EditNotificationProfileSchedule__save">သိမ်းမယ်</string>
+  <!--If in create mode, call to action button text to show to skip enabling a schedule-->
+  <string name="EditNotificationProfileSchedule__skip">ကျော်မယ်</string>
+  <!--If in create mode, call to action button text to show to use the enabled schedule and move to the next screen-->
+  <string name="EditNotificationProfileSchedule__next">နောက်ထက်</string>
+  <!--Error message shown if trying to save/use a schedule with no days selected-->
+  <!--Title for final screen shown after completing a profile creation-->
+  <!--Call to action button to press to close the created screen and move to the profile details screen-->
+  <string name="NotificationProfileCreated__done">ပြီးပါပြီ</string>
+  <!--Descriptor text shown to indicate how to manually turn a profile on/off-->
+  <!--Descriptor text shown to indicate you can add a schedule later since you did not add one during create flow-->
+  <!--Descriptor text shown to indicate your profile will follow the schedule set during create flow-->
+  <!--Button text shown in profile selection bottom sheet to create a new profile-->
+  <!--Manual enable option to manually enable a profile for 1 hour-->
+  <!--Manual enable option to manually enable a profile until a set time (currently 6pm or 8am depending on what is next)-->
+  <string name="NotificationProfileSelection__until_s">%1$s အထိ</string>
+  <!--Option to view profile details-->
+  <!--Descriptor text indicating how long a profile will be on when there is a time component associated with it-->
+  <!--Title for notification profile megaphone-->
+  <!--Description for notification profile megaphone-->
+  <!--Call to action button to create a profile from megaphone-->
+  <!--Button to dismiss notification profile megaphone-->
+  <string name="NotificationProfilesMegaphone__not_now">ယခု မလုပ်ဆောင်သေးပါ။</string>
+  <!--Displayed in a toast when we fail to open the ringtone picker-->
   <!--EOF-->
 </resources>

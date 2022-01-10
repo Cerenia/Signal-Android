@@ -26,6 +26,7 @@ import org.thoughtcrime.securesms.net.StandardUserAgentInterceptor;
 import org.thoughtcrime.securesms.providers.BlobProvider;
 import org.thoughtcrime.securesms.push.SignalServiceNetworkAccess;
 import org.thoughtcrime.securesms.util.ByteUnit;
+import org.thoughtcrime.securesms.util.FeatureFlags;
 import org.thoughtcrime.securesms.util.Stopwatch;
 import org.thoughtcrime.securesms.util.Util;
 import org.whispersystems.libsignal.util.guava.Optional;
@@ -81,11 +82,17 @@ public class SubmitDebugLogRepository {
       add(new LogSectionPower());
     }
     add(new LogSectionNotifications());
+    add(new LogSectionNotificationProfiles());
     add(new LogSectionKeyPreferences());
+    add(new LogSectionBadges());
     add(new LogSectionPermissions());
     add(new LogSectionTrace());
     add(new LogSectionThreads());
     add(new LogSectionBlockedThreads());
+    if (FeatureFlags.internalUser()) {
+      add(new LogSectionSenderKey());
+    }
+    add(new LogSectionRemappedRecords());
     add(new LogSectionLogcat());
     add(new LogSectionLoggerHeader());
   }};

@@ -14,13 +14,14 @@ import org.thoughtcrime.securesms.crypto.PreKeyUtil;
 import org.thoughtcrime.securesms.crypto.ProfileKeyUtil;
 import org.thoughtcrime.securesms.crypto.SenderKeyUtil;
 import org.thoughtcrime.securesms.crypto.SessionUtil;
-import org.thoughtcrime.securesms.database.DatabaseFactory;
 import org.thoughtcrime.securesms.database.IdentityDatabase;
 import org.thoughtcrime.securesms.database.RecipientDatabase;
+import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.jobmanager.JobManager;
 import org.thoughtcrime.securesms.jobs.DirectoryRefreshJob;
 import org.thoughtcrime.securesms.jobs.RotateCertificateJob;
+import org.thoughtcrime.securesms.keyvalue.SignalStore;
 import org.thoughtcrime.securesms.pin.PinState;
 import org.thoughtcrime.securesms.push.AccountManagerFactory;
 import org.thoughtcrime.securesms.recipients.Recipient;
@@ -36,13 +37,14 @@ import org.whispersystems.libsignal.util.KeyHelper;
 import org.whispersystems.libsignal.util.guava.Optional;
 import org.whispersystems.signalservice.api.KbsPinData;
 import org.whispersystems.signalservice.api.SignalServiceAccountManager;
+import org.whispersystems.signalservice.api.push.ACI;
+import org.whispersystems.signalservice.api.push.PNI;
 import org.whispersystems.signalservice.api.util.UuidUtil;
 import org.whispersystems.signalservice.internal.ServiceResponse;
 import org.whispersystems.signalservice.internal.push.VerifyAccountResponse;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.UUID;
 
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.schedulers.Schedulers;
@@ -63,10 +65,10 @@ public final class RegistrationRepository {
   }
 
   public int getRegistrationId() {
-    int registrationId = TextSecurePreferences.getLocalRegistrationId(context);
+    int registrationId = SignalStore.account().getRegistrationId();
     if (registrationId == 0) {
       registrationId = KeyHelper.generateRegistrationId(false);
-      TextSecurePreferences.setLocalRegistrationId(context, registrationId);
+      SignalStore.account().setRegistrationId(registrationId);
     }
     return registrationId;
   }
@@ -128,34 +130,36 @@ public final class RegistrationRepository {
     SessionUtil.archiveAllSessions();
     SenderKeyUtil.clearAllState(context);
 
-    UUID    uuid   = UuidUtil.parseOrThrow(response.getUuid());
+    ACI     aci    = ACI.parseOrThrow(response.getUuid());
+    PNI     pni    = PNI.parseOrThrow(response.getPni());
     boolean hasPin = response.isStorageCapable();
 
     IdentityKeyPair    identityKey  = IdentityKeyUtil.getIdentityKeyPair(context);
     List<PreKeyRecord> records      = PreKeyUtil.generatePreKeys(context);
     SignedPreKeyRecord signedPreKey = PreKeyUtil.generateSignedPreKey(context, identityKey, true);
 
-    SignalServiceAccountManager accountManager = AccountManagerFactory.createAuthenticated(context, uuid, registrationData.getE164(), registrationData.getPassword());
+    SignalServiceAccountManager accountManager = AccountManagerFactory.createAuthenticated(context, aci, registrationData.getE164(), registrationData.getPassword());
     accountManager.setPreKeys(identityKey.getPublicKey(), signedPreKey, records);
 
     if (registrationData.isFcm()) {
       accountManager.setGcmId(Optional.fromNullable(registrationData.getFcmToken()));
     }
 
-    RecipientDatabase recipientDatabase = DatabaseFactory.getRecipientDatabase(context);
-    RecipientId       selfId            = Recipient.externalPush(context, uuid, registrationData.getE164(), true).getId();
+    RecipientDatabase recipientDatabase = SignalDatabase.recipients();
+    RecipientId       selfId            = Recipient.externalPush(context, aci, registrationData.getE164(), true).getId();
 
     recipientDatabase.setProfileSharing(selfId, true);
-    recipientDatabase.markRegisteredOrThrow(selfId, uuid);
+    recipientDatabase.markRegisteredOrThrow(selfId, aci);
+    recipientDatabase.setPni(selfId, pni);
 
-    TextSecurePreferences.setLocalNumber(context, registrationData.getE164());
-    TextSecurePreferences.setLocalUuid(context, uuid);
+    SignalStore.account().setE164(registrationData.getE164());
+    SignalStore.account().setAci(aci);
+    SignalStore.account().setPni(pni);
     recipientDatabase.setProfileKey(selfId, registrationData.getProfileKey());
     ApplicationDependencies.getRecipientCache().clearSelf();
 
-    TextSecurePreferences.setFcmToken(context, registrationData.getFcmToken());
-    TextSecurePreferences.setFcmDisabled(context, registrationData.isNotFcm());
-    TextSecurePreferences.setWebsocketRegistered(context, true);
+    SignalStore.account().setFcmToken(registrationData.getFcmToken());
+    SignalStore.account().setFcmEnabled(registrationData.isFcm());
 
     ApplicationDependencies.getIdentityStore()
                            .saveIdentityWithoutSideEffects(selfId,
@@ -165,8 +169,8 @@ public final class RegistrationRepository {
                                                            System.currentTimeMillis(),
                                                            true);
 
-    TextSecurePreferences.setPushServerPassword(context, registrationData.getPassword());
-    TextSecurePreferences.setPushRegistered(context, true);
+    SignalStore.account().setServicePassword(registrationData.getPassword());
+    SignalStore.account().setRegistered(true);
     TextSecurePreferences.setSignedPreKeyRegistered(context, true);
     TextSecurePreferences.setPromptedPushRegistration(context, true);
     TextSecurePreferences.setUnauthorizedReceived(context, false);
@@ -176,7 +180,7 @@ public final class RegistrationRepository {
 
   @WorkerThread
   private static @Nullable ProfileKey findExistingProfileKey(@NonNull Context context, @NonNull String e164number) {
-    RecipientDatabase     recipientDatabase = DatabaseFactory.getRecipientDatabase(context);
+    RecipientDatabase     recipientDatabase = SignalDatabase.recipients();
     Optional<RecipientId> recipient         = recipientDatabase.getByE164(e164number);
 
     if (recipient.isPresent()) {

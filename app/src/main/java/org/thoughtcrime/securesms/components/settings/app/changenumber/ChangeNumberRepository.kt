@@ -5,7 +5,7 @@ import androidx.annotation.WorkerThread
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.schedulers.Schedulers
 import org.signal.core.util.logging.Log
-import org.thoughtcrime.securesms.database.DatabaseFactory
+import org.thoughtcrime.securesms.database.SignalDatabase
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies
 import org.thoughtcrime.securesms.keyvalue.CertificateType
 import org.thoughtcrime.securesms.keyvalue.SignalStore
@@ -13,12 +13,12 @@ import org.thoughtcrime.securesms.pin.KbsRepository
 import org.thoughtcrime.securesms.pin.KeyBackupSystemWrongPinException
 import org.thoughtcrime.securesms.pin.TokenData
 import org.thoughtcrime.securesms.registration.VerifyAccountRepository
-import org.thoughtcrime.securesms.util.TextSecurePreferences
 import org.whispersystems.signalservice.api.KbsPinData
 import org.whispersystems.signalservice.api.KeyBackupSystemNoDataException
 import org.whispersystems.signalservice.internal.ServiceResponse
 import org.whispersystems.signalservice.internal.push.VerifyAccountResponse
 import org.whispersystems.signalservice.internal.push.WhoAmIResponse
+import java.io.IOException
 
 private val TAG: String = Log.tag(ChangeNumberRepository::class.java)
 
@@ -48,6 +48,8 @@ class ChangeNumberRepository(private val context: Context) {
         ServiceResponse.forExecutionError(e)
       } catch (e: KeyBackupSystemNoDataException) {
         ServiceResponse.forExecutionError(e)
+      } catch (e: IOException) {
+        ServiceResponse.forExecutionError(e)
       }
     }.subscribeOn(Schedulers.io())
   }
@@ -60,9 +62,9 @@ class ChangeNumberRepository(private val context: Context) {
 
   @WorkerThread
   fun changeLocalNumber(e164: String): Single<Unit> {
-    DatabaseFactory.getRecipientDatabase(context).updateSelfPhone(e164)
+    SignalDatabase.recipients.updateSelfPhone(e164)
 
-    TextSecurePreferences.setLocalNumber(context, e164)
+    SignalStore.account().setE164(e164)
 
     ApplicationDependencies.closeConnections()
     ApplicationDependencies.getIncomingMessageObserver()

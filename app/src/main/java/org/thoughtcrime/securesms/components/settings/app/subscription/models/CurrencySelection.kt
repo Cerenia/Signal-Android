@@ -4,21 +4,19 @@ import android.view.View
 import android.widget.TextView
 import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.components.settings.PreferenceModel
-import org.thoughtcrime.securesms.util.MappingAdapter
-import org.thoughtcrime.securesms.util.MappingViewHolder
+import org.thoughtcrime.securesms.util.adapter.mapping.LayoutFactory
+import org.thoughtcrime.securesms.util.adapter.mapping.MappingAdapter
+import org.thoughtcrime.securesms.util.adapter.mapping.MappingViewHolder
+import java.util.Currency
 
-data class CurrencySelection(
-  val selectedCurrencyCode: String,
-) {
+object CurrencySelection {
 
-  companion object {
-    fun register(adapter: MappingAdapter) {
-      adapter.registerFactory(Model::class.java, MappingAdapter.LayoutFactory({ ViewHolder(it) }, R.layout.subscription_currency_selection))
-    }
+  fun register(adapter: MappingAdapter) {
+    adapter.registerFactory(Model::class.java, LayoutFactory({ ViewHolder(it) }, R.layout.subscription_currency_selection))
   }
 
   class Model(
-    val currencySelection: CurrencySelection,
+    val selectedCurrency: Currency,
     override val isEnabled: Boolean,
     val onClick: () -> Unit
   ) : PreferenceModel<Model>(isEnabled = isEnabled) {
@@ -28,7 +26,7 @@ data class CurrencySelection(
 
     override fun areContentsTheSame(newItem: Model): Boolean {
       return super.areContentsTheSame(newItem) &&
-        newItem.currencySelection.selectedCurrencyCode == currencySelection.selectedCurrencyCode
+        newItem.selectedCurrency == selectedCurrency
     }
   }
 
@@ -37,11 +35,12 @@ data class CurrencySelection(
     private val spinner: TextView = itemView.findViewById(R.id.subscription_currency_selection_spinner)
 
     override fun bind(model: Model) {
-      spinner.text = model.currencySelection.selectedCurrencyCode
+      spinner.text = model.selectedCurrency.currencyCode
 
-      if (model.isEnabled) {
-        itemView.setOnClickListener { model.onClick() }
-      }
+      itemView.setOnClickListener { model.onClick() }
+
+      itemView.isEnabled = model.isEnabled
+      itemView.isClickable = model.isEnabled
     }
   }
 }

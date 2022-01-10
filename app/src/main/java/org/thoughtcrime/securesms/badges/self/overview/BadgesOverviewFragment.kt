@@ -18,6 +18,7 @@ import org.thoughtcrime.securesms.components.settings.configure
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies
 import org.thoughtcrime.securesms.recipients.Recipient
 import org.thoughtcrime.securesms.util.LifecycleDisposable
+import org.thoughtcrime.securesms.util.navigation.safeNavigate
 
 /**
  * Fragment to allow user to manage options related to the badges they've unlocked.
@@ -37,7 +38,7 @@ class BadgesOverviewFragment : DSLSettingsFragment(
   override fun bindAdapter(adapter: DSLSettingsAdapter) {
     Badge.register(adapter) { badge, _, isFaded ->
       if (badge.isExpired() || isFaded) {
-        findNavController().navigate(BadgesOverviewFragmentDirections.actionBadgeManageFragmentToExpiredBadgeDialog(badge))
+        findNavController().safeNavigate(BadgesOverviewFragmentDirections.actionBadgeManageFragmentToExpiredBadgeDialog(badge))
       } else {
         ViewBadgeBottomSheetDialogFragment.show(parentFragmentManager, Recipient.self().id, badge)
       }
@@ -68,10 +69,11 @@ class BadgesOverviewFragment : DSLSettingsFragment(
         fadedBadgeId = state.fadedBadgeId
       )
 
-      switchPref(
+      asyncSwitchPref(
         title = DSLSettingsText.from(R.string.BadgesOverviewFragment__display_badges_on_profile),
         isChecked = state.displayBadgesOnProfile,
-        isEnabled = state.stage == BadgesOverviewState.Stage.READY && state.hasUnexpiredBadges,
+        isEnabled = state.stage == BadgesOverviewState.Stage.READY && state.hasUnexpiredBadges && state.hasInternet,
+        isProcessing = state.stage == BadgesOverviewState.Stage.UPDATING_BADGE_DISPLAY_STATE,
         onClick = {
           viewModel.setDisplayBadgesOnProfile(!state.displayBadgesOnProfile)
         }
@@ -80,9 +82,9 @@ class BadgesOverviewFragment : DSLSettingsFragment(
       clickPref(
         title = DSLSettingsText.from(R.string.BadgesOverviewFragment__featured_badge),
         summary = state.featuredBadge?.name?.let { DSLSettingsText.from(it) },
-        isEnabled = state.stage == BadgesOverviewState.Stage.READY && state.hasUnexpiredBadges,
+        isEnabled = state.stage == BadgesOverviewState.Stage.READY && state.hasUnexpiredBadges && state.hasInternet,
         onClick = {
-          findNavController().navigate(BadgesOverviewFragmentDirections.actionBadgeManageFragmentToFeaturedBadgeFragment())
+          findNavController().safeNavigate(BadgesOverviewFragmentDirections.actionBadgeManageFragmentToFeaturedBadgeFragment())
         }
       )
     }

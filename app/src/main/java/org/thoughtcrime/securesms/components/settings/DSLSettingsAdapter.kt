@@ -13,13 +13,15 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.switchmaterial.SwitchMaterial
 import org.signal.core.util.logging.Log
 import org.thoughtcrime.securesms.R
+import org.thoughtcrime.securesms.components.settings.models.AsyncSwitch
 import org.thoughtcrime.securesms.components.settings.models.Button
 import org.thoughtcrime.securesms.components.settings.models.Space
 import org.thoughtcrime.securesms.components.settings.models.Text
 import org.thoughtcrime.securesms.util.CommunicationActions
-import org.thoughtcrime.securesms.util.MappingAdapter
-import org.thoughtcrime.securesms.util.MappingViewHolder
 import org.thoughtcrime.securesms.util.ViewUtil
+import org.thoughtcrime.securesms.util.adapter.mapping.LayoutFactory
+import org.thoughtcrime.securesms.util.adapter.mapping.MappingAdapter
+import org.thoughtcrime.securesms.util.adapter.mapping.MappingViewHolder
 import org.thoughtcrime.securesms.util.visible
 
 class DSLSettingsAdapter : MappingAdapter() {
@@ -37,6 +39,7 @@ class DSLSettingsAdapter : MappingAdapter() {
     Text.register(this)
     Space.register(this)
     Button.register(this)
+    AsyncSwitch.register(this)
   }
 }
 

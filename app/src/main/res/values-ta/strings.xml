@@ -297,6 +297,8 @@
   <string name="ConversationFragment_not_now">இப்போது இல்லை</string>
   <string name="ConversationFragment_your_safety_number_with_s_changed"> %s உடனான உங்கள் பாதுகாப்பு எண் மாறிவிட்டது.</string>
   <string name="ConversationFragment_your_safety_number_with_s_changed_likey_because_they_reinstalled_signal">Signal மீண்டும் நிறுவியிருப்பதாலோ அல்லது  சாதனங்கள் மாற்றப்பட்டதாலோ, உங்கள் பாதுகாப்பு எண் %s உடன்  மாற்றப்பட்டது. சரிபார்க்க என்பதை தட்டி புதிய பாதுகாப்பு எண்ணை உறுதிப்படுத்தவும். இது விருப்பத்தேர்வு.</string>
+  <!--Message shown to indicate which notification profile is on/active-->
+  <string name="ConversationFragment__s_on">%1$s உள்ளது</string>
   <plurals name="ConversationListFragment_delete_selected_conversations">
     <item quantity="one">தேர்ந்தெடுக்கப்பட்ட உரையாடலை அழி ?</item>
     <item quantity="other">தேர்ந்தெடுக்கப்பட்ட உரையாடலைகளை  நீக்கவா?</item>
@@ -316,8 +318,16 @@
     <item quantity="one">உரையாடல் அகப்பெட்டிக்கு நகர்த்தப்பட்டது.</item>
     <item quantity="other">%d உரையாடலைகள் அகப்பெட்டிக்கு நகர்த்தப்பட்டது.</item>
   </plurals>
+  <plurals name="ConversationListFragment_mute_plural">
+    <item quantity="one">முடக்கு</item>
+    <item quantity="other">முடக்கு</item>
+  </plurals>
   <string name="ConversationListFragment_select">தேர்வு</string>
   <string name="ConversationListFragment_select_all">அனைத்தையும்  தேர்வுசெய்</string>
+  <!--Show in conversation list overflow menu to open selection bottom sheet-->
+  <!--Tooltip shown after you have created your first notification profile-->
+  <!--Message shown in top toast to indicate the named profile is on-->
+  <string name="ConversationListFragment__s_on">%1$s உள்ளது</string>
   <!--ConversationListItem-->
   <string name="ConversationListItem_key_exchange_message">முக்கிய பரிமாற்ற செய்தி</string>
   <!--ConversationListItemAction-->
@@ -363,6 +373,7 @@
   <string name="BackupsPreferenceFragment__learn_more">மேலும் அறிக</string>
   <string name="BackupsPreferenceFragment__in_progress">செயல்நிலையில் உள்ளது…</string>
   <string name="BackupsPreferenceFragment__d_so_far">%1$dஇதுவரை…</string>
+  <!--Show percentage of completion of backup-->
   <string name="BackupsPreferenceFragment_signal_requires_external_storage_permission_in_order_to_create_backups">காப்புப்பிரதிகளை உருவாக்க Signal கு வெளிப்புற சேமிப்பக அனுமதி தேவைப்படுகிறது, ஆனால் அது நிரந்தரமாக மறுக்கப்பட்டது. பயன்பாடு அமைப்புகளைத் தொடரவும், \"அனுமதிகள்\" என்பதைத் தேர்ந்தெடுத்து \"சேமிப்பகத்தை\" இயக்கவும்.</string>
   <!--CustomDefaultPreference-->
   <string name="CustomDefaultPreference_using_custom">பயன்படுத்தப்படும் வழக்கம் : %s</string>
@@ -398,14 +409,9 @@
   <string name="DeviceListItem_today">இன்று</string>
   <!--DocumentView-->
   <string name="DocumentView_unnamed_file">பெயரிடப்படாத கோப்பு</string>
-  <!--DonateMegaphone-->
-  <string name="DonateMegaphone_donate_to_signal">Signal-க்கு நன்கொடை அளி</string>
-  <string name="DonateMegaphone_Signal_is_powered_by_people_like_you_show_your_support_today">Signal லை உங்களைப் போன்றவர்கள் ஆதரிக்கிறார்கள். இன்று உங்கள் ஆதரவைக் காட்டுங்கள்!</string>
-  <string name="DonateMegaphone_donate">நன்கொடை</string>
-  <string name="DonateMegaphone_no_thanks">வேண்டாம், நன்றி</string>
   <!--GroupCallingMegaphone-->
-  <string name="GroupCallingMegaphone__introducing_group_calls">அறிமுகப்படுத்துகிறது குழு அழைப்புகள்</string>
-  <string name="GroupCallingMegaphone__open_a_new_group_to_start">திற a புதிய குழு இலவசமாக தொடங்க மறையாக்கப்பட்ட குழு அழைப்பு</string>
+  <!-- Removed by excludeNonTranslatables <string name="GroupCallingMegaphone__introducing_group_calls">அறிமுகப்படுத்துகிறது குழு அழைப்புகள்</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="GroupCallingMegaphone__open_a_new_group_to_start">திற a புதிய குழு இலவசமாக தொடங்க மறையாக்கப்பட்ட குழு அழைப்பு</string> -->
   <!--DozeReminder-->
   <string name="DozeReminder_optimize_for_missing_play_services">காணாமல் போன விளையாட்டு சேவைகளை மேம்படுத்தவும்</string>
   <string name="DozeReminder_this_device_does_not_support_play_services_tap_to_disable_system_battery">இந்த சாதனம் Play சேவைகளை ஆதரிக்காது. செயலற்ற நிலையில் செய்திகளை மீட்டெடுப்பதில் இருந்து Signal லைத் தடுக்கும் கணினி பேட்டரி மேம்படுத்தல்களை முடக்க தட்டவும்.</string>
@@ -429,7 +435,7 @@
   <string name="GiphyActivity_error_while_retrieving_full_resolution_gif">முழு தெளிவுத்திறன் GIF ஐ மீட்டெடுக்கும்போது பிழை</string>
   <!--GiphyFragmentPageAdapter-->
   <string name="GiphyFragmentPagerAdapter_gifs">GIF கள் </string>
-  <string name="GiphyFragmentPagerAdapter_stickers">ஒட்டிகள்</string>
+  <string name="GiphyFragmentPagerAdapter_stickers">ஒட்டிப்படங்கள்</string>
   <!--AddToGroupActivity-->
   <string name="AddToGroupActivity_add_member">உறுப்பினரைச் சேர்க்கவா?</string>
   <string name="AddToGroupActivity_add_s_to_s">\"%1$s\" ஐ \"%2$s\" இல் சேர்க்கவா?</string>
@@ -524,9 +530,9 @@
   <string name="LeaveGroupDialog_before_you_leave_you_must_choose_at_least_one_new_admin_for_this_group">நீங்கள் வெளியேறுவதற்கு முன், இந்த குழுவிற்கு குறைந்தபட்சம் ஒரு புதிய new admin நிர்வாகியையாவது தேர்வு செய்ய வேண்டும்.</string>
   <string name="LeaveGroupDialog_choose_admin">நிர்வாகியைத் admin தேர்வுசெய்க</string>
   <!--LinkPreviewsMegaphone-->
-  <string name="LinkPreviewsMegaphone_disable">முடக்கு</string>
-  <string name="LinkPreviewsMegaphone_preview_any_link">எந்த இணைப்பையும் முன்னோட்டமிடுங்கள்</string>
-  <string name="LinkPreviewsMegaphone_you_can_now_retrieve_link_previews_directly_from_any_website">நீங்கள் அனுப்பும் செய்திகளுக்கு எந்தவொரு வலைத்தளத்திலிருந்தும் இணைப்பு முன்னோட்டங்களை நேரடியாக மீட்டெடுக்கலாம்.</string>
+  <!-- Removed by excludeNonTranslatables <string name="LinkPreviewsMegaphone_disable">முடக்கு</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="LinkPreviewsMegaphone_preview_any_link">எந்த இணைப்பையும் முன்னோட்டமிடுங்கள்</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="LinkPreviewsMegaphone_you_can_now_retrieve_link_previews_directly_from_any_website">நீங்கள் அனுப்பும் செய்திகளுக்கு எந்தவொரு வலைத்தளத்திலிருந்தும் இணைப்பு முன்னோட்டங்களை நேரடியாக மீட்டெடுக்கலாம்.</string> -->
   <!--LinkPreviewView-->
   <string name="LinkPreviewView_no_link_preview_available">இணைப்பு முன்னோட்டம் எதுவும் கிடைக்கவில்லை</string>
   <string name="LinkPreviewView_this_group_link_is_not_active">இந்த குழு இணைப்பு செயலில் இல்லை</string>
@@ -663,6 +669,7 @@
   <string name="ManageProfileFragment_your_name">உங்கள் பெயர்</string>
   <string name="ManageProfileFragment_your_username">உங்கள் பயனர்பெயர்</string>
   <string name="ManageProfileFragment_failed_to_set_avatar">சித்தரிப்பு அமைப்பதில் தோல்வி</string>
+  <string name="ManageProfileFragment__edit_photo">படத்தை திருத்த</string>
   <!--ManageRecipientActivity-->
   <string name="ManageRecipientActivity_no_groups_in_common">பொதுவான குழுக்கள் எதுவும் இல்லை</string>
   <plurals name="ManageRecipientActivity_d_groups_in_common">
@@ -749,6 +756,7 @@
   <!--InviteActivity-->
   <string name="InviteActivity_share">பகிர்</string>
   <string name="InviteActivity_share_with_contacts">தொடர்புகளுடன் பகிரவும்</string>
+  <string name="InviteActivity_share_via">பகிரும் வழி…</string>
   <string name="InviteActivity_cancel">ரத்து செய் </string>
   <string name="InviteActivity_sending">அனுப்புகிறது …</string>
   <string name="InviteActivity_invitations_sent">அழைப்புகள் அனுப்பட்டது!</string>
@@ -762,6 +770,7 @@
   <string name="InviteActivity_no_app_to_share_to">உங்களிடம் பகிர எந்த பயன்பாடுகளும் இல்லை என்று தெரிகிறது.</string>
   <!--LearnMoreTextView-->
   <string name="LearnMoreTextView_learn_more">மேலும் அறிக</string>
+  <string name="SpanUtil__read_more">மேலும் படிக்க</string>
   <!--LongMessageActivity-->
   <string name="LongMessageActivity_unable_to_find_message">செய்தியைக் கண்டுபிடிக்க முடியவில்லை</string>
   <string name="LongMessageActivity_message_from_s">%1$s  இலிருந்து செய்தி</string>
@@ -807,8 +816,8 @@
   <string name="MediaOverviewActivity_sent_by_s_to_s">அனுப்பியது %1$s க்கு%2$s</string>
   <string name="MediaOverviewActivity_sent_by_you_to_s">%1$sக்கு நீங்கள் அனுப்பியது </string>
   <!--Megaphones-->
-  <string name="Megaphones_introducing_reactions">எதிர்வினைகளை அறிமுகப்படுத்துகிறது</string>
-  <string name="Megaphones_tap_and_hold_any_message_to_quicky_share_how_you_feel">நீங்கள் எப்படி உணர்கிறீர்கள் என்பதை விரைவாகப் பகிர எந்த செய்தியையும் தட்டிப் பிடிக்கவும்.</string>
+  <!-- Removed by excludeNonTranslatables <string name="Megaphones_introducing_reactions">எதிர்வினைகளை அறிமுகப்படுத்துகிறது</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="Megaphones_tap_and_hold_any_message_to_quicky_share_how_you_feel">நீங்கள் எப்படி உணர்கிறீர்கள் என்பதை விரைவாகப் பகிர எந்த செய்தியையும் தட்டிப் பிடிக்கவும்.</string> -->
   <string name="Megaphones_remind_me_later">பிறகு என்னிடம் ஞாபகபடுத்து</string>
   <string name="Megaphones_verify_your_signal_pin">உங்கள் Signal PIN-ஐ சரிபார்க்கவும்</string>
   <string name="Megaphones_well_occasionally_ask_you_to_verify_your_pin">உங்கள் PIN-ஐ நினைவில் வைத்துக் கொள்ளும்படி நாங்கள் எப்போதாவது உங்களிடம் கேட்போம்.</string>
@@ -823,7 +832,9 @@
   <string name="NotificationBarManager_signal_call_in_progress">Signal அழைப்புப் போய்க்கொண்டிருக்கிறது</string>
   <string name="NotificationBarManager__establishing_signal_call">Signal அழைப்பு நிறுவுப்படுகிறது</string>
   <string name="NotificationBarManager__incoming_signal_call">உள்வரும் Signal அழைப்பு</string>
+  <string name="NotificationBarManager__incoming_signal_group_call">உள்வரும் Signal குழு அழைப்பு</string>
   <string name="NotificationBarManager__stopping_signal_call_service">Signal அழைப்பு சேவையை நிறுத்துதல்</string>
+  <string name="NotificationBarManager__decline_call">அழைப்பை நிராகரி</string>
   <string name="NotificationBarManager__answer_call">அழைப்பை எடு</string>
   <string name="NotificationBarManager__end_call">அழைப்பைத் துண்டி</string>
   <string name="NotificationBarManager__cancel_call">அழைப்பு ரத்து</string>
@@ -1030,6 +1041,7 @@
   <string name="MessageRecord_you_marked_your_safety_number_with_s_unverified">%s உடனான உங்கள் பாதுகாப்பு எண்ணை சரிபார்க்கப்படாததாக குறித்தீர்கள்</string>
   <string name="MessageRecord_you_marked_your_safety_number_with_s_unverified_from_another_device">%s உடனான உங்கள் பாதுகாப்பு எண்ணை சரிபார்க்கப்படாததாக வேறொரு சாதனத்திலிருந்து குறித்தீர்கள்</string>
   <string name="MessageRecord_a_message_from_s_couldnt_be_delivered">இருந்து ஒரு செய்தி %s வழங்க முடியவில்லை</string>
+  <string name="MessageRecord_s_changed_their_number_to_a_new_number">%1$s அவர்களின் எண்ணை புதிய எண்ணுக்கு மாற்றி விட்டார்கள்</string>
   <!--Group Calling update messages-->
   <string name="MessageRecord_s_started_a_group_call_s">%1$sகுழு அழைப்பைத் தொடங்கினார்%2$s</string>
   <string name="MessageRecord_s_is_in_the_group_call_s">%1$s குழு அழைப்பில் உள்ளார் %2$s</string>
@@ -1188,6 +1200,7 @@
   <string name="WebRtcCallActivity__to_call_s_signal_needs_access_to_your_camera">%1$s ஐ அழைக்க, சிக்னலுக்கு உங்கள் கேமரா அனுமதி தேவை Signal Camera permission</string>
   <string name="WebRtcCallActivity__signal_s">சிக்னல் Signal %1$s</string>
   <string name="WebRtcCallActivity__calling">அழைக்கிறது…</string>
+  <string name="WebRtcCallActivity__group_is_too_large_to_ring_the_participants">எண்ணிக்கை கூடியதால் குழுவில் உள்ள அனைவரையும் அழைக்க இயலாது</string>
   <!--WebRtcCallView-->
   <string name="WebRtcCallView__signal_call">Signal  அழைப்பு</string>
   <string name="WebRtcCallView__signal_video_call">Signal காணொளி அழைப்பு</string>
@@ -1200,8 +1213,18 @@
   <string name="WebRtcCallView__reconnecting">மீண்டும் இணைக்கிறது …</string>
   <string name="WebRtcCallView__joining">சேர்கிறீர்கள்</string>
   <string name="WebRtcCallView__disconnected">துண்டிக்கப்பட்டது</string>
+  <string name="WebRtcCallView__signal_will_ring_s">Signal %1$s ஐ அழைக்கும்</string>
+  <string name="WebRtcCallView__signal_will_ring_s_and_s">Signal %1$sஐயும் %2$sஐயும் அழைக்கும்</string>
+  <string name="WebRtcCallView__s_will_be_notified">%1$sக்கு தெரியபடுத்தப்படும் </string>
+  <string name="WebRtcCallView__s_and_s_will_be_notified">%1$s மற்றும் %2$sக்கு தெரியபடுத்தப்படும்</string>
+  <string name="WebRtcCallView__ringing_s">%1$s அழைக்கப்படுகிறார்</string>
+  <string name="WebRtcCallView__ringing_s_and_s">%1$s மற்றும் %2$s அழைக்கப்படுகின்றனர்</string>
+  <string name="WebRtcCallView__s_is_calling_you">%1$s உங்களை அழைக்கிறார்</string>
+  <string name="WebRtcCallView__s_is_calling_you_and_s">%1$s உங்களையும் %2$sஐயும் அழைக்கிறார்</string>
+  <string name="WebRtcCallView__s_is_calling_you_s_and_s">%1$s உங்களையும் %2$sஐயும் மற்றும் %3$sஐயும் அழைக்கிறார்</string>
   <string name="WebRtcCallView__no_one_else_is_here">வேறு யாரும் இங்கு இல்லை</string>
   <string name="WebRtcCallView__s_is_in_this_call">%1$s இந்த அழைப்பில் இருக்கிறார்</string>
+  <string name="WebRtcCallView__s_are_in_this_call">%1$s இந்த அழைப்பில் உள்ளார்</string>
   <string name="WebRtcCallView__s_and_s_are_in_this_call">%1$s மற்றும் %2$sஇந்த அழைப்பில் உள்ளனர்</string>
   <string name="WebRtcCallView__s_is_presenting">%1$s அளிக்கிறது</string>
   <plurals name="WebRtcCallView__s_s_and_d_others_are_in_this_call">
@@ -1212,6 +1235,7 @@
   <string name="WebRtcCallView__speaker">ஒலி பெருக்கி</string>
   <string name="WebRtcCallView__camera">புகைப்பட கருவி</string>
   <string name="WebRtcCallView__mute">முடக்கு</string>
+  <string name="WebRtcCallView__ring">அழை</string>
   <string name="WebRtcCallView__end_call">அழைப்பை முடி </string>
   <!--CallParticipantsListDialog-->
   <plurals name="CallParticipantsListDialog_in_this_call_d_people">
@@ -1257,8 +1281,6 @@
   <string name="RegistrationActivity_play_services_error">சேவைகளில் பிழை</string>
   <string name="RegistrationActivity_google_play_services_is_updating_or_unavailable">Google Play சேவைகள் புதுப்பித்தல் அல்லது தற்காலிகமாக கிடைக்கவில்லை. தயவு செய்து மீண்டும் முயற்சிக்கவும்.</string>
   <string name="RegistrationActivity_terms_and_privacy">விதிமுறைகள் &amp; ஆம்ப்; தனியுரிமைக் கொள்கை</string>
-  <string name="RegistrationActivity_signal_needs_access_to_your_contacts_and_media_in_order_to_connect_with_friends">நண்பர்களுடன் இணைவதற்கும், செய்திகளைப் பரிமாறிக் கொள்வதற்கும், பாதுகாப்பான அழைப்புகளைச் செய்வதற்கும் Signal உங்கள் தொடர்புகள் மற்றும் ஊடகங்களுக்கான அணுகல் தேவை</string>
-  <string name="RegistrationActivity_signal_needs_access_to_your_contacts_in_order_to_connect_with_friends">உங்கள் நண்பர்களுடன் தொடர்புகொள்வதற்கும், செய்திகளைப் பரிமாறிக்கொள்வதற்கும், பாதுகாப்பான அழைப்புகளைச் செய்வதற்கும், சிக்னலுக்கு உங்கள் தொடர்புகள் பிரிவுக்கு அணுகல் அனுமதி தேவை.</string>
   <string name="RegistrationActivity_rate_limited_to_service">இந்த எண்ணை பதிவு செய்ய நீங்கள் பல முயற்சிகளை செய்துள்ளீர்கள். சிறிது நேரம் கழித்து மீண்டும் முயற்சிக்கவும்.</string>
   <string name="RegistrationActivity_unable_to_connect_to_service">சேவையுடன் இணைக்க முடியவில்லை. பிணைய இணைப்பைச் சரிபார்த்து மீண்டும் முயற்சிக்கவும்.</string>
   <plurals name="RegistrationActivity_debug_log_hint">
@@ -1314,7 +1336,7 @@
   <string name="SignalPinReminders_well_remind_you_again_in_a_month">ஒரு மாதத்தில் மீண்டும் உங்களுக்கு நினைவூட்டுவோம்.</string>
   <!--Slide-->
   <string name="Slide_image">உருவம்</string>
-  <string name="Slide_sticker">ஒட்டி</string>
+  <string name="Slide_sticker">ஒட்டிப்படம்</string>
   <string name="Slide_audio">ஒலி</string>
   <string name="Slide_video">காணொளி</string>
   <!--SmsMessageRecord-->
@@ -1329,7 +1351,7 @@
   <string name="SmsMessageRecord_this_message_could_not_be_processed_because_it_was_sent_from_a_newer_version">இந்தச் செய்தியை செயலாக்க முடியவில்லை, ஏனெனில் இது Signal புதிய பதிப்பிலிருந்து அனுப்பப்பட்டது. நீங்கள் புதுப்பித்த பிறகு இந்த செய்தியை மீண்டும் அனுப்ப உங்கள் தொடர்பைக் கேட்கலாம்.</string>
   <string name="SmsMessageRecord_error_handling_incoming_message">உள்வரும் செய்தியைக் கையாளுவதில் பிழை.</string>
   <!--StickerManagementActivity-->
-  <string name="StickerManagementActivity_stickers">ஒட்டிகள்</string>
+  <string name="StickerManagementActivity_stickers">ஒட்டிப்படங்கள்</string>
   <!--StickerManagementAdapter-->
   <string name="StickerManagementAdapter_installed_stickers">நிறுவப்பட்ட ஒட்டிகள்</string>
   <string name="StickerManagementAdapter_stickers_you_received">நீங்கள் பெற்ற ஒட்டிகள்</string>
@@ -1343,7 +1365,7 @@
   <string name="StickerPackPreviewActivity_unknown">முன் தெரிந்திராத</string>
   <string name="StickerPackPreviewActivity_install">நிறுவு</string>
   <string name="StickerPackPreviewActivity_remove">நீக்கு</string>
-  <string name="StickerPackPreviewActivity_stickers">ஒட்டிகள்</string>
+  <string name="StickerPackPreviewActivity_stickers">ஒட்டிப்படங்கள்</string>
   <string name="StickerPackPreviewActivity_failed_to_load_sticker_pack">ஸ்டிக்கர் பேக்கை ஏற்றுவதில் தோல்வி</string>
   <!--SubmitDebugLogActivity-->
   <string name="SubmitDebugLogActivity_edit">தொகு</string>
@@ -1373,7 +1395,7 @@
   <string name="ThreadRecord_missed_audio_call">ஒலி அழைப்பு தவறவிட்டது</string>
   <string name="ThreadRecord_missed_video_call">காணொளி அழைப்பு தவறவிட்டது</string>
   <string name="ThreadRecord_media_message">பல்லூடகச் செய்தி</string>
-  <string name="ThreadRecord_sticker">ஒட்டி</string>
+  <string name="ThreadRecord_sticker">ஒட்டிப்படம்</string>
   <string name="ThreadRecord_view_once_photo">காண்க-ஒருமுறை புகைப்படம் </string>
   <string name="ThreadRecord_view_once_video">காண்க-ஒருமுறை காணொளி</string>
   <string name="ThreadRecord_view_once_media">காண்க-ஒருமுறை ஊடகம் </string>
@@ -1642,11 +1664,17 @@
   <string name="QuoteView_photo">புகைப்பட</string>
   <string name="QuoteView_gif">GIF</string>
   <string name="QuoteView_view_once_media">காண்க-ஒருமுறை ஊடகம் </string>
-  <string name="QuoteView_sticker">ஒட்டி</string>
+  <string name="QuoteView_sticker">ஒட்டிப்படம்</string>
   <string name="QuoteView_you">நீங்கள்</string>
   <string name="QuoteView_original_missing">அசல் செய்தி கிடைக்கவில்லை</string>
   <!--conversation_fragment-->
   <string name="conversation_fragment__scroll_to_the_bottom_content_description">கீழே உருட்டவும்</string>
+  <!--BubbleOptOutTooltip-->
+  <!--Message to inform the user of what Android chat bubbles are-->
+  <!--Button to dismiss the tooltip for opting out of using Android bubbles-->
+  <string name="BubbleOptOutTooltip__not_now">இப்போது இல்லை</string>
+  <!--Button to move to the system settings to control the use of Android bubbles-->
+  <string name="BubbleOptOutTooltip__turn_off">அணைக்க</string>
   <!--safety_number_change_dialog-->
   <string name="safety_number_change_dialog__safety_number_changes">பாதுகாப்பு எண் மாற்றங்கள்</string>
   <string name="safety_number_change_dialog__accept">ஒப்புக்கொள்</string>
@@ -2299,7 +2327,6 @@
   <string name="Insights__title">நுண்ணறிவு</string>
   <string name="InsightsDashboardFragment__title">நுண்ணறிவு</string>
   <string name="InsightsDashboardFragment__signal_protocol_automatically_protected">கடந்த %2$d நாட்களில் Signal நெறிமுறை தானாகவே உங்களின் %1$d%% வெளிச்செல்லும் செய்திகளை பாதுகாத்தது. Signal பயனர்களிடையேயான உரையாடல்கள் எப்போதும் முடிவிலிருந்து-முடிவுவரை மறையாக்கம் செய்யப்படுகின்றன.</string>
-  <string name="InsightsDashboardFragment__boost_your_signal">Signal பூஸ்ட்</string>
   <string name="InsightsDashboardFragment__not_enough_data">போதிய தரவு இல்லை</string>
   <string name="InsightsDashboardFragment__your_insights_percentage_is_calculated_based_on">கடந்த %1$d நாட்களில் காணாமல் போகாத அல்லது நீக்கப்படாத வெளிச்செல்லும் செய்திகளின் அடிப்படையில் உங்கள் நுண்ணறிவு சதவீதம் கணக்கிடப்படுகிறது.</string>
   <string name="InsightsDashboardFragment__start_a_conversation">புதிய உரையாடலை தொடங்கு</string>
@@ -2405,15 +2432,15 @@
   <string name="KbsMegaphone__pins_keep_information_thats_stored_with_signal_encrytped">Signal இடம் சேமிக்கப்படும் தகவல்களை மறையாக்கி நீங்கள் மட்டும் அணுகும் வகையில் PIN-கள் வைக்கும்.</string>
   <string name="KbsMegaphone__create_pin">பின் உருவாக்கவும்</string>
   <!--Research Megaphone-->
-  <string name="ResearchMegaphone_tell_signal_what_you_think">நீங்கள் என்ன நினைக்கிறீர்கள் என்று Signal லிடம் சொல்லுங்கள்</string>
-  <string name="ResearchMegaphone_to_make_signal_the_best_messaging_app_on_the_planet">சிக்னலை உலகின் சிறந்த செய்தியிடல் பயன்பாடாக மாற்ற, உங்கள் கருத்தைக் கேட்க நாங்கள் விரும்புகிறோம்.</string>
-  <string name="ResearchMegaphone_learn_more">மேலும் அறிக</string>
-  <string name="ResearchMegaphone_dismiss">நிராகரி</string>
-  <string name="ResearchMegaphoneDialog_signal_research">சிக்னல் ஆராய்ச்சி</string>
-  <string name="ResearchMegaphoneDialog_we_believe_in_privacy">&lt;p&gt;&lt;b&gt;நாங்கள் தனியுரிமையை நம்புகிறோம்.&lt;/b&gt;&lt;/p&gt;&lt;p&gt;சிக்னல் உங்கள் செயல்பாட்டைக் கண்காணிக்காது அல்லது உங்கள் தரவை சேகரிக்காது. அனைவருக்கும் சிக்னலை மேம்படுத்த, பயனர் கருத்தை நாங்கள் நம்புகிறோம்&lt;b&gt; உங்கள் கருத்தை நாங்கள் விரும்புகிறோம்! &lt;/b&gt;&lt;/p&gt;&lt;p&gt;நீங்கள் சிக்னலை எவ்வாறு பயன்படுத்துகிறீர்கள் என்பதைப் புரிந்துகொள்ள நாங்கள் ஒரு கணக்கெடுப்பை நடத்துகிறோம். உங்களை அடையாளம் காணும் எந்த தரவையும் எங்கள் கணக்கெடுப்பு சேகரிக்கவில்லை. கூடுதல் கருத்துகளைப் பகிர ஆர்வமாக இருந்தால், உங்கள் தொடர்பு தகவலை வழங்கவும்.&lt;/p&gt;&lt;p&gt;உங்களிடமிருந்து கருத்துக்களைக் கேட்க நாங்கள் விரும்புகிறோம்.</string>
-  <string name="ResearchMegaphoneDialog_take_the_survey">கணக்கெடுப்பில் பங்கேற்கவும்</string>
-  <string name="ResearchMegaphoneDialog_no_thanks">தேவையில்லை,நன்றி</string>
-  <string name="ResearchMegaphoneDialog_the_survey_is_hosted_by_alchemer_at_the_secure_domain">surveys.signalusers.org என்ற பாதுகாப்பான களத்தில் கணக்கெடுப்பை ஆல்கமீர் வழங்கியுள்ளது</string>
+  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphone_tell_signal_what_you_think">நீங்கள் என்ன நினைக்கிறீர்கள் என்று Signal லிடம் சொல்லுங்கள்</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphone_to_make_signal_the_best_messaging_app_on_the_planet">சிக்னலை உலகின் சிறந்த செய்தியிடல் பயன்பாடாக மாற்ற, உங்கள் கருத்தைக் கேட்க நாங்கள் விரும்புகிறோம்.</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphone_learn_more">மேலும் அறிக</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphone_dismiss">நிராகரி</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphoneDialog_signal_research">சிக்னல் ஆராய்ச்சி</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphoneDialog_we_believe_in_privacy">&lt;p&gt;&lt;b&gt;நாங்கள் தனியுரிமையை நம்புகிறோம்.&lt;/b&gt;&lt;/p&gt;&lt;p&gt;சிக்னல் உங்கள் செயல்பாட்டைக் கண்காணிக்காது அல்லது உங்கள் தரவை சேகரிக்காது. அனைவருக்கும் சிக்னலை மேம்படுத்த, பயனர் கருத்தை நாங்கள் நம்புகிறோம்&lt;b&gt; உங்கள் கருத்தை நாங்கள் விரும்புகிறோம்! &lt;/b&gt;&lt;/p&gt;&lt;p&gt;நீங்கள் சிக்னலை எவ்வாறு பயன்படுத்துகிறீர்கள் என்பதைப் புரிந்துகொள்ள நாங்கள் ஒரு கணக்கெடுப்பை நடத்துகிறோம். உங்களை அடையாளம் காணும் எந்த தரவையும் எங்கள் கணக்கெடுப்பு சேகரிக்கவில்லை. கூடுதல் கருத்துகளைப் பகிர ஆர்வமாக இருந்தால், உங்கள் தொடர்பு தகவலை வழங்கவும்.&lt;/p&gt;&lt;p&gt;உங்களிடமிருந்து கருத்துக்களைக் கேட்க நாங்கள் விரும்புகிறோம்.</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphoneDialog_take_the_survey">கணக்கெடுப்பில் பங்கேற்கவும்</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphoneDialog_no_thanks">தேவையில்லை,நன்றி</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphoneDialog_the_survey_is_hosted_by_alchemer_at_the_secure_domain">surveys.signalusers.org என்ற பாதுகாப்பான களத்தில் கணக்கெடுப்பை ஆல்கமீர் வழங்கியுள்ளது</string> -->
   <!--transport_selection_list_item-->
   <string name="transport_selection_list_item__transport_icon">போக்குவரத்து குறும்படம்</string>
   <string name="ConversationListFragment_loading">ஏற்றுதல் …</string>
@@ -2463,7 +2490,6 @@
   <string name="BackupDialog_verify">சரிபார்க்கவும்</string>
   <string name="BackupDialog_you_successfully_entered_your_backup_passphrase">உங்கள் காப்புப்பிரதி கடவுச்சொற்றொடரை வெற்றிகரமாக உள்ளிட்டுள்ளீர்கள்</string>
   <string name="BackupDialog_passphrase_was_not_correct">கடவுச்சொல் சரியாக இல்லை</string>
-  <string name="LocalBackupJob_creating_backup">காப்புப்பதிவு பயனர் தரவு உருவாக்குகிறது …</string>
   <string name="LocalBackupJobApi29_backup_failed">மறுபிரதி தோல்வியுற்றது</string>
   <string name="LocalBackupJobApi29_your_backup_directory_has_been_deleted_or_moved">உங்கள் மறுபிரதி கோப்புறை நீக்கப்பட்டது அல்லது வேறு இடத்திற்கு நகர்த்தப்பட்டது.</string>
   <string name="LocalBackupJobApi29_your_backup_file_is_too_large">உங்கள் மறுபிரதி கோப்பின் அளவு இந்த தொகுதியில் சேமிக்க முடியாத அளவுக்கு பெரியது.</string>
@@ -2584,6 +2610,7 @@
   <string name="DeviceTransfer__transferring_data">இடமாற்றம் தகவல்கள்</string>
   <string name="DeviceTransfer__keep_both_devices_near_each_other">இரண்டு சாதனங்களையும் ஒவ்வொன்றின் அருகே வைத்திருங்கள் மற்றவை. சாதனங்களை அணைத்து வைக்க வேண்டாம் Signal திறந்த. இடமாற்றங்கள் முடிவிலிருந்து-முடிவுவரை மறையாக்கப்பட்ட.</string>
   <string name="DeviceTransfer__d_messages_so_far">%1$d இதுவரை செய்திகள்…</string>
+  <!--Filled in with total percentage of messages transferred-->
   <string name="DeviceTransfer__cancel">ரத்து</string>
   <string name="DeviceTransfer__try_again">மீண்டும் முயற்சிக்கவும்</string>
   <string name="DeviceTransfer__stop_transfer_question">நிறுத்து பரிமாற்றம்?</string>
@@ -2633,6 +2660,7 @@
   <string name="RecipientBottomSheet_block">தடு </string>
   <string name="RecipientBottomSheet_unblock">தடைநீக்கு </string>
   <string name="RecipientBottomSheet_add_to_contacts">தொடர்புகளுடன் சேர்க்க</string>
+  <!--Error message that displays when a user tries to tap to view system contact details but has no app that supports it-->
   <string name="RecipientBottomSheet_add_to_a_group">ஒரு குழுவில் சேர்க்கவும்</string>
   <string name="RecipientBottomSheet_add_to_another_group">மற்றொரு குழுவில் சேர்க்கவும்</string>
   <string name="RecipientBottomSheet_view_safety_number">பாதுகாப்பு எண்ணைக் காண்பி</string>
@@ -2731,6 +2759,12 @@
   <string name="DeleteAccountFragment__failed_to_delete_account">நீக்குவதில் தோல்வி கணக்கு. உங்களிடம் பிணைய இணைப்பு உள்ளதா?</string>
   <string name="DeleteAccountFragment__failed_to_delete_local_data">உள்ளூர் தரவை நீக்குவதில் தோல்வி. நீங்கள் அதை கணினியில் கைமுறையாக அழிக்கலாம்விண்ணப்பம் அமைப்புகள்.</string>
   <string name="DeleteAccountFragment__launch_app_settings">பயன்பாட்டு அமைப்புகளை தொடங்கு</string>
+  <!--Title of progress dialog shown when a user deletes their account and the process is leaving all groups-->
+  <!--Title of progress dialog shown when a user deletes their account and the process has left all groups-->
+  <!--Message of progress dialog shown when a user deletes their account and the process is leaving groups-->
+  <!--Message of progress dialog shown when a user deletes their account and the process has left all groups-->
+  <!--Title of error dialog shown when a network error occurs during account deletion-->
+  <!--Message of error dialog shown when a network error occurs during account deletion-->
   <!--DeleteAccountCountryPickerFragment-->
   <string name="DeleteAccountCountryPickerFragment__search_countries">நாடுகளை தேடு</string>
   <!--CreateGroupActivity-->
@@ -2913,6 +2947,12 @@
   <string name="NotificationsSettingsFragment__calls">அழைப்புகள்</string>
   <string name="NotificationsSettingsFragment__notify_when">எப்போது அறிவிக்கவும்…</string>
   <string name="NotificationsSettingsFragment__contact_joins_signal">தொடர்பு இணைகிறது Signal</string>
+  <!--Notification preference header-->
+  <!--Notification preference option header-->
+  <!--Notification preference summary text-->
+  <!--NotificationProfilesFragment-->
+  <!--Title for notification profiles screen that shows all existing profiles-->
+  <!--Button text to create a notification profile-->
   <!--PrivacySettingsFragment-->
   <string name="PrivacySettingsFragment__blocked">தடுக்கப்பட்ட</string>
   <string name="PrivacySettingsFragment__d_contacts">%1$d contacts</string>
@@ -3003,12 +3043,14 @@
   <string name="AddAProfilePhotoMegaphone__choose_a_look_and_color">தோற்றத்தையும் வண்ணத்தையும் தேர்வு செய்யவும் அல்லது உங்கள் முதலெழுத்துக்களைத் தனிப்பயனாக்கவும்.</string>
   <string name="AddAProfilePhotoMegaphone__not_now">இப்போது இல்லை</string>
   <string name="AddAProfilePhotoMegaphone__add_photo">கூட்டு புகைப்படம்</string>
+  <!--BecomeASustainerMegaphone-->
+  <string name="BecomeASustainerMegaphone__no_thanks">தேவையில்லை,நன்றி</string>
   <!--KeyboardPagerFragment-->
   <string name="KeyboardPagerFragment_emoji">உணர்வு படங்கள்</string>
   <string name="KeyboardPagerFragment_open_emoji_search">திற ஈமோஜி தேடல்</string>
   <string name="KeyboardPagerFragment_open_sticker_search">திற ஓட்டி தேடல்</string>
   <string name="KeyboardPagerFragment_open_gif_search">திற gif தேடல்</string>
-  <string name="KeyboardPagerFragment_stickers">ஒட்டிகள்</string>
+  <string name="KeyboardPagerFragment_stickers">ஒட்டிப்படங்கள்</string>
   <string name="KeyboardPagerFragment_backspace">பின்வெளி</string>
   <string name="KeyboardPagerFragment_gifs">Gifs</string>
   <string name="KeyboardPagerFragment_search_emoji">தேடல் ஈமோஜி</string>
@@ -3133,15 +3175,108 @@
   <string name="MediaReviewImagePageFragment__discard">புறந்தள்ளு</string>
   <string name="SelectFeaturedBadgeFragment__preview">முன்னோட்டம்</string>
   <string name="SubscribeFragment__signal_is_powered_by_people_like_you">Signal இயக்கப்படுகிறது மக்கள் உன்னைப்போல.</string>
-  <string name="SubscribeFragment__donation_amount">நன்கொடை தொகை</string>
   <string name="SubscribeFragment__not_now">இப்போது இல்லை</string>
   <string name="SubscribeFragment__confirm">உறுதிப்படுத்தவும்</string>
   <string name="SubscribeFragment__update">புதுப்பிக்கப்பட்டது</string>
   <string name="SubscribeThanksForYourSupportBottomSheetDialogFragment__done">முடிந்தது</string>
   <string name="Boost__enter_custom_amount">உள்ளிடவும் தனிப்பயன் தொகை</string>
+  <!--Displayed on "My Support" screen when user badge failed to be added to their account-->
   <string name="ExpiredBadgeBottomSheetDialogFragment__not_now">இப்போது இல்லை</string>
   <string name="Subscription__contact_support">தொடர்பு ஆதரவு</string>
   <string name="SubscribeFragment__processing_payment">கட்டணத்தை செயலாக்குகிறது…</string>
-  <string name="DonationsErrors__payment_failed">கட்டணம் தோல்வியடைந்தது</string>
+  <!--Displayed in notification when user payment fails to process on Stripe-->
+  <!--Displayed on "My Support" screen when user subscription payment method failed.-->
+  <string name="NetworkFailure__retry">மீண்டும் முயற்சி செய்</string>
+  <!--Title of create notification profile screen-->
+  <!--Hint text for create/edit notification profile name-->
+  <string name="EditNotificationProfileFragment__profile_name">சுயவிவரப் பெயர்</string>
+  <!--Name has a max length, this shows how many characters are used out of the max-->
+  <string name="EditNotificationProfileFragment__count">%1$d/%2$d</string>
+  <!--Call to action button to continue to the next step-->
+  <string name="EditNotificationProfileFragment__next">அடுத்தது</string>
+  <!--Call to action button once the profile is named to create the profile and continue to the customization steps-->
+  <string name="EditNotificationProfileFragment__create">உருவாக்கவும்</string>
+  <!--Call to action button once the profile name is edited-->
+  <string name="EditNotificationProfileFragment__save">சேமி</string>
+  <!--Title of edit notification profile screen-->
+  <!--Error message shown when attempting to create or edit a profile name to an existing profile name-->
+  <!--Preset selectable name for a profile name, shown as list in edit/create screen-->
+  <string name="EditNotificationProfileFragment__work">வேலை</string>
+  <!--Preset selectable name for a profile name, shown as list in edit/create screen-->
+  <!--Preset selectable name for a profile name, shown as list in edit/create screen-->
+  <!--Preset selectable name for a profile name, shown as list in edit/create screen-->
+  <!--Preset selectable name for a profile name, shown as list in edit/create screen-->
+  <!--Error message shown when attempting to next/save without a profile name-->
+  <!--Title for add recipients to notification profile screen in create flow-->
+  <!--Description of what the user should be doing with this screen-->
+  <!--Button text that launches the contact picker to select from-->
+  <!--Call to action button on contact picker for adding to profile-->
+  <string name="SelectRecipientsFragment__add">சேர்க்கவும்</string>
+  <!--Notification profiles home fragment, shown when no profiles have been created yet-->
+  <!--Header shown above list of all notification profiles-->
+  <!--Button that starts the create new notification profile flow-->
+  <!--Profile active status, indicating the current profile is on for an unknown amount of time-->
+  <string name="NotificationProfilesFragment__on">இயக்கு</string>
+  <!--Button use to permanently delete a notification profile-->
+  <!--Snakbar message shown when removing a recipient from a profile-->
+  <!--Snackbar button text that will undo the recipient remove-->
+  <string name="NotificationProfileDetails__undo">செயல்தவிர்</string>
+  <!--Dialog message shown to confirm deleting a profile-->
+  <!--Dialog button to delete profile-->
+  <string name="NotificationProfileDetails__delete">நீக்கு</string>
+  <!--Title/accessibility text for edit icon to edit profile emoji/name-->
+  <!--Schedule description if all days are selected-->
+  <!--Profile status on if it is the active profile-->
+  <string name="NotificationProfileDetails__on">இயக்கு</string>
+  <!--Profile status on if it is not the active profile-->
+  <string name="NotificationProfileDetails__off">அணை</string>
+  <!--Description of hours for schedule (start to end) times-->
+  <string name="NotificationProfileDetails__s_to_s">%1$s to %2$s</string>
+  <!--Section header for exceptions to the notification profile-->
+  <!--Profile exception to allow all calls through the profile restrictions-->
+  <!--Profile exception to allow all @mentions through the profile restrictions-->
+  <!--Section header for showing schedule information-->
+  <!--If member list is long, will truncate the list and show an option to then see all when tapped-->
+  <string name="NotificationProfileDetails__see_all">அனைத்தையும் பார்</string>
+  <!--Title for add schedule to profile in create flow-->
+  <!--Descriptor text indicating what the user can do with this screen-->
+  <!--Text shown next to toggle switch to enable/disable schedule-->
+  <!--Label for showing the start time for the schedule-->
+  <string name="EditNotificationProfileSchedule__start">தொடங்கு</string>
+  <!--Label for showing the end time for the schedule-->
+  <!--First letter of Sunday-->
+  <!--First letter of Monday-->
+  <!--First letter of Tuesday-->
+  <!--First letter of Wednesday-->
+  <!--First letter of Thursday-->
+  <!--First letter of Friday-->
+  <!--First letter of Saturday-->
+  <!--Title of select time dialog shown when setting start time for schedule-->
+  <!--Title of select time dialog shown when setting end time for schedule-->
+  <!--If in edit mode, call to action button text show to save schedule to profile-->
+  <string name="EditNotificationProfileSchedule__save">சேமி</string>
+  <!--If in create mode, call to action button text to show to skip enabling a schedule-->
+  <string name="EditNotificationProfileSchedule__skip">தவிர்</string>
+  <!--If in create mode, call to action button text to show to use the enabled schedule and move to the next screen-->
+  <string name="EditNotificationProfileSchedule__next">அடுத்தது</string>
+  <!--Error message shown if trying to save/use a schedule with no days selected-->
+  <!--Title for final screen shown after completing a profile creation-->
+  <!--Call to action button to press to close the created screen and move to the profile details screen-->
+  <string name="NotificationProfileCreated__done">முடிந்தது</string>
+  <!--Descriptor text shown to indicate how to manually turn a profile on/off-->
+  <!--Descriptor text shown to indicate you can add a schedule later since you did not add one during create flow-->
+  <!--Descriptor text shown to indicate your profile will follow the schedule set during create flow-->
+  <!--Button text shown in profile selection bottom sheet to create a new profile-->
+  <!--Manual enable option to manually enable a profile for 1 hour-->
+  <!--Manual enable option to manually enable a profile until a set time (currently 6pm or 8am depending on what is next)-->
+  <string name="NotificationProfileSelection__until_s">%1$s வரை</string>
+  <!--Option to view profile details-->
+  <!--Descriptor text indicating how long a profile will be on when there is a time component associated with it-->
+  <!--Title for notification profile megaphone-->
+  <!--Description for notification profile megaphone-->
+  <!--Call to action button to create a profile from megaphone-->
+  <!--Button to dismiss notification profile megaphone-->
+  <string name="NotificationProfilesMegaphone__not_now">இப்போது இல்லை</string>
+  <!--Displayed in a toast when we fail to open the ringtone picker-->
   <!--EOF-->
 </resources>

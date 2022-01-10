@@ -1,8 +1,13 @@
 package org.thoughtcrime.securesms.subscription
 
+import android.animation.Animator
+import android.animation.AnimatorSet
+import android.animation.ObjectAnimator
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.animation.doOnEnd
+import androidx.lifecycle.DefaultLifecycleObserver
 import org.signal.core.util.money.FiatMoney
 import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.badges.BadgeImageView
@@ -10,9 +15,11 @@ import org.thoughtcrime.securesms.badges.models.Badge
 import org.thoughtcrime.securesms.components.settings.PreferenceModel
 import org.thoughtcrime.securesms.payments.FiatMoneyUtil
 import org.thoughtcrime.securesms.util.DateUtils
-import org.thoughtcrime.securesms.util.MappingAdapter
-import org.thoughtcrime.securesms.util.MappingViewHolder
+import org.thoughtcrime.securesms.util.adapter.mapping.LayoutFactory
+import org.thoughtcrime.securesms.util.adapter.mapping.MappingAdapter
+import org.thoughtcrime.securesms.util.adapter.mapping.MappingViewHolder
 import org.thoughtcrime.securesms.util.visible
+import java.util.Currency
 import java.util.Locale
 
 /**
@@ -20,26 +27,68 @@ import java.util.Locale
  */
 data class Subscription(
   val id: String,
-  val title: String,
+  val name: String,
   val badge: Badge,
-  val price: FiatMoney,
+  val prices: Set<FiatMoney>,
   val level: Int,
 ) {
 
   companion object {
     fun register(adapter: MappingAdapter) {
-      adapter.registerFactory(Model::class.java, MappingAdapter.LayoutFactory({ ViewHolder(it) }, R.layout.subscription_preference))
+      adapter.registerFactory(Model::class.java, LayoutFactory({ ViewHolder(it) }, R.layout.subscription_preference))
+      adapter.registerFactory(LoaderModel::class.java, LayoutFactory({ LoaderViewHolder(it) }, R.layout.subscription_preference_loader))
+    }
+  }
+
+  class LoaderModel : PreferenceModel<LoaderModel>() {
+    override fun areItemsTheSame(newItem: LoaderModel): Boolean = true
+  }
+
+  class LoaderViewHolder(itemView: View) : MappingViewHolder<LoaderModel>(itemView), DefaultLifecycleObserver {
+
+    private val animator: Animator = AnimatorSet().apply {
+      val fadeTo25Animator = ObjectAnimator.ofFloat(itemView, "alpha", 0.8f, 0.25f).apply {
+        duration = 1000L
+      }
+
+      val fadeTo80Animator = ObjectAnimator.ofFloat(itemView, "alpha", 0.25f, 0.8f).apply {
+        duration = 300L
+      }
+
+      playSequentially(fadeTo25Animator, fadeTo80Animator)
+      doOnEnd {
+        if (itemView.isAttachedToWindow) {
+          start()
+        }
+      }
+    }
+
+    override fun bind(model: LoaderModel) {
+    }
+
+    override fun onAttachedToWindow() {
+      if (animator.isStarted) {
+        animator.resume()
+      } else {
+        animator.start()
+      }
+    }
+
+    override fun onDetachedFromWindow() {
+      animator.pause()
     }
   }
 
   class Model(
+    val activePrice: FiatMoney?,
     val subscription: Subscription,
     val isSelected: Boolean,
     val isActive: Boolean,
     val willRenew: Boolean,
     override val isEnabled: Boolean,
     val onClick: () -> Unit,
-    val renewalTimestamp: Long
+    val renewalTimestamp: Long,
+    val selectedCurrency: Currency
   ) : PreferenceModel<Model>(isEnabled = isEnabled) {
 
     override fun areItemsTheSame(newItem: Model): Boolean {
@@ -52,7 +101,8 @@ data class Subscription(
         newItem.isSelected == isSelected &&
         newItem.isActive == isActive &&
         newItem.renewalTimestamp == renewalTimestamp &&
-        newItem.willRenew == willRenew
+        newItem.willRenew == willRenew &&
+        newItem.selectedCurrency == selectedCurrency
     }
 
     override fun getChangePayload(newItem: Model): Any? {
@@ -79,14 +129,15 @@ data class Subscription(
 
       if (payload.isEmpty()) {
         badge.setBadge(model.subscription.badge)
+        badge.isClickable = false
       }
 
-      title.text = model.subscription.title
+      title.text = model.subscription.name
       tagline.text = context.getString(R.string.Subscription__earn_a_s_badge, model.subscription.badge.name)
 
       val formattedPrice = FiatMoneyUtil.format(
         context.resources,
-        model.subscription.price,
+        model.activePrice ?: model.subscription.prices.first { it.currency == model.selectedCurrency },
         FiatMoneyUtil.formatOptions()
       )
 
