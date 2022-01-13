@@ -34,7 +34,7 @@ public class VerifyIdentityActivity extends PassphraseRequiredActivity {
     return newIntent(context,
                      identityRecord.getRecipientId(),
                      identityRecord.getIdentityKey(),
-                     identityRecord.getVerifiedStatus() == IdentityTable.VerifiedStatus.VERIFIED);
+                     IdentityTable.VerifiedStatus.isVerified(identityRecord.getVerifiedStatus()));
   }
 
   public static Intent newIntent(@NonNull Context context,
