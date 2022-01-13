@@ -931,9 +931,9 @@ open class RecipientTable(context: Context, databaseHelper: SignalDatabase) : Da
       }
 
       val newIdentityRecord = identityStore.getIdentityRecord(recipientId)
-      if (newIdentityRecord.isPresent && newIdentityRecord.get().verifiedStatus == VerifiedStatus.VERIFIED && (!oldIdentityRecord.isPresent || oldIdentityRecord.get().verifiedStatus != VerifiedStatus.VERIFIED)) {
+      if (newIdentityRecord.isPresent && VerifiedStatus.isVerified(newIdentityRecord.get().verifiedStatus) && (!oldIdentityRecord.isPresent || !VerifiedStatus.isVerified(oldIdentityRecord.get().verifiedStatus))) {
         IdentityUtil.markIdentityVerified(context, Recipient.resolved(recipientId), true, true)
-      } else if (newIdentityRecord.isPresent && newIdentityRecord.get().verifiedStatus != VerifiedStatus.VERIFIED && oldIdentityRecord.isPresent && oldIdentityRecord.get().verifiedStatus == VerifiedStatus.VERIFIED) {
+      } else if (newIdentityRecord.isPresent && !VerifiedStatus.isVerified(newIdentityRecord.get().verifiedStatus) && oldIdentityRecord.isPresent && VerifiedStatus.isVerified(oldIdentityRecord.get().verifiedStatus)) {
         IdentityUtil.markIdentityVerified(context, Recipient.resolved(recipientId), false, true)
       }
     } catch (e: InvalidKeyException) {
