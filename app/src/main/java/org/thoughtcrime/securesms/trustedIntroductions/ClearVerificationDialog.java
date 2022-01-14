@@ -10,13 +10,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.thoughtcrime.securesms.R;
-import org.thoughtcrime.securesms.VerifyIdentityActivity;
+import org.thoughtcrime.securesms.verify.VerifyIdentityActivity;
 import org.thoughtcrime.securesms.database.IdentityDatabase;
 import org.thoughtcrime.securesms.database.model.IdentityRecord;
 import org.thoughtcrime.securesms.trustedIntroductions.CanNotIntroduceDialog;
 /**
  * Dialog is displayed if a user wants to clear a verification status that is higher than 'manually' verified,
- * since this is an operation that is not triviall undone.
+ * since this is an operation that is not trivially undone.
  * Only valid with the verification status DIRECTLY_VERIFIED, INTRODUCED or DUPLEX_VERIFIED
  **/
 public class ClearVerificationDialog {
