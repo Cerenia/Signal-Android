@@ -380,18 +380,19 @@ public class ConversationParentFragment extends Fragment
 
   private static final int REQUEST_CODE_SETTINGS = 1000;
 
-  private static final int PICK_GALLERY        = 1;
-  private static final int PICK_DOCUMENT       = 2;
-  private static final int PICK_AUDIO          = 3;
-  private static final int PICK_CONTACT        = 4;
-  private static final int GET_CONTACT_DETAILS = 5;
-  private static final int GROUP_EDIT          = 6;
-  private static final int TAKE_PHOTO          = 7;
-  private static final int ADD_CONTACT         = 8;
-  private static final int PICK_LOCATION       = 9;
-  public static  final int PICK_GIF            = 10;
-  private static final int SMS_DEFAULT         = 11;
-  private static final int MEDIA_SENDER        = 12;
+  private static final int PICK_GALLERY         = 1;
+  private static final int PICK_DOCUMENT        = 2;
+  private static final int PICK_AUDIO           = 3;
+  private static final int PICK_CONTACT         = 4;
+  private static final int GET_CONTACT_DETAILS  = 5;
+  private static final int GROUP_EDIT           = 6;
+  private static final int TAKE_PHOTO           = 7;
+  private static final int ADD_CONTACT          = 8;
+  private static final int PICK_LOCATION        = 9;
+  public static  final int PICK_GIF             = 10;
+  private static final int SMS_DEFAULT          = 11;
+  private static final int MEDIA_SENDER         = 12;
+  private static final int TRUSTED_INTRODUCTION = 13;
 
   private static final int     REQUEST_CODE_PIN_SHORTCUT = 902;
   private static final String  ACTION_PINNED_SHORTCUT    = "action_pinned_shortcut";
@@ -1071,7 +1072,7 @@ public class ConversationParentFragment extends Fragment
           conversationType = CanNotIntroduceDialog.ConversationType.GROUP;
         } else if (!(recipientRecord.isPresent() && VerifiedStatus.tiUnlocked(recipientRecord.get().getVerifiedStatus()))){
           // Unverified signal contact
-          // Guarenteed to have a recipient Record at this point and be unverified
+          // Guaranteed to have a recipient Record at this point and be unverified
           conversationType = CanNotIntroduceDialog.ConversationType.SINGLE_SECURE_TEXT;
         } else {
           // TI allowed
