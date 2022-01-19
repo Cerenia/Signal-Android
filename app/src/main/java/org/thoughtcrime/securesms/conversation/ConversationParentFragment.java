@@ -1076,7 +1076,7 @@ public class ConversationParentFragment extends Fragment
           conversationType = CanNotIntroduceDialog.ConversationType.SINGLE_SECURE_TEXT;
         } else {
           // TI allowed
-          AttachmentManager.selectTI(this, recipient.getId());
+          AttachmentManager.selectTI(this, recipient.getId(), TRUSTED_INTRODUCTION);
           return;
         }
         // For any unsupported TI, show the dialogue

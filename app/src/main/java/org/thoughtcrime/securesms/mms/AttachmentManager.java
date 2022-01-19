@@ -475,7 +475,7 @@ public class AttachmentManager {
         .show();
   }
 
-  public static void selectTI(@NonNull Activity activity, @NonNull RecipientId recipientId){
+  public static void selectTI(@NonNull Activity activity, @NonNull RecipientId recipientId, int requestCode){
     // TODO: Whatever is the next step in TI.
   }
 
