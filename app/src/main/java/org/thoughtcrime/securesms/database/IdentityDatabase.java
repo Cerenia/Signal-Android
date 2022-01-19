@@ -138,6 +138,7 @@ public class IdentityDatabase extends Database {
 
     /**
      * Returns true for any non-trivial positive verification status.
+     * Used to promt user when clearing a verification status that is not trivially recoverable.
      */
     public static boolean stronglyVerified(VerifiedStatus verifiedStatus){
       switch (verifiedStatus){
