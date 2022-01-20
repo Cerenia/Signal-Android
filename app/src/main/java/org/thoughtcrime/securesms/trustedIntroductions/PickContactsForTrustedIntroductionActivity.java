@@ -9,5 +9,5 @@ import org.thoughtcrime.securesms.PushContactSelectionActivity;
  * and let's the user choose one for the purpose of carrying out a trusted introduction.
  */
 public class PickContactsForTrustedIntroductionActivity extends PushContactSelectionActivity {
-  
+  private final
 }
