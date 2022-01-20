@@ -250,7 +250,7 @@ public class IdentityDatabase extends Database {
    * @return Returns a Cursor which iterates through all contacts that are unlocked for
    * trusted introductions (for which @see VerifiedStatus.tiUnlocked returns true)
    */
-  public Cursor getTIUnlocked(){
+  public @NonNull Cursor getTIUnlocked(){
     ArrayList<String> validStates = new ArrayList<>();
     // dynamically compute the valid states and query the Signal database for these contacts
     for(VerifiedStatus e: VerifiedStatus.values()){
