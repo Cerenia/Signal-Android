@@ -40,6 +40,7 @@ import org.signal.core.util.SqlUtil;
 import org.whispersystems.signalservice.api.util.UuidUtil;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Optional;
 
 public class IdentityDatabase extends Database {
@@ -64,6 +65,8 @@ public class IdentityDatabase extends Database {
                                                                                   VERIFIED             + " INTEGER DEFAULT 0, " +
                                                                                   NONBLOCKING_APPROVAL + " INTEGER DEFAULT 0);";
 
+  private final String[] ID_PROJECTION = {ID};
+
   /**
    * Trusted Introductions: We differentiate between a direct verification <code>DIRECTLY_VERIFIED</code> (via. QR code)
    * and a weaker, manual verification <code>MANUALLY_VERIFIED</code>. Additionally, a user can become verified by the
@@ -80,7 +83,7 @@ public class IdentityDatabase extends Database {
       switch (this) {
         case DEFAULT:               return 0;
         case DIRECTLY_VERIFIED:     return 1;
-        case INTRODUCED: return 2;
+        case INTRODUCED:            return 2;
         case DUPLEX_VERIFIED:       return 3;
         case MANUALLY_VERIFIED:     return 4;
         case UNVERIFIED:            return 5;
@@ -150,7 +153,6 @@ public class IdentityDatabase extends Database {
           return false;
       }
     }
-
   }
 
   IdentityDatabase(Context context, SignalDatabase databaseHelper) {
@@ -241,6 +243,24 @@ public class IdentityDatabase extends Database {
       SignalDatabase.recipients().markNeedsSync(recipientId);
       StorageSyncHelper.scheduleSyncForDataChange();
     }
+  }
+
+  /**
+   *
+   * @return Returns a Cursor which iterates through all contacts that are unlocked for
+   * trusted introductions (for which @see VerifiedStatus.tiUnlocked returns true)
+   */
+  public Cursor getTIUnlocked(){
+    ArrayList<String> validStates = new ArrayList<>();
+    // dynamically compute the valid states and query the Signal database for these contacts
+    for(VerifiedStatus e: VerifiedStatus.values()){
+      if(VerifiedStatus.tiUnlocked(e)){
+        validStates.add(String.valueOf(e.toInt()));
+      }
+    }
+    SQLiteDatabase readableDatabase = getReadableDatabase();
+    String selection = String.format("%s = ?", VERIFIED);
+    return readableDatabase.query(TABLE_NAME, ID_PROJECTION, selection, validStates.toArray(new String[]{}), null, null, null);
   }
 
   public void updateIdentityAfterSync(@NonNull String addressName, @NonNull RecipientId recipientId, IdentityKey identityKey, VerifiedStatus verifiedStatus) {
