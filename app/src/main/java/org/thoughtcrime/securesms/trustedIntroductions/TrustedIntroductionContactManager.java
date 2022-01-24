@@ -22,7 +22,6 @@ final class TrustedIntroductionContactManager {
   @WorkerThread RecipientId getOrCreateRecipientIdForForwardedContact(@NonNull SelectedContact selectedContact){
     return selectedContact.getOrCreateRecipientId(context);
   }
-
-  // TODO: Anything else? Verification Status, Security nr. etc?
+  
 
 }
