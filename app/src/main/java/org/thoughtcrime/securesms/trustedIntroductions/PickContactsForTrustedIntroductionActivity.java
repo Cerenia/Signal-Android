@@ -7,8 +7,19 @@ import org.thoughtcrime.securesms.ContactSelectionActivity;
 import org.thoughtcrime.securesms.ContactSelectionListFragment;
 import org.thoughtcrime.securesms.PushContactSelectionActivity;
 import org.thoughtcrime.securesms.R;
+import org.thoughtcrime.securesms.groups.GroupId;
+import org.thoughtcrime.securesms.groups.ui.addmembers.AddMembersViewModel;
+import org.thoughtcrime.securesms.recipients.Recipient;
+import org.thoughtcrime.securesms.recipients.RecipientId;
+import org.thoughtcrime.securesms.util.Util;
+import org.whispersystems.libsignal.util.guava.Optional;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.ViewModelProvider;
+
+import java.util.Objects;
 
 
 /**
@@ -29,5 +40,76 @@ public class PickContactsForTrustedIntroductionActivity extends PushContactSelec
     getIntent().putExtra(ContactSelectionActivity.EXTRA_LAYOUT_RES_ID, R.layout.pick_ti_contacts_activity);
     super.onCreate(icicle, ready);
 
+    TrustedIntroductionContactsViewModel.Factory factory = new TrustedIntroductionContactsViewModel.Factory();
+
+    done = findViewById(R.id.done);
+
+    TrustedIntroductionContactsViewModel viewModel = new ViewModelProvider(this, factory).get(TrustedIntroductionContactsViewModel.class);
+
+    done.setOnClickListener(v ->
+                                viewModel.getDialogStateForSelectedContacts(contactsFragment.getSelectedContacts(), this::displayAlertMessage)
+    );
+
+    disableDone();
+  }
+
+  @Override
+  protected void initializeToolbar() {
+    getToolbar().setNavigationIcon(R.drawable.ic_arrow_left_24);
+    getToolbar().setNavigationOnClickListener(v -> {
+      setResult(RESULT_CANCELED);
+      finish();
+    });
+  }
+
+  @Override
+  public void onContactDeselected(Optional<RecipientId> recipientId, String number) {
+    // TODO: needed?
+    if (contactsFragment.hasQueryFilter()) {
+      getContactFilterView().clear();
+    }
+
+    if (contactsFragment.getSelectedContactsCount() < 1) {
+      disableDone();
+    }
+  }
+
+  @Override
+  public void onSelectionChanged() {
+    int selectedContactsCount = contactsFragment.getTotalMemberCount() + 1;
+    if (selectedContactsCount == 0) {
+      getToolbar().setTitle(getString(R.string.PickContactsForTIActivity_introduce_contacts));
+    } else {
+      assert selectedContactsCount > 0 : "Contacts count below 0!";
+      enableDone();
+      getToolbar().setTitle(getResources().getQuantityString(R.plurals.PickContactsForTIActivity_d_contacts, selectedContactsCount, selectedContactsCount));
+    }
+  }
+
+  private void enableDone() {
+    done.setEnabled(true);
+    done.animate().alpha(1f);
+  }
+
+  private void disableDone() {
+    done.setEnabled(false);
+    done.animate().alpha(0.5f);
+  }
+
+  private void displayAlertMessage(@NonNull TrustedIntroductionContactsViewModel.IntroduceDialogMessageState state) {
+    Recipient recipient = Util.firstNonNull(state.getRecipient(), Recipient.UNKNOWN);
+
+    String message = getResources().getQuantityString(R.plurals.PickContactsForTIActivity__introduce_d_contacts_to_s, state.getSelectionCount(),
+                                                      recipient.getDisplayName(this), state.getSelectionCount());
+
+    new AlertDialog.Builder(this)
+        .setMessage(message)
+        .setNegativeButton(android.R.string.cancel, (dialog, which) -> dialog.cancel())
+        .setPositiveButton(R.string.PickContactsForTIActivity_introduce, (dialog, which) -> {
+          dialog.dismiss();
+          onFinishedSelection();
+        })
+        .setCancelable(true)
+        .show();
   }
 }

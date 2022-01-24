@@ -1579,6 +1579,11 @@
         <item quantity="other">Introduce %3$d contacts to \"%2$s\"?</item>
     </plurals>
     <string name="PickContactsForTIActivity_introduce">Introduce</string>
+    <string name="PickContactsForTIActivity_introduce_contacts">Introduce contacts</string>
+    <plurals name="PickContactsForTIActivity_d_contacts">
+        <item quantity="one">%1$d introduced contact</item>
+        <item quantity="other">%1$d introduced contacts</item>
+    </plurals>
 
     <!-- PlayServicesProblemFragment -->
     <string name="PlayServicesProblemFragment_the_version_of_google_play_services_you_have_installed_is_not_functioning">The version of Google Play Services you have installed is not functioning correctly.  Please reinstall Google Play Services and try again.</string>
