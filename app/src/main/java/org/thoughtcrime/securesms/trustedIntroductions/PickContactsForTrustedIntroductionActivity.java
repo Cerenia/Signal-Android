@@ -3,16 +3,12 @@ package org.thoughtcrime.securesms.trustedIntroductions;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 
 import org.thoughtcrime.securesms.ContactSelectionActivity;
 import org.thoughtcrime.securesms.ContactSelectionListFragment;
-import org.thoughtcrime.securesms.PushContactSelectionActivity;
 import org.thoughtcrime.securesms.R;
-import org.thoughtcrime.securesms.conversation.ConversationActivity;
-import org.thoughtcrime.securesms.groups.GroupId;
-import org.thoughtcrime.securesms.groups.ui.addmembers.AddMembersViewModel;
+import org.thoughtcrime.securesms.contacts.ContactsCursorLoader;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.util.Util;
@@ -20,19 +16,14 @@ import org.whispersystems.libsignal.util.guava.Optional;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
-import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
 
 
 /**
- * Queries the Contacts Provider for Contacts which match strongly verified contacts in the Signal database,
- * and let's the user choose one for the purpose of carrying out a trusted introduction.
+ * Queries the Contacts Provider for Contacts which match strongly verified contacts in the Signal identity database,
+ * and let's the user choose some for the purpose of carrying out trusted introductions.
  */
-public class PickContactsForTrustedIntroductionActivity extends PushContactSelectionActivity {
+public class PickContactsForTrustedIntroductionActivity {
 
   private static final String TAG = org.signal.core.util.logging.Log.tag(PickContactsForTrustedIntroductionActivity.class);
 
@@ -45,11 +36,12 @@ public class PickContactsForTrustedIntroductionActivity extends PushContactSelec
   public static @NonNull Intent createIntent(@NonNull Context context, @NonNull RecipientId id){
     Intent intent = new Intent(context, PickContactsForTrustedIntroductionActivity.class);
     intent.putExtra(RECIPIENT_ID, id.toLong());
+    intent.putExtra(ContactSelectionListFragment.DISPLAY_MODE, ContactsCursorLoader.DisplayMode.FLAG_PUSH);
     return intent;
   }
 
   @Override protected void onCreate(Bundle icicle, boolean ready) {
-    getIntent().putExtra(ContactSelectionActivity.EXTRA_LAYOUT_RES_ID, R.layout.pick_ti_contacts_activity);
+    getIntent().putExtra(ContactSelectionActivity.EXTRA_LAYOUT_RES_ID, R.layout.trusted_introduction_contacts_picker_activity);
     super.onCreate(icicle, ready);
 
     TrustedIntroductionContactsViewModel.Factory factory = new TrustedIntroductionContactsViewModel.Factory(getRecipientID());
@@ -88,7 +80,8 @@ public class PickContactsForTrustedIntroductionActivity extends PushContactSelec
 
   @Override
   public void onSelectionChanged() {
-    int selectedContactsCount = contactsFragment.getTotalMemberCount() + 1;
+        // TODO: Dafuq :P
+    int selectedContactsCount = contactsFragment.getTotalMemberCount();
     if (selectedContactsCount == 0) {
       getToolbar().setTitle(getString(R.string.PickContactsForTIActivity_introduce_contacts));
     } else {

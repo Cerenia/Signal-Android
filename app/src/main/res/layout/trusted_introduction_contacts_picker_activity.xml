@@ -33,8 +33,8 @@
             android:minHeight="44dp" />
 
         <fragment
-            android:id="@+id/contact_selection_list_fragment"
-            android:name="org.thoughtcrime.securesms.ContactSelectionListFragment"
+            android:id="@+id/trusted_introduction_contacts_fragment"
+            android:name="org.thoughtcrime.securesms.trustedIntroductions.IntroductionContactsSelectionListFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 

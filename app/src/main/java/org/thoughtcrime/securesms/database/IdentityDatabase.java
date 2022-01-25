@@ -269,7 +269,6 @@ public class IdentityDatabase extends Database {
     }
     // create the rest of the query
     SQLiteDatabase readableDatabase = getReadableDatabase();
-    String selection = String.format("%s=? OR ", VERIFIED);
     String[] states = validStates.toArray(new String[]{});
     return readableDatabase.query(TABLE_NAME, ID_PROJECTION, selectionBuilder.toString(), states, null, null, null);
   }
