@@ -3,12 +3,14 @@ package org.thoughtcrime.securesms.trustedIntroductions;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 
 import org.thoughtcrime.securesms.ContactSelectionActivity;
 import org.thoughtcrime.securesms.ContactSelectionListFragment;
 import org.thoughtcrime.securesms.PushContactSelectionActivity;
 import org.thoughtcrime.securesms.R;
+import org.thoughtcrime.securesms.conversation.ConversationActivity;
 import org.thoughtcrime.securesms.groups.GroupId;
 import org.thoughtcrime.securesms.groups.ui.addmembers.AddMembersViewModel;
 import org.thoughtcrime.securesms.recipients.Recipient;
@@ -32,6 +34,8 @@ import java.util.Objects;
  */
 public class PickContactsForTrustedIntroductionActivity extends PushContactSelectionActivity {
 
+  private static final String TAG = org.signal.core.util.logging.Log.tag(PickContactsForTrustedIntroductionActivity.class);
+
   public static final String RECIPIENT_ID = "recipient_id";
 
   // when done picking contacts (button)
@@ -40,7 +44,7 @@ public class PickContactsForTrustedIntroductionActivity extends PushContactSelec
 
   public static @NonNull Intent createIntent(@NonNull Context context, @NonNull RecipientId id){
     Intent intent = new Intent(context, PickContactsForTrustedIntroductionActivity.class);
-    intent.putExtra(RECIPIENT_ID, id.toString());
+    intent.putExtra(RECIPIENT_ID, id.toLong());
     return intent;
   }
 
@@ -95,7 +99,7 @@ public class PickContactsForTrustedIntroductionActivity extends PushContactSelec
   }
 
   private RecipientId getRecipientID(){
-    return RecipientId.from(getIntent().getStringExtra(RECIPIENT_ID));
+    return RecipientId.from(getIntent().getLongExtra(RECIPIENT_ID, -1));
   }
 
   private void enableDone() {
