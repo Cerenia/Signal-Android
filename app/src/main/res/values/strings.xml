@@ -1581,8 +1581,8 @@
     <string name="PickContactsForTIActivity_introduce">Introduce</string>
     <string name="PickContactsForTIActivity_introduce_contacts">Introduce contacts</string>
     <plurals name="PickContactsForTIActivity_d_contacts">
-        <item quantity="one">%1$d introduced contact</item>
-        <item quantity="other">%1$d introduced contacts</item>
+        <item quantity="one">Introducing %1$d contact</item>
+        <item quantity="other">Introducing %1$d contacts</item>
     </plurals>
 
     <!-- PlayServicesProblemFragment -->
