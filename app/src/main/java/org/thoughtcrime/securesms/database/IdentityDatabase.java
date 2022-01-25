@@ -258,9 +258,20 @@ public class IdentityDatabase extends Database {
         validStates.add(String.valueOf(e.toInt()));
       }
     }
+    // create selection String
+    assert validStates.size() > 0: "No valid states defined for TI";
+    StringBuilder selectionBuilder = new StringBuilder();
+    selectionBuilder.append(String.format("%s=?", VERIFIED));
+    if (validStates.size() > 1) {
+      for (int i = 0; i < validStates.size() - 1; i++){
+        selectionBuilder.append(String.format(" OR %s=?", VERIFIED));
+      }
+    }
+    // create the rest of the query
     SQLiteDatabase readableDatabase = getReadableDatabase();
-    String selection = String.format("%s = ?", VERIFIED);
-    return readableDatabase.query(TABLE_NAME, ID_PROJECTION, selection, validStates.toArray(new String[]{}), null, null, null);
+    String selection = String.format("%s=? OR ", VERIFIED);
+    String[] states = validStates.toArray(new String[]{});
+    return readableDatabase.query(TABLE_NAME, ID_PROJECTION, selectionBuilder.toString(), states, null, null, null);
   }
 
   public void updateIdentityAfterSync(@NonNull String addressName, @NonNull RecipientId recipientId, IdentityKey identityKey, VerifiedStatus verifiedStatus) {
