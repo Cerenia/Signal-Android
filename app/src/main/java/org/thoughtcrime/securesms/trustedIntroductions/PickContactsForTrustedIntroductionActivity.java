@@ -52,7 +52,7 @@ public class PickContactsForTrustedIntroductionActivity extends PushContactSelec
 
     done = findViewById(R.id.done);
 
-    TrustedIntroductionContactsViewModel viewModel = new ViewModelProvider(this, factory).get(TrustedIntroductionContactsViewModel.class);
+    this.viewModel = new ViewModelProvider(this, factory).get(TrustedIntroductionContactsViewModel.class);
 
     done.setOnClickListener(v ->
                                 viewModel.getDialogStateForSelectedContacts(contactsFragment.getSelectedContacts(), this::displayAlertMessage)
