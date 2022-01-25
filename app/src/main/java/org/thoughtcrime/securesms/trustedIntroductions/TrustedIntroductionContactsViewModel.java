@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
 import androidx.core.util.Consumer;
+import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -22,13 +23,17 @@ import java.util.Objects;
 public class TrustedIntroductionContactsViewModel extends ViewModel {
 
   private final TrustedIntroductionContactManager manager;
+  // TODO: Do I also need MutableLiveData? (looks like this is related to fetching contacts in background thread)
+  private final MutableLiveData<List<Recipient>>  introducableContacts;
 
-  private TrustedIntroductionContactsViewModel(){
-    this.manager = new TrustedIntroductionContactManager();
+  private TrustedIntroductionContactsViewModel(TrustedIntroductionContactManager manager) {
+    this.manager = manager;
+    this.introducableContacts =  new MutableLiveData<>();
+    loadValidContacts();
   }
 
-  private TrustedIntroductionContactsViewModel(RecipientId recipientId) {
-    this.manager = new TrustedIntroductionContactManager(recipientId);
+  private void loadValidContacts() {
+    manager.getValidContacts(introducableContacts::postValue);
   }
 
   void getDialogStateForSelectedContacts(@NonNull List<SelectedContact> selectedContacts,
@@ -40,8 +45,7 @@ public class TrustedIntroductionContactsViewModel extends ViewModel {
           TrustedIntroductionContactsViewModel.IntroduceDialogMessageStatePartial partialState = selectedContacts.size() == 1 ? getDialogStateForSingleContact(selectedContacts.get(0))
                                                                                                              : getDialogStateForMultipleContacts(selectedContacts.size());
 
-          return new TrustedIntroductionContactsViewModel.IntroduceDialogMessageState(partialState.recipientId == null ? Recipient.UNKNOWN : Recipient.resolved(partialState.recipientId),
-                                                                     partialState.forwardCount);
+          return new TrustedIntroductionContactsViewModel.IntroduceDialogMessageState(Recipient.resolved(partialState.recipientId), partialState.forwardCount);
         },
         callback::accept
     );
@@ -97,14 +101,16 @@ public class TrustedIntroductionContactsViewModel extends ViewModel {
   }
 
   public static class Factory implements ViewModelProvider.Factory {
-    // TODO: Needed?
-    public Factory() {
 
+    private final TrustedIntroductionContactManager manager;
+
+    public Factory(RecipientId id) {
+      this.manager = new TrustedIntroductionContactManager(id);
     }
 
     @Override
     public @NonNull <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
-      return Objects.requireNonNull(modelClass.cast(new TrustedIntroductionContactsViewModel()));
+      return Objects.requireNonNull(modelClass.cast(new TrustedIntroductionContactsViewModel(manager)));
     }
   }
 

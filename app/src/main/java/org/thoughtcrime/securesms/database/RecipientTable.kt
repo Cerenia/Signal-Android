@@ -741,6 +741,13 @@ open class RecipientTable(context: Context, databaseHelper: SignalDatabase) : Da
     return RecipientReader(cursor)
   }
 
+  /**
+   * For Trusted Introductions, but really should be unified with blockedReader imo.
+   */
+  fun getReader(cursor: Cursor): RecipientReader {
+    return RecipientReader(cursor)
+  }
+
   fun getRecipientsWithNotificationChannels(): RecipientReader {
     val cursor = readableDatabase.query(TABLE_NAME, ID_PROJECTION, "$NOTIFICATION_CHANNEL NOT NULL", null, null, null, null)
     return RecipientReader(cursor)

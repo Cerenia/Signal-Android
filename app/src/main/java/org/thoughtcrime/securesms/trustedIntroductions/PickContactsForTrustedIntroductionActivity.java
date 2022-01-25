@@ -1,5 +1,7 @@
 package org.thoughtcrime.securesms.trustedIntroductions;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 
@@ -19,6 +21,8 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 
@@ -28,19 +32,23 @@ import java.util.Objects;
  */
 public class PickContactsForTrustedIntroductionActivity extends PushContactSelectionActivity {
 
+  public static final String RECIPIENT_ID = "recipient_id";
+
   // when done picking contacts (button)
   private View done;
   private TrustedIntroductionContactsViewModel viewModel;
 
-  // TODO: do I need the createIntent function?
-
+  public static @NonNull Intent createIntent(@NonNull Context context, @NonNull RecipientId id){
+    Intent intent = new Intent(context, PickContactsForTrustedIntroductionActivity.class);
+    intent.putExtra(RECIPIENT_ID, id.toString());
+    return intent;
+  }
 
   @Override protected void onCreate(Bundle icicle, boolean ready) {
-    // TODO: needed?
     getIntent().putExtra(ContactSelectionActivity.EXTRA_LAYOUT_RES_ID, R.layout.pick_ti_contacts_activity);
     super.onCreate(icicle, ready);
 
-    TrustedIntroductionContactsViewModel.Factory factory = new TrustedIntroductionContactsViewModel.Factory();
+    TrustedIntroductionContactsViewModel.Factory factory = new TrustedIntroductionContactsViewModel.Factory(getRecipientID());
 
     done = findViewById(R.id.done);
 
@@ -84,6 +92,10 @@ public class PickContactsForTrustedIntroductionActivity extends PushContactSelec
       enableDone();
       getToolbar().setTitle(getResources().getQuantityString(R.plurals.PickContactsForTIActivity_d_contacts, selectedContactsCount, selectedContactsCount));
     }
+  }
+
+  private RecipientId getRecipientID(){
+    return RecipientId.from(getIntent().getStringExtra(RECIPIENT_ID));
   }
 
   private void enableDone() {
