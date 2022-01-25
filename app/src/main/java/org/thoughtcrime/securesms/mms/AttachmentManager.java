@@ -72,6 +72,7 @@ import org.thoughtcrime.securesms.providers.BlobProvider;
 import org.thoughtcrime.securesms.providers.DeprecatedPersistentBlobProvider;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
+import org.thoughtcrime.securesms.trustedIntroductions.PickContactsForTrustedIntroductionActivity;
 import org.thoughtcrime.securesms.sms.MessageSender;
 import org.thoughtcrime.securesms.util.BitmapUtil;
 import org.thoughtcrime.securesms.util.FeatureFlags;
@@ -476,7 +477,9 @@ public class AttachmentManager {
   }
 
   public static void selectTI(@NonNull Activity activity, @NonNull RecipientId recipientId, int requestCode){
-    // TODO: Whatever is the next step in TI.
+    // Start contact picker activity
+    Intent intent = PickContactsForTrustedIntroductionActivity.createIntent(activity, recipientId);
+    activity.startActivityForResult(intent, requestCode);
   }
 
   private @Nullable Uri getSlideUri() {

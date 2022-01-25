@@ -809,6 +809,11 @@ public class ConversationParentFragment extends Fragment
       });
 
       break;
+      case TRUSTED_INTRODUCTION:
+        // TODO:
+        // this will have to be done through a work manager, since this should persist even if the pocess dies
+        // Grab the list of users that was selected and initiate TI for each of them.
+        break;
     }
   }
 
