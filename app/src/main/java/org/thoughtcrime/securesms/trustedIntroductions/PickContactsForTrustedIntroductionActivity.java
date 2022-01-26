@@ -7,15 +7,21 @@ import android.view.View;
 
 import org.thoughtcrime.securesms.ContactSelectionActivity;
 import org.thoughtcrime.securesms.ContactSelectionListFragment;
+import org.thoughtcrime.securesms.PassphraseRequiredActivity;
 import org.thoughtcrime.securesms.R;
+import org.thoughtcrime.securesms.components.ContactFilterView;
 import org.thoughtcrime.securesms.contacts.ContactsCursorLoader;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
+import org.thoughtcrime.securesms.util.DynamicNoActionBarTheme;
+import org.thoughtcrime.securesms.util.DynamicTheme;
 import org.thoughtcrime.securesms.util.Util;
 import org.whispersystems.libsignal.util.guava.Optional;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 
@@ -23,35 +29,44 @@ import androidx.lifecycle.ViewModelProvider;
  * Queries the Contacts Provider for Contacts which match strongly verified contacts in the Signal identity database,
  * and let's the user choose some for the purpose of carrying out trusted introductions.
  */
-public class PickContactsForTrustedIntroductionActivity {
+public class PickContactsForTrustedIntroductionActivity extends PassphraseRequiredActivity{
 
   private static final String TAG = org.signal.core.util.logging.Log.tag(PickContactsForTrustedIntroductionActivity.class);
 
   public static final String RECIPIENT_ID = "recipient_id";
 
+  private final DynamicTheme dynamicTheme = new DynamicNoActionBarTheme();
+
   // when done picking contacts (button)
   private View done;
   private TrustedIntroductionContactsViewModel viewModel;
+  private IntroductionContactsSelectionListFragment ti_contacts;
 
   public static @NonNull Intent createIntent(@NonNull Context context, @NonNull RecipientId id){
     Intent intent = new Intent(context, PickContactsForTrustedIntroductionActivity.class);
     intent.putExtra(RECIPIENT_ID, id.toLong());
-    intent.putExtra(ContactSelectionListFragment.DISPLAY_MODE, ContactsCursorLoader.DisplayMode.FLAG_PUSH);
     return intent;
   }
 
-  @Override protected void onCreate(Bundle icicle, boolean ready) {
-    getIntent().putExtra(ContactSelectionActivity.EXTRA_LAYOUT_RES_ID, R.layout.trusted_introduction_contacts_picker_activity);
-    super.onCreate(icicle, ready);
+  @Override protected void onCreate(Bundle savedInstanceState, boolean ready) {
+    //getIntent().putExtra(ContactSelectionActivity.EXTRA_LAYOUT_RES_ID, R.layout.trusted_introduction_contacts_picker_activity);
+    super.onCreate(savedInstanceState, ready);
 
-    TrustedIntroductionContactsViewModel.Factory factory = new TrustedIntroductionContactsViewModel.Factory(getRecipientID());
+    dynamicTheme.onCreate(this);
 
+    setContentView(R.layout.trusted_introduction_contacts_picker_activity);
+
+    // Bind references
+    Toolbar       toolbar           = findViewById(R.id.toolbar);
+    ContactFilterView contactFilterView = findViewById(R.id.contact_filter_edit_text);
+    ti_contacts         = (IntroductionContactsSelectionListFragment)getSupportFragmentManager().findFragmentById(R.id.trusted_introduction_contacts_fragment);
     done = findViewById(R.id.done);
 
+    // Initialize
+    TrustedIntroductionContactsViewModel.Factory factory = new TrustedIntroductionContactsViewModel.Factory(getRecipientID());
     viewModel = new ViewModelProvider(this, factory).get(TrustedIntroductionContactsViewModel.class);
-
     done.setOnClickListener(v ->
-                                viewModel.getDialogStateForSelectedContacts(contactsFragment.getSelectedContacts(), this::displayAlertMessage)
+                                viewModel.getDialogStateForSelectedContacts(ti_contacts.getSelectedContacts(), this::displayAlertMessage)
     );
 
     disableDone();
