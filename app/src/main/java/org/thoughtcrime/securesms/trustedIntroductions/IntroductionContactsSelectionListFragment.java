@@ -1,12 +1,16 @@
 package org.thoughtcrime.securesms.trustedIntroductions;
 
 import android.animation.LayoutTransition;
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.HorizontalScrollView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -17,17 +21,21 @@ import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.fragment.app.Fragment;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.Loader;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.transition.AutoTransition;
 import androidx.transition.TransitionManager;
 
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.pnikosis.materialishprogress.ProgressWheel;
 
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.ContactSelectionListFragment;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.components.RecyclerViewFastScroller;
+import org.thoughtcrime.securesms.components.recyclerview.ToolbarShadowAnimationHelper;
 import org.thoughtcrime.securesms.contacts.ContactChip;
 import org.thoughtcrime.securesms.contacts.ContactSelectionListAdapter;
 import org.thoughtcrime.securesms.contacts.ContactSelectionListItem;
@@ -68,7 +76,12 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
   public static final String RECENTS           = "recents";
   public static final String DISPLAY_CHIPS     = "display_chips";
 
-  private ConstraintLayout                     constraintLayout;
+  private View          showContactsLayout;
+  private   Button        showContactsButton;
+  private   TextView      showContactsDescription;
+  private   ProgressWheel showContactsProgress;
+  private   TextView      emptyText;
+  private ConstraintLayout constraintLayout;
   private TrustedIntroductionContactsViewModel viewModel;
   private ContactSelectionListAdapter          cursorRecyclerViewAdapter;
   private RecyclerView                                recyclerView;
@@ -78,6 +91,8 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
   private   HorizontalScrollView                                         chipGroupScrollContainer;
   private ContactSelectionListFragment.OnSelectionLimitReachedListener onSelectionLimitReachedListener;
   private SelectionLimits                                              selectionLimit = SelectionLimits.NO_LIMITS;
+  private View                                        shadowView;
+  private ToolbarShadowAnimationHelper                toolbarShadowAnimationHelper;
 
   private GlideRequests    glideRequests;
   private           Set<RecipientId>         currentSelection;
@@ -86,6 +101,51 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
   @Nullable private   ContactSelectionListFragment.ListCallback   listCallback;
   @Nullable private ContactSelectionListFragment.ScrollCallback scrollCallback;
 
+  @Override
+  public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    View view = inflater.inflate(R.layout.contact_selection_list_fragment, container, false);
+
+    emptyText                = view.findViewById(R.id.ti_no_contacts);
+    recyclerView             = view.findViewById(R.id.recycler_view);
+    fastScroller             = view.findViewById(R.id.fast_scroller);
+    showContactsLayout       = view.findViewById(R.id.show_contacts_container);
+    showContactsButton       = view.findViewById(R.id.show_contacts_button);
+    showContactsDescription  = view.findViewById(R.id.show_contacts_description);
+    showContactsProgress     = view.findViewById(R.id.progress);
+    chipGroup                = view.findViewById(R.id.chipGroup);
+    chipGroupScrollContainer = view.findViewById(R.id.chipGroupScrollContainer);
+    constraintLayout         = view.findViewById(R.id.container);
+    shadowView               = view.findViewById(R.id.toolbar_shadow);
+
+    toolbarShadowAnimationHelper = new ToolbarShadowAnimationHelper(shadowView);
+
+    recyclerView.addOnScrollListener(toolbarShadowAnimationHelper);
+    recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+    recyclerView.setItemAnimator(new DefaultItemAnimator() {
+      @Override
+      public boolean canReuseUpdatedViewHolder(@NonNull RecyclerView.ViewHolder viewHolder) {
+        return true;
+      }
+    });
+
+    Intent intent    = requireActivity().getIntent();
+    Bundle arguments = safeArguments();
+
+    // Default values for now
+    int     recyclerViewPadBottom = -1;
+    boolean recyclerViewClipping  = true;
+
+    if (recyclerViewPadBottom != -1) {
+      ViewUtil.setPaddingBottom(recyclerView, recyclerViewPadBottom);
+    }
+
+    recyclerView.setClipToPadding(recyclerViewClipping);
+
+
+    currentSelection = Collections.emptySet();
+
+    return view;
+  }
 
   private @NonNull Bundle safeArguments() {
     return getArguments() != null ? getArguments() : new Bundle();
