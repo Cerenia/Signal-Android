@@ -15,4 +15,13 @@
         app:layout_constraintStart_toStartOf="parent"
         tools:listitem="@layout/contact_selection_list_item" />
 
+    <TextView
+        android:id="@+id/ti_no_contacts"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="15dp"
+        android:gravity="center|center_vertical"
+        android:text="@string/TI_contacts_fragment_no_contacts"
+        android:textSize="20sp" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
