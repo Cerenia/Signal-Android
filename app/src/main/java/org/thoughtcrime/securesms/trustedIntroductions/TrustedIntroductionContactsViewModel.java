@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
 import androidx.core.util.Consumer;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
@@ -24,12 +25,20 @@ public class TrustedIntroductionContactsViewModel extends ViewModel {
 
   private final TrustedIntroductionContactManager manager;
   // TODO: Do I also need MutableLiveData? (looks like this is related to fetching contacts in background thread)
-  private final MutableLiveData<List<Recipient>>  introducableContacts;
+  // Yes I do, this is the common case atm.
+  // https://developer.android.com/topic/libraries/architecture/viewmodel
+  private MutableLiveData<List<Recipient>>  introducableContacts;
 
   private TrustedIntroductionContactsViewModel(TrustedIntroductionContactManager manager) {
     this.manager = manager;
-    this.introducableContacts =  new MutableLiveData<>();
-    loadValidContacts();
+  }
+
+  public LiveData<List<Recipient>> getValidContacts(){
+    if (introducableContacts == null){
+      introducableContacts = new MutableLiveData<List<Recipient>>();
+      loadValidContacts();
+    }
+    return introducableContacts;
   }
 
   private void loadValidContacts() {
