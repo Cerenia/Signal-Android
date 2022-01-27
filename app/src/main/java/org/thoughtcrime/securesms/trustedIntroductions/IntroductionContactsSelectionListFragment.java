@@ -171,6 +171,7 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
     return cursorRecyclerViewAdapter.getSelectedContactsCount();
   }
 
+
   private void initializeCursor() {
     glideRequests = GlideApp.with(this);
     // TODO: I believe this is where I can plug my custom cursor
