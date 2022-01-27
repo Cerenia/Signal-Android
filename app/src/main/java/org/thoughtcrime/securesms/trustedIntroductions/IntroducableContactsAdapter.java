@@ -66,6 +66,10 @@ public class IntroducableContactsAdapter extends ListAdapter<Recipient, ContactS
 
   private final SelectedContactSet selectedContacts = new SelectedContactSet();
 
+  public boolean isSelectedContact(@NonNull SelectedContact contact) {
+    return selectedContacts.contains(contact);
+  }
+
   @Override
   public @NonNull ContactSelectionListAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
     return new ContactViewHolder(layoutInflater.inflate(R.layout.contact_selection_list_item, parent, false), clickListener);

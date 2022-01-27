@@ -6,6 +6,7 @@ import androidx.annotation.WorkerThread;
 import androidx.core.util.Consumer;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Transformations;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -17,6 +18,7 @@ import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.util.concurrent.SimpleTask;
 import org.whispersystems.libsignal.util.guava.Preconditions;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -28,17 +30,36 @@ public class TrustedIntroductionContactsViewModel extends ViewModel {
   // Yes I do, this is the common case atm.
   // https://developer.android.com/topic/libraries/architecture/viewmodel
   private MutableLiveData<List<Recipient>>  introducableContacts;
+  private MutableLiveData<String> filter;
 
   private TrustedIntroductionContactsViewModel(TrustedIntroductionContactManager manager) {
     this.manager = manager;
+    introducableContacts = new MutableLiveData<List<Recipient>>();
+    filter = new MutableLiveData<>("");
+    loadValidContacts();
   }
 
-  public LiveData<List<Recipient>> getValidContacts(){
-    if (introducableContacts == null){
-      introducableContacts = new MutableLiveData<List<Recipient>>();
-      loadValidContacts();
+  public void setFilter(String filter) {
+    this.filter.setValue(filter);
+  }
+
+  public LiveData<List<Recipient>> getContacts(){
+    return Transformations.switchMap(filter,
+                                      f -> {
+      setFilter(f);
+      return getFiltered();
+                                      });
+  }
+
+  private LiveData<List<Recipient>> getFiltered(){
+    List<Recipient> contacts = introducableContacts.getValue();
+    List<Recipient> filtered = new ArrayList<>();
+    for (Recipient c: contacts) {
+      if(c.getUsername().isPresent() && c.getUsername().get().contains(filter.getValue())){
+        filtered.add(c);
+      }
     }
-    return introducableContacts;
+    return new MutableLiveData<>(filtered);
   }
 
   private void loadValidContacts() {

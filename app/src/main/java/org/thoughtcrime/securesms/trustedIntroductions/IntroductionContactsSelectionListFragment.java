@@ -2,7 +2,6 @@ package org.thoughtcrime.securesms.trustedIntroductions;
 
 import android.animation.LayoutTransition;
 import android.content.Intent;
-import android.database.Cursor;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -11,7 +10,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.HorizontalScrollView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -20,15 +18,12 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.loader.app.LoaderManager;
-import androidx.loader.content.Loader;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.transition.AutoTransition;
 import androidx.transition.TransitionManager;
 
-import com.annimon.stream.Stream;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.pnikosis.materialishprogress.ProgressWheel;
@@ -58,11 +53,9 @@ import org.thoughtcrime.securesms.util.concurrent.SimpleTask;
 import org.thoughtcrime.securesms.util.views.SimpleProgressDialog;
 import org.whispersystems.libsignal.util.guava.Optional;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Consumer;
 
 /**
  * In order to keep the tight coupling to a minimum, such that we can continue syncing against the upstream repo as it evolves, we opted to
@@ -70,7 +63,7 @@ import java.util.function.Consumer;
  * This is an adaptation of ContactSelectionListFragment, but it's always a multiselect and the data is loaded from an external cursor
  * instead of using DisplayMode.
  */
-public class IntroductionContactsSelectionListFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>{
+public class IntroductionContactsSelectionListFragment extends Fragment{
 
   private static final String TAG = Log.tag(IntroductionContactsSelectionListFragment.class);
 
@@ -87,16 +80,17 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
   private   TextView      emptyText;
   private ConstraintLayout constraintLayout;
   private TrustedIntroductionContactsViewModel viewModel;
-  private ContactSelectionListAdapter          cursorRecyclerViewAdapter;
-  private RecyclerView                                recyclerView;
-  private String                                                 cursorFilter;
-  private   ContactSelectionListFragment.OnContactSelectedListener       onContactSelectedListener;
+  private IntroducableContactsAdapter          cursorRecyclerViewAdapter;
+  private RecyclerView                                             recyclerView;
+  private String                                                   searchFilter;
+  private   ContactSelectionListFragment.OnContactSelectedListener onContactSelectedListener;
   private ChipGroup                                                    chipGroup;
   private   HorizontalScrollView                                         chipGroupScrollContainer;
   private ContactSelectionListFragment.OnSelectionLimitReachedListener onSelectionLimitReachedListener;
   private SelectionLimits                                              selectionLimit = SelectionLimits.NO_LIMITS;
   private View                                        shadowView;
   private ToolbarShadowAnimationHelper                toolbarShadowAnimationHelper;
+  private RecipientId recipientId;
 
 
   private GlideRequests    glideRequests;
@@ -145,12 +139,14 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
     }*/
 
     recyclerView.setClipToPadding(recyclerViewClipping);
+    // We always start empty here
     currentSelection = Collections.emptySet();
 
     initializeCursor();
+    TrustedIntroductionContactsViewModel.Factory factory = new TrustedIntroductionContactsViewModel.Factory(recipientId);
     viewModel = new ViewModelProvider(this, factory).get(TrustedIntroductionContactsViewModel.class);
-    viewModel.getValidContacts().observe(this, users -> {
-      cursorRecyclerViewAdapter.submitList()
+    viewModel.getContacts().observe(getViewLifecycleOwner(), users -> {
+      cursorRecyclerViewAdapter.submitList(users);
     });
 
     return view;
@@ -179,12 +175,12 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
 
   private void initializeCursor() {
     glideRequests = GlideApp.with(this);
-    // TODO: I believe this is where I can plug my custom cursor
-    cursorRecyclerViewAdapter = new ContactSelectionListAdapter(requireContext(),
+    // TODO: I believe this is where I can plug my custom cursor?
+    // TODO: Does it make sense to pass currentSelection here?
+    cursorRecyclerViewAdapter = new IntroducableContactsAdapter(requireContext(),
                                                                 glideRequests,
                                                                 null,
                                                                 new ListClickListener(),
-                                                                true,
                                                                 currentSelection);
 
     RecyclerViewConcatenateAdapterStickyHeader concatenateAdapter = new RecyclerViewConcatenateAdapterStickyHeader();
@@ -226,8 +222,8 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
   }
 
   public void setQueryFilter(String filter) {
-    this.cursorFilter = filter;
-    LoaderManager.getInstance(this).restartLoader(0, null, this);
+    this.searchFilter = filter;
+    viewModel.setFilter(filter);
   }
 
   private boolean hideLetterHeaders() {
@@ -235,25 +231,11 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
   }
 
   public boolean hasQueryFilter() {
-    return !TextUtils.isEmpty(cursorFilter);
+    return !TextUtils.isEmpty(searchFilter);
   }
 
   private boolean shouldDisplayRecents() {
     return safeArguments().getBoolean(RECENTS, requireActivity().getIntent().getBooleanExtra(RECENTS, false));
-  }
-
-  @NonNull @Override public Loader<Cursor> onCreateLoader(int id, @Nullable Bundle args) {
-    // TODO: How to implement?
-    return null;
-  }
-
-  @Override public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor data) {
-   // TODO: This definitely needs to be done, cursor returned by manager.
-  }
-
-  @Override public void onLoaderReset(@NonNull Loader<Cursor> loader) {
-    cursorRecyclerViewAdapter.changeCursor(null);
-    fastScroller.setVisibility(View.GONE);
   }
 
 

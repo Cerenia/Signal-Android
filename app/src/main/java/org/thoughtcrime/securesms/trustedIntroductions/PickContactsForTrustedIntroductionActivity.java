@@ -76,7 +76,7 @@ public class PickContactsForTrustedIntroductionActivity extends PassphraseRequir
     // Initialize
     initializeToolbar();
     initializeContactFilterView();
-    TrustedIntroductionContactsViewModel.Factory factory = new TrustedIntroductionContactsViewModel.Factory(getRecipientID());
+
 
     done.setOnClickListener(v ->
                                 viewModel.getDialogStateForSelectedContacts(ti_contacts.getSelectedContacts(), this::displayAlertMessage)

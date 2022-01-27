@@ -51,7 +51,7 @@ final class TrustedIntroductionContactManager {
     this.recipientId = recipientId;
   }
 
-  void getValidContacts(@androidx.annotation.NonNull Consumer<List<Recipient>> introducableContacts){
+  void getValidContacts(@NonNull Consumer<List<Recipient>> introducableContacts){
     SignalExecutors.BOUNDED.execute(() -> {
       IdentityDatabase idb = SignalDatabase.identities();
       RecipientDatabase rdb = SignalDatabase.recipients();
@@ -62,7 +62,8 @@ final class TrustedIntroductionContactManager {
         } else {
           List<Recipient> contacts = new ArrayList<>();
           while(reader.getNext() != null){
-            contacts.add(reader.getCurrent());
+            Recipient current = reader.getCurrent();
+            contacts.add(current);
           }
           introducableContacts.accept(contacts);
         }
