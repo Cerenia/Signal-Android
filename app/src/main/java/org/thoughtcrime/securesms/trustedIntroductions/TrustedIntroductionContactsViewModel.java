@@ -54,6 +54,9 @@ public class TrustedIntroductionContactsViewModel extends ViewModel {
   private LiveData<List<Recipient>> getFiltered(){
     List<Recipient> contacts = introducableContacts.getValue();
     List<Recipient> filtered = new ArrayList<>();
+    if(filter == null) {
+      filter = new MutableLiveData<>("");
+    }
     for (Recipient c: contacts) {
       if(c.getUsername().isPresent() && c.getUsername().get().contains(filter.getValue())){
         filtered.add(c);
