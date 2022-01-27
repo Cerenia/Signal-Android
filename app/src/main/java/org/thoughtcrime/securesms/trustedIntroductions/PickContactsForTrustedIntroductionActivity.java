@@ -67,16 +67,21 @@ public class PickContactsForTrustedIntroductionActivity extends PassphraseRequir
 
     setContentView(R.layout.trusted_introduction_contacts_picker_activity);
 
+    RecipientId recipientId = getRecipientID();
+
     // Bind references
     toolbar           = findViewById(R.id.toolbar);
     contactFilterView = findViewById(R.id.contact_filter_edit_text);
     ti_contacts         = (IntroductionContactsSelectionListFragment)getSupportFragmentManager().findFragmentById(R.id.trusted_introduction_contacts_fragment);
+    ti_contacts.setRecipientId(recipientId);
     done = findViewById(R.id.done);
 
     // Initialize
     initializeToolbar();
     initializeContactFilterView();
 
+    TrustedIntroductionContactsViewModel.Factory factory = new TrustedIntroductionContactsViewModel.Factory(recipientId);
+    TrustedIntroductionContactsViewModel viewModel = new ViewModelProvider(this, factory).get(TrustedIntroductionContactsViewModel.class);
 
     done.setOnClickListener(v ->
                                 viewModel.getDialogStateForSelectedContacts(ti_contacts.getSelectedContacts(), this::displayAlertMessage)
