@@ -27,6 +27,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.transition.AutoTransition;
 import androidx.transition.TransitionManager;
 
+import com.annimon.stream.Stream;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.pnikosis.materialishprogress.ProgressWheel;
@@ -56,9 +57,11 @@ import org.thoughtcrime.securesms.util.concurrent.SimpleTask;
 import org.thoughtcrime.securesms.util.views.SimpleProgressDialog;
 import org.whispersystems.libsignal.util.guava.Optional;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 
 /**
  * In order to keep the tight coupling to a minimum, such that we can continue syncing against the upstream repo as it evolves, we opted to
@@ -93,6 +96,7 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
   private SelectionLimits                                              selectionLimit = SelectionLimits.NO_LIMITS;
   private View                                        shadowView;
   private ToolbarShadowAnimationHelper                toolbarShadowAnimationHelper;
+
 
   private GlideRequests    glideRequests;
   private           Set<RecipientId>         currentSelection;
@@ -215,6 +219,11 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
     }
   }
 
+  public void setQueryFilter(String filter) {
+    this.cursorFilter = filter;
+    LoaderManager.getInstance(this).restartLoader(0, null, this);
+  }
+
   private boolean hideLetterHeaders() {
     return hasQueryFilter() || shouldDisplayRecents();
   }
@@ -314,6 +323,15 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
         }
       }
     }
+  }
+
+  /**
+   * Taken and adapted from ContactSelectionListFragment.java
+   */
+  public interface OnContactSelectedListener {
+    /** Provides an opportunity to disallow selecting an item. Call the callback with false to disallow, or true to allow it. */
+    void onContactDeselected(Optional<RecipientId> recipientId, @Nullable String number);
+    void onSelectionChanged();
   }
 
   private boolean selectionHardLimitReached() {
