@@ -152,6 +152,10 @@ public class IntroductionContactsSelectionListFragment extends Fragment{
     return view;
   }
 
+  public void setRecipientId(RecipientId id){
+    this.recipientId = id;
+  }
+
   private @NonNull Bundle safeArguments() {
     return getArguments() != null ? getArguments() : new Bundle();
   }
