@@ -69,8 +69,8 @@ public class PickContactsForTrustedIntroductionActivity extends PassphraseRequir
     setContentView(R.layout.trusted_introduction_contacts_picker_activity);
 
     // Bind references
-    Toolbar       toolbar           = findViewById(R.id.toolbar);
-    ContactFilterView contactFilterView = findViewById(R.id.contact_filter_edit_text);
+    toolbar           = findViewById(R.id.toolbar);
+    contactFilterView = findViewById(R.id.contact_filter_edit_text);
     ti_contacts         = (IntroductionContactsSelectionListFragment)getSupportFragmentManager().findFragmentById(R.id.trusted_introduction_contacts_fragment);
     done = findViewById(R.id.done);
 
