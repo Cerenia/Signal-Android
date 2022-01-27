@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.contacts.ContactRepository;
 import org.thoughtcrime.securesms.contacts.ContactSelectionListItem;
@@ -36,6 +37,7 @@ import org.thoughtcrime.securesms.util.Util;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 
@@ -48,6 +50,8 @@ import static org.thoughtcrime.securesms.contacts.ContactSelectionListAdapter.PA
  * the code can be more cleanly decoupled this way.
  */
 public class IntroducableContactsAdapter extends ListAdapter<Recipient, ContactSelectionListAdapter.ViewHolder> {
+
+  private final static String TAG = Log.tag(IntroducableContactsAdapter.class);
 
   private final @NonNull Context         context;
   private final          DataSetObserver observer = new AdapterDataSetObserver();
@@ -70,8 +74,18 @@ public class IntroducableContactsAdapter extends ListAdapter<Recipient, ContactS
     return selectedContacts.contains(contact);
   }
 
-  @Override
-  public @NonNull ContactSelectionListAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+  public void addSelectedContact(@NonNull SelectedContact contact) {
+    if (!selectedContacts.add(contact)) {
+      Log.i(TAG, "Contact was already selected, possibly by another identifier");
+    }
+  }
+
+  public void removeFromSelectedContacts(@NonNull SelectedContact selectedContact) {
+    int removed = selectedContacts.remove(selectedContact);
+    Log.i(TAG, String.format(Locale.US, "Removed %d selected contacts that matched", removed));
+  }
+
+  public @NonNull ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
     return new ContactViewHolder(layoutInflater.inflate(R.layout.contact_selection_list_item, parent, false), clickListener);
   }
 
@@ -108,7 +122,7 @@ public class IntroducableContactsAdapter extends ListAdapter<Recipient, ContactS
     return Util.hashCode(getHeaderString(i), getContactType(i));
   }
 
-  public ContactSelectionListAdapter.ViewHolder onCreateItemViewHolder(ViewGroup parent, int viewType) {
+  public ViewHolder onCreateItemViewHolder(ViewGroup parent, int viewType) {
     if (viewType == VIEW_TYPE_CONTACT) {
       return new ContactViewHolder(layoutInflater.inflate(R.layout.contact_selection_list_item, parent, false), clickListener);
     } else {
@@ -299,7 +313,7 @@ public class IntroducableContactsAdapter extends ListAdapter<Recipient, ContactS
   /**
    * Reusing the 3 classes of views already present in ContactSlectionListAdapter. Because the constructors are package private, they are duplicated here.
    */
-  public abstract static class ViewHolder extends RecyclerView.ViewHolder {
+  public abstract static class ViewHolder extends ContactSelectionListAdapter.ViewHolder {
 
     public ViewHolder(View itemView) {
       super(itemView);
@@ -322,7 +336,7 @@ public class IntroducableContactsAdapter extends ListAdapter<Recipient, ContactS
     }
   }
 
-  public static class ContactViewHolder extends ContactSelectionListAdapter.ViewHolder implements LetterHeaderDecoration.LetterHeaderItem {
+  public static class ContactViewHolder extends ViewHolder implements LetterHeaderDecoration.LetterHeaderItem {
 
     private String letterHeader;
 
@@ -374,7 +388,7 @@ public class IntroducableContactsAdapter extends ListAdapter<Recipient, ContactS
     }
   }
 
-  public static class DividerViewHolder extends ContactSelectionListAdapter.ViewHolder {
+  public static class DividerViewHolder extends ViewHolder {
 
     private final TextView label;
 
