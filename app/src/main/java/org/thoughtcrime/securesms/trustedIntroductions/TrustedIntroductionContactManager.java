@@ -27,6 +27,24 @@ final class TrustedIntroductionContactManager {
   //  a secure introduction.
   private final RecipientId recipientId;
 
+  /**
+   * Code from ContactRepository which is needed to recreate the multiselect Fragment.
+   */
+  static final int NORMAL_TYPE       = 0;
+  static final int PUSH_TYPE         = 1 << 0;
+  static final int NEW_PHONE_TYPE    = 1 << 2;
+  static final int NEW_USERNAME_TYPE = 1 << 3;
+  static final int RECENT_TYPE       = 1 << 4;
+  static final int DIVIDER_TYPE      = 1 << 5;
+
+  public static final String ID_COLUMN           = "id";
+  static final String NAME_COLUMN         = "name";
+  static final String NUMBER_COLUMN       = "number";
+  static final String NUMBER_TYPE_COLUMN  = "number_type";
+  static final String LABEL_COLUMN        = "label";
+  static final String CONTACT_TYPE_COLUMN = "contact_type";
+  static final String ABOUT_COLUMN        = "about";
+
 
   TrustedIntroductionContactManager(RecipientId recipientId){
     this.context = ApplicationDependencies.getApplication();

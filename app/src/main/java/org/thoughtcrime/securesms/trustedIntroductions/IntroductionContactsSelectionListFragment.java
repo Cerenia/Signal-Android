@@ -19,6 +19,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.Loader;
 import androidx.recyclerview.widget.DefaultItemAnimator;
@@ -139,14 +140,18 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
     int     recyclerViewPadBottom = -1;
     boolean recyclerViewClipping  = true;
 
-    if (recyclerViewPadBottom != -1) {
+    /*if (recyclerViewPadBottom != -1) {
       ViewUtil.setPaddingBottom(recyclerView, recyclerViewPadBottom);
-    }
+    }*/
 
     recyclerView.setClipToPadding(recyclerViewClipping);
-
-
     currentSelection = Collections.emptySet();
+
+    initializeCursor();
+    viewModel = new ViewModelProvider(this, factory).get(TrustedIntroductionContactsViewModel.class);
+    viewModel.getValidContacts().observe(this, users -> {
+      cursorRecyclerViewAdapter.submitList()
+    });
 
     return view;
   }
