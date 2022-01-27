@@ -1586,6 +1586,7 @@
         <item quantity="one">Introducing %1$d contact</item>
         <item quantity="other">Introducing %1$d contacts</item>
     </plurals>
+    <string name="PickContactsForTIActivity_filter_hint">Search for contact</string>
 
     <!-- TIContactsFragment -->
     <string name="TI_contacts_fragment_no_contacts">No valid contacts for introduction could be found. Have you strongly verified any contacts apart from the recipient?</string>
