@@ -57,12 +57,15 @@ public class TrustedIntroductionContactsViewModel extends ViewModel {
     if(filter == null) {
       filter = new MutableLiveData<>("");
     }
-    for (Recipient c: contacts) {
-      if(c.getUsername().isPresent() && c.getUsername().get().contains(filter.getValue())){
-        filtered.add(c);
+    if (filter.getValue() != ""){
+      for (Recipient c: contacts) {
+        if(c.getUsername().isPresent() && c.getUsername().get().contains(filter.getValue())){
+          filtered.add(c);
+        }
       }
+      return new MutableLiveData<>(filtered);
     }
-    return new MutableLiveData<>(filtered);
+    return new MutableLiveData<>(contacts); // if the filter is empty, return all introducable contacts
   }
 
   private void loadValidContacts() {
