@@ -143,17 +143,26 @@ public class IntroductionContactsSelectionListFragment extends Fragment{
     currentSelection = Collections.emptySet();
 
     initializeCursor();
-    TrustedIntroductionContactsViewModel.Factory factory = new TrustedIntroductionContactsViewModel.Factory(recipientId);
-    viewModel = new ViewModelProvider(this, factory).get(TrustedIntroductionContactsViewModel.class);
-    viewModel.getContacts().observe(getViewLifecycleOwner(), users -> {
-      cursorRecyclerViewAdapter.submitList(users);
-    });
+
+    // TODO: Is it correct to initialize this in Activity instead?
+    //TrustedIntroductionContactsViewModel.Factory factory = new TrustedIntroductionContactsViewModel.Factory(recipientId);
+    //viewModel = new ViewModelProvider(this, factory).get(TrustedIntroductionContactsViewModel.class);
+    //viewModel.getContacts().observe(getViewLifecycleOwner(), users -> {
+    //  cursorRecyclerViewAdapter.submitList(users);
+    //});
 
     return view;
   }
 
   public void setRecipientId(RecipientId id){
     this.recipientId = id;
+  }
+
+  public void setViewModel(TrustedIntroductionContactsViewModel viewModel){
+    this.viewModel = viewModel;
+    viewModel.getContacts().observe(getViewLifecycleOwner(), users -> {
+      cursorRecyclerViewAdapter.submitList(users);
+    });
   }
 
   private @NonNull Bundle safeArguments() {

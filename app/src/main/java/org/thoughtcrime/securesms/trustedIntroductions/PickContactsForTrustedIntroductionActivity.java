@@ -49,7 +49,8 @@ public class PickContactsForTrustedIntroductionActivity extends PassphraseRequir
 
   // when done picking contacts (button)
   private View done;
-  private TrustedIntroductionContactsViewModel viewModel;
+  // TODO: correct to have this in Fragment?
+  //private TrustedIntroductionContactsViewModel viewModel;
   private IntroductionContactsSelectionListFragment ti_contacts;
   private ContactFilterView contactFilterView;
   private Toolbar           toolbar;
@@ -82,7 +83,9 @@ public class PickContactsForTrustedIntroductionActivity extends PassphraseRequir
     initializeContactFilterView();
 
     TrustedIntroductionContactsViewModel.Factory factory = new TrustedIntroductionContactsViewModel.Factory(recipientId);
-    viewModel = new ViewModelProvider(this, factory).get(TrustedIntroductionContactsViewModel.class);
+    TrustedIntroductionContactsViewModel viewModel = new ViewModelProvider(ti_contacts, factory).get(TrustedIntroductionContactsViewModel.class);
+
+    ti_contacts.setViewModel(viewModel);
 
     done.setOnClickListener(v ->
                                 viewModel.getDialogStateForSelectedContacts(ti_contacts.getSelectedContacts(), this::displayAlertMessage)
