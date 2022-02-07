@@ -34,7 +34,7 @@ public class TrustedIntroductionContactsViewModel extends ViewModel {
 
   private TrustedIntroductionContactsViewModel(TrustedIntroductionContactManager manager) {
     this.manager = manager;
-    introducableContacts = new MutableLiveData<List<Recipient>>();
+    introducableContacts = new MutableLiveData<List<Recipient>>(new ArrayList<>());
     filter = new MutableLiveData<>("");
     loadValidContacts();
   }
@@ -57,7 +57,7 @@ public class TrustedIntroductionContactsViewModel extends ViewModel {
     if(filter == null) {
       filter = new MutableLiveData<>("");
     }
-    if (filter.getValue() != ""){
+    if (contacts != null && !filter.getValue().equals("")){
       for (Recipient c: contacts) {
         if(c.getUsername().isPresent() && c.getUsername().get().contains(filter.getValue())){
           filtered.add(c);

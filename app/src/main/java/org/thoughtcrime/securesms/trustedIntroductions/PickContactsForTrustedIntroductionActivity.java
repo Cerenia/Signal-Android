@@ -49,6 +49,7 @@ public class PickContactsForTrustedIntroductionActivity extends PassphraseRequir
 
   // when done picking contacts (button)
   private View done;
+  private TrustedIntroductionContactsViewModel viewModel;
   private IntroductionContactsSelectionListFragment ti_contacts;
   private ContactFilterView contactFilterView;
   private Toolbar           toolbar;
@@ -81,7 +82,7 @@ public class PickContactsForTrustedIntroductionActivity extends PassphraseRequir
     initializeContactFilterView();
 
     TrustedIntroductionContactsViewModel.Factory factory = new TrustedIntroductionContactsViewModel.Factory(recipientId);
-    TrustedIntroductionContactsViewModel viewModel = new ViewModelProvider(this, factory).get(TrustedIntroductionContactsViewModel.class);
+    viewModel = new ViewModelProvider(this, factory).get(TrustedIntroductionContactsViewModel.class);
 
     done.setOnClickListener(v ->
                                 viewModel.getDialogStateForSelectedContacts(ti_contacts.getSelectedContacts(), this::displayAlertMessage)
