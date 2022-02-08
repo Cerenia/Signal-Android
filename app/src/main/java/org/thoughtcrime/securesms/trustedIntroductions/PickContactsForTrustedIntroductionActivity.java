@@ -90,11 +90,14 @@ public class PickContactsForTrustedIntroductionActivity extends PassphraseRequir
     done.setOnClickListener(v ->
                                 viewModel.getDialogStateForSelectedContacts(ti_contacts.getSelectedContacts(), this::displayAlertMessage)
     );
-    contactFilterView.setOnFilterChangedListener(query -> {
+
+    // TODO: Does is load if this is commented?
+    /**contactFilterView.setOnFilterChangedListener(query -> {
       if (ti_contacts != null) {
         ti_contacts.setQueryFilter(query);
       }
-    });
+    });**/
+
     contactFilterView.setHint(R.string.PickContactsForTIActivity_filter_hint);
 
     getSupportFragmentManager().addOnBackStackChangedListener(() -> {
