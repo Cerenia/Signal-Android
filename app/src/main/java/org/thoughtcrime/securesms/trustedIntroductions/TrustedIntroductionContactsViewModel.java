@@ -44,28 +44,25 @@ public class TrustedIntroductionContactsViewModel extends ViewModel {
   }
 
   public LiveData<List<Recipient>> getContacts(){
-    return Transformations.switchMap(filter,
+    return introducableContacts;
+    /**return Transformations.switchMap(filter,
                                       f -> {
       setFilter(f);
       return getFiltered();
-                                      });
+                                      });**/
   }
 
   private LiveData<List<Recipient>> getFiltered(){
     List<Recipient> contacts = introducableContacts.getValue();
     List<Recipient> filtered = new ArrayList<>();
-    if(filter == null) {
-      filter = new MutableLiveData<>("");
-    }
     if (contacts != null && !filter.getValue().equals("")){
       for (Recipient c: contacts) {
         if(c.getUsername().isPresent() && c.getUsername().get().contains(filter.getValue())){
           filtered.add(c);
         }
       }
-      return new MutableLiveData<>(filtered);
     }
-    return new MutableLiveData<>(contacts); // if the filter is empty, return all introducable contacts
+    return new MutableLiveData<>(filtered);
   }
 
   private void loadValidContacts() {
