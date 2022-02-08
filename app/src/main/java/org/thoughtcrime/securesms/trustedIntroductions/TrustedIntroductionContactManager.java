@@ -63,7 +63,9 @@ final class TrustedIntroductionContactManager {
           List<Recipient> contacts = new ArrayList<>();
           while(reader.getNext() != null){
             Recipient current = reader.getCurrent();
-            contacts.add(current);
+            if(!current.isSelf()){
+              contacts.add(current);
+            }
           }
           introducableContacts.accept(contacts);
         }
