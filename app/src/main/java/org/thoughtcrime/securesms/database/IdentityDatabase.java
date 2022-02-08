@@ -65,7 +65,7 @@ public class IdentityDatabase extends Database {
                                                                                   VERIFIED             + " INTEGER DEFAULT 0, " +
                                                                                   NONBLOCKING_APPROVAL + " INTEGER DEFAULT 0);";
 
-  private final String[] ID_PROJECTION = {ID};
+  private final String[] TI_PROJECTION = {IDENTITY_KEY};
 
   /**
    * Trusted Introductions: We differentiate between a direct verification <code>DIRECTLY_VERIFIED</code> (via. QR code)
@@ -270,7 +270,7 @@ public class IdentityDatabase extends Database {
     // create the rest of the query
     SQLiteDatabase readableDatabase = getReadableDatabase();
     String[] states = validStates.toArray(new String[]{});
-    return readableDatabase.query(TABLE_NAME, ID_PROJECTION, selectionBuilder.toString(), states, null, null, null);
+    return readableDatabase.query(TABLE_NAME, TI_PROJECTION, selectionBuilder.toString(), states, null, null, null);
   }
 
   public void updateIdentityAfterSync(@NonNull String addressName, @NonNull RecipientId recipientId, IdentityKey identityKey, VerifiedStatus verifiedStatus) {
