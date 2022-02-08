@@ -88,18 +88,14 @@ public class IntroducableContactsAdapter extends ListAdapter<Recipient, Introduc
   public @NonNull IntroducableContactsAdapter.ContactViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
     return new ContactViewHolder(layoutInflater.inflate(R.layout.contact_selection_list_item, parent, false), clickListener);
   }
-  
+
 
   @Override public void onBindViewHolder(@NonNull IntroducableContactsAdapter.ContactViewHolder holder, int position) {
 
     Recipient current = getItem(position);
     String name = current.getDisplayNameOrUsername(context.getApplicationContext());
     holder.bind(glideRequests, current.getId(), 0, name, null, null, null, true);
-    /**
-     * public void bind(@NonNull GlideRequests glideRequests, @Nullable RecipientId recipientId, int type, String name, String number, String label, String about, boolean checkBoxVisible) {
-     *       getView().set(glideRequests, recipientId, type, name, number, label, about, checkBoxVisible);
-     *     }
-     */
+
   }
 
   public IntroducableContactsAdapter(@NonNull Context context,
@@ -459,7 +455,6 @@ public class IntroducableContactsAdapter extends ListAdapter<Recipient, Introduc
    * From CursorRecyclerViewAdapter
    * @return
    */
-
   protected boolean isActiveCursor() {
     return valid && cursor != null;
   }
