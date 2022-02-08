@@ -55,7 +55,7 @@ final class TrustedIntroductionContactManager {
     SignalExecutors.BOUNDED.execute(() -> {
       IdentityDatabase idb = SignalDatabase.identities();
       RecipientDatabase rdb = SignalDatabase.recipients();
-      try(RecipientDatabase.RecipientReader reader = rdb.getReader(idb.getTIUnlocked())){
+      try(RecipientDatabase.RecipientReader reader = rdb.getReaderForTI(idb.getTIUnlocked())){
         int count = reader.getCount();
         if (count == 0){
           introducableContacts.accept(Collections.emptyList());

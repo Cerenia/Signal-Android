@@ -675,11 +675,20 @@ open class RecipientTable(context: Context, databaseHelper: SignalDatabase) : Da
     return RecipientReader(cursor)
   }
 
-  /**
-   * For Trusted Introductions, but really should be unified with blockedReader imo.
-   */
-  fun getReader(cursor: Cursor): RecipientReader {
-    return RecipientReader(cursor)
+  fun getReaderForTI(cursor: Cursor): RecipientReader {
+    val identity_keys = arrayListOf<String>()
+    if(cursor.moveToFirst()){
+      cursor.use {
+        while (!it.isAfterLast) {
+          identity_keys.add(it.getString(it.getColumnIndex(IDENTITY_KEY)))
+          it.moveToNext()
+        }
+      }
+    }
+    val query = "$IDENTITY_KEY = ?"
+    //String table, String[] columns, String selection, String[] selectionArgs, String groupBy, String having, String orderBy
+    val newCursor = readableDatabase.query(TABLE_NAME, RECIPIENT_PROJECTION, query, identity_keys.toTypedArray(), null, null, null)
+    return RecipientReader(newCursor)
   }
 
   fun getRecipientsWithNotificationChannels(): RecipientReader {
