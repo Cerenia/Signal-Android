@@ -17,6 +17,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -63,7 +64,7 @@ import java.util.Set;
  * This is an adaptation of ContactSelectionListFragment, but it's always a multiselect and the data is loaded from an external cursor
  * instead of using DisplayMode.
  */
-public class IntroductionContactsSelectionListFragment extends Fragment{
+public class IntroductionContactsSelectionListFragment extends Fragment implements Observer {
 
   private static final String TAG = Log.tag(IntroductionContactsSelectionListFragment.class);
 
@@ -147,9 +148,9 @@ public class IntroductionContactsSelectionListFragment extends Fragment{
     // TODO: Is it correct to initialize this in Activity instead?
     //TrustedIntroductionContactsViewModel.Factory factory = new TrustedIntroductionContactsViewModel.Factory(recipientId);
     //viewModel = new ViewModelProvider(this, factory).get(TrustedIntroductionContactsViewModel.class);
-    //viewModel.getContacts().observe(getViewLifecycleOwner(), users -> {
-    //  cursorRecyclerViewAdapter.submitList(users);
-    //});
+    viewModel.getContacts().observe(getViewLifecycleOwner(), users -> {
+      cursorRecyclerViewAdapter.submitList(users);
+    });
 
     return view;
   }
@@ -249,6 +250,14 @@ public class IntroductionContactsSelectionListFragment extends Fragment{
 
   private boolean shouldDisplayRecents() {
     return safeArguments().getBoolean(RECENTS, requireActivity().getIntent().getBooleanExtra(RECENTS, false));
+  }
+
+  /**
+   * Observer callback for live Data.
+   * @param o
+   */
+  @Override public void onChanged(Object o) {
+
   }
 
 
