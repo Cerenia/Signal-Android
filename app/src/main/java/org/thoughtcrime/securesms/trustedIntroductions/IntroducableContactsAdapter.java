@@ -49,7 +49,7 @@ import static org.thoughtcrime.securesms.contacts.ContactSelectionListAdapter.PA
  * Yes, horribly uggly. But was deemend preferable than extending the base code to my use-case, since
  * the code can be more cleanly decoupled this way.
  */
-public class IntroducableContactsAdapter extends ListAdapter<Recipient, ContactSelectionListAdapter.ViewHolder> {
+public class IntroducableContactsAdapter extends ListAdapter<Recipient, IntroducableContactsAdapter.ContactViewHolder> {
 
   private final static String TAG = Log.tag(IntroducableContactsAdapter.class);
 
@@ -85,12 +85,21 @@ public class IntroducableContactsAdapter extends ListAdapter<Recipient, ContactS
     Log.i(TAG, String.format(Locale.US, "Removed %d selected contacts that matched", removed));
   }
 
-  public @NonNull ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+  public @NonNull IntroducableContactsAdapter.ContactViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
     return new ContactViewHolder(layoutInflater.inflate(R.layout.contact_selection_list_item, parent, false), clickListener);
   }
+  
 
-  @Override public void onBindViewHolder(@NonNull ContactSelectionListAdapter.ViewHolder holder, int position) {
-    // TODO: Check in BlockedContactsAdapter
+  @Override public void onBindViewHolder(@NonNull IntroducableContactsAdapter.ContactViewHolder holder, int position) {
+
+    Recipient current = getItem(position);
+    String name = current.getDisplayNameOrUsername(context.getApplicationContext());
+    holder.bind(glideRequests, current.getId(), 0, name, null, null, null, true);
+    /**
+     * public void bind(@NonNull GlideRequests glideRequests, @Nullable RecipientId recipientId, int type, String name, String number, String label, String about, boolean checkBoxVisible) {
+     *       getView().set(glideRequests, recipientId, type, name, number, label, about, checkBoxVisible);
+     *     }
+     */
   }
 
   public IntroducableContactsAdapter(@NonNull Context context,
@@ -334,6 +343,7 @@ public class IntroducableContactsAdapter extends ListAdapter<Recipient, ContactS
     public void setLetterHeaderCharacter(@Nullable String letterHeaderCharacter) {
       // Intentionally empty.
     }
+
   }
 
   public static class ContactViewHolder extends ViewHolder implements LetterHeaderDecoration.LetterHeaderItem {
