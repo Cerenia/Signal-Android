@@ -1573,7 +1573,7 @@
     <string name="PlacePickerActivity_accept_address">Accept address</string>
 
     <!-- PickContactsForTIActivity -->
-    <string name="PickContactsForTIActivity_title">Choose which contacts to introduce:</string>
+    <string name="PickContactsForTIActivity_title">Introduce contacts:</string>
     <plurals name="PickContactsForTIActivity__introduce_d_contacts_to_s">
         <item quantity="one">Introduce \"%1$s\" to \"%2$s\"?</item>
         <item quantity="other">Introduce %3$d contacts to \"%2$s\"?</item>
