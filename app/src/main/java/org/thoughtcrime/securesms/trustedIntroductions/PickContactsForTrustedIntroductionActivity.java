@@ -81,7 +81,8 @@ public class PickContactsForTrustedIntroductionActivity extends PassphraseRequir
     initializeContactFilterView();
 
     TrustedIntroductionContactsViewModel.Factory factory = new TrustedIntroductionContactsViewModel.Factory(recipientId);
-    TrustedIntroductionContactsViewModel viewModel = new ViewModelProvider(ti_contacts, factory).get(TrustedIntroductionContactsViewModel.class);
+    // TODO: Still not sure who the owner of the viewModel should be, Fragment or Activity?
+    TrustedIntroductionContactsViewModel viewModel = new ViewModelProvider(this, factory).get(TrustedIntroductionContactsViewModel.class);
 
     ti_contacts.setViewModel(viewModel);
 
@@ -107,7 +108,11 @@ public class PickContactsForTrustedIntroductionActivity extends PassphraseRequir
       }
     });
 
-    disableDone();
+    if (ti_contacts.getSelectedContactsCount() <= 0){
+      disableDone();
+    } else {
+      enableDone();
+    }
   }
 
   protected void initializeToolbar() {
@@ -135,6 +140,7 @@ public class PickContactsForTrustedIntroductionActivity extends PassphraseRequir
       disableDone();
     } else {
       assert selectedContactsCount > 0 : "Contacts count below 0!";
+      // TODO: 1 vs. many?
       enableDone();
       toolbar.setTitle(getResources().getQuantityString(R.plurals.PickContactsForTIActivity_d_contacts, selectedContactsCount, selectedContactsCount));
     }

@@ -11,6 +11,7 @@ import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
 import org.thoughtcrime.securesms.contacts.SelectedContact;
+import org.thoughtcrime.securesms.contacts.SelectedContactSet;
 import org.thoughtcrime.securesms.groups.GroupId;
 import org.thoughtcrime.securesms.groups.ui.addmembers.AddMembersViewModel;
 import org.thoughtcrime.securesms.recipients.Recipient;
@@ -30,7 +31,8 @@ public class TrustedIntroductionContactsViewModel extends ViewModel {
   // Yes I do, this is the common case atm.
   // https://developer.android.com/topic/libraries/architecture/viewmodel
   private MutableLiveData<List<Recipient>>  introducableContacts;
-  private MutableLiveData<String> filter;
+  private       MutableLiveData<String> filter;
+  private final SelectedContactSet      selectedContacts = new SelectedContactSet();
 
   private TrustedIntroductionContactsViewModel(TrustedIntroductionContactManager manager) {
     this.manager = manager;
@@ -39,17 +41,39 @@ public class TrustedIntroductionContactsViewModel extends ViewModel {
     loadValidContacts();
   }
 
-  public void setFilter(String filter) {
-    this.filter.setValue(filter);
+  boolean addSelectedContact(SelectedContact contact){
+    return selectedContacts.add(contact);
+  }
+
+  int removeFromSelectedContacts(SelectedContact contact){
+    return selectedContacts.remove(contact);
+  }
+
+  boolean isSelectedContact(SelectedContact contact){
+    return selectedContacts.contains(contact);
+  }
+
+  List<SelectedContact> getSelectedContacts(){
+    return selectedContacts.getContacts();
+  }
+
+  int getSelectedContactsSize(){
+    return selectedContacts.size();
   }
 
   public LiveData<List<Recipient>> getContacts(){
     return introducableContacts;
     /**return Transformations.switchMap(filter,
-                                      f -> {
-      setFilter(f);
-      return getFiltered();
-                                      });**/
+     f -> {
+     setFilter(f);
+     return getFiltered();
+     });**/
+  }
+
+
+
+  public void setFilter(String filter) {
+    this.filter.setValue(filter);
   }
 
   private LiveData<List<Recipient>> getFiltered(){

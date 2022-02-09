@@ -55,7 +55,7 @@ import static org.thoughtcrime.securesms.contacts.ContactSelectionListAdapter.PA
  * Holds the selection state.
  *
  */
-public class IntroducableContactsAdapter extends ListAdapter<Recipient, IntroducableContactsAdapter.ContactViewHolder> implements IntroductionContactsSelectionListFragment.OnContactSelectedListener {
+public class IntroducableContactsAdapter extends ListAdapter<Recipient, IntroducableContactsAdapter.ContactViewHolder> {
 
   private final static String TAG = Log.tag(IntroducableContactsAdapter.class);
 
@@ -66,21 +66,20 @@ public class IntroducableContactsAdapter extends ListAdapter<Recipient, Introduc
   private final LayoutInflater                                layoutInflater;
   private final ContactSelectionListAdapter.ItemClickListener clickListener;
   private final GlideRequests    glideRequests;
-
-  private final SelectedContactSet selectedContacts = new SelectedContactSet();
+  private final TrustedIntroductionContactsViewModel viewModel;
 
   public boolean isSelectedContact(@NonNull SelectedContact contact) {
-    return selectedContacts.contains(contact);
+    return viewModel.isSelectedContact(contact);
   }
 
   public void addSelectedContact(@NonNull SelectedContact contact) {
-    if (!selectedContacts.add(contact)) {
+    if (!viewModel.addSelectedContact(contact)) {
       Log.i(TAG, "Contact was already selected, possibly by another identifier");
     }
   }
 
   public void removeFromSelectedContacts(@NonNull SelectedContact selectedContact) {
-    int removed = selectedContacts.remove(selectedContact);
+    int removed = viewModel.removeFromSelectedContacts(selectedContact);
     Log.i(TAG, String.format(Locale.US, "Removed %d selected contacts that matched", removed));
   }
 
@@ -98,7 +97,7 @@ public class IntroducableContactsAdapter extends ListAdapter<Recipient, Introduc
 
   public IntroducableContactsAdapter(@NonNull Context context,
                                      @NonNull GlideRequests glideRequests,
-                                     @Nullable Cursor cursor,
+                                     TrustedIntroductionContactsViewModel viewModel,
                                      @Nullable ContactSelectionListAdapter.ItemClickListener clickListener)
   {
     super(new RecipientDiffCallback());
@@ -106,18 +105,15 @@ public class IntroducableContactsAdapter extends ListAdapter<Recipient, Introduc
     this.layoutInflater  = LayoutInflater.from(context);
     this.glideRequests   = glideRequests;
     this.clickListener   = clickListener;
+    this.viewModel = viewModel;
   }
 
   public List<SelectedContact> getSelectedContacts() {
-    return selectedContacts.getContacts();
+    return viewModel.getSelectedContacts();
   }
 
   public int getSelectedContactsCount() {
-    return selectedContacts.size();
-  }
-
-  @Override public void onContactSelected(Optional<RecipientId> recipientId, @Nullable String number) {
-
+    return viewModel.getSelectedContactsSize();
   }
 
 
