@@ -24,6 +24,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.loader.app.LoaderManager;
 
@@ -38,7 +39,7 @@ import java.util.function.Consumer;
  * Queries the Contacts Provider for Contacts which match strongly verified contacts in the Signal identity database,
  * and let's the user choose some for the purpose of carrying out trusted introductions.
  */
-public class PickContactsForTrustedIntroductionActivity extends PassphraseRequiredActivity implements IntroductionContactsSelectionListFragment.OnContactSelectedListener{
+public class PickContactsForTrustedIntroductionActivity extends PassphraseRequiredActivity implements IntroductionContactsSelectionListFragment.OnContactSelectedListener, LifecycleOwner {
 
   private static final String TAG = org.signal.core.util.logging.Log.tag(PickContactsForTrustedIntroductionActivity.class);
 
@@ -84,11 +85,19 @@ public class PickContactsForTrustedIntroductionActivity extends PassphraseRequir
     // TODO: Still not sure who the owner of the viewModel should be, Fragment or Activity?
     TrustedIntroductionContactsViewModel viewModel = new ViewModelProvider(this, factory).get(TrustedIntroductionContactsViewModel.class);
 
-    ti_contacts.setViewModel(viewModel);
+    viewModel.getSelectedContacts().observe(this, selected -> {
+      if (selected.size() > 0){
+        enableDone();
+      } else {
+        disableDone();
+      }
+    });
 
     done.setOnClickListener(v ->
                                 viewModel.getDialogStateForSelectedContacts(ti_contacts.getSelectedContacts(), this::displayAlertMessage)
     );
+
+    ti_contacts.setViewModel(viewModel);
 
     // TODO: Does is load if this is commented?
     /**contactFilterView.setOnFilterChangedListener(query -> {
@@ -107,12 +116,6 @@ public class PickContactsForTrustedIntroductionActivity extends PassphraseRequir
         contactFilterView.setVisibility(View.GONE);
       }
     });
-
-    if (ti_contacts.getSelectedContactsCount() <= 0){
-      disableDone();
-    } else {
-      enableDone();
-    }
   }
 
   protected void initializeToolbar() {

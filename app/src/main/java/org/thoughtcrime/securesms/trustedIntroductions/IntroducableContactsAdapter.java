@@ -1,51 +1,28 @@
 package org.thoughtcrime.securesms.trustedIntroductions;
 
 import android.content.Context;
-import android.database.Cursor;
 import android.database.DataSetObserver;
-import android.provider.ContactsContract;
-import android.text.SpannableString;
-import android.text.Spanned;
-import android.text.TextUtils;
-import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
-import androidx.recyclerview.widget.RecyclerView;
 
 import org.signal.core.util.logging.Log;
-import org.thoughtcrime.securesms.ContactSelectionListFragment;
 import org.thoughtcrime.securesms.R;
-import org.thoughtcrime.securesms.contacts.ContactRepository;
 import org.thoughtcrime.securesms.contacts.ContactSelectionListItem;
 import org.thoughtcrime.securesms.contacts.LetterHeaderDecoration;
 import org.thoughtcrime.securesms.contacts.SelectedContact;
-import org.thoughtcrime.securesms.contacts.SelectedContactSet;
-import org.thoughtcrime.securesms.database.CursorRecyclerViewAdapter;
 import org.thoughtcrime.securesms.mms.GlideRequests;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.contacts.ContactSelectionListAdapter;
 import org.thoughtcrime.securesms.recipients.RecipientId;
-import org.thoughtcrime.securesms.util.CharacterIterable;
-import org.thoughtcrime.securesms.util.CursorUtil;
-import org.thoughtcrime.securesms.util.Util;
-import org.whispersystems.libsignal.util.guava.Optional;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.Consumer;
-
-import static androidx.camera.core.CameraX.getContext;
-import static org.thoughtcrime.securesms.contacts.ContactSelectionListAdapter.PAYLOAD_SELECTION_CHANGE;
 
 /**
  * Adaptation of ContactSelectionListAdapter, CursorRecyclerViewAdapter and BlockedUsersAdapter.
@@ -109,7 +86,7 @@ public class IntroducableContactsAdapter extends ListAdapter<Recipient, Introduc
   }
 
   public List<SelectedContact> getSelectedContacts() {
-    return viewModel.getSelectedContacts();
+    return viewModel.listSelectedContacts();
   }
 
   public int getSelectedContactsCount() {
