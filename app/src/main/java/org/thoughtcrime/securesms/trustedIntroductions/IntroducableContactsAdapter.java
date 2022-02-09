@@ -54,14 +54,12 @@ public class IntroducableContactsAdapter extends ListAdapter<Recipient, Introduc
   private final static String TAG = Log.tag(IntroducableContactsAdapter.class);
 
   private final @NonNull Context         context;
-  private final          DataSetObserver observer = new AdapterDataSetObserver();
   private @Nullable View    header;
 
 
   private final LayoutInflater                                layoutInflater;
   private final ContactSelectionListAdapter.ItemClickListener clickListener;
   private final GlideRequests    glideRequests;
-  private final Set<RecipientId> currentContacts;
 
   private final SelectedContactSet selectedContacts = new SelectedContactSet();
 
@@ -95,17 +93,14 @@ public class IntroducableContactsAdapter extends ListAdapter<Recipient, Introduc
   public IntroducableContactsAdapter(@NonNull Context context,
                                      @NonNull GlideRequests glideRequests,
                                      @Nullable Cursor cursor,
-                                     @Nullable ContactSelectionListAdapter.ItemClickListener clickListener,
-                                     @NonNull Set<RecipientId> currentContacts)
+                                     @Nullable ContactSelectionListAdapter.ItemClickListener clickListener)
   {
     super(new RecipientDiffCallback());
     this.context = context;
     this.layoutInflater  = LayoutInflater.from(context);
     this.glideRequests   = glideRequests;
     this.clickListener   = clickListener;
-    this.currentContacts = currentContacts;
   }
-
 
   public List<SelectedContact> getSelectedContacts() {
     return selectedContacts.getContacts();
@@ -115,12 +110,8 @@ public class IntroducableContactsAdapter extends ListAdapter<Recipient, Introduc
     return selectedContacts.size();
   }
 
-  public int getCurrentContactsCount() {
-    return currentContacts.size();
-  }
-
   /**
-   * Reusing classes from ContactSlectionListAdapter. 
+   * Reusing classes from ContactSlectionListAdapter.
    * Because the constructors are package private, they are duplicated here.
    */
   public abstract static class ViewHolder extends ContactSelectionListAdapter.ViewHolder {
@@ -235,10 +226,6 @@ public class IntroducableContactsAdapter extends ListAdapter<Recipient, Introduc
 
   public View getHeaderView() {
     return this.header;
-  }
-
-  protected int getFastAccessSize() {
-    return 0;
   }
 
   public interface ItemClickListener {
