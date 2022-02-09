@@ -127,23 +127,12 @@ public class PickContactsForTrustedIntroductionActivity extends PassphraseRequir
     this.contactFilterView = findViewById(R.id.contact_filter_edit_text);
   }
 
-
   @Override
-  public void onContactDeselected(Optional<RecipientId> recipientId, String number) {
-    if (ti_contacts.hasQueryFilter()) {
-      contactFilterView.clear();
-    }
-
-    if (ti_contacts.getSelectedContactsCount() < 1) {
-      disableDone();
-    }
-  }
-
-  @Override
-  public void onSelectionChanged() {
+  public void onContactSelected(Optional<RecipientId> recipientId, String number){
     int selectedContactsCount = ti_contacts.getSelectedContactsCount();
     if (selectedContactsCount == 0) {
       toolbar.setTitle(getString(R.string.PickContactsForTIActivity_introduce_contacts));
+      disableDone();
     } else {
       assert selectedContactsCount > 0 : "Contacts count below 0!";
       enableDone();
