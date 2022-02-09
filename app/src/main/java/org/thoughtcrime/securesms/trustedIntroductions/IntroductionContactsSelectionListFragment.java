@@ -99,7 +99,8 @@ public class IntroductionContactsSelectionListFragment extends Fragment {//imple
   public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
     View view = inflater.inflate(R.layout.contact_selection_list_fragment, container, false);
 
-    emptyText                = view.findViewById(R.id.ti_no_contacts);
+    //emptyText                = view.findViewById(R.id.ti_no_contacts);
+    emptyText                = view.findViewById(R.id.empty);
     recyclerView             = view.findViewById(R.id.recycler_view);
     fastScroller             = view.findViewById(R.id.fast_scroller);
     showContactsLayout       = view.findViewById(R.id.show_contacts_container);
