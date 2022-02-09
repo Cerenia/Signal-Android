@@ -70,9 +70,7 @@ public class IntroductionContactsSelectionListFragment extends Fragment {//imple
   public static final String RECENTS           = "recents";
   public static final String DISPLAY_CHIPS     = "display_chips";
 
-  private View          showContactsLayout;
-  private   Button        showContactsButton;
-  private   TextView      showContactsDescription;
+  // TODO: have a progress wheel for more substantial data? (cosmetic, not super important)
   private   ProgressWheel showContactsProgress;
   private   TextView      emptyText;
   private ConstraintLayout constraintLayout;
@@ -82,11 +80,9 @@ public class IntroductionContactsSelectionListFragment extends Fragment {//imple
   private String                                                   searchFilter;
   private ChipGroup                                                    chipGroup;
   private   HorizontalScrollView                                         chipGroupScrollContainer;
-  private ContactSelectionListFragment.OnSelectionLimitReachedListener onSelectionLimitReachedListener;
   private SelectionLimits                                              selectionLimit = SelectionLimits.NO_LIMITS;
   private View                                        shadowView;
   private ToolbarShadowAnimationHelper                toolbarShadowAnimationHelper;
-  private RecipientId recipientId;
 
 
   private GlideRequests    glideRequests;
@@ -99,13 +95,9 @@ public class IntroductionContactsSelectionListFragment extends Fragment {//imple
   public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
     View view = inflater.inflate(R.layout.contact_selection_list_fragment, container, false);
 
-    //emptyText                = view.findViewById(R.id.ti_no_contacts);
     emptyText                = view.findViewById(R.id.empty);
     recyclerView             = view.findViewById(R.id.recycler_view);
     fastScroller             = view.findViewById(R.id.fast_scroller);
-    showContactsLayout       = view.findViewById(R.id.show_contacts_container);
-    showContactsButton       = view.findViewById(R.id.show_contacts_button);
-    showContactsDescription  = view.findViewById(R.id.show_contacts_description);
     showContactsProgress     = view.findViewById(R.id.progress);
     chipGroup                = view.findViewById(R.id.chipGroup);
     chipGroupScrollContainer = view.findViewById(R.id.chipGroupScrollContainer);
@@ -154,9 +146,6 @@ public class IntroductionContactsSelectionListFragment extends Fragment {//imple
     loadSelection();
   }
 
-  public void setRecipientId(RecipientId id){
-    this.recipientId = id;
-  }
 
   /**
    * Called by activity containing the Fragment.
@@ -164,11 +153,15 @@ public class IntroductionContactsSelectionListFragment extends Fragment {//imple
    */
   public void setViewModel(TrustedIntroductionContactsViewModel viewModel){
     this.viewModel = viewModel;
+    initializeAdapter();
     this.viewModel.getContacts().observe(getViewLifecycleOwner(), users -> {
       TIRecyclerViewAdapter.submitList(users);
+      if(users.size() == 0){
+        emptyText.setVisibility(View.VISIBLE);
+      } else {
+        emptyText.setVisibility(View.GONE);
+      }
     });
-    // Do all the things you can do when the viewModel has been created.
-    initializeAdapter();
   }
 
   private @NonNull Bundle safeArguments() {
@@ -380,13 +373,6 @@ public class IntroductionContactsSelectionListFragment extends Fragment {//imple
 
   private void addChip(@NonNull ContactChip chip) {
     chipGroup.addView(chip);
-    if (selectionWarningLimitReachedExactly()) {
-      if (onSelectionLimitReachedListener != null) {
-        onSelectionLimitReachedListener.onSuggestedLimitReached(selectionLimit.getRecommendedLimit());
-      } else {
-        GroupLimitDialog.showRecommendedLimitMessage(requireContext());
-      }
-    }
   }
 
   private void setChipGroupVisibility(int visibility) {

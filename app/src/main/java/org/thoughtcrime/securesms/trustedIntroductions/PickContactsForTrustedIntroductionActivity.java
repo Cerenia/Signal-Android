@@ -75,7 +75,6 @@ public class PickContactsForTrustedIntroductionActivity extends PassphraseRequir
     contactFilterView = findViewById(R.id.contact_filter_edit_text);
 
     ti_contacts         = (IntroductionContactsSelectionListFragment)getSupportFragmentManager().findFragmentById(R.id.trusted_introduction_contacts_fragment);
-    ti_contacts.setRecipientId(recipientId);
     done = findViewById(R.id.done);
 
     // Initialize
