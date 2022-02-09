@@ -283,31 +283,6 @@ public class IntroducableContactsAdapter extends ListAdapter<Recipient, Introduc
     }
   }
 
-  public static class DividerViewHolder extends ViewHolder {
-
-    private final TextView label;
-
-    DividerViewHolder(View itemView) {
-      super(itemView);
-      this.label = itemView.findViewById(R.id.label);
-    }
-
-    @Override
-    public void bind(@NonNull GlideRequests glideRequests, @Nullable RecipientId recipientId, int type, String name, String number, String label, String about, boolean checkboxVisible) {
-      this.label.setText(name);
-    }
-
-    @Override
-    public void unbind(@NonNull GlideRequests glideRequests) {}
-
-    @Override
-    public void setChecked(boolean checked) {}
-
-    @Override
-    public void setEnabled(boolean enabled) {}
-  }
-
-
   private static final class RecipientDiffCallback extends DiffUtil.ItemCallback<Recipient> {
 
     @Override
