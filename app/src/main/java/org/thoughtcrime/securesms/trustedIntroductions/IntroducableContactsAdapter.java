@@ -55,8 +55,6 @@ public class IntroducableContactsAdapter extends ListAdapter<Recipient, Introduc
 
   private final @NonNull Context         context;
   private final          DataSetObserver observer = new AdapterDataSetObserver();
-  private @Nullable      Cursor          cursor;
-  private           boolean valid;
   private @Nullable View    header;
 
 
@@ -102,17 +100,12 @@ public class IntroducableContactsAdapter extends ListAdapter<Recipient, Introduc
   {
     super(new RecipientDiffCallback());
     this.context = context;
-    this.cursor = cursor;
-    if (cursor != null) {
-      valid = true;
-      cursor.registerDataSetObserver(observer);
-    }
     this.layoutInflater  = LayoutInflater.from(context);
     this.glideRequests   = glideRequests;
     this.clickListener   = clickListener;
     this.currentContacts = currentContacts;
   }
-  
+
 
   public List<SelectedContact> getSelectedContacts() {
     return selectedContacts.getContacts();
@@ -126,18 +119,9 @@ public class IntroducableContactsAdapter extends ListAdapter<Recipient, Introduc
     return currentContacts.size();
   }
 
-
-  private int getContactType(int position) {
-    final Cursor cursor = getCursorAtPositionOrThrow(position);
-    return cursor.getInt(cursor.getColumnIndexOrThrow(TrustedIntroductionContactManager.CONTACT_TYPE_COLUMN));
-  }
-
-  private boolean isPush(int position) {
-    return getContactType(position) == TrustedIntroductionContactManager.PUSH_TYPE;
-  }
-
   /**
-   * Reusing the 3 classes of views already present in ContactSlectionListAdapter. Because the constructors are package private, they are duplicated here.
+   * Reusing classes from ContactSlectionListAdapter. 
+   * Because the constructors are package private, they are duplicated here.
    */
   public abstract static class ViewHolder extends ContactSelectionListAdapter.ViewHolder {
 
@@ -232,41 +216,14 @@ public class IntroducableContactsAdapter extends ListAdapter<Recipient, Introduc
     @Override
     public void onChanged() {
       super.onChanged();
-      valid = true;
     }
 
     @Override
     public void onInvalidated() {
       super.onInvalidated();
-      valid = false;
     }
   }
 
-  /**
-   * From CursorRecyclerViewAdapter
-   * @return
-   */
-  protected boolean isActiveCursor() {
-    return valid && cursor != null;
-  }
-
-  protected @NonNull Cursor getCursorAtPositionOrThrow(final int position) {
-    if (!isActiveCursor()) {
-      throw new IllegalStateException("this should only be called when the cursor is valid");
-    }
-    if (!cursor.moveToPosition(getCursorPosition(position))) {
-      throw new IllegalStateException("couldn't move cursor to position " + position + " (actual cursor position " + getCursorPosition(position) + ")");
-    }
-    return cursor;
-  }
-
-  private int getCursorPosition(int position) {
-    if (hasHeaderView()) {
-      position -= 1;
-    }
-
-    return position - getFastAccessSize();
-  }
 
   public boolean hasHeaderView() {
     return header != null;
