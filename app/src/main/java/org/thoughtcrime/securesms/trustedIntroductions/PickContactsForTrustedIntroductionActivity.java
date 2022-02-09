@@ -49,8 +49,6 @@ public class PickContactsForTrustedIntroductionActivity extends PassphraseRequir
 
   // when done picking contacts (button)
   private View done;
-  // TODO: correct to have this in Fragment?
-  //private TrustedIntroductionContactsViewModel viewModel;
   private IntroductionContactsSelectionListFragment ti_contacts;
   private ContactFilterView contactFilterView;
   private Toolbar           toolbar;
@@ -143,7 +141,6 @@ public class PickContactsForTrustedIntroductionActivity extends PassphraseRequir
 
   @Override
   public void onSelectionChanged() {
-        // TODO: Dafuq :P
     int selectedContactsCount = ti_contacts.getSelectedContactsCount();
     if (selectedContactsCount == 0) {
       toolbar.setTitle(getString(R.string.PickContactsForTIActivity_introduce_contacts));

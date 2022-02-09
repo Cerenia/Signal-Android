@@ -94,8 +94,7 @@ public class IntroducableContactsAdapter extends ListAdapter<Recipient, Introduc
 
     Recipient current = getItem(position);
     String name = current.getDisplayNameOrUsername(context.getApplicationContext());
-    holder.bind(glideRequests, current.getId(), 0, name, null, null, null, true);
-
+    holder.bind(glideRequests, current.getId(), 0, name, null, null, null, false);
   }
 
   public IntroducableContactsAdapter(@NonNull Context context,
@@ -207,28 +206,6 @@ public class IntroducableContactsAdapter extends ListAdapter<Recipient, Introduc
 
     } else {
       return null;
-    }
-  }
-
-  protected void onBindItemViewHolder(ContactSelectionListAdapter.ViewHolder viewHolder, @NonNull Cursor cursor, @NonNull List<Object> payloads) {
-    if (!arePayloadsValid(payloads)) {
-      throw new AssertionError();
-    }
-
-    String      rawId      = CursorUtil.requireString(cursor, ContactRepository.ID_COLUMN);
-    RecipientId id         = rawId != null ? RecipientId.from(rawId) : null;
-    int         numberType = CursorUtil.requireInt(cursor, TrustedIntroductionContactManager.NUMBER_TYPE_COLUMN);
-    String      number     = CursorUtil.requireString(cursor, TrustedIntroductionContactManager.NUMBER_COLUMN);
-
-    viewHolder.setEnabled(true);
-
-    if (currentContacts.contains(id)) {
-      viewHolder.animateChecked(true);
-      viewHolder.setEnabled(false);
-    } else if (numberType == TrustedIntroductionContactManager.NEW_USERNAME_TYPE) {
-      viewHolder.animateChecked(selectedContacts.contains(SelectedContact.forUsername(id, number)));
-    } else {
-      viewHolder.animateChecked(selectedContacts.contains(SelectedContact.forPhone(id, number)));
     }
   }
 

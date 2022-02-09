@@ -190,8 +190,7 @@ public class IntroductionContactsSelectionListFragment extends Fragment {//imple
 
   private void initializeCursor() {
     glideRequests = GlideApp.with(this);
-    // TODO: I believe this is where I can plug my custom cursor?
-    // TODO: Does it make sense to pass currentSelection here?
+    // Not directly passing a cursor, instead submitting a list to ContactsAdapter
     cursorRecyclerViewAdapter = new IntroducableContactsAdapter(requireContext(),
                                                                 glideRequests,
                                                                 null,
