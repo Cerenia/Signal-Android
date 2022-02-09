@@ -46,6 +46,7 @@ final class TrustedIntroductionContactManager {
           List<Recipient> contacts = new ArrayList<>();
           while(reader.getNext() != null){
             Recipient current = reader.getCurrent();
+            // TODO: continue here! Exclude Recipient from this list (based on ACI or Phone nr?)
             if(!current.isSelf()){
               contacts.add(current);
             }
