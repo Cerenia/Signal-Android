@@ -676,18 +676,24 @@ open class RecipientTable(context: Context, databaseHelper: SignalDatabase) : Da
   }
 
   fun getReaderForTI(cursor: Cursor): RecipientReader {
-    val identity_keys = arrayListOf<String>()
+    val identifiers = arrayListOf<String>()
     if(cursor.moveToFirst()){
       cursor.use {
         while (!it.isAfterLast) {
-          identity_keys.add(it.getString(it.getColumnIndex(IdentityDatabase.ADDRESS)))
+          identifiers.add(it.getString(it.getColumnIndex(IdentityDatabase.ADDRESS)))
           it.moveToNext()
         }
       }
     }
-    val query = "$ACI_COLUMN = ?"
+    val query = StringBuilder()
+    if(!identifiers.isEmpty()){
+      (1 until identifiers.size).map{
+        query.append("$ACI_COLUMN=? OR ")
+      }
+      query.append("$ACI_COLUMN=?")
+    }
     //String table, String[] columns, String selection, String[] selectionArgs, String groupBy, String having, String orderBy
-    val newCursor = readableDatabase.query(TABLE_NAME, RECIPIENT_PROJECTION, query, identity_keys.toTypedArray(), null, null, null)
+    val newCursor = readableDatabase.query(TABLE_NAME, RECIPIENT_PROJECTION, query.toString(), identifiers.toTypedArray(), null, null, null)
     return RecipientReader(newCursor)
   }
 
