@@ -65,7 +65,7 @@ public class IdentityDatabase extends Database {
                                                                                   VERIFIED             + " INTEGER DEFAULT 0, " +
                                                                                   NONBLOCKING_APPROVAL + " INTEGER DEFAULT 0);";
 
-  private final String[] TI_PROJECTION = {IDENTITY_KEY};
+  private final String[] TI_PROJECTION = {ADDRESS};
 
   /**
    * Trusted Introductions: We differentiate between a direct verification <code>DIRECTLY_VERIFIED</code> (via. QR code)

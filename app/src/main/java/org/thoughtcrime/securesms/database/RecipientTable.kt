@@ -680,12 +680,12 @@ open class RecipientTable(context: Context, databaseHelper: SignalDatabase) : Da
     if(cursor.moveToFirst()){
       cursor.use {
         while (!it.isAfterLast) {
-          identity_keys.add(it.getString(it.getColumnIndex(IDENTITY_KEY)))
+          identity_keys.add(it.getString(it.getColumnIndex(IdentityDatabase.ADDRESS)))
           it.moveToNext()
         }
       }
     }
-    val query = "$IDENTITY_KEY = ?"
+    val query = "$ACI_COLUMN = ?"
     //String table, String[] columns, String selection, String[] selectionArgs, String groupBy, String having, String orderBy
     val newCursor = readableDatabase.query(TABLE_NAME, RECIPIENT_PROJECTION, query, identity_keys.toTypedArray(), null, null, null)
     return RecipientReader(newCursor)
