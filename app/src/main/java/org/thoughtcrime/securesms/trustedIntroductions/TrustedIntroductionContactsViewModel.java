@@ -30,35 +30,51 @@ public class TrustedIntroductionContactsViewModel extends ViewModel {
   // TODO: Do I also need MutableLiveData? (looks like this is related to fetching contacts in background thread)
   // Yes I do, this is the common case atm.
   // https://developer.android.com/topic/libraries/architecture/viewmodel
-  private MutableLiveData<List<Recipient>>  introducableContacts;
-  private       MutableLiveData<String> filter;
-  private final SelectedContactSet      selectedContacts = new SelectedContactSet();
+  private final MutableLiveData<List<Recipient>>  introducableContacts;
+  private final      MutableLiveData<String> filter;
+  private final MutableLiveData<SelectedContactSet>      selectedContacts;
 
   private TrustedIntroductionContactsViewModel(TrustedIntroductionContactManager manager) {
     this.manager = manager;
-    introducableContacts = new MutableLiveData<List<Recipient>>(new ArrayList<>());
+    introducableContacts = new MutableLiveData<>(new ArrayList<>());
     filter = new MutableLiveData<>("");
+    selectedContacts = new MutableLiveData<>(new SelectedContactSet());
     loadValidContacts();
   }
 
-  boolean addSelectedContact(SelectedContact contact){
-    return selectedContacts.add(contact);
+  boolean addSelectedContact(@NonNull SelectedContact contact){
+    SelectedContactSet selected = Objects.requireNonNull(selectedContacts.getValue());
+    boolean result = selected.add(contact);
+    // Notify observers
+    selectedContacts.setValue(selected);
+    return result;
   }
 
-  int removeFromSelectedContacts(SelectedContact contact){
-    return selectedContacts.remove(contact);
+  int removeFromSelectedContacts(@NonNull SelectedContact contact){
+    SelectedContactSet selected = Objects.requireNonNull(selectedContacts.getValue());
+    int result = selected.remove(contact);
+    // Notify observers
+    selectedContacts.setValue(selected);
+    return result;
   }
 
-  boolean isSelectedContact(SelectedContact contact){
-    return selectedContacts.contains(contact);
+  boolean isSelectedContact(@NonNull SelectedContact contact){
+    return Objects.requireNonNull(selectedContacts.getValue()).contains(contact);
   }
 
-  List<SelectedContact> getSelectedContacts(){
-    return selectedContacts.getContacts();
+  // observable
+  LiveData<SelectedContactSet> getSelectedContacts(){
+    return selectedContacts;
+  }
+
+  // direct access to the list TODO: is this a good idea?
+  List<SelectedContact> listSelectedContacts(){
+    SelectedContactSet selected = Objects.requireNonNull(selectedContacts.getValue());
+    return selected.getContacts();
   }
 
   int getSelectedContactsSize(){
-    return selectedContacts.size();
+    return Objects.requireNonNull(selectedContacts.getValue()).size();
   }
 
   public LiveData<List<Recipient>> getContacts(){

@@ -242,7 +242,7 @@ public class IntroductionContactsSelectionListFragment extends Fragment {//imple
    */
   private void loadSelection(){
     if(this.viewModel != null){
-      List<SelectedContact> selection = this.viewModel.getSelectedContacts();
+      List<SelectedContact> selection = this.viewModel.listSelectedContacts();
       for(SelectedContact current: selection){
         addChipForSelectedContact(current);
       }
@@ -289,7 +289,7 @@ public class IntroductionContactsSelectionListFragment extends Fragment {//imple
       } else {
         markContactSelected(selectedContact);
       }
-      //TIRecyclerViewAdapter.onContactSelected(contact.getRecipientId(), contact.getNumber());
+
     }
   }
 
