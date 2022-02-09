@@ -692,7 +692,6 @@ open class RecipientTable(context: Context, databaseHelper: SignalDatabase) : Da
       }
       query.append("$ACI_COLUMN=?")
     }
-    //String table, String[] columns, String selection, String[] selectionArgs, String groupBy, String having, String orderBy
     val newCursor = readableDatabase.query(TABLE_NAME, RECIPIENT_PROJECTION, query.toString(), identifiers.toTypedArray(), null, null, null)
     return RecipientReader(newCursor)
   }
