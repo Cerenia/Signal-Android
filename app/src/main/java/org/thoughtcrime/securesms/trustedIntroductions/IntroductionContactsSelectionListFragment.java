@@ -95,7 +95,7 @@ public class IntroductionContactsSelectionListFragment extends Fragment {//imple
   public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
     View view = inflater.inflate(R.layout.contact_selection_list_fragment, container, false);
 
-    emptyText                = view.findViewById(R.id.empty);
+    emptyText                = view.findViewById(android.R.id.empty);
     recyclerView             = view.findViewById(R.id.recycler_view);
     fastScroller             = view.findViewById(R.id.fast_scroller);
     showContactsProgress     = view.findViewById(R.id.progress);
@@ -121,6 +121,7 @@ public class IntroductionContactsSelectionListFragment extends Fragment {//imple
     // Default values for now
     int     recyclerViewPadBottom = -1;
     boolean recyclerViewClipping  = true;
+    emptyText.setText(R.string.TI_contacts_fragment_no_contacts);
 
     /*if (recyclerViewPadBottom != -1) {
       ViewUtil.setPaddingBottom(recyclerView, recyclerViewPadBottom);
