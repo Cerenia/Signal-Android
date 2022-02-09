@@ -16,6 +16,7 @@ import org.thoughtcrime.securesms.recipients.RecipientId;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import io.reactivex.rxjava3.annotations.NonNull;
@@ -67,6 +68,8 @@ final class TrustedIntroductionContactManager {
               contacts.add(current);
             }
           }
+          // sort ascending
+          Collections.sort(contacts, Comparator.comparing((Recipient recipient) -> recipient.getProfileName().toString()));
           introducableContacts.accept(contacts);
         }
       }
