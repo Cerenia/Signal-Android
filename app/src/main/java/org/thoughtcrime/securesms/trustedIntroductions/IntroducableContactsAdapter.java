@@ -60,9 +60,6 @@ public class IntroducableContactsAdapter extends ListAdapter<Recipient, Introduc
   private @Nullable View    header;
 
 
-  private static final int VIEW_TYPE_CONTACT = 0;
-  private static final int VIEW_TYPE_DIVIDER = 1;
-
   private final LayoutInflater                                layoutInflater;
   private final ContactSelectionListAdapter.ItemClickListener clickListener;
   private final GlideRequests    glideRequests;
@@ -126,67 +123,6 @@ public class IntroducableContactsAdapter extends ListAdapter<Recipient, Introduc
     return Util.hashCode(getHeaderString(i), getContactType(i));
   }
 
-  public ViewHolder onCreateItemViewHolder(ViewGroup parent, int viewType) {
-    if (viewType == VIEW_TYPE_CONTACT) {
-      return new ContactViewHolder(layoutInflater.inflate(R.layout.contact_selection_list_item, parent, false), clickListener);
-    } else {
-      return new DividerViewHolder(layoutInflater.inflate(R.layout.contact_selection_list_divider, parent, false));
-    }
-  }
-
-  public void onBindItemViewHolder(ContactSelectionListAdapter.ViewHolder viewHolder, @NonNull Cursor cursor) {
-    String      rawId       = CursorUtil.requireString(cursor, TrustedIntroductionContactManager.ID_COLUMN);
-    RecipientId id          = rawId != null ? RecipientId.from(rawId) : null;
-    int         contactType = CursorUtil.requireInt(cursor, TrustedIntroductionContactManager.CONTACT_TYPE_COLUMN);
-    String      name        = CursorUtil.requireString(cursor, TrustedIntroductionContactManager.NAME_COLUMN);
-    String      number      = CursorUtil.requireString(cursor, TrustedIntroductionContactManager.NUMBER_COLUMN);
-    int         numberType  = CursorUtil.requireInt(cursor, TrustedIntroductionContactManager.NUMBER_TYPE_COLUMN);
-    String      about       = CursorUtil.requireString(cursor, TrustedIntroductionContactManager.ABOUT_COLUMN);
-    String      label       = CursorUtil.requireString(cursor, TrustedIntroductionContactManager.LABEL_COLUMN);
-    String      labelText   = ContactsContract.CommonDataKinds.Phone.getTypeLabel(context.getResources(),
-                                                                                  numberType, label).toString();
-    boolean currentContact = currentContacts.contains(id);
-
-    viewHolder.unbind(glideRequests);
-    viewHolder.bind(glideRequests, id, contactType, name, number, labelText, about, true);
-    viewHolder.setEnabled(true);
-
-    if (currentContact) {
-      viewHolder.setChecked(true);
-      viewHolder.setEnabled(false);
-    } else if (numberType == TrustedIntroductionContactManager.NEW_USERNAME_TYPE) {
-      viewHolder.setChecked(selectedContacts.contains(SelectedContact.forUsername(id, number)));
-    } else {
-      viewHolder.setChecked(selectedContacts.contains(SelectedContact.forPhone(id, number)));
-    }
-
-    if (isContactRow(contactType)) {
-      int position = cursor.getPosition();
-      if (position == 0) {
-        viewHolder.setLetterHeaderCharacter(getHeaderLetterForDisplayName(cursor));
-      } else {
-        cursor.moveToPrevious();
-
-        int previousRowContactType = CursorUtil.requireInt(cursor, TrustedIntroductionContactManager.CONTACT_TYPE_COLUMN);
-
-        if (!isContactRow(previousRowContactType)) {
-          cursor.moveToNext();
-          viewHolder.setLetterHeaderCharacter(getHeaderLetterForDisplayName(cursor));
-        } else {
-          String previousHeaderLetter = getHeaderLetterForDisplayName(cursor);
-          cursor.moveToNext();
-          String newHeaderLetter = getHeaderLetterForDisplayName(cursor);
-
-          if (Objects.equals(previousHeaderLetter, newHeaderLetter)) {
-            viewHolder.setLetterHeaderCharacter(null);
-          } else {
-            viewHolder.setLetterHeaderCharacter(newHeaderLetter);
-          }
-        }
-      }
-    }
-  }
-
   private boolean isContactRow(int contactType) {
     return (contactType & (TrustedIntroductionContactManager.NEW_PHONE_TYPE | TrustedIntroductionContactManager.NEW_USERNAME_TYPE | TrustedIntroductionContactManager.DIVIDER_TYPE)) == 0;
   }
@@ -207,30 +143,6 @@ public class IntroducableContactsAdapter extends ListAdapter<Recipient, Introduc
     } else {
       return null;
     }
-  }
-
-  public int getItemViewType(@NonNull Cursor cursor) {
-    if (CursorUtil.requireInt(cursor, TrustedIntroductionContactManager.CONTACT_TYPE_COLUMN) == TrustedIntroductionContactManager.DIVIDER_TYPE) {
-      return VIEW_TYPE_DIVIDER;
-    } else {
-      return VIEW_TYPE_CONTACT;
-    }
-  }
-
-  public HeaderViewHolder onCreateHeaderViewHolder(ViewGroup parent, int position, int type) {
-    return new HeaderViewHolder(LayoutInflater.from(context).inflate(R.layout.contact_selection_recyclerview_header, parent, false));
-  }
-
-  public void onBindHeaderViewHolder(HeaderViewHolder viewHolder, int position, int type) {
-    ((TextView) viewHolder.itemView).setText(getSpannedHeaderString(position));
-  }
-
-  protected boolean arePayloadsValid(@NonNull List<Object> payloads) {
-    return payloads.size() == 1 && payloads.get(0).equals(PAYLOAD_SELECTION_CHANGE);
-  }
-
-  public void onItemViewRecycled(ContactSelectionListAdapter.ViewHolder holder) {
-    holder.unbind(glideRequests);
   }
 
   public CharSequence getBubbleText(int position) {
@@ -395,11 +307,6 @@ public class IntroducableContactsAdapter extends ListAdapter<Recipient, Introduc
     public void setEnabled(boolean enabled) {}
   }
 
-  static class HeaderViewHolder extends RecyclerView.ViewHolder {
-    HeaderViewHolder(View itemView) {
-      super(itemView);
-    }
-  }
 
   private static final class RecipientDiffCallback extends DiffUtil.ItemCallback<Recipient> {
 
@@ -469,8 +376,6 @@ public class IntroducableContactsAdapter extends ListAdapter<Recipient, Introduc
   protected int getFastAccessSize() {
     return 0;
   }
-
-
 
   public interface ItemClickListener {
     void onItemClick(ContactSelectionListItem item);
