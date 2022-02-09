@@ -17,9 +17,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -57,7 +54,6 @@ import org.whispersystems.libsignal.util.guava.Optional;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 /**
  * In order to keep the tight coupling to a minimum, such that we can continue syncing against the upstream repo as it evolves, we opted to
@@ -82,10 +78,9 @@ public class IntroductionContactsSelectionListFragment extends Fragment {//imple
   private   TextView      emptyText;
   private ConstraintLayout constraintLayout;
   private TrustedIntroductionContactsViewModel viewModel;
-  private IntroducableContactsAdapter          cursorRecyclerViewAdapter;
-  private RecyclerView                                             recyclerView;
+  private IntroducableContactsAdapter          TIRecyclerViewAdapter;
+  private RecyclerView                         recyclerView;
   private String                                                   searchFilter;
-  private   ContactSelectionListFragment.OnContactSelectedListener onContactSelectedListener;
   private ChipGroup                                                    chipGroup;
   private   HorizontalScrollView                                         chipGroupScrollContainer;
   private ContactSelectionListFragment.OnSelectionLimitReachedListener onSelectionLimitReachedListener;
@@ -160,7 +155,7 @@ public class IntroductionContactsSelectionListFragment extends Fragment {//imple
   public void setViewModel(TrustedIntroductionContactsViewModel viewModel){
     this.viewModel = viewModel;
     this.viewModel.getContacts().observe(getViewLifecycleOwner(), users -> {
-      cursorRecyclerViewAdapter.submitList(users);
+      TIRecyclerViewAdapter.submitList(users);
     });
   }
 
@@ -169,29 +164,29 @@ public class IntroductionContactsSelectionListFragment extends Fragment {//imple
   }
 
   public @NonNull List<SelectedContact> getSelectedContacts() {
-    if (cursorRecyclerViewAdapter == null) {
+    if (TIRecyclerViewAdapter == null) {
       return Collections.emptyList();
     }
 
-    return cursorRecyclerViewAdapter.getSelectedContacts();
+    return TIRecyclerViewAdapter.getSelectedContacts();
   }
 
   public int getSelectedContactsCount() {
-    if (cursorRecyclerViewAdapter == null) {
+    if (TIRecyclerViewAdapter == null) {
       return 0;
     }
 
-    return cursorRecyclerViewAdapter.getSelectedContactsCount();
+    return TIRecyclerViewAdapter.getSelectedContactsCount();
   }
 
 
   private void initializeCursor() {
     glideRequests = GlideApp.with(this);
     // Not directly passing a cursor, instead submitting a list to ContactsAdapter
-    cursorRecyclerViewAdapter = new IntroducableContactsAdapter(requireContext(),
-                                                                glideRequests,
-                                                                null,
-                                                                new ListClickListener());
+    TIRecyclerViewAdapter = new IntroducableContactsAdapter(requireContext(),
+                                                            glideRequests,
+                                                            null,
+                                                            new ListClickListener());
 
     RecyclerViewConcatenateAdapterStickyHeader concatenateAdapter = new RecyclerViewConcatenateAdapterStickyHeader();
 
@@ -203,7 +198,7 @@ public class IntroductionContactsSelectionListFragment extends Fragment {//imple
       concatenateAdapter.addAdapter(headerAdapter);
     }*/
 
-    concatenateAdapter.addAdapter(cursorRecyclerViewAdapter);
+    concatenateAdapter.addAdapter(TIRecyclerViewAdapter);
 
     // TODO: needed?
     /*
@@ -226,9 +221,9 @@ public class IntroductionContactsSelectionListFragment extends Fragment {//imple
       }
     });
 
-    if (onContactSelectedListener != null) {
-      onContactSelectedListener.onSelectionChanged();
-    }
+    //if (TIRecyclerViewAdapter != null) {
+     // TIRecyclerViewAdapter.onSelectionChanged();
+    //}
   }
 
   public void setQueryFilter(String filter) {
@@ -266,69 +261,12 @@ public class IntroductionContactsSelectionListFragment extends Fragment {//imple
     public void onItemClick(ContactSelectionListItem contact) {
       SelectedContact selectedContact = contact.isUsernameType() ? SelectedContact.forUsername(contact.getRecipientId().orNull(), contact.getNumber())
                                                                  : SelectedContact.forPhone(contact.getRecipientId().orNull(), contact.getNumber());
-
-
-      if (!cursorRecyclerViewAdapter.isSelectedContact(selectedContact)) {
-        if (selectionHardLimitReached()) {
-          if (onSelectionLimitReachedListener != null) {
-            onSelectionLimitReachedListener.onHardLimitReached(selectionLimit.getHardLimit());
-          } else {
-            GroupLimitDialog.showHardLimitMessage(requireContext());
-          }
-          return;
-        }
-
-        if (contact.isUsernameType()) {
-          AlertDialog loadingDialog = SimpleProgressDialog.show(requireContext());
-
-          SimpleTask.run(getViewLifecycleOwner().getLifecycle(), () -> {
-            return UsernameUtil.fetchAciForUsername(requireContext(), contact.getNumber());
-          }, uuid -> {
-            loadingDialog.dismiss();
-            if (uuid.isPresent()) {
-              Recipient recipient = Recipient.externalUsername(requireContext(), uuid.get(), contact.getNumber());
-              SelectedContact selected = SelectedContact.forUsername(recipient.getId(), contact.getNumber());
-
-              if (onContactSelectedListener != null) {
-                onContactSelectedListener.onBeforeContactSelected(Optional.of(recipient.getId()), null, allowed -> {
-                  if (allowed) {
-                    markContactSelected(selected);
-                    cursorRecyclerViewAdapter.notifyItemRangeChanged(0, cursorRecyclerViewAdapter.getItemCount(), ContactSelectionListAdapter.PAYLOAD_SELECTION_CHANGE);
-                  }
-                });
-              } else {
-                markContactSelected(selected);
-                cursorRecyclerViewAdapter.notifyItemRangeChanged(0, cursorRecyclerViewAdapter.getItemCount(), ContactSelectionListAdapter.PAYLOAD_SELECTION_CHANGE);
-              }
-            } else {
-              new MaterialAlertDialogBuilder(requireContext())
-                  .setTitle(R.string.ContactSelectionListFragment_username_not_found)
-                  .setMessage(getString(R.string.ContactSelectionListFragment_s_is_not_a_signal_user, contact.getNumber()))
-                  .setPositiveButton(android.R.string.ok, (dialog, which) -> dialog.dismiss())
-                  .show();
-            }
-          });
-        } else {
-          if (onContactSelectedListener != null) {
-            onContactSelectedListener.onBeforeContactSelected(contact.getRecipientId(), contact.getNumber(), allowed -> {
-              if (allowed) {
-                markContactSelected(selectedContact);
-                cursorRecyclerViewAdapter.notifyItemRangeChanged(0, cursorRecyclerViewAdapter.getItemCount(), ContactSelectionListAdapter.PAYLOAD_SELECTION_CHANGE);
-              }
-            });
-          } else {
-            markContactSelected(selectedContact);
-            cursorRecyclerViewAdapter.notifyItemRangeChanged(0, cursorRecyclerViewAdapter.getItemCount(), ContactSelectionListAdapter.PAYLOAD_SELECTION_CHANGE);
-          }
-        }
-      } else {
+      if (TIRecyclerViewAdapter.isSelectedContact(selectedContact)) {
         markContactUnselected(selectedContact);
-        cursorRecyclerViewAdapter.notifyItemRangeChanged(0, cursorRecyclerViewAdapter.getItemCount(), ContactSelectionListAdapter.PAYLOAD_SELECTION_CHANGE);
-
-        if (onContactSelectedListener != null) {
-          onContactSelectedListener.onContactDeselected(contact.getRecipientId(), contact.getNumber());
-        }
+      } else {
+        markContactSelected(selectedContact);
       }
+      //TIRecyclerViewAdapter.onContactSelected(contact.getRecipientId(), contact.getNumber());
     }
   }
 
@@ -336,9 +274,7 @@ public class IntroductionContactsSelectionListFragment extends Fragment {//imple
    * Taken and adapted from ContactSelectionListFragment.java
    */
   public interface OnContactSelectedListener {
-    /** Provides an opportunity to disallow selecting an item. Call the callback with false to disallow, or true to allow it. */
-    void onContactDeselected(Optional<RecipientId> recipientId, @Nullable String number);
-    void onSelectionChanged();
+    void onContactSelected(Optional<RecipientId> recipientId, @Nullable String number);
   }
 
   private boolean selectionHardLimitReached() {
@@ -367,11 +303,8 @@ public class IntroductionContactsSelectionListFragment extends Fragment {//imple
   }
 
   private void markContactSelected(@NonNull SelectedContact selectedContact) {
-    cursorRecyclerViewAdapter.addSelectedContact(selectedContact);
+    TIRecyclerViewAdapter.addSelectedContact(selectedContact);
     addChipForSelectedContact(selectedContact);
-    if (onContactSelectedListener != null) {
-      onContactSelectedListener.onSelectionChanged();
-    }
   }
 
   private void addChipForSelectedContact(@NonNull SelectedContact selectedContact) {
@@ -392,10 +325,6 @@ public class IntroductionContactsSelectionListFragment extends Fragment {//imple
     chip.setCloseIconVisible(true);
     chip.setOnCloseIconClickListener(view -> {
       markContactUnselected(selectedContact);
-
-      if (onContactSelectedListener != null) {
-        onContactSelectedListener.onContactDeselected(Optional.of(recipient.getId()), recipient.getE164().orNull());
-      }
     });
 
     chipGroup.getLayoutTransition().addTransitionListener(new LayoutTransition.TransitionListener() {
@@ -451,13 +380,9 @@ public class IntroductionContactsSelectionListFragment extends Fragment {//imple
   }
 
   private void markContactUnselected(@NonNull SelectedContact selectedContact) {
-    cursorRecyclerViewAdapter.removeFromSelectedContacts(selectedContact);
-    cursorRecyclerViewAdapter.notifyItemRangeChanged(0, cursorRecyclerViewAdapter.getItemCount(), ContactSelectionListAdapter.PAYLOAD_SELECTION_CHANGE);
+    TIRecyclerViewAdapter.removeFromSelectedContacts(selectedContact);
+    TIRecyclerViewAdapter.notifyItemRangeChanged(0, TIRecyclerViewAdapter.getItemCount(), ContactSelectionListAdapter.PAYLOAD_SELECTION_CHANGE);
     removeChipForContact(selectedContact);
-
-    if (onContactSelectedListener != null) {
-      onContactSelectedListener.onSelectionChanged();
-    }
   }
 
   private void removeChipForContact(@NonNull SelectedContact contact) {

@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import org.signal.core.util.logging.Log;
+import org.thoughtcrime.securesms.ContactSelectionListFragment;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.contacts.ContactRepository;
 import org.thoughtcrime.securesms.contacts.ContactSelectionListItem;
@@ -34,12 +35,14 @@ import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.util.CharacterIterable;
 import org.thoughtcrime.securesms.util.CursorUtil;
 import org.thoughtcrime.securesms.util.Util;
+import org.whispersystems.libsignal.util.guava.Optional;
 
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import static androidx.camera.core.CameraX.getContext;
 import static org.thoughtcrime.securesms.contacts.ContactSelectionListAdapter.PAYLOAD_SELECTION_CHANGE;
@@ -48,8 +51,11 @@ import static org.thoughtcrime.securesms.contacts.ContactSelectionListAdapter.PA
  * Adaptation of ContactSelectionListAdapter, CursorRecyclerViewAdapter and BlockedUsersAdapter.
  * Yes, horribly uggly. But was deemend preferable than extending the base code to my use-case, since
  * the code can be more cleanly decoupled this way.
+ *
+ * Holds the selection state.
+ *
  */
-public class IntroducableContactsAdapter extends ListAdapter<Recipient, IntroducableContactsAdapter.ContactViewHolder> {
+public class IntroducableContactsAdapter extends ListAdapter<Recipient, IntroducableContactsAdapter.ContactViewHolder> implements IntroductionContactsSelectionListFragment.OnContactSelectedListener {
 
   private final static String TAG = Log.tag(IntroducableContactsAdapter.class);
 
@@ -109,6 +115,11 @@ public class IntroducableContactsAdapter extends ListAdapter<Recipient, Introduc
   public int getSelectedContactsCount() {
     return selectedContacts.size();
   }
+
+  @Override public void onContactSelected(Optional<RecipientId> recipientId, @Nullable String number) {
+
+  }
+
 
   /**
    * Reusing classes from ContactSlectionListAdapter.
