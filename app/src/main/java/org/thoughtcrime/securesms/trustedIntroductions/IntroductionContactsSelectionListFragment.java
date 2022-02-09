@@ -11,12 +11,14 @@ import android.widget.Button;
 import android.widget.HorizontalScrollView;
 import android.widget.TextView;
 
+import androidx.annotation.CallSuper;
+import androidx.annotation.MainThread;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Lifecycle;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -24,7 +26,6 @@ import androidx.transition.AutoTransition;
 import androidx.transition.TransitionManager;
 
 import com.google.android.material.chip.ChipGroup;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.pnikosis.materialishprogress.ProgressWheel;
 
 import org.signal.core.util.logging.Log;
@@ -44,12 +45,10 @@ import org.thoughtcrime.securesms.mms.GlideRequests;
 import org.thoughtcrime.securesms.recipients.LiveRecipient;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
-import org.thoughtcrime.securesms.util.UsernameUtil;
 import org.thoughtcrime.securesms.util.ViewUtil;
 import org.thoughtcrime.securesms.util.adapter.FixedViewsAdapter;
 import org.thoughtcrime.securesms.util.adapter.RecyclerViewConcatenateAdapterStickyHeader;
 import org.thoughtcrime.securesms.util.concurrent.SimpleTask;
-import org.thoughtcrime.securesms.util.views.SimpleProgressDialog;
 import org.whispersystems.libsignal.util.guava.Optional;
 
 import java.util.Collections;
@@ -136,8 +135,6 @@ public class IntroductionContactsSelectionListFragment extends Fragment {//imple
 
     recyclerView.setClipToPadding(recyclerViewClipping);
 
-    initializeCursor();
-
     // TODO: Is it correct to initialize this in Activity instead?
     //TrustedIntroductionContactsViewModel.Factory factory = new TrustedIntroductionContactsViewModel.Factory(recipientId);
     //viewModel = new ViewModelProvider(this, factory).get(TrustedIntroductionContactsViewModel.class);
@@ -148,15 +145,29 @@ public class IntroductionContactsSelectionListFragment extends Fragment {//imple
     return view;
   }
 
+  @MainThread
+  @CallSuper
+  public void onViewStateRestored(@Nullable Bundle savedInstanceState){
+    // TODO: Why is the state here only INITIALIZED?
+    super.onViewStateRestored(savedInstanceState);
+    loadSelection();
+  }
+
   public void setRecipientId(RecipientId id){
     this.recipientId = id;
   }
 
+  /**
+   * Called by activity containing the Fragment.
+   * @param viewModel The underlying persistent data storage.
+   */
   public void setViewModel(TrustedIntroductionContactsViewModel viewModel){
     this.viewModel = viewModel;
     this.viewModel.getContacts().observe(getViewLifecycleOwner(), users -> {
       TIRecyclerViewAdapter.submitList(users);
     });
+    // Do all the things you can do when the viewModel has been created.
+    initializeAdapter();
   }
 
   private @NonNull Bundle safeArguments() {
@@ -180,12 +191,12 @@ public class IntroductionContactsSelectionListFragment extends Fragment {//imple
   }
 
 
-  private void initializeCursor() {
+  private void initializeAdapter() {
     glideRequests = GlideApp.with(this);
     // Not directly passing a cursor, instead submitting a list to ContactsAdapter
     TIRecyclerViewAdapter = new IntroducableContactsAdapter(requireContext(),
                                                             glideRequests,
-                                                            null,
+                                                            this.viewModel,
                                                             new ListClickListener());
 
     RecyclerViewConcatenateAdapterStickyHeader concatenateAdapter = new RecyclerViewConcatenateAdapterStickyHeader();
@@ -224,6 +235,18 @@ public class IntroductionContactsSelectionListFragment extends Fragment {//imple
     //if (TIRecyclerViewAdapter != null) {
      // TIRecyclerViewAdapter.onSelectionChanged();
     //}
+  }
+
+  /**
+   * Saved state to be restored from viewModel.
+   */
+  private void loadSelection(){
+    if(this.viewModel != null){
+      List<SelectedContact> selection = this.viewModel.getSelectedContacts();
+      for(SelectedContact current: selection){
+        addChipForSelectedContact(current);
+      }
+    } // should never happen, but if ViewModel does not exist, don't load anything.
   }
 
   public void setQueryFilter(String filter) {
@@ -308,7 +331,11 @@ public class IntroductionContactsSelectionListFragment extends Fragment {//imple
   }
 
   private void addChipForSelectedContact(@NonNull SelectedContact selectedContact) {
-    SimpleTask.run(getViewLifecycleOwner().getLifecycle(),
+    // TODO: This change made the chips appear correctly when restoring state from the ViewModel. Was this a bug in the first place?
+    // or have I broken some other things through this change?
+    //Lifecycle state = getViewLifecycleOwner().getLifecycle();
+    Lifecycle state = getLifecycle();
+    SimpleTask.run(state,
                    ()       -> Recipient.resolved(selectedContact.getOrCreateRecipientId(requireContext())),
                    resolved -> addChipForRecipient(resolved, selectedContact));
   }
