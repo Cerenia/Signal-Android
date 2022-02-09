@@ -96,7 +96,6 @@ public class IntroductionContactsSelectionListFragment extends Fragment {//imple
 
 
   private GlideRequests    glideRequests;
-  private           Set<RecipientId>         currentSelection;
   private           RecyclerViewFastScroller fastScroller;
   @Nullable private FixedViewsAdapter        headerAdapter;
   @Nullable private   ContactSelectionListFragment.ListCallback   listCallback;
@@ -141,8 +140,6 @@ public class IntroductionContactsSelectionListFragment extends Fragment {//imple
     }*/
 
     recyclerView.setClipToPadding(recyclerViewClipping);
-    // We always start empty here
-    currentSelection = Collections.emptySet();
 
     initializeCursor();
 
@@ -194,8 +191,7 @@ public class IntroductionContactsSelectionListFragment extends Fragment {//imple
     cursorRecyclerViewAdapter = new IntroducableContactsAdapter(requireContext(),
                                                                 glideRequests,
                                                                 null,
-                                                                new ListClickListener(),
-                                                                currentSelection);
+                                                                new ListClickListener());
 
     RecyclerViewConcatenateAdapterStickyHeader concatenateAdapter = new RecyclerViewConcatenateAdapterStickyHeader();
 
@@ -346,11 +342,11 @@ public class IntroductionContactsSelectionListFragment extends Fragment {//imple
   }
 
   private boolean selectionHardLimitReached() {
-    return getChipCount() + currentSelection.size() >= selectionLimit.getHardLimit();
+    return getChipCount() >= selectionLimit.getHardLimit();
   }
 
   private boolean selectionWarningLimitReachedExactly() {
-    return getChipCount() + currentSelection.size() == selectionLimit.getRecommendedLimit();
+    return getChipCount() == selectionLimit.getRecommendedLimit();
   }
 
   private int getChipCount() {
