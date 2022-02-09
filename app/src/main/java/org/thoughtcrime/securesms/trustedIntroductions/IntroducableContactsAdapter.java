@@ -112,42 +112,7 @@ public class IntroducableContactsAdapter extends ListAdapter<Recipient, Introduc
     this.clickListener   = clickListener;
     this.currentContacts = currentContacts;
   }
-
-  public long getHeaderId(int i) {
-    if (!isActiveCursor()) return -1;
-    else if (i == -1) return -1;
-
-    int contactType = getContactType(i);
-
-    if (contactType == TrustedIntroductionContactManager.DIVIDER_TYPE) return -1;
-    return Util.hashCode(getHeaderString(i), getContactType(i));
-  }
-
-  private boolean isContactRow(int contactType) {
-    return (contactType & (TrustedIntroductionContactManager.NEW_PHONE_TYPE | TrustedIntroductionContactManager.NEW_USERNAME_TYPE | TrustedIntroductionContactManager.DIVIDER_TYPE)) == 0;
-  }
-
-  private @Nullable String getHeaderLetterForDisplayName(@NonNull Cursor cursor) {
-    String           name              = CursorUtil.requireString(cursor, TrustedIntroductionContactManager.NAME_COLUMN);
-    Iterator<String> characterIterator = new CharacterIterable(name).iterator();
-
-    if (!TextUtils.isEmpty(name) && characterIterator.hasNext()) {
-      String next = characterIterator.next();
-
-      if (Character.isLetter(next.codePointAt(0))) {
-        return next.toUpperCase();
-      } else {
-        return "#";
-      }
-
-    } else {
-      return null;
-    }
-  }
-
-  public CharSequence getBubbleText(int position) {
-    return getHeaderString(position);
-  }
+  
 
   public List<SelectedContact> getSelectedContacts() {
     return selectedContacts.getContacts();
@@ -161,39 +126,6 @@ public class IntroducableContactsAdapter extends ListAdapter<Recipient, Introduc
     return currentContacts.size();
   }
 
-  private CharSequence getSpannedHeaderString(int position) {
-    final String headerString = getHeaderString(position);
-    if (isPush(position)) {
-      SpannableString spannable = new SpannableString(headerString);
-      spannable.setSpan(new ForegroundColorSpan(context.getResources().getColor(R.color.core_ultramarine)), 0, headerString.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-      return spannable;
-    } else {
-      return headerString;
-    }
-  }
-
-  private @NonNull String getHeaderString(int position) {
-    int contactType = getContactType(position);
-
-    if ((contactType & TrustedIntroductionContactManager.RECENT_TYPE) > 0 || contactType == TrustedIntroductionContactManager.DIVIDER_TYPE) {
-      return " ";
-    }
-
-    Cursor cursor = getCursorAtPositionOrThrow(position);
-    String letter = CursorUtil.requireString(cursor, TrustedIntroductionContactManager.NAME_COLUMN);
-
-    if (letter != null) {
-      letter = letter.trim();
-      if (letter.length() > 0) {
-        char firstChar = letter.charAt(0);
-        if (Character.isLetterOrDigit(firstChar)) {
-          return String.valueOf(Character.toUpperCase(firstChar));
-        }
-      }
-    }
-
-    return "#";
-  }
 
   private int getContactType(int position) {
     final Cursor cursor = getCursorAtPositionOrThrow(position);
