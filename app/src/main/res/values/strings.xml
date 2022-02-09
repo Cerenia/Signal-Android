@@ -1589,7 +1589,7 @@
     <string name="PickContactsForTIActivity_filter_hint">Search for contact</string>
 
     <!-- TIContactsFragment -->
-    <string name="TI_contacts_fragment_no_contacts">No valid contacts for introduction could be found. Have you strongly verified any contacts apart from the recipient?</string>
+    <string name="TI_contacts_fragment_no_contacts">No valid contacts for introduction were found.</string>
 
     <!-- PlayServicesProblemFragment -->
     <string name="PlayServicesProblemFragment_the_version_of_google_play_services_you_have_installed_is_not_functioning">The version of Google Play Services you have installed is not functioning correctly.  Please reinstall Google Play Services and try again.</string>

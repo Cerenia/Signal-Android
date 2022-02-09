@@ -39,7 +39,7 @@ import java.util.function.Consumer;
  * Queries the Contacts Provider for Contacts which match strongly verified contacts in the Signal identity database,
  * and let's the user choose some for the purpose of carrying out trusted introductions.
  */
-public class PickContactsForTrustedIntroductionActivity extends PassphraseRequiredActivity implements IntroductionContactsSelectionListFragment.OnContactSelectedListener, LifecycleOwner {
+public class PickContactsForTrustedIntroductionActivity extends PassphraseRequiredActivity implements IntroductionContactsSelectionListFragment.OnContactSelectedListener {
 
   private static final String TAG = org.signal.core.util.logging.Log.tag(PickContactsForTrustedIntroductionActivity.class);
 
@@ -73,6 +73,7 @@ public class PickContactsForTrustedIntroductionActivity extends PassphraseRequir
     // Bind references
     toolbar           = findViewById(R.id.toolbar);
     contactFilterView = findViewById(R.id.contact_filter_edit_text);
+
     ti_contacts         = (IntroductionContactsSelectionListFragment)getSupportFragmentManager().findFragmentById(R.id.trusted_introduction_contacts_fragment);
     ti_contacts.setRecipientId(recipientId);
     done = findViewById(R.id.done);
@@ -82,7 +83,6 @@ public class PickContactsForTrustedIntroductionActivity extends PassphraseRequir
     initializeContactFilterView();
 
     TrustedIntroductionContactsViewModel.Factory factory = new TrustedIntroductionContactsViewModel.Factory(recipientId);
-    // TODO: Still not sure who the owner of the viewModel should be, Fragment or Activity?
     TrustedIntroductionContactsViewModel viewModel = new ViewModelProvider(this, factory).get(TrustedIntroductionContactsViewModel.class);
 
     viewModel.getSelectedContacts().observe(this, selected -> {
