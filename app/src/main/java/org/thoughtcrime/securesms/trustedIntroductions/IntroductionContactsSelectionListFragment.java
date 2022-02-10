@@ -163,24 +163,7 @@ public class IntroductionContactsSelectionListFragment extends Fragment {//imple
   private @NonNull Bundle safeArguments() {
     return getArguments() != null ? getArguments() : new Bundle();
   }
-
-  public @NonNull List<SelectedContact> getSelectedContacts() {
-    if (TIRecyclerViewAdapter == null) {
-      return Collections.emptyList();
-    }
-
-    return TIRecyclerViewAdapter.getSelectedContacts();
-  }
-
-  public int getSelectedContactsCount() {
-    if (TIRecyclerViewAdapter == null) {
-      return 0;
-    }
-
-    return TIRecyclerViewAdapter.getSelectedContactsCount();
-  }
-
-
+  
   private void initializeAdapter() {
     glideRequests = GlideApp.with(this);
     // Not directly passing a cursor, instead submitting a list to ContactsAdapter
