@@ -33,6 +33,7 @@ import com.annimon.stream.Stream;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 
@@ -51,6 +52,7 @@ public class PickContactsForTrustedIntroductionActivity extends PassphraseRequir
 
   // when done picking contacts (button)
   private View done;
+  TrustedIntroductionContactsViewModel viewModel;
   private IntroductionContactsSelectionListFragment ti_contacts;
   // Alternative text when no contacts are verified
   private TextView                                  no_valid_contacts;
@@ -85,7 +87,7 @@ public class PickContactsForTrustedIntroductionActivity extends PassphraseRequir
     initializeContactFilterView();
 
     TrustedIntroductionContactsViewModel.Factory factory = new TrustedIntroductionContactsViewModel.Factory(recipientId);
-    TrustedIntroductionContactsViewModel viewModel = new ViewModelProvider(this, factory).get(TrustedIntroductionContactsViewModel.class);
+    viewModel = new ViewModelProvider(this, factory).get(TrustedIntroductionContactsViewModel.class);
 
     // # of valid contacts
     viewModel.getContacts().observe(this, contacts -> {
@@ -106,7 +108,7 @@ public class PickContactsForTrustedIntroductionActivity extends PassphraseRequir
     });
 
     done.setOnClickListener(v ->
-                                viewModel.getDialogStateForSelectedContacts(ti_contacts.getSelectedContacts(), this::displayAlertMessage)
+                                viewModel.getDialogStateForSelectedContacts(this::displayAlertMessage)
     );
 
     ti_contacts.setViewModel(viewModel);
@@ -144,7 +146,7 @@ public class PickContactsForTrustedIntroductionActivity extends PassphraseRequir
 
   @Override
   public void onContactSelected(Optional<RecipientId> recipientId, String number){
-    int selectedContactsCount = ti_contacts.getSelectedContactsCount();
+    int selectedContactsCount = viewModel.getSelectedContactsCount();
     if (selectedContactsCount == 0) {
       toolbar.setTitle(getString(R.string.PickContactsForTIActivity_introduce_contacts));
       disableDone();
@@ -189,7 +191,7 @@ public class PickContactsForTrustedIntroductionActivity extends PassphraseRequir
 
   protected final void onFinishedSelection() {
     Intent                resultIntent     = getIntent();
-    List<SelectedContact> selectedContacts = ti_contacts.getSelectedContacts();
+    List<SelectedContact> selectedContacts = Objects.requireNonNull(viewModel.getSelectedContacts().getValue()).getContacts();
     List<RecipientId>     recipients       = Stream.of(selectedContacts).map(sc -> sc.getOrCreateRecipientId(this)).toList();
 
     resultIntent.putParcelableArrayListExtra(KEY_SELECTED_CONTACTS_TO_FORWARD, new ArrayList<>(recipients));
