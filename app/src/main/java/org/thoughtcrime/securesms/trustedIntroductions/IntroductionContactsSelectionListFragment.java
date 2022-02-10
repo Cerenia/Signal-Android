@@ -31,6 +31,7 @@ import com.pnikosis.materialishprogress.ProgressWheel;
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.ContactSelectionListFragment;
 import org.thoughtcrime.securesms.R;
+import org.thoughtcrime.securesms.components.ContactFilterView;
 import org.thoughtcrime.securesms.components.RecyclerViewFastScroller;
 import org.thoughtcrime.securesms.components.recyclerview.ToolbarShadowAnimationHelper;
 import org.thoughtcrime.securesms.contacts.ContactChip;
@@ -62,7 +63,7 @@ import java.util.Objects;
  * This is an adaptation of ContactSelectionListFragment, but it's always a multiselect and the data is loaded from an external cursor
  * instead of using DisplayMode.
  */
-public class IntroductionContactsSelectionListFragment extends Fragment {//implements Observer {
+public class IntroductionContactsSelectionListFragment extends Fragment implements ContactFilterView.OnFilterChangedListener {
 
   private static final String TAG = Log.tag(IntroductionContactsSelectionListFragment.class);
 
@@ -155,9 +156,6 @@ public class IntroductionContactsSelectionListFragment extends Fragment {//imple
     this.viewModel.getContacts().observe(getViewLifecycleOwner(), users -> {
       TIRecyclerViewAdapter.submitList(getFiltered(users, null));
     });
-    this.viewModel.getFilter().observe(getViewLifecycleOwner(), filter -> {
-      TIRecyclerViewAdapter.submitList(getFiltered(null, filter));
-    });
   }
 
   private @NonNull Bundle safeArguments() {
@@ -239,7 +237,7 @@ public class IntroductionContactsSelectionListFragment extends Fragment {//imple
     if (!filter.isEmpty()){
       for (Recipient c: contacts) {
         // Choose appropriate string representation
-        if(c.getUsername().isPresent() && !c.getDisplayNameOrUsername(requireContext()).contains(filter)){
+        if(!c.getDisplayNameOrUsername(requireContext()).contains(filter)){
           filtered.remove(c);
         }
       }
@@ -249,6 +247,11 @@ public class IntroductionContactsSelectionListFragment extends Fragment {//imple
 
   private boolean shouldDisplayRecents() {
     return safeArguments().getBoolean(RECENTS, requireActivity().getIntent().getBooleanExtra(RECENTS, false));
+  }
+
+  @Override public void onFilterChanged(String filter) {
+    viewModel.setQueryFilter(filter);
+    TIRecyclerViewAdapter.submitList(getFiltered(null, filter));
   }
 
   /**

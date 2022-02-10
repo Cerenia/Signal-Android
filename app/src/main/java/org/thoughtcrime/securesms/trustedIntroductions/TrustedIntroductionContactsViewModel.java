@@ -26,7 +26,7 @@ import java.util.Objects;
 import static org.webrtc.ContextUtils.getApplicationContext;
 
 
-public class TrustedIntroductionContactsViewModel extends ViewModel {
+public class TrustedIntroductionContactsViewModel extends ViewModel{
 
   private final TrustedIntroductionContactManager manager;
   // TODO: Do I also need MutableLiveData? (looks like this is related to fetching contacts in background thread)
