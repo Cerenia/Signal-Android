@@ -111,11 +111,7 @@ public class PickContactsForTrustedIntroductionActivity extends PassphraseRequir
 
     ti_contacts.setViewModel(viewModel);
 
-    contactFilterView.setOnFilterChangedListener(query -> {
-      if (viewModel != null) {
-        viewModel.setQueryFilter(query);
-      }
-    });
+    contactFilterView.setOnFilterChangedListener(viewModel::setQueryFilter);
 
     contactFilterView.setHint(R.string.PickContactsForTIActivity_filter_hint);
 
