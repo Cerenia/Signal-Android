@@ -87,12 +87,20 @@ public class PickContactsForTrustedIntroductionActivity extends PassphraseRequir
     TrustedIntroductionContactsViewModel.Factory factory = new TrustedIntroductionContactsViewModel.Factory(recipientId);
     TrustedIntroductionContactsViewModel viewModel = new ViewModelProvider(this, factory).get(TrustedIntroductionContactsViewModel.class);
 
-    viewModel.getSelectedContacts().observe(this, selected -> {
-      if (selected.size() > 0){
+    // # of valid contacts
+    viewModel.getContacts().observe(this, contacts -> {
+      if(contacts.size() > 0){
         no_valid_contacts.setVisibility(View.GONE);
-        enableDone();
       } else {
         no_valid_contacts.setVisibility(View.VISIBLE);
+      }
+    });
+    
+    // selection
+    viewModel.getSelectedContacts().observe(this, selected -> {
+      if (selected.size() > 0){
+        enableDone();
+      } else {
         disableDone();
       }
     });
@@ -103,12 +111,11 @@ public class PickContactsForTrustedIntroductionActivity extends PassphraseRequir
 
     ti_contacts.setViewModel(viewModel);
 
-    // TODO: Does is load if this is commented?
-    /**contactFilterView.setOnFilterChangedListener(query -> {
-      if (ti_contacts != null) {
-        ti_contacts.setQueryFilter(query);
+    contactFilterView.setOnFilterChangedListener(query -> {
+      if (viewModel != null) {
+        viewModel.setQueryFilter(query);
       }
-    });**/
+    });
 
     contactFilterView.setHint(R.string.PickContactsForTIActivity_filter_hint);
 
