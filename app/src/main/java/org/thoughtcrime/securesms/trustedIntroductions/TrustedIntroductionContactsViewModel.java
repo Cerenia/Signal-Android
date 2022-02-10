@@ -79,20 +79,17 @@ public class TrustedIntroductionContactsViewModel extends ViewModel {
 
   public LiveData<List<Recipient>> getContacts(){
     return introducableContacts;
-    /**return Transformations.switchMap(filter,
-     f -> {
-     setFilter(f);
-     return getFiltered();
-     });**/
   }
 
-
-
-  public void setFilter(String filter) {
+  public void setQueryFilter(String filter) {
     this.filter.setValue(filter);
   }
 
-  private LiveData<List<Recipient>> getFiltered(){
+  LiveData<String> getFilter(){
+    return this.filter;
+  }
+
+  List<Recipient> getFiltered(){
     List<Recipient> contacts = introducableContacts.getValue();
     List<Recipient> filtered = new ArrayList<>();
     if (contacts != null && !filter.getValue().equals("")){
@@ -102,7 +99,7 @@ public class TrustedIntroductionContactsViewModel extends ViewModel {
         }
       }
     }
-    return new MutableLiveData<>(filtered);
+    return filtered;
   }
 
   private void loadValidContacts() {

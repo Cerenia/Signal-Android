@@ -76,7 +76,6 @@ public class IntroductionContactsSelectionListFragment extends Fragment {//imple
   private TrustedIntroductionContactsViewModel viewModel;
   private IntroducableContactsAdapter          TIRecyclerViewAdapter;
   private RecyclerView                         recyclerView;
-  private String                                                   searchFilter;
   private ChipGroup                                                    chipGroup;
   private   HorizontalScrollView                                         chipGroupScrollContainer;
   private SelectionLimits                                              selectionLimit = SelectionLimits.NO_LIMITS;
@@ -139,7 +138,6 @@ public class IntroductionContactsSelectionListFragment extends Fragment {//imple
   @MainThread
   @CallSuper
   public void onViewStateRestored(@Nullable Bundle savedInstanceState){
-    // TODO: Why is the state here only INITIALIZED?
     super.onViewStateRestored(savedInstanceState);
     loadSelection();
   }
@@ -152,8 +150,12 @@ public class IntroductionContactsSelectionListFragment extends Fragment {//imple
   public void setViewModel(TrustedIntroductionContactsViewModel viewModel){
     this.viewModel = viewModel;
     initializeAdapter();
+    // Observe both mutable data sources
     this.viewModel.getContacts().observe(getViewLifecycleOwner(), users -> {
-      TIRecyclerViewAdapter.submitList(users);
+      TIRecyclerViewAdapter.submitList(viewModel.getFiltered());
+    });
+    this.viewModel.getFilter().observe(getViewLifecycleOwner(), filter -> {
+      TIRecyclerViewAdapter.submitList(viewModel.getFiltered());
     });
   }
 
@@ -236,10 +238,6 @@ public class IntroductionContactsSelectionListFragment extends Fragment {//imple
     } // should never happen, but if ViewModel does not exist, don't load anything.
   }
 
-  public void setQueryFilter(String filter) {
-    this.searchFilter = filter;
-    viewModel.setFilter(filter);
-  }
 
   private boolean hideLetterHeaders() {
     return hasQueryFilter() || shouldDisplayRecents();
@@ -247,7 +245,7 @@ public class IntroductionContactsSelectionListFragment extends Fragment {//imple
 
   // TODO: needed?
   public boolean hasQueryFilter() {
-    return !TextUtils.isEmpty(searchFilter);
+    return !TextUtils.isEmpty(viewModel.getFilter().getValue());
   }
 
   private boolean shouldDisplayRecents() {
