@@ -163,7 +163,7 @@ public class IntroductionContactsSelectionListFragment extends Fragment {//imple
   private @NonNull Bundle safeArguments() {
     return getArguments() != null ? getArguments() : new Bundle();
   }
-  
+
   private void initializeAdapter() {
     glideRequests = GlideApp.with(this);
     // Not directly passing a cursor, instead submitting a list to ContactsAdapter

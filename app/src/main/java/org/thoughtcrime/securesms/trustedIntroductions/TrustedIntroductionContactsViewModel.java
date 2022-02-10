@@ -64,6 +64,10 @@ public class TrustedIntroductionContactsViewModel extends ViewModel {
     return Objects.requireNonNull(selectedContacts.getValue()).contains(contact);
   }
 
+  int getSelectedContactsCount(){
+    return Objects.requireNonNull(selectedContacts.getValue()).size();
+  }
+
   // observable
   LiveData<SelectedContactSet> getSelectedContacts(){
     return selectedContacts;
@@ -95,15 +99,12 @@ public class TrustedIntroductionContactsViewModel extends ViewModel {
     manager.getValidContacts(introducableContacts::postValue);
   }
 
-  void getDialogStateForSelectedContacts(@NonNull List<SelectedContact> selectedContacts,
-                                         @NonNull Consumer<TrustedIntroductionContactsViewModel.IntroduceDialogMessageState> callback){
+  void getDialogStateForSelectedContacts(@NonNull Consumer<TrustedIntroductionContactsViewModel.IntroduceDialogMessageState> callback){
     SimpleTask.run(
         () -> {
-          // TODO: Is this needed?
-          // Slightly confused about the term recipients here. Is it the selected contacts or the ppl already in the group?
-          TrustedIntroductionContactsViewModel.IntroduceDialogMessageStatePartial partialState = selectedContacts.size() == 1 ? getDialogStateForSingleContact(selectedContacts.get(0))
-                                                                                                             : getDialogStateForMultipleContacts(selectedContacts.size());
-
+          List<SelectedContact> selection = Objects.requireNonNull(selectedContacts.getValue()).getContacts();
+          TrustedIntroductionContactsViewModel.IntroduceDialogMessageStatePartial partialState = selection.size() == 1 ? getDialogStateForSingleContact(selection.get(0))
+                                                                                                             : getDialogStateForMultipleContacts(selection.size());
           return new TrustedIntroductionContactsViewModel.IntroduceDialogMessageState(Recipient.resolved(partialState.recipientId), partialState.forwardCount);
         },
         callback::accept
@@ -112,7 +113,7 @@ public class TrustedIntroductionContactsViewModel extends ViewModel {
 
   @WorkerThread
   private TrustedIntroductionContactsViewModel.IntroduceDialogMessageStatePartial getDialogStateForSingleContact(@NonNull SelectedContact selectedContact) {
-    return new TrustedIntroductionContactsViewModel.IntroduceDialogMessageStatePartial(manager.getRecipientId(), manager.getOrCreateRecipientIdForForwardedContact(selectedContact));
+    return new TrustedIntroductionContactsViewModel.IntroduceDialogMessageStatePartial(manager.getRecipientId());
   }
 
   private TrustedIntroductionContactsViewModel.IntroduceDialogMessageStatePartial getDialogStateForMultipleContacts(int recipientCount) {
@@ -122,13 +123,10 @@ public class TrustedIntroductionContactsViewModel extends ViewModel {
   private static final class IntroduceDialogMessageStatePartial {
     // In this case, the Recipient is the person that will receive the security numbers of the selected contacts through secure introduction.
     private final RecipientId recipientId;
-    // This is the ID of a single forwarded contact. Null if more than one contact is forwarded.
-    private final RecipientId   contactId;
     private final int         forwardCount;
 
-    private IntroduceDialogMessageStatePartial(@NonNull RecipientId recipientId, RecipientId contactId) {
+    private IntroduceDialogMessageStatePartial(@NonNull RecipientId recipientId) {
       this.recipientId = recipientId;
-      this.contactId = contactId;
       this.forwardCount = 1;
     }
 
@@ -136,7 +134,6 @@ public class TrustedIntroductionContactsViewModel extends ViewModel {
       Preconditions.checkArgument(forwardCount > 1);
       this.forwardCount = forwardCount;
       this.recipientId = recipientId;
-      this.contactId = null;
     }
   }
 
