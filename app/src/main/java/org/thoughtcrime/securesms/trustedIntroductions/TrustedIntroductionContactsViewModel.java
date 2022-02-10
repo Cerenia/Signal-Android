@@ -103,55 +103,27 @@ public class TrustedIntroductionContactsViewModel extends ViewModel{
     SimpleTask.run(
         () -> {
           List<SelectedContact> selection = Objects.requireNonNull(selectedContacts.getValue()).getContacts();
-          TrustedIntroductionContactsViewModel.IntroduceDialogMessageStatePartial partialState = selection.size() == 1 ? getDialogStateForSingleContact(selection.get(0))
-                                                                                                             : getDialogStateForMultipleContacts(selection.size());
-          return new TrustedIntroductionContactsViewModel.IntroduceDialogMessageState(Recipient.resolved(partialState.recipientId), partialState.forwardCount);
+          return new TrustedIntroductionContactsViewModel.IntroduceDialogMessageState(Recipient.resolved(manager.getRecipientId()), selection);
         },
         callback::accept
     );
   }
 
-  @WorkerThread
-  private TrustedIntroductionContactsViewModel.IntroduceDialogMessageStatePartial getDialogStateForSingleContact(@NonNull SelectedContact selectedContact) {
-    return new TrustedIntroductionContactsViewModel.IntroduceDialogMessageStatePartial(manager.getRecipientId());
-  }
-
-  private TrustedIntroductionContactsViewModel.IntroduceDialogMessageStatePartial getDialogStateForMultipleContacts(int recipientCount) {
-    return new TrustedIntroductionContactsViewModel.IntroduceDialogMessageStatePartial(manager.getRecipientId(), recipientCount);
-  }
-
-  private static final class IntroduceDialogMessageStatePartial {
-    // In this case, the Recipient is the person that will receive the security numbers of the selected contacts through secure introduction.
-    private final RecipientId recipientId;
-    private final int         forwardCount;
-
-    private IntroduceDialogMessageStatePartial(@NonNull RecipientId recipientId) {
-      this.recipientId = recipientId;
-      this.forwardCount = 1;
-    }
-
-    private IntroduceDialogMessageStatePartial(@NonNull RecipientId recipientId, int forwardCount) {
-      Preconditions.checkArgument(forwardCount > 1);
-      this.forwardCount = forwardCount;
-      this.recipientId = recipientId;
-    }
-  }
-
   public static final class IntroduceDialogMessageState {
     private final Recipient recipient;
-    private final int       selectionCount;
+    private final List<SelectedContact> toIntroduce;
 
-    private IntroduceDialogMessageState(@NonNull Recipient recipient, int selectionCount) {
+    private IntroduceDialogMessageState(@NonNull Recipient recipient, List<SelectedContact> toIntroduce) {
       this.recipient      = recipient;
-      this.selectionCount = selectionCount;
+      this.toIntroduce = toIntroduce;
     }
 
     public Recipient getRecipient() {
       return recipient;
     }
 
-    public int getSelectionCount() {
-      return selectionCount;
+    public List<SelectedContact> getToIntroduce(){
+      return toIntroduce;
     }
 
   }

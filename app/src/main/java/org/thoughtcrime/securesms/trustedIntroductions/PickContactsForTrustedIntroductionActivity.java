@@ -18,6 +18,7 @@ import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.util.DynamicNoActionBarTheme;
 import org.thoughtcrime.securesms.util.DynamicTheme;
 import org.thoughtcrime.securesms.util.Util;
+import org.thoughtcrime.securesms.util.concurrent.SimpleTask;
 import org.whispersystems.libsignal.util.guava.Optional;
 
 import androidx.annotation.NonNull;
@@ -172,22 +173,54 @@ public class PickContactsForTrustedIntroductionActivity extends PassphraseRequir
 
   private void displayAlertMessage(@NonNull TrustedIntroductionContactsViewModel.IntroduceDialogMessageState state) {
     Recipient recipient = Util.firstNonNull(state.getRecipient(), Recipient.UNKNOWN);
+    List<SelectedContact> selection = state.getToIntroduce();
+    int count = selection.size();
+    /*
+        SimpleTask.run(
+        () -> {
+          List<SelectedContact> selection = Objects.requireNonNull(selectedContacts.getValue()).getContacts();
+          return new TrustedIntroductionContactsViewModel.IntroduceDialogMessageState(Recipient.resolved(manager.getRecipientId()), selection);
+        },
+        callback::accept
+    );
+     */
+    if(count == 1){
+      SimpleTask.run(
+          () -> Recipient.resolved(selection.get(0).getOrCreateRecipientId(this)),
+          resolved -> displayAlertForSingleIntroduction(recipient, resolved, state));
+    } else {
+      assert count != 0 : "No contacts selected to introduce!";
+      displayAlertForMultiIntroduction(recipient, state);
+    }
+  }
 
-    String message = getResources().getQuantityString(R.plurals.PickContactsForTIActivity__introduce_d_contacts_to_s, state.getSelectionCount(),
-                                                      recipient.getDisplayName(this), state.getSelectionCount());
+  private void displayAlertForSingleIntroduction(Recipient recipient, Recipient introducee, @NonNull TrustedIntroductionContactsViewModel.IntroduceDialogMessageState state){
+    String message = getResources().getQuantityString(R.plurals.PickContactsForTIActivity__introduce_d_contacts_to_s, 1,
+                                                      introducee.getDisplayNameOrUsername(getApplicationContext()), recipient.getDisplayName(this));
+    displayAlert(message, state);
+  }
 
+  private void displayAlertForMultiIntroduction(Recipient recipient, @NonNull TrustedIntroductionContactsViewModel.IntroduceDialogMessageState state){
+    int count = state.getToIntroduce().size();
+    String message = getResources().getQuantityString(R.plurals.PickContactsForTIActivity__introduce_d_contacts_to_s, count,
+                                                      count, recipient.getDisplayName(this));
+    displayAlert(message, state);
+  }
+
+  private void displayAlert(String message, @NonNull TrustedIntroductionContactsViewModel.IntroduceDialogMessageState state){
     new AlertDialog.Builder(this)
         .setMessage(message)
         .setNegativeButton(android.R.string.cancel, (dialog, which) -> dialog.cancel())
         .setPositiveButton(R.string.PickContactsForTIActivity_introduce, (dialog, which) -> {
           dialog.dismiss();
-          onFinishedSelection();
+          onFinishedSelection(state);
         })
         .setCancelable(true)
         .show();
   }
 
-  protected final void onFinishedSelection() {
+  protected final void onFinishedSelection(@NonNull TrustedIntroductionContactsViewModel.IntroduceDialogMessageState state) {
+    // TODO: finish this
     Intent                resultIntent     = getIntent();
     List<SelectedContact> selectedContacts = Objects.requireNonNull(viewModel.getSelectedContacts().getValue()).getContacts();
     List<RecipientId>     recipients       = Stream.of(selectedContacts).map(sc -> sc.getOrCreateRecipientId(this)).toList();
