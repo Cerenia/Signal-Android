@@ -95,7 +95,7 @@ public class PickContactsForTrustedIntroductionActivity extends PassphraseRequir
         no_valid_contacts.setVisibility(View.VISIBLE);
       }
     });
-    
+
     // selection
     viewModel.getSelectedContacts().observe(this, selected -> {
       if (selected.size() > 0){

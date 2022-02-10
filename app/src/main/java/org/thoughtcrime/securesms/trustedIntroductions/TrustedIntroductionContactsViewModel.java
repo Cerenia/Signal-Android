@@ -90,12 +90,12 @@ public class TrustedIntroductionContactsViewModel extends ViewModel {
   }
 
   List<Recipient> getFiltered(){
-    List<Recipient> contacts = introducableContacts.getValue();
-    List<Recipient> filtered = new ArrayList<>();
-    if (contacts != null && !filter.getValue().equals("")){
+    List<Recipient> contacts = Objects.requireNonNull(introducableContacts.getValue());
+    List<Recipient> filtered = new ArrayList<>(contacts);
+    if (!Objects.requireNonNull(filter.getValue()).isEmpty()){
       for (Recipient c: contacts) {
-        if(c.getUsername().isPresent() && c.getUsername().get().contains(filter.getValue())){
-          filtered.add(c);
+        if(c.getUsername().isPresent() && !c.getUsername().get().contains(filter.getValue())){
+          filtered.remove(c);
         }
       }
     }
