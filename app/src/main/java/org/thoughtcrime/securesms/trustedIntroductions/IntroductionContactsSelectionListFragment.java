@@ -37,7 +37,6 @@ import org.thoughtcrime.securesms.components.recyclerview.ToolbarShadowAnimation
 import org.thoughtcrime.securesms.contacts.ContactChip;
 import org.thoughtcrime.securesms.contacts.ContactSelectionListAdapter;
 import org.thoughtcrime.securesms.contacts.ContactSelectionListItem;
-import org.thoughtcrime.securesms.contacts.LetterHeaderDecoration;
 import org.thoughtcrime.securesms.contacts.SelectedContact;
 import org.thoughtcrime.securesms.groups.SelectionLimits;
 import org.thoughtcrime.securesms.groups.ui.GroupLimitDialog;
@@ -81,23 +80,18 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
   private RecyclerView                         recyclerView;
   private ChipGroup                                                    chipGroup;
   private   HorizontalScrollView                                         chipGroupScrollContainer;
-  private SelectionLimits                                              selectionLimit = SelectionLimits.NO_LIMITS;
   private View                                        shadowView;
   private ToolbarShadowAnimationHelper                toolbarShadowAnimationHelper;
 
 
   private GlideRequests    glideRequests;
-  private           RecyclerViewFastScroller fastScroller;
-  @Nullable private FixedViewsAdapter        headerAdapter;
-  @Nullable private   ContactSelectionListFragment.ListCallback   listCallback;
-  @Nullable private ContactSelectionListFragment.ScrollCallback scrollCallback;
 
   @Override
   public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    // Reusing this layout, many components in it are never referenced for TI purposes.
     View view = inflater.inflate(R.layout.contact_selection_list_fragment, container, false);
 
     recyclerView             = view.findViewById(R.id.recycler_view);
-    fastScroller             = view.findViewById(R.id.fast_scroller);
     showContactsProgress     = view.findViewById(R.id.progress);
     chipGroup                = view.findViewById(R.id.chipGroup);
     chipGroupScrollContainer = view.findViewById(R.id.chipGroupScrollContainer);
@@ -170,42 +164,18 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
                                                             this.viewModel,
                                                             new ListClickListener());
 
-    RecyclerViewConcatenateAdapterStickyHeader concatenateAdapter = new RecyclerViewConcatenateAdapterStickyHeader();
-
-    // TODO: needed?
-    /*
-    if (listCallback != null) {
-      headerAdapter = new FixedViewsAdapter(createNewGroupItem(listCallback));
-      headerAdapter.hide();
-      concatenateAdapter.addAdapter(headerAdapter);
-    }*/
-
-    concatenateAdapter.addAdapter(TIRecyclerViewAdapter);
-
-    // TODO: needed?
-    /*
-    if (listCallback != null) {
-      footerAdapter = new FixedViewsAdapter(createInviteActionView(listCallback));
-      footerAdapter.hide();
-      concatenateAdapter.addAdapter(footerAdapter);
-    }*/
-
-    recyclerView.addItemDecoration(new LetterHeaderDecoration(requireContext(), this::hideLetterHeaders));
-    recyclerView.setAdapter(concatenateAdapter);
+    recyclerView.setAdapter(TIRecyclerViewAdapter);
     recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
       @Override
       public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
         if (newState == RecyclerView.SCROLL_STATE_DRAGGING) {
-          if (scrollCallback != null) {
+          // TODO: Add scrollCallback if needed
+          /*if (scrollCallback != null) {
             scrollCallback.onBeginScroll();
-          }
+          }*/
         }
       }
     });
-
-    //if (TIRecyclerViewAdapter != null) {
-     // TIRecyclerViewAdapter.onSelectionChanged();
-    //}
   }
 
   /**
@@ -218,15 +188,6 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
         addChipForSelectedContact(current);
       }
     } // should never happen, but if ViewModel does not exist, don't load anything.
-  }
-
-  private boolean hideLetterHeaders() {
-    return hasQueryFilter() || shouldDisplayRecents();
-  }
-
-  // TODO: needed?
-  public boolean hasQueryFilter() {
-    return !TextUtils.isEmpty(viewModel.getFilter().getValue());
   }
 
   List<Recipient> getFiltered(@Nullable List<Recipient> contacts, @Nullable String filter){
@@ -255,15 +216,6 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
   }
 
   /**
-   * Observer callback for live Data.
-   * @param o
-   */
-  /**@Override public void onChanged(Object o) {
-      cursorRecyclerViewAdapter.submitList((LiveData<List>)o);
-  }*/
-
-
-  /**
    * Taken and adapted from ContactSelectionListFragment.java
    */
   private class ListClickListener implements ContactSelectionListAdapter.ItemClickListener {
@@ -276,7 +228,6 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
       } else {
         markContactSelected(selectedContact);
       }
-
     }
   }
 
@@ -285,14 +236,6 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
    */
   public interface OnContactSelectedListener {
     void onContactSelected(Optional<RecipientId> recipientId, @Nullable String number);
-  }
-
-  private boolean selectionHardLimitReached() {
-    return getChipCount() >= selectionLimit.getHardLimit();
-  }
-
-  private boolean selectionWarningLimitReachedExactly() {
-    return getChipCount() == selectionLimit.getRecommendedLimit();
   }
 
   private int getChipCount() {
