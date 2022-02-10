@@ -41,7 +41,7 @@
             android:layout_marginTop="4dp"
             android:layout_marginBottom="12dp"
             android:layout_marginRight="@dimen/dsl_settings_gutter"
-            app:titleTextAppearance="@style/Signal.Text.Body"/>
+            app:titleTextAppearance="@style/TextSecure.TitleTextStyle"/>
 
         <fragment
             android:id="@+id/trusted_introduction_contacts_fragment"
