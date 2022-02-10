@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.TextView;
 
 import org.thoughtcrime.securesms.ContactSelectionActivity;
 import org.thoughtcrime.securesms.ContactSelectionListFragment;
@@ -51,7 +52,9 @@ public class PickContactsForTrustedIntroductionActivity extends PassphraseRequir
   // when done picking contacts (button)
   private View done;
   private IntroductionContactsSelectionListFragment ti_contacts;
-  private ContactFilterView contactFilterView;
+  // Alternative text when no contacts are verified
+  private TextView                                  no_valid_contacts;
+  private ContactFilterView                         contactFilterView;
   private Toolbar           toolbar;
 
   public static @NonNull Intent createIntent(@NonNull Context context, @NonNull RecipientId id){
@@ -73,7 +76,7 @@ public class PickContactsForTrustedIntroductionActivity extends PassphraseRequir
     // Bind references
     toolbar           = findViewById(R.id.toolbar);
     contactFilterView = findViewById(R.id.contact_filter_edit_text);
-
+    no_valid_contacts = findViewById(R.id.ti_no_contacts);
     ti_contacts         = (IntroductionContactsSelectionListFragment)getSupportFragmentManager().findFragmentById(R.id.trusted_introduction_contacts_fragment);
     done = findViewById(R.id.done);
 
@@ -86,8 +89,10 @@ public class PickContactsForTrustedIntroductionActivity extends PassphraseRequir
 
     viewModel.getSelectedContacts().observe(this, selected -> {
       if (selected.size() > 0){
+        no_valid_contacts.setVisibility(View.GONE);
         enableDone();
       } else {
+        no_valid_contacts.setVisibility(View.VISIBLE);
         disableDone();
       }
     });
