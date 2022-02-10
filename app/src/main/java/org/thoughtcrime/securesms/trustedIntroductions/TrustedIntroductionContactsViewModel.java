@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import static org.webrtc.ContextUtils.getApplicationContext;
+
 
 public class TrustedIntroductionContactsViewModel extends ViewModel {
 
@@ -87,19 +89,6 @@ public class TrustedIntroductionContactsViewModel extends ViewModel {
 
   LiveData<String> getFilter(){
     return this.filter;
-  }
-
-  List<Recipient> getFiltered(){
-    List<Recipient> contacts = Objects.requireNonNull(introducableContacts.getValue());
-    List<Recipient> filtered = new ArrayList<>(contacts);
-    if (!Objects.requireNonNull(filter.getValue()).isEmpty()){
-      for (Recipient c: contacts) {
-        if(c.getUsername().isPresent() && !c.getUsername().get().contains(filter.getValue())){
-          filtered.remove(c);
-        }
-      }
-    }
-    return filtered;
   }
 
   private void loadValidContacts() {
