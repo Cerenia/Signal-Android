@@ -41,7 +41,6 @@
             android:layout_marginTop="4dp"
             android:layout_marginBottom="12dp"
             android:layout_marginRight="@dimen/dsl_settings_gutter"
-            app:layout_constraintTop_toTopOf="id/contact_filter_edit_text"
             app:titleTextAppearance="@style/Signal.Text.Body"/>
 
         <fragment
