@@ -51,8 +51,10 @@ import org.thoughtcrime.securesms.util.adapter.RecyclerViewConcatenateAdapterSti
 import org.thoughtcrime.securesms.util.concurrent.SimpleTask;
 import org.whispersystems.libsignal.util.guava.Optional;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * In order to keep the tight coupling to a minimum, such that we can continue syncing against the upstream repo as it evolves, we opted to
@@ -142,20 +144,19 @@ public class IntroductionContactsSelectionListFragment extends Fragment {//imple
     loadSelection();
   }
 
-
   /**
    * Called by activity containing the Fragment.
-   * @param viewModel The underlying persistent data storage.
+   * @param viewModel The underlying persistent (throughout Activity and Fragment Lifecycle) data storage.
    */
   public void setViewModel(TrustedIntroductionContactsViewModel viewModel){
     this.viewModel = viewModel;
     initializeAdapter();
     // Observe both mutable data sources
     this.viewModel.getContacts().observe(getViewLifecycleOwner(), users -> {
-      TIRecyclerViewAdapter.submitList(viewModel.getFiltered());
+      TIRecyclerViewAdapter.submitList(getFiltered(users, null));
     });
     this.viewModel.getFilter().observe(getViewLifecycleOwner(), filter -> {
-      TIRecyclerViewAdapter.submitList(viewModel.getFiltered());
+      TIRecyclerViewAdapter.submitList(getFiltered(null, filter));
     });
   }
 
@@ -238,7 +239,6 @@ public class IntroductionContactsSelectionListFragment extends Fragment {//imple
     } // should never happen, but if ViewModel does not exist, don't load anything.
   }
 
-
   private boolean hideLetterHeaders() {
     return hasQueryFilter() || shouldDisplayRecents();
   }
@@ -246,6 +246,22 @@ public class IntroductionContactsSelectionListFragment extends Fragment {//imple
   // TODO: needed?
   public boolean hasQueryFilter() {
     return !TextUtils.isEmpty(viewModel.getFilter().getValue());
+  }
+
+  List<Recipient> getFiltered(@Nullable List<Recipient> contacts, @Nullable String filter){
+    // Fetch ressource from Viewmodel if not provided with the arguments
+    contacts = (contacts==null)? Objects.requireNonNull(viewModel.getContacts().getValue()): contacts;
+    List<Recipient> filtered = new ArrayList<>(contacts);
+    filter = (filter==null)? Objects.requireNonNull(viewModel.getFilter().getValue()): filter;
+    if (!filter.isEmpty()){
+      for (Recipient c: contacts) {
+        // Choose appropriate string representation
+        if(c.getUsername().isPresent() && !c.getDisplayNameOrUsername(requireContext()).contains(filter)){
+          filtered.remove(c);
+        }
+      }
+    }
+    return filtered;
   }
 
   private boolean shouldDisplayRecents() {
