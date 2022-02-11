@@ -23,14 +23,12 @@ import io.reactivex.rxjava3.annotations.NonNull;
 
 final class TrustedIntroductionContactManager {
 
-  private final Context context;
   // This is the person which will receive the security numbers of the selected contacts through
   //  a secure introduction.
   private final RecipientId recipientId;
 
 
   TrustedIntroductionContactManager(RecipientId recipientId){
-    this.context = ApplicationDependencies.getApplication();
     this.recipientId = recipientId;
   }
 
@@ -63,10 +61,5 @@ final class TrustedIntroductionContactManager {
   public RecipientId getRecipientId(){
     return this.recipientId;
   }
-
-  @WorkerThread RecipientId getOrCreateRecipientIdForForwardedContact(@NonNull SelectedContact selectedContact){
-    return selectedContact.getOrCreateRecipientId(context);
-  }
-
 
 }
