@@ -59,7 +59,6 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
   private static final int CHIP_GROUP_EMPTY_CHILD_COUNT  = 1;
   private static final int CHIP_GROUP_REVEAL_DURATION_MS = 150;
 
-  public static final String RECENTS           = "recents";
   public static final String DISPLAY_CHIPS     = "display_chips";
 
   // TODO: have a progress wheel for more substantial data? (cosmetic, not super important)
@@ -116,7 +115,7 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
 
   /**
    * Called by activity containing the Fragment.
-   * @param viewModel The underlying persistent (throughout Activity and Fragment Lifecycle) data storage.
+   * @param viewModel The underlying persistent data storage (throughout Activity and Fragment Lifecycle).
    */
   public void setViewModel(TrustedIntroductionContactsViewModel viewModel){
     this.viewModel = viewModel;
@@ -145,6 +144,7 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
       public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
         if (newState == RecyclerView.SCROLL_STATE_DRAGGING) {
           // TODO: Add scrollCallback if needed
+          // => will be figured out with unittests and injection of fake long list of introducable contacts.
           /*if (scrollCallback != null) {
             scrollCallback.onBeginScroll();
           }*/
@@ -166,7 +166,7 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
   }
 
   // TODO: Unhappy that this is here and not in the viewmodel. But the display or username is context dependant so not sure how/if to decouple.
-  List<Recipient> getFiltered(@Nullable List<Recipient> contacts, @Nullable String filter){
+  private List<Recipient> getFiltered(@Nullable List<Recipient> contacts, @Nullable String filter){
     // Fetch ressource from Viewmodel if not provided with the arguments
     contacts = (contacts==null)? Objects.requireNonNull(viewModel.getContacts().getValue()): contacts;
     List<Recipient> filtered = new ArrayList<>(contacts);
@@ -206,7 +206,7 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
   /**
    * Taken and adapted from ContactSelectionListFragment.java
    */
-  public interface OnContactSelectedListener {
+  interface OnContactSelectedListener {
     void onContactSelected(Optional<RecipientId> recipientId, @Nullable String number);
   }
 
