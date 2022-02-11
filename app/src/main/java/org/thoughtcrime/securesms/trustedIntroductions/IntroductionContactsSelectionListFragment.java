@@ -1,15 +1,11 @@
 package org.thoughtcrime.securesms.trustedIntroductions;
 
 import android.animation.LayoutTransition;
-import android.content.Intent;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.HorizontalScrollView;
-import android.widget.TextView;
 
 import androidx.annotation.CallSuper;
 import androidx.annotation.MainThread;
@@ -29,31 +25,25 @@ import com.google.android.material.chip.ChipGroup;
 import com.pnikosis.materialishprogress.ProgressWheel;
 
 import org.signal.core.util.logging.Log;
-import org.thoughtcrime.securesms.ContactSelectionListFragment;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.components.ContactFilterView;
-import org.thoughtcrime.securesms.components.RecyclerViewFastScroller;
 import org.thoughtcrime.securesms.components.recyclerview.ToolbarShadowAnimationHelper;
 import org.thoughtcrime.securesms.contacts.ContactChip;
 import org.thoughtcrime.securesms.contacts.ContactSelectionListAdapter;
 import org.thoughtcrime.securesms.contacts.ContactSelectionListItem;
 import org.thoughtcrime.securesms.contacts.SelectedContact;
-import org.thoughtcrime.securesms.groups.SelectionLimits;
-import org.thoughtcrime.securesms.groups.ui.GroupLimitDialog;
 import org.thoughtcrime.securesms.mms.GlideApp;
 import org.thoughtcrime.securesms.mms.GlideRequests;
 import org.thoughtcrime.securesms.recipients.LiveRecipient;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.util.ViewUtil;
-import org.thoughtcrime.securesms.util.adapter.FixedViewsAdapter;
-import org.thoughtcrime.securesms.util.adapter.RecyclerViewConcatenateAdapterStickyHeader;
 import org.thoughtcrime.securesms.util.concurrent.SimpleTask;
 import org.whispersystems.libsignal.util.guava.Optional;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 /**
@@ -109,25 +99,10 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
       }
     });
 
-    Intent intent    = requireActivity().getIntent();
-    Bundle arguments = safeArguments();
-
     // Default values for now
-    int     recyclerViewPadBottom = -1;
     boolean recyclerViewClipping  = true;
 
-    /*if (recyclerViewPadBottom != -1) {
-      ViewUtil.setPaddingBottom(recyclerView, recyclerViewPadBottom);
-    }*/
-
     recyclerView.setClipToPadding(recyclerViewClipping);
-
-    // TODO: Is it correct to initialize this in Activity instead?
-    //TrustedIntroductionContactsViewModel.Factory factory = new TrustedIntroductionContactsViewModel.Factory(recipientId);
-    //viewModel = new ViewModelProvider(this, factory).get(TrustedIntroductionContactsViewModel.class);
-    //viewModel.getContacts().observe(getViewLifecycleOwner(), users -> {
-    //  cursorRecyclerViewAdapter.submitList(users);
-    //});
 
     return view;
   }
@@ -190,6 +165,7 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
     } // should never happen, but if ViewModel does not exist, don't load anything.
   }
 
+  // TODO: Unhappy that this is here and not in the viewmodel. But the display or username is context dependant so not sure how/if to decouple.
   List<Recipient> getFiltered(@Nullable List<Recipient> contacts, @Nullable String filter){
     // Fetch ressource from Viewmodel if not provided with the arguments
     contacts = (contacts==null)? Objects.requireNonNull(viewModel.getContacts().getValue()): contacts;
@@ -206,10 +182,6 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
     return filtered;
   }
 
-  private boolean shouldDisplayRecents() {
-    return safeArguments().getBoolean(RECENTS, requireActivity().getIntent().getBooleanExtra(RECENTS, false));
-  }
-
   @Override public void onFilterChanged(String filter) {
     viewModel.setQueryFilter(filter);
     TIRecyclerViewAdapter.submitList(getFiltered(null, filter));
@@ -223,7 +195,7 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
     public void onItemClick(ContactSelectionListItem contact) {
       SelectedContact selectedContact = contact.isUsernameType() ? SelectedContact.forUsername(contact.getRecipientId().orNull(), contact.getNumber())
                                                                  : SelectedContact.forPhone(contact.getRecipientId().orNull(), contact.getNumber());
-      if (TIRecyclerViewAdapter.isSelectedContact(selectedContact)) {
+      if (viewModel.isSelectedContact(selectedContact)) {
         markContactUnselected(selectedContact);
       } else {
         markContactSelected(selectedContact);
@@ -256,8 +228,12 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
   }
 
   private void markContactSelected(@NonNull SelectedContact selectedContact) {
-    TIRecyclerViewAdapter.addSelectedContact(selectedContact);
-    addChipForSelectedContact(selectedContact);
+    boolean added = viewModel.addSelectedContact(selectedContact);
+    if(!added){
+      Log.i(TAG, String.format("Contact %s was already part of the selection.", selectedContact.toString()));
+    } else {
+      addChipForSelectedContact(selectedContact);
+    }
   }
 
   private void addChipForSelectedContact(@NonNull SelectedContact selectedContact) {
@@ -330,9 +306,14 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
   }
 
   private void markContactUnselected(@NonNull SelectedContact selectedContact) {
-    TIRecyclerViewAdapter.removeFromSelectedContacts(selectedContact);
-    TIRecyclerViewAdapter.notifyItemRangeChanged(0, TIRecyclerViewAdapter.getItemCount(), ContactSelectionListAdapter.PAYLOAD_SELECTION_CHANGE);
-    removeChipForContact(selectedContact);
+    int removed = viewModel.removeFromSelectedContacts(selectedContact);
+    if(removed <= 0){
+      Log.w(TAG, String.format(Locale.US,"%s could not be removed from selection!", selectedContact.toString()));
+    } else {
+      Log.i(TAG, String.format(Locale.US,"%d contact(s) were removed from selection.", removed));
+      TIRecyclerViewAdapter.notifyItemRangeChanged(0, TIRecyclerViewAdapter.getItemCount(), ContactSelectionListAdapter.PAYLOAD_SELECTION_CHANGE);
+      removeChipForContact(selectedContact);
+    }
   }
 
   private void removeChipForContact(@NonNull SelectedContact contact) {
