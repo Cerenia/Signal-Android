@@ -1,37 +1,25 @@
 package org.thoughtcrime.securesms.trustedIntroductions;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.annotation.WorkerThread;
 import androidx.core.util.Consumer;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.Transformations;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
 import org.thoughtcrime.securesms.contacts.SelectedContact;
 import org.thoughtcrime.securesms.contacts.SelectedContactSet;
-import org.thoughtcrime.securesms.groups.GroupId;
-import org.thoughtcrime.securesms.groups.ui.addmembers.AddMembersViewModel;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.util.concurrent.SimpleTask;
-import org.whispersystems.libsignal.util.guava.Preconditions;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import static org.webrtc.ContextUtils.getApplicationContext;
-
-
-public class TrustedIntroductionContactsViewModel extends ViewModel{
+public final class TrustedIntroductionContactsViewModel extends ViewModel{
 
   private final TrustedIntroductionContactManager manager;
-  // TODO: Do I also need MutableLiveData? (looks like this is related to fetching contacts in background thread)
-  // Yes I do, this is the common case atm.
-  // https://developer.android.com/topic/libraries/architecture/viewmodel
   private final MutableLiveData<List<Recipient>>  introducableContacts;
   private final      MutableLiveData<String> filter;
   private final MutableLiveData<SelectedContactSet>      selectedContacts;
@@ -105,7 +93,7 @@ public class TrustedIntroductionContactsViewModel extends ViewModel{
     );
   }
 
-  public static final class IntroduceDialogMessageState {
+  static final class IntroduceDialogMessageState {
     private final Recipient recipient;
     private final List<SelectedContact> toIntroduce;
 
@@ -114,21 +102,21 @@ public class TrustedIntroductionContactsViewModel extends ViewModel{
       this.toIntroduce = toIntroduce;
     }
 
-    public Recipient getRecipient() {
+    Recipient getRecipient() {
       return recipient;
     }
 
-    public List<SelectedContact> getToIntroduce(){
+    List<SelectedContact> getToIntroduce(){
       return toIntroduce;
     }
 
   }
 
-  public static class Factory implements ViewModelProvider.Factory {
+  static class Factory implements ViewModelProvider.Factory {
 
     private final TrustedIntroductionContactManager manager;
 
-    public Factory(RecipientId id) {
+    Factory(RecipientId id) {
       this.manager = new TrustedIntroductionContactManager(id);
     }
 
