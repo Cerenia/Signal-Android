@@ -1,16 +1,11 @@
 package org.thoughtcrime.securesms.trustedIntroductions;
 
-import android.content.Context;
-
-import androidx.annotation.WorkerThread;
 import androidx.core.util.Consumer;
 
 import org.signal.core.util.concurrent.SignalExecutors;
-import org.thoughtcrime.securesms.contacts.SelectedContact;
 import org.thoughtcrime.securesms.database.IdentityDatabase;
 import org.thoughtcrime.securesms.database.RecipientDatabase;
 import org.thoughtcrime.securesms.database.SignalDatabase;
-import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 
@@ -26,7 +21,6 @@ final class TrustedIntroductionContactManager {
   // This is the person which will receive the security numbers of the selected contacts through
   //  a secure introduction.
   private final RecipientId recipientId;
-
 
   TrustedIntroductionContactManager(RecipientId recipientId){
     this.recipientId = recipientId;
@@ -57,9 +51,7 @@ final class TrustedIntroductionContactManager {
     });
   }
 
-
-  public RecipientId getRecipientId(){
+  RecipientId getRecipientId(){
     return this.recipientId;
   }
-
 }
