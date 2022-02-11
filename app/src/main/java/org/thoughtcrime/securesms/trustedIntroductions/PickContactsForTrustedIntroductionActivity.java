@@ -175,15 +175,6 @@ public class PickContactsForTrustedIntroductionActivity extends PassphraseRequir
     Recipient recipient = Util.firstNonNull(state.getRecipient(), Recipient.UNKNOWN);
     List<SelectedContact> selection = state.getToIntroduce();
     int count = selection.size();
-    /*
-        SimpleTask.run(
-        () -> {
-          List<SelectedContact> selection = Objects.requireNonNull(selectedContacts.getValue()).getContacts();
-          return new TrustedIntroductionContactsViewModel.IntroduceDialogMessageState(Recipient.resolved(manager.getRecipientId()), selection);
-        },
-        callback::accept
-    );
-     */
     if(count == 1){
       SimpleTask.run(
           () -> Recipient.resolved(selection.get(0).getOrCreateRecipientId(this)),
