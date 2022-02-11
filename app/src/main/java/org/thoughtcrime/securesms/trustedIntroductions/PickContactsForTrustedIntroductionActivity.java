@@ -6,12 +6,9 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 
-import org.thoughtcrime.securesms.ContactSelectionActivity;
-import org.thoughtcrime.securesms.ContactSelectionListFragment;
 import org.thoughtcrime.securesms.PassphraseRequiredActivity;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.components.ContactFilterView;
-import org.thoughtcrime.securesms.contacts.ContactsCursorLoader;
 import org.thoughtcrime.securesms.contacts.SelectedContact;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
@@ -22,29 +19,21 @@ import org.thoughtcrime.securesms.util.concurrent.SimpleTask;
 import org.whispersystems.libsignal.util.guava.Optional;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
-import androidx.fragment.app.Fragment;
-import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.loader.app.LoaderManager;
 
 import com.annimon.stream.Stream;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Consumer;
-
 
 /**
  * Queries the Contacts Provider for Contacts which match strongly verified contacts in the Signal identity database,
  * and let's the user choose some for the purpose of carrying out trusted introductions.
  */
-public class PickContactsForTrustedIntroductionActivity extends PassphraseRequiredActivity implements IntroductionContactsSelectionListFragment.OnContactSelectedListener {
-
-  private static final String TAG = org.signal.core.util.logging.Log.tag(PickContactsForTrustedIntroductionActivity.class);
+public final class PickContactsForTrustedIntroductionActivity extends PassphraseRequiredActivity implements IntroductionContactsSelectionListFragment.OnContactSelectedListener {
 
   public static final String RECIPIENT_ID = "recipient_id";
   public static final String KEY_SELECTED_CONTACTS_TO_FORWARD = "forwarding_contacts";
@@ -53,8 +42,7 @@ public class PickContactsForTrustedIntroductionActivity extends PassphraseRequir
 
   // when done picking contacts (button)
   private View done;
-  TrustedIntroductionContactsViewModel viewModel;
-  private IntroductionContactsSelectionListFragment ti_contacts;
+  private TrustedIntroductionContactsViewModel viewModel;
   // Alternative text when no contacts are verified
   private TextView                                  no_valid_contacts;
   private ContactFilterView                         contactFilterView;
@@ -80,7 +68,7 @@ public class PickContactsForTrustedIntroductionActivity extends PassphraseRequir
     toolbar           = findViewById(R.id.toolbar);
     contactFilterView = findViewById(R.id.contact_filter_edit_text);
     no_valid_contacts = findViewById(R.id.ti_no_contacts);
-    ti_contacts         = (IntroductionContactsSelectionListFragment)getSupportFragmentManager().findFragmentById(R.id.trusted_introduction_contacts_fragment);
+    final IntroductionContactsSelectionListFragment ti_contacts = (IntroductionContactsSelectionListFragment) getSupportFragmentManager().findFragmentById(R.id.trusted_introduction_contacts_fragment);
     done = findViewById(R.id.done);
 
     // Initialize
@@ -126,7 +114,7 @@ public class PickContactsForTrustedIntroductionActivity extends PassphraseRequir
     });
   }
 
-  protected void initializeToolbar() {
+  private void initializeToolbar() {
     setSupportActionBar(toolbar);
 
     getSupportActionBar().setDisplayHomeAsUpEnabled(false);
@@ -210,7 +198,7 @@ public class PickContactsForTrustedIntroductionActivity extends PassphraseRequir
         .show();
   }
 
-  protected final void onFinishedSelection(@NonNull TrustedIntroductionContactsViewModel.IntroduceDialogMessageState state) {
+  private void onFinishedSelection(@NonNull TrustedIntroductionContactsViewModel.IntroduceDialogMessageState state) {
     // TODO: finish this
     Intent                resultIntent     = getIntent();
     List<SelectedContact> selectedContacts = Objects.requireNonNull(viewModel.getSelectedContacts().getValue()).getContacts();
