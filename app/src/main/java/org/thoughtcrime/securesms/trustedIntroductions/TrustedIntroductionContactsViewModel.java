@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public final class TrustedIntroductionContactsViewModel extends ViewModel{
+final class TrustedIntroductionContactsViewModel extends ViewModel{
 
   private final TrustedIntroductionContactManager manager;
   private final MutableLiveData<List<Recipient>>  introducableContacts;
@@ -61,7 +61,7 @@ public final class TrustedIntroductionContactsViewModel extends ViewModel{
     return selectedContacts;
   }
 
-  // direct access to the list TODO: is this a good idea?
+  // direct access to the list TODO: is this a good idea? should be aight, SelectedContactSet uses copy-constructor.
   List<SelectedContact> listSelectedContacts(){
     SelectedContactSet selected = Objects.requireNonNull(selectedContacts.getValue());
     return selected.getContacts();
@@ -125,5 +125,4 @@ public final class TrustedIntroductionContactsViewModel extends ViewModel{
       return Objects.requireNonNull(modelClass.cast(new TrustedIntroductionContactsViewModel(manager)));
     }
   }
-
 }
