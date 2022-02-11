@@ -1,7 +1,6 @@
 package org.thoughtcrime.securesms.trustedIntroductions;
 
 import android.content.Context;
-import android.database.DataSetObserver;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,18 +10,12 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 
-import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.contacts.ContactSelectionListItem;
-import org.thoughtcrime.securesms.contacts.LetterHeaderDecoration;
-import org.thoughtcrime.securesms.contacts.SelectedContact;
 import org.thoughtcrime.securesms.mms.GlideRequests;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.contacts.ContactSelectionListAdapter;
 import org.thoughtcrime.securesms.recipients.RecipientId;
-
-import java.util.List;
-import java.util.Locale;
 
 /**
  * Adaptation of ContactSelectionListAdapter, CursorRecyclerViewAdapter and BlockedUsersAdapter.
@@ -30,9 +23,7 @@ import java.util.Locale;
  * Presents the recipients and forwards the click logic to the Viewmodel.
  *
  */
-public class IntroducableContactsAdapter extends ListAdapter<Recipient, IntroducableContactsAdapter.ContactViewHolder> {
-
-  private final static String TAG = Log.tag(IntroducableContactsAdapter.class);
+class IntroducableContactsAdapter extends ListAdapter<Recipient, IntroducableContactsAdapter.ContactViewHolder> {
 
   private final @NonNull Context         context;
 
@@ -40,7 +31,7 @@ public class IntroducableContactsAdapter extends ListAdapter<Recipient, Introduc
   private final ContactSelectionListAdapter.ItemClickListener clickListener;
   private final GlideRequests    glideRequests;
 
-  public IntroducableContactsAdapter(@NonNull Context context,
+  IntroducableContactsAdapter(@NonNull Context context,
                                      @NonNull GlideRequests glideRequests,
                                      TrustedIntroductionContactsViewModel viewModel,
                                      @Nullable ContactSelectionListAdapter.ItemClickListener clickListener)
@@ -52,7 +43,7 @@ public class IntroducableContactsAdapter extends ListAdapter<Recipient, Introduc
     this.clickListener   = clickListener;
   }
 
-  public @NonNull IntroducableContactsAdapter.ContactViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+  @NonNull public IntroducableContactsAdapter.ContactViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
     return new ContactViewHolder(layoutInflater.inflate(R.layout.contact_selection_list_item, parent, false), clickListener);
   }
 
@@ -66,31 +57,37 @@ public class IntroducableContactsAdapter extends ListAdapter<Recipient, Introduc
    * Reusing classes from ContactSlectionListAdapter.
    * Because the constructors are package private, they are duplicated & adapted here.
    */
-  public abstract static class ViewHolder extends ContactSelectionListAdapter.ViewHolder {
+  abstract static class ViewHolder extends ContactSelectionListAdapter.ViewHolder {
 
-    public ViewHolder(View itemView) {
+    ViewHolder(View itemView) {
       super(itemView);
     }
 
+    @Override
     public abstract void bind(@NonNull GlideRequests glideRequests, @Nullable RecipientId recipientId, int type, String name, String number, String label, String about, boolean checkboxVisible);
 
+    @Override
     public abstract void unbind(@NonNull GlideRequests glideRequests);
 
+    @Override
     public abstract void setChecked(boolean checked);
 
+    @Override
     public void animateChecked(boolean checked) {
       // Intentionally empty.
     }
 
+    @Override
     public abstract void setEnabled(boolean enabled);
 
+    @Override
     public void setLetterHeaderCharacter(@Nullable String letterHeaderCharacter) {
       // Intentionally empty.
     }
 
   }
 
-  public static class ContactViewHolder extends ViewHolder{
+  static class ContactViewHolder extends ViewHolder{
 
     ContactViewHolder(@NonNull final View itemView,
                       @Nullable final ContactSelectionListAdapter.ItemClickListener clickListener)
@@ -101,10 +98,11 @@ public class IntroducableContactsAdapter extends ListAdapter<Recipient, Introduc
       });
     }
 
-    public ContactSelectionListItem getView() {
+    ContactSelectionListItem getView() {
       return (ContactSelectionListItem) itemView;
     }
 
+    @Override
     public void bind(@NonNull GlideRequests glideRequests, @Nullable RecipientId recipientId, int type, String name, String number, String label, String about, boolean checkBoxVisible) {
       getView().set(glideRequests, recipientId, type, name, number, label, about, checkBoxVisible);
     }
