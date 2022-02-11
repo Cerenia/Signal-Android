@@ -79,10 +79,6 @@ public class TrustedIntroductionContactsViewModel extends ViewModel{
     return selected.getContacts();
   }
 
-  int getSelectedContactsSize(){
-    return Objects.requireNonNull(selectedContacts.getValue()).size();
-  }
-
   public LiveData<List<Recipient>> getContacts(){
     return introducableContacts;
   }
