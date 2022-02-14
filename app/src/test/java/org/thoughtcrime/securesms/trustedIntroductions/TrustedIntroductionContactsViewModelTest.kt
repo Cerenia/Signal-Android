@@ -11,10 +11,14 @@ import org.mockito.junit.MockitoJUnitRunner
 
 @RunWith(MockitoJUnitRunner::class)
 class TrustedIntroductionContactsViewModelTest {
+
+
+
+
   @Test
   fun `is Singleton`(){
-    val factory:  TrustedIntroductionContactsViewModel.Factory = TrustedIntroductionContactsViewModel.Factory(FakeRecipients.recipientIDs[0])
-    val viewModel: TrustedIntroductionContactsViewModel = ViewModelProvider(Mockito.mock(ViewModelStoreOwner::class.java), factory).get(TrustedIntroductionContactsViewModel::class.java)
+    //val factory:  TrustedIntroductionContactsViewModel.Factory = TrustedIntroductionContactsViewModel.Factory(FakeRecipients.recipientIDs[0])
+    //val viewModel: TrustedIntroductionContactsViewModel = ViewModelProvider(Mockito.mock(ViewModelStoreOwner::class.java), factory).get(TrustedIntroductionContactsViewModel::class.java)
 
 
   }
