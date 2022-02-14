@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import org.thoughtcrime.securesms.contacts.SelectedContact;
 import org.thoughtcrime.securesms.contacts.SelectedContactSet;
+import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.util.concurrent.SimpleTask;
@@ -121,8 +122,9 @@ final class TrustedIntroductionContactsViewModel extends ViewModel{
 
     private final TrustedIntroductionContactManager manager;
 
+    // Passing databases explicitly for testibility
     Factory(RecipientId id) {
-      this.manager = new TrustedIntroductionContactManager(id);
+      this.manager = new TrustedIntroductionContactManager(id, SignalDatabase.identities(), SignalDatabase.recipients());
     }
 
     @Override

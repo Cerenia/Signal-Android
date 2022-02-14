@@ -22,14 +22,18 @@ final class TrustedIntroductionContactManager {
   //  a secure introduction.
   private final RecipientId recipientId;
 
-  TrustedIntroductionContactManager(RecipientId recipientId){
+  // Dependency injection makes the class testable
+  private final IdentityDatabase idb;
+  private final RecipientDatabase rdb;
+
+  TrustedIntroductionContactManager(RecipientId recipientId, IdentityDatabase idb, RecipientDatabase rdb){
     this.recipientId = recipientId;
+    this.idb = idb;
+    this.rdb = rdb;
   }
 
   void getValidContacts(@NonNull Consumer<List<Recipient>> introducableContacts){
     SignalExecutors.BOUNDED.execute(() -> {
-      IdentityDatabase idb = SignalDatabase.identities();
-      RecipientDatabase rdb = SignalDatabase.recipients();
       try(RecipientDatabase.RecipientReader reader = rdb.getReaderForTI(idb.getTIUnlocked())){
         int count = reader.getCount();
         if (count == 0){
