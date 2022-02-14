@@ -4397,6 +4397,7 @@ open class RecipientTable(context: Context, databaseHelper: SignalDatabase) : Da
     override fun close() {
       cursor.close()
     }
+
   }
 
   class MissingRecipientException(id: RecipientId?) : IllegalStateException("Failed to find recipient with ID: $id")
