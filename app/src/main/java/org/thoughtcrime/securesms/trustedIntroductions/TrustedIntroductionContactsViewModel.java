@@ -24,7 +24,8 @@ final class TrustedIntroductionContactsViewModel extends ViewModel{
   private final      MutableLiveData<String> filter;
   private final MutableLiveData<SelectedContactSet>      selectedContacts;
 
-  private TrustedIntroductionContactsViewModel(TrustedIntroductionContactManager manager) {
+  // package private for testing.
+  TrustedIntroductionContactsViewModel(TrustedIntroductionContactManager manager) {
     this.manager = manager;
     introducableContacts = new MutableLiveData<>(new ArrayList<>());
     filter = new MutableLiveData<>("");
@@ -34,17 +35,21 @@ final class TrustedIntroductionContactsViewModel extends ViewModel{
 
   boolean addSelectedContact(@NonNull SelectedContact contact){
     SelectedContactSet selected = Objects.requireNonNull(selectedContacts.getValue());
-    boolean result = selected.add(contact);
-    // Notify observers
-    selectedContacts.setValue(selected);
-    return result;
+    boolean added = selected.add(contact);
+    if (added){
+      // Notify observers
+      selectedContacts.setValue(selected);
+    }
+    return added;
   }
 
   int removeFromSelectedContacts(@NonNull SelectedContact contact){
     SelectedContactSet selected = Objects.requireNonNull(selectedContacts.getValue());
     int result = selected.remove(contact);
-    // Notify observers
-    selectedContacts.setValue(selected);
+    if (result > 0){
+      // Notify observers
+      selectedContacts.setValue(selected);
+    }
     return result;
   }
 
