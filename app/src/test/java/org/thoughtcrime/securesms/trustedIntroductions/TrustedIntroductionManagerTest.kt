@@ -80,7 +80,7 @@ class TrustedIntroductionManagerTest {
     Mockito.mock(MutableLiveData::class.java)
     tiManager.getValidContacts(acceptedContacts)
     verify(acceptedContacts.accept(Mockito.anyList()), times(1))
-
+    assert(!actualAccepted.any{element -> element.id == recipientID})
   }
 
   @Test
