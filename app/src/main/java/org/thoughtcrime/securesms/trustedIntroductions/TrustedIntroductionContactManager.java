@@ -41,7 +41,7 @@ final class TrustedIntroductionContactManager {
           List<Recipient> contacts = new ArrayList<>();
           while(reader.getNext() != null){
             Recipient current = reader.getCurrent();
-            RecipientId id = RecipientId.from(current.hasAci() ? current.getAci().get():null, current.hasE164() ? current.getE164().get():null);
+            RecipientId id = current.getId();
             if(!current.isSelf() && id.compareTo(recipientId)!=0){
               contacts.add(current);
             }

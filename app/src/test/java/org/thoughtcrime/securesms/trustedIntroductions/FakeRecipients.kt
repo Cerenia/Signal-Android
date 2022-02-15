@@ -10,7 +10,7 @@ import org.thoughtcrime.securesms.recipients.RecipientId
 
 // Define Mock Data
 object FakeRecipients {
-  var numbers = 0..50
+  var numbers = 1..50
   var recipientIDs = numbers.map { number -> RecipientId.from(number.toLong()) }
   var verificationStates = IdentityDatabase.VerifiedStatus.values()
   var syncExtras = verificationStates.map { state ->  RecipientRecord.SyncExtras(null, null, null, state, false, false)}
