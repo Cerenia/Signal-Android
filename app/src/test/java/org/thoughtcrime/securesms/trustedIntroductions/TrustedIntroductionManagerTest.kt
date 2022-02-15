@@ -7,6 +7,7 @@ import org.junit.Before
 import org.junit.Test
 import org.mockito.Mockito
 import org.mockito.Mockito.doAnswer
+import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.thoughtcrime.securesms.database.IdentityDatabase
 import org.thoughtcrime.securesms.database.RecipientDatabase
@@ -78,7 +79,7 @@ class TrustedIntroductionManagerTest {
     initializeReader(fakeReader)
     Mockito.mock(MutableLiveData::class.java)
     tiManager.getValidContacts(acceptedContacts)
-    verify(acceptedContacts.accept(Mockito.anyList())).called(1)
+    verify(acceptedContacts.accept(Mockito.anyList()), times(1))
 
   }
 
