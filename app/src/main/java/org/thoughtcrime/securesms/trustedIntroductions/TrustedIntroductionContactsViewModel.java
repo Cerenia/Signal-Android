@@ -1,6 +1,7 @@
 package org.thoughtcrime.securesms.trustedIntroductions;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 import androidx.core.util.Consumer;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -25,7 +26,7 @@ final class TrustedIntroductionContactsViewModel extends ViewModel{
   private final      MutableLiveData<String> filter;
   private final MutableLiveData<SelectedContactSet>      selectedContacts;
 
-  // package private for testing.
+  @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
   TrustedIntroductionContactsViewModel(TrustedIntroductionContactManager manager) {
     this.manager = manager;
     introducableContacts = new MutableLiveData<>(new ArrayList<>());
