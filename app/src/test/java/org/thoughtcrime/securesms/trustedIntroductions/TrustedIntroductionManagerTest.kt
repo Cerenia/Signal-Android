@@ -30,7 +30,7 @@ import java.util.Objects
 
 //@RunWith(RobolectricTestRunner::class)
 @RunWith(PowerMockRunner::class)
-@PrepareForTest(android.text.TextUtils::class, RecipientDatabase.RecipientReader::class)//, android.net.Uri::class)
+@PrepareForTest(android.text.TextUtils::class)//, RecipientDatabase.RecipientReader::class)//, android.net.Uri::class)
 class TrustedIntroductionManagerTest {
 
 
@@ -82,6 +82,8 @@ class TrustedIntroductionManagerTest {
     rdb = PowerMockito.mock(RecipientDatabase::class.java)
     acceptedContacts = PowerMockito.mock(Consumer::class.java) as Consumer<List<Recipient>>
 
+    // https://igorski.co/mock-final-classes-mockito/
+    // TODO: + mock-maker-inline breaks static mocking of powermockito...
     PowerMockito.`when`(reader.count).thenReturn(fakeReader.getCount())
     PowerMockito.`when`(reader.getCurrent()).thenReturn(fakeReader.getCurrent().toRecipient())
     PowerMockito.`when`(reader.getNext()).thenReturn(fakeReader.getNext()?.toRecipient())
