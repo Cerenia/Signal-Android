@@ -17,10 +17,10 @@ import org.signal.imageeditor.core.model.EditorElement
 import org.signal.imageeditor.core.renderers.MultiLineTextRenderer
 import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.components.KeyboardEntryDialogFragment
-import org.thoughtcrime.securesms.keyboard.findListener
 import org.thoughtcrime.securesms.scribbles.HSVColorSlider.getColor
 import org.thoughtcrime.securesms.scribbles.HSVColorSlider.setUpForColor
 import org.thoughtcrime.securesms.util.ViewUtil
+import org.thoughtcrime.securesms.util.fragments.requireListener
 
 class TextEntryDialogFragment : KeyboardEntryDialogFragment(R.layout.v2_media_image_editor_text_entry_fragment) {
 
@@ -30,9 +30,12 @@ class TextEntryDialogFragment : KeyboardEntryDialogFragment(R.layout.v2_media_im
   private var colorIndicatorAlphaAnimator: Animator? = null
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-    controller = requireNotNull(findListener())
+    controller = requireListener()
 
     hiddenTextEntry = HiddenEditText(requireContext())
+    if (!ImageEditorFragment.CAN_RENDER_EMOJI) {
+      hiddenTextEntry.addTextFilter(RemoveEmojiTextFilter())
+    }
     (view as ViewGroup).addView(hiddenTextEntry)
 
     view.setOnClickListener {

@@ -39,7 +39,7 @@ public final class LocaleFeatureFlags {
 
   public static @NonNull Optional<PushMediaConstraints.MediaConfig> getMediaQualityLevel() {
     Map<String, Integer> countryValues = parseCountryValues(FeatureFlags.getMediaQualityLevels(), NOT_FOUND);
-    int                  level         = getCountryValue(countryValues, Recipient.self().getE164().or(""), NOT_FOUND);
+    int                  level         = getCountryValue(countryValues, Recipient.self().getE164().orElse(""), NOT_FOUND);
 
     return Optional.ofNullable(PushMediaConstraints.MediaConfig.forLevel(level));
   }
@@ -54,6 +54,10 @@ public final class LocaleFeatureFlags {
     return !blacklist.contains(countryCode);
   }
 
+  public static boolean shouldShowReleaseNote(@NonNull String releaseNoteUuid, @NonNull String countries) {
+    return isEnabled(releaseNoteUuid, countries);
+  }
+
   /**
    * Parses a comma-separated list of country codes colon-separated from how many buckets out of 1 million
    * should be enabled to see this megaphone in that country code. At the end of the list, an optional
@@ -65,12 +69,12 @@ public final class LocaleFeatureFlags {
     Map<String, Integer> countryCodeValues = parseCountryValues(serialized, 0);
     Recipient            self              = Recipient.self();
 
-    if (countryCodeValues.isEmpty() || !self.getE164().isPresent() || !self.getAci().isPresent()) {
+    if (countryCodeValues.isEmpty() || !self.getE164().isPresent() || !self.getServiceId().isPresent()) {
       return false;
     }
 
-    long countEnabled      = getCountryValue(countryCodeValues, self.getE164().or(""), 0);
-    long currentUserBucket = BucketingUtil.bucket(flag, self.requireAci().uuid(), 1_000_000);
+    long countEnabled      = getCountryValue(countryCodeValues, self.getE164().orElse(""), 0);
+    long currentUserBucket = BucketingUtil.bucket(flag, self.requireServiceId().uuid(), 1_000_000);
 
     return countEnabled > currentUserBucket;
   }

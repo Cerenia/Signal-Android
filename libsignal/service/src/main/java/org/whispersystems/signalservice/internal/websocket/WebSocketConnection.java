@@ -2,9 +2,9 @@ package org.whispersystems.signalservice.internal.websocket;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
-import org.whispersystems.libsignal.logging.Log;
-import org.whispersystems.libsignal.util.Pair;
-import org.whispersystems.libsignal.util.guava.Optional;
+import org.signal.libsignal.protocol.logging.Log;
+import org.signal.libsignal.protocol.util.Pair;
+import org.whispersystems.signalservice.api.push.SignalServiceAddress;
 import org.whispersystems.signalservice.api.push.TrustStore;
 import org.whispersystems.signalservice.api.util.CredentialsProvider;
 import org.whispersystems.signalservice.api.util.Tls12SocketFactory;
@@ -26,6 +26,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -65,9 +66,9 @@ public class WebSocketConnection extends WebSocketListener {
 
   private final String                                    name;
   private final String                                    wsUri;
-  private final TrustStore                                trustStore;
-  private final Optional<CredentialsProvider>             credentialsProvider;
-  private final String                                    signalAgent;
+  private final TrustStore                    trustStore;
+  private final Optional<CredentialsProvider> credentialsProvider;
+  private final String                        signalAgent;
   private final HealthMonitor                             healthMonitor;
   private final List<Interceptor>                         interceptors;
   private final Optional<Dns>                             dns;
@@ -80,7 +81,16 @@ public class WebSocketConnection extends WebSocketListener {
                              SignalServiceConfiguration serviceConfiguration,
                              Optional<CredentialsProvider> credentialsProvider,
                              String signalAgent,
-                             HealthMonitor healthMonitor)
+                             HealthMonitor healthMonitor) {
+    this(name, serviceConfiguration, credentialsProvider, signalAgent, healthMonitor, "");
+  }
+
+  public WebSocketConnection(String name,
+                             SignalServiceConfiguration serviceConfiguration,
+                             Optional<CredentialsProvider> credentialsProvider,
+                             String signalAgent,
+                             HealthMonitor healthMonitor,
+                             String extraPathUri)
   {
     this.name                = "[" + name + ":" + System.identityHashCode(this) + "]";
     this.trustStore          = serviceConfiguration.getSignalServiceUrls()[0].getTrustStore();
@@ -95,9 +105,9 @@ public class WebSocketConnection extends WebSocketListener {
     String uri = serviceConfiguration.getSignalServiceUrls()[0].getUrl().replace("https://", "wss://").replace("http://", "ws://");
 
     if (credentialsProvider.isPresent()) {
-      this.wsUri = uri + "/v1/websocket/?login=%s&password=%s";
+      this.wsUri = uri + "/v1/websocket/" + extraPathUri + "?login=%s&password=%s";
     } else {
-      this.wsUri = uri + "/v1/websocket/";
+      this.wsUri = uri + "/v1/websocket/" + extraPathUri;
     }
   }
 
@@ -113,6 +123,9 @@ public class WebSocketConnection extends WebSocketListener {
 
       if (credentialsProvider.isPresent()) {
         String identifier = Objects.requireNonNull(credentialsProvider.get().getAci()).toString();
+        if (credentialsProvider.get().getDeviceId() != SignalServiceAddress.DEFAULT_DEVICE_ID) {
+          identifier += "." + credentialsProvider.get().getDeviceId();
+        }
         filledUri = String.format(wsUri, identifier, credentialsProvider.get().getPassword());
       } else {
         filledUri = wsUri;
@@ -124,7 +137,7 @@ public class WebSocketConnection extends WebSocketListener {
                                                                                        socketFactory.second())
                                                                      .connectionSpecs(Util.immutableList(ConnectionSpec.RESTRICTED_TLS))
                                                                      .readTimeout(KEEPALIVE_TIMEOUT_SECONDS + 10, TimeUnit.SECONDS)
-                                                                     .dns(dns.or(Dns.SYSTEM))
+                                                                     .dns(dns.orElse(Dns.SYSTEM))
                                                                      .connectTimeout(KEEPALIVE_TIMEOUT_SECONDS + 10, TimeUnit.SECONDS);
 
       for (Interceptor interceptor : interceptors) {
@@ -266,7 +279,8 @@ public class WebSocketConnection extends WebSocketListener {
         if (listener != null) {
           listener.onSuccess(new WebsocketResponse(message.getResponse().getStatus(),
                                                    new String(message.getResponse().getBody().toByteArray()),
-                                                   message.getResponse().getHeadersList()));
+                                                   message.getResponse().getHeadersList(),
+                                                   !credentialsProvider.isPresent()));
           if (message.getResponse().getStatus() >= 400) {
             healthMonitor.onMessageError(message.getResponse().getStatus(), credentialsProvider.isPresent());
           }

@@ -7,11 +7,14 @@ import androidx.annotation.NonNull;
 import com.annimon.stream.Stream;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 import org.mockito.stubbing.Answer;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.signal.libsignal.protocol.util.Pair;
 import org.thoughtcrime.securesms.database.MessageDatabase;
 import org.thoughtcrime.securesms.database.model.MessageId;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
@@ -19,9 +22,9 @@ import org.thoughtcrime.securesms.jobmanager.Data;
 import org.thoughtcrime.securesms.jobmanager.Job;
 import org.thoughtcrime.securesms.jobmanager.JobManager;
 import org.thoughtcrime.securesms.jobs.MultiDeviceReadUpdateJob;
+import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.util.Util;
-import org.whispersystems.libsignal.util.Pair;
 
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -30,28 +33,36 @@ import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.powermock.api.mockito.PowerMockito.doAnswer;
-import static org.powermock.api.mockito.PowerMockito.mock;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
-import static org.powermock.api.mockito.PowerMockito.when;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(ApplicationDependencies.class)
 public class MarkReadReceiverTest {
+
+  @Rule
+  public MockitoRule rule = MockitoJUnit.rule();
+
+  @Mock
+  private MockedStatic<ApplicationDependencies> applicationDependenciesMockedStatic;
+
+  @Mock
+  private MockedStatic<Recipient> recipientMockedStatic;
 
   private final Context    mockContext    = mock(Context.class);
   private final JobManager mockJobManager = mock(JobManager.class);
+  private final Recipient  mockSelf       = mock(Recipient.class);
   private final List<Job>  jobs           = new LinkedList<>();
 
   @Before
   public void setUp() {
-    mockStatic(ApplicationDependencies.class);
-    when(ApplicationDependencies.getJobManager()).thenReturn(mockJobManager);
+    applicationDependenciesMockedStatic.when(ApplicationDependencies::getJobManager).thenReturn(mockJobManager);
     doAnswer((Answer<Void>) invocation -> {
       jobs.add((Job) invocation.getArguments()[0]);
       return null;
     }).when(mockJobManager).add(any());
+    recipientMockedStatic.when(Recipient::self).thenReturn(mockSelf);
+    when(mockSelf.getId()).thenReturn(RecipientId.from(-1));
   }
 
   @Test

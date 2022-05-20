@@ -7,6 +7,7 @@ import org.thoughtcrime.securesms.database.model.MediaMmsMessageRecord;
 import org.thoughtcrime.securesms.database.model.MessageRecord;
 import org.thoughtcrime.securesms.database.model.MmsMessageRecord;
 import org.thoughtcrime.securesms.recipients.Recipient;
+import org.thoughtcrime.securesms.util.MessageRecordUtil;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -22,6 +23,7 @@ final class MenuState {
   private final boolean resend;
   private final boolean copy;
   private final boolean delete;
+  private final boolean reactions;
 
   private MenuState(@NonNull Builder builder) {
     forward        = builder.forward;
@@ -31,6 +33,7 @@ final class MenuState {
     resend         = builder.resend;
     copy           = builder.copy;
     delete         = builder.delete;
+    reactions      = builder.reactions;
   }
 
   boolean shouldShowForwardAction() {
@@ -61,6 +64,10 @@ final class MenuState {
     return delete;
   }
 
+  boolean shouldShowReactions() {
+    return reactions;
+  }
+
   static MenuState getMenuState(@NonNull Recipient conversationRecipient,
                                 @NonNull Set<MultiselectPart> selectedParts,
                                 boolean shouldShowMessageRequest,
@@ -76,6 +83,7 @@ final class MenuState {
     boolean hasInMemory     = false;
     boolean hasPendingMedia = false;
     boolean mediaIsSelected = false;
+    boolean hasGift         = false;
 
     for (MultiselectPart part : selectedParts) {
       MessageRecord messageRecord = part.getMessageRecord();
@@ -109,6 +117,10 @@ final class MenuState {
       if (messageRecord.isRemoteDelete()) {
         remoteDelete = true;
       }
+
+      if (MessageRecordUtil.hasGiftBadge(messageRecord)) {
+        hasGift = true;
+      }
     }
 
     boolean shouldShowForwardAction = !actionMessage   &&
@@ -116,6 +128,7 @@ final class MenuState {
                                       !viewOnce        &&
                                       !remoteDelete    &&
                                       !hasPendingMedia &&
+                                      !hasGift         &&
                                       selectedParts.size() <= MAX_FORWARDABLE_COUNT;
 
     int uniqueRecords = selectedParts.stream()
@@ -138,16 +151,18 @@ final class MenuState {
                                              !viewOnce                                                   &&
                                              messageRecord.isMms()                                       &&
                                              !hasPendingMedia                                            &&
+                                             !hasGift                                                    &&
                                              !messageRecord.isMmsNotification()                          &&
                                              ((MediaMmsMessageRecord)messageRecord).containsMediaSlide() &&
                                              ((MediaMmsMessageRecord)messageRecord).getSlideDeck().getStickerSlide() == null)
              .shouldShowForwardAction(shouldShowForwardAction)
-             .shouldShowDetailsAction(!actionMessage)
+             .shouldShowDetailsAction(!actionMessage && !conversationRecipient.isReleaseNotes())
              .shouldShowReplyAction(canReplyToMessage(conversationRecipient, actionMessage, messageRecord, shouldShowMessageRequest, isNonAdminInAnnouncementGroup));
     }
 
-    return builder.shouldShowCopyAction(!actionMessage && !remoteDelete && hasText)
+    return builder.shouldShowCopyAction(!actionMessage && !remoteDelete && hasText && !hasGift)
                   .shouldShowDeleteAction(!hasInMemory && onlyContainsCompleteMessages(selectedParts))
+                  .shouldShowReactions(!conversationRecipient.isReleaseNotes())
                   .build();
   }
 
@@ -172,7 +187,9 @@ final class MenuState {
            !isDisplayingMessageRequest                                                 &&
            messageRecord.isSecure()                                                    &&
            (!conversationRecipient.isGroup() || conversationRecipient.isActiveGroup()) &&
-           !messageRecord.getRecipient().isBlocked();
+           !messageRecord.getRecipient().isBlocked()                                   &&
+           !MessageRecordUtil.hasGiftBadge(messageRecord)                              &&
+           !conversationRecipient.isReleaseNotes();
   }
 
   static boolean isActionMessage(@NonNull MessageRecord messageRecord) {
@@ -188,7 +205,8 @@ final class MenuState {
            messageRecord.isGroupV1MigrationEvent() ||
            messageRecord.isChatSessionRefresh() ||
            messageRecord.isInMemoryMessageRecord() ||
-           messageRecord.isChangeNumber();
+           messageRecord.isChangeNumber() ||
+           messageRecord.isBoostRequest();
   }
 
   private final static class Builder {
@@ -200,6 +218,7 @@ final class MenuState {
     private boolean resend;
     private boolean copy;
     private boolean delete;
+    private boolean reactions;
 
     @NonNull Builder shouldShowForwardAction(boolean forward) {
       this.forward = forward;
@@ -233,6 +252,11 @@ final class MenuState {
 
     @NonNull Builder shouldShowDeleteAction(boolean delete) {
       this.delete = delete;
+      return this;
+    }
+
+    @NonNull Builder shouldShowReactions(boolean reactions) {
+      this.reactions = reactions;
       return this;
     }
 

@@ -12,12 +12,12 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.keyboard.emoji.KeyboardPageSearchView
-import org.thoughtcrime.securesms.keyboard.findListener
 import org.thoughtcrime.securesms.mms.GlideApp
 import org.thoughtcrime.securesms.stickers.StickerEventListener
 import org.thoughtcrime.securesms.util.DeviceProperties
 import org.thoughtcrime.securesms.util.InsetItemDecoration
 import org.thoughtcrime.securesms.util.ViewUtil
+import org.thoughtcrime.securesms.util.fragments.findListener
 import kotlin.math.max
 
 /**
@@ -96,6 +96,7 @@ class StickerSearchDialogFragment : DialogFragment(), KeyboardStickerListAdapter
   override fun onStickerLongClicked(sticker: KeyboardStickerListAdapter.Sticker) = Unit
 
   companion object {
+    @JvmStatic
     fun show(fragmentManager: FragmentManager) {
       StickerSearchDialogFragment().show(fragmentManager, "TAG")
     }

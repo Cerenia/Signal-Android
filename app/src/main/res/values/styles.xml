@@ -50,6 +50,10 @@
         <item name="android:windowExitAnimation">@anim/slide_to_bottom</item>
     </style>
 
+    <style name="TextSecure.Animation.TextStoryPostEntryDialog" parent="Animation.AppCompat.Dialog">
+        <item name="android:windowEnterAnimation">@anim/text_entry_enter</item>
+        <item name="android:windowExitAnimation">@anim/text_entry_exit</item>
+    </style>
 
     <!-- ActionBar styles -->
     <style name="TextSecure.DarkActionBar"
@@ -308,8 +312,8 @@
     </style>
 
     <style name="WebRtcCallV2CompoundButton">
-        <item name="android:layout_height">56dp</item>
-        <item name="android:layout_width">56dp</item>
+        <item name="android:layout_height">@dimen/webrtc_button_size</item>
+        <item name="android:layout_width">@dimen/webrtc_button_size</item>
         <item name="android:textOn">@null</item>
         <item name="android:textOff">@null</item>
     </style>

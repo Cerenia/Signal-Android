@@ -97,8 +97,7 @@ public class GroupV1MigrationJob extends BaseJob {
         jobManager.add(new GroupV1MigrationJob(thread.getRecipient().getId()));
 
         needsRefresh.addAll(Stream.of(thread.getRecipient().getParticipants())
-                                  .filter(r -> r.getGroupsV2Capability() != Recipient.Capability.SUPPORTED ||
-                                               r.getGroupsV1MigrationCapability() != Recipient.Capability.SUPPORTED)
+                                  .filter(r -> r.getGroupsV1MigrationCapability() != Recipient.Capability.SUPPORTED)
                                   .map(Recipient::getId)
                                   .toList());
       }
@@ -123,6 +122,11 @@ public class GroupV1MigrationJob extends BaseJob {
 
   @Override
   protected void onRun() throws IOException, GroupChangeBusyException, RetryLaterException {
+    if (Recipient.resolved(recipientId).isBlocked()) {
+      Log.i(TAG, "Group blocked. Skipping.");
+      return;
+    }
+
     try {
       GroupsV1MigrationUtil.migrate(context, recipientId, false);
     } catch (GroupsV1MigrationUtil.InvalidMigrationStateException e) {

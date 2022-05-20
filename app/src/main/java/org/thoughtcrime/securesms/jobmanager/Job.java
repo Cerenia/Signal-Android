@@ -7,14 +7,12 @@ import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
 
 import org.signal.core.util.logging.Log;
-import org.thoughtcrime.securesms.util.FeatureFlags;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 /**
  * A durable unit of work.
@@ -244,7 +242,7 @@ public abstract class Job {
   public static final class Parameters {
 
     public static final String MIGRATION_QUEUE_KEY = "MIGRATION";
-    public static final int    IMMORTAL            = -1;
+    public static final long   IMMORTAL            = -1;
     public static final int    UNLIMITED           = -1;
 
     private final String       id;

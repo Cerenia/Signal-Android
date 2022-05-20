@@ -12,28 +12,29 @@ import com.annimon.stream.Stream;
 
 import org.signal.core.util.concurrent.SignalExecutors;
 import org.signal.core.util.logging.Log;
-import org.thoughtcrime.securesms.crypto.SessionUtil;
+import org.signal.libsignal.protocol.IdentityKey;
+import org.signal.libsignal.protocol.SignalProtocolAddress;
 import org.thoughtcrime.securesms.crypto.ReentrantSessionLock;
-import org.thoughtcrime.securesms.crypto.storage.TextSecureIdentityKeyStore;
+import org.thoughtcrime.securesms.crypto.storage.SignalIdentityKeyStore;
 import org.thoughtcrime.securesms.database.IdentityDatabase;
-import org.thoughtcrime.securesms.database.SignalDatabase;
-import org.thoughtcrime.securesms.database.model.IdentityRecord;
 import org.thoughtcrime.securesms.database.MessageDatabase;
 import org.thoughtcrime.securesms.database.MmsSmsDatabase;
 import org.thoughtcrime.securesms.database.NoSuchMessageException;
+import org.thoughtcrime.securesms.database.SignalDatabase;
+import org.thoughtcrime.securesms.database.model.IdentityRecord;
 import org.thoughtcrime.securesms.database.model.MessageRecord;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.sms.MessageSender;
 import org.thoughtcrime.securesms.util.Util;
-import org.whispersystems.libsignal.IdentityKey;
-import org.whispersystems.libsignal.SignalProtocolAddress;
 import org.whispersystems.signalservice.api.SignalSessionLock;
 import org.whispersystems.signalservice.api.push.SignalServiceAddress;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 final class SafetyNumberChangeRepository {
 
@@ -68,7 +69,7 @@ final class SafetyNumberChangeRepository {
 
     List<Recipient> recipients = Stream.of(recipientIds).map(Recipient::resolved).toList();
 
-    List<ChangedRecipient> changedRecipients = Stream.of(ApplicationDependencies.getIdentityStore().getIdentityRecords(recipients).getIdentityRecords())
+    List<ChangedRecipient> changedRecipients = Stream.of(ApplicationDependencies.getProtocolStore().aci().identities().getIdentityRecords(recipients).getIdentityRecords())
                                                      .map(record -> new ChangedRecipient(Recipient.resolved(record.getRecipientId()), record))
                                                      .toList();
 
@@ -96,7 +97,7 @@ final class SafetyNumberChangeRepository {
 
   @WorkerThread
   private TrustAndVerifyResult trustOrVerifyChangedRecipientsInternal(@NonNull List<ChangedRecipient> changedRecipients) {
-    TextSecureIdentityKeyStore identityStore = ApplicationDependencies.getIdentityStore();
+    SignalIdentityKeyStore identityStore = ApplicationDependencies.getProtocolStore().aci().identities();
 
     try(SignalSessionLock.Lock unused = ReentrantSessionLock.INSTANCE.acquire()) {
       for (ChangedRecipient changedRecipient : changedRecipients) {
@@ -104,9 +105,9 @@ final class SafetyNumberChangeRepository {
 
         if (changedRecipient.isUnverified()) {
           Log.d(TAG, "Setting " + identityRecord.getRecipientId() + " as verified");
-          ApplicationDependencies.getIdentityStore().setVerified(identityRecord.getRecipientId(),
-                                                                 identityRecord.getIdentityKey(),
-                                                                 IdentityDatabase.VerifiedStatus.DEFAULT);
+          ApplicationDependencies.getProtocolStore().aci().identities().setVerified(identityRecord.getRecipientId(),
+                                                                                    identityRecord.getIdentityKey(),
+                                                                                    IdentityDatabase.VerifiedStatus.DEFAULT);
         } else {
           Log.d(TAG, "Setting " + identityRecord.getRecipientId() + " as approved");
           identityStore.setApproval(identityRecord.getRecipientId(), true);
@@ -119,23 +120,24 @@ final class SafetyNumberChangeRepository {
 
   @WorkerThread
   private TrustAndVerifyResult trustOrVerifyChangedRecipientsAndResendInternal(@NonNull List<ChangedRecipient> changedRecipients,
-                                                                               @NonNull MessageRecord messageRecord) {
+                                                                               @NonNull MessageRecord messageRecord)
+  {
     if (changedRecipients.isEmpty()) {
       Log.d(TAG, "No changed recipients to process, will still process message record");
     }
 
     try(SignalSessionLock.Lock unused = ReentrantSessionLock.INSTANCE.acquire()) {
       for (ChangedRecipient changedRecipient : changedRecipients) {
-        SignalProtocolAddress mismatchAddress = new SignalProtocolAddress(changedRecipient.getRecipient().requireServiceId(), SignalServiceAddress.DEFAULT_DEVICE_ID);
+        SignalProtocolAddress mismatchAddress = changedRecipient.getRecipient().requireServiceId().toProtocolAddress(SignalServiceAddress.DEFAULT_DEVICE_ID);
 
         Log.d(TAG, "Saving identity for: " + changedRecipient.getRecipient().getId() + " " + changedRecipient.getIdentityRecord().getIdentityKey().hashCode());
-        TextSecureIdentityKeyStore.SaveResult result = ApplicationDependencies.getIdentityStore().saveIdentity(mismatchAddress, changedRecipient.getIdentityRecord().getIdentityKey(), true);
+        SignalIdentityKeyStore.SaveResult result = ApplicationDependencies.getProtocolStore().aci().identities().saveIdentity(mismatchAddress, changedRecipient.getIdentityRecord().getIdentityKey(), true);
 
         Log.d(TAG, "Saving identity result: " + result);
-        if (result == TextSecureIdentityKeyStore.SaveResult.NO_CHANGE) {
+        if (result == SignalIdentityKeyStore.SaveResult.NO_CHANGE) {
           Log.i(TAG, "Archiving sessions explicitly as they appear to be out of sync.");
-          SessionUtil.archiveSession(changedRecipient.getRecipient().getId(), SignalServiceAddress.DEFAULT_DEVICE_ID);
-          SessionUtil.archiveSiblingSessions(mismatchAddress);
+          ApplicationDependencies.getProtocolStore().aci().sessions().archiveSession(changedRecipient.getRecipient().getId(), SignalServiceAddress.DEFAULT_DEVICE_ID);
+          ApplicationDependencies.getProtocolStore().aci().sessions().archiveSiblingSessions(mismatchAddress);
           SignalDatabase.senderKeyShared().deleteAllFor(changedRecipient.getRecipient().getId());
         }
       }
@@ -151,8 +153,9 @@ final class SafetyNumberChangeRepository {
   @WorkerThread
   private void processOutgoingMessageRecord(@NonNull List<ChangedRecipient> changedRecipients, @NonNull MessageRecord messageRecord) {
     Log.d(TAG, "processOutgoingMessageRecord");
-    MessageDatabase smsDatabase = SignalDatabase.sms();
-    MessageDatabase mmsDatabase = SignalDatabase.mms();
+    MessageDatabase  smsDatabase = SignalDatabase.sms();
+    MessageDatabase  mmsDatabase = SignalDatabase.mms();
+    Set<RecipientId> resendIds   = new HashSet<>();
 
     for (ChangedRecipient changedRecipient : changedRecipients) {
       RecipientId id          = changedRecipient.getRecipient().getId();
@@ -161,8 +164,8 @@ final class SafetyNumberChangeRepository {
       if (messageRecord.isMms()) {
         mmsDatabase.removeMismatchedIdentity(messageRecord.getId(), id, identityKey);
 
-        if (messageRecord.getRecipient().isPushGroup()) {
-          MessageSender.resendGroupMessage(context, messageRecord, id);
+        if (messageRecord.getRecipient().isDistributionList() || messageRecord.getRecipient().isPushGroup()) {
+          resendIds.add(id);
         } else {
           MessageSender.resend(context, messageRecord);
         }
@@ -170,6 +173,14 @@ final class SafetyNumberChangeRepository {
         smsDatabase.removeMismatchedIdentity(messageRecord.getId(), id, identityKey);
 
         MessageSender.resend(context, messageRecord);
+      }
+    }
+
+    if (Util.hasItems(resendIds)) {
+      if (messageRecord.getRecipient().isPushGroup()) {
+        MessageSender.resendGroupMessage(context, messageRecord, resendIds);
+      } else {
+        MessageSender.resendDistributionList(context, messageRecord, resendIds);
       }
     }
   }

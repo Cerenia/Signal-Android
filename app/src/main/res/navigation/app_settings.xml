@@ -100,14 +100,14 @@
             app:enterAnim="@anim/fragment_open_enter"
             app:exitAnim="@anim/fragment_open_exit"
             app:popEnterAnim="@anim/fragment_close_enter"
-            app:popExitAnim="@anim/fragment_close_exit"></action>
+            app:popExitAnim="@anim/fragment_close_exit" />
         <action
             android:id="@+id/action_appSettingsFragment_to_subscribeFragment"
             app:destination="@id/subscribeFragment"
             app:enterAnim="@anim/fragment_open_enter"
             app:exitAnim="@anim/fragment_open_exit"
             app:popEnterAnim="@anim/fragment_close_enter"
-            app:popExitAnim="@anim/fragment_close_exit"></action>
+            app:popExitAnim="@anim/fragment_close_exit" />
         <action
             android:id="@+id/action_appSettingsFragment_to_boostsFragment"
             app:destination="@id/boosts"
@@ -322,7 +322,34 @@
             app:exitAnim="@anim/fragment_open_exit"
             app:popEnterAnim="@anim/fragment_close_enter"
             app:popExitAnim="@anim/fragment_close_exit" />
+        <action
+            android:id="@+id/action_privacySettings_to_myStorySettings"
+            app:destination="@id/my_story_settings"
+            app:enterAnim="@anim/fragment_open_enter"
+            app:exitAnim="@anim/fragment_open_exit"
+            app:popEnterAnim="@anim/fragment_close_enter"
+            app:popExitAnim="@anim/fragment_close_exit" />
+        <action
+            android:id="@+id/action_privacySettings_to_newPrivateStory"
+            app:destination="@id/new_story"
+            app:enterAnim="@anim/fragment_open_enter"
+            app:exitAnim="@anim/fragment_open_exit"
+            app:popEnterAnim="@anim/fragment_close_enter"
+            app:popExitAnim="@anim/fragment_close_exit" />
+        <action
+            android:id="@+id/action_privacySettings_to_privateStorySettings"
+            app:destination="@id/private_story_settings"
+            app:enterAnim="@anim/fragment_open_enter"
+            app:exitAnim="@anim/fragment_open_exit"
+            app:popEnterAnim="@anim/fragment_close_enter"
+            app:popExitAnim="@anim/fragment_close_exit">
 
+            <argument
+                android:name="private_story"
+                app:argType="org.thoughtcrime.securesms.database.model.DistributionListId"
+                app:nullable="false" />
+
+        </action>
     </fragment>
 
     <activity
@@ -466,7 +493,9 @@
         app:enterAnim="@anim/fragment_open_enter"
         app:exitAnim="@anim/fragment_open_exit"
         app:popEnterAnim="@anim/fragment_close_enter"
-        app:popExitAnim="@anim/fragment_close_exit" />
+        app:popExitAnim="@anim/fragment_close_exit"
+        app:popUpTo="@id/app_settings"
+        app:popUpToInclusive="true" />
 
     <action
         android:id="@+id/action_direct_to_manageDonations"
@@ -545,6 +574,41 @@
             app:exitAnim="@anim/fragment_open_exit"
             app:popEnterAnim="@anim/fragment_close_enter"
             app:popExitAnim="@anim/fragment_close_exit" />
+        <action
+            android:id="@+id/action_manageDonationsFragment_to_donationReceiptListFragment"
+            app:destination="@id/donationReceiptListFragment"
+            app:enterAnim="@anim/fragment_open_enter"
+            app:exitAnim="@anim/fragment_open_exit"
+            app:popEnterAnim="@anim/fragment_close_enter"
+            app:popExitAnim="@anim/fragment_close_exit" />
+        <action
+            android:id="@+id/action_manageDonationsFragment_to_subscribeLearnMoreBottomSheetDialog"
+            app:destination="@id/subscribeLearnMoreBottomSheetDialog" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/donationReceiptListFragment"
+        android:name="org.thoughtcrime.securesms.components.settings.app.subscription.receipts.list.DonationReceiptListFragment"
+        android:label="donation_receipt_list_fragment"
+        tools:layout="@layout/donation_receipt_list_fragment">
+        <action
+            android:id="@+id/action_donationReceiptListFragment_to_donationReceiptDetailFragment"
+            app:destination="@id/donationReceiptDetailFragment"
+            app:enterAnim="@anim/fragment_open_enter"
+            app:exitAnim="@anim/fragment_open_exit"
+            app:popEnterAnim="@anim/fragment_close_enter"
+            app:popExitAnim="@anim/fragment_close_exit" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/donationReceiptDetailFragment"
+        android:name="org.thoughtcrime.securesms.components.settings.app.subscription.receipts.detail.DonationReceiptDetailFragment"
+        android:label="donation_receipt_detail_fragment"
+        tools:layout="@layout/donation_receipt_detail_fragment">
+
+        <argument
+            android:name="id"
+            app:argType="long" />
     </fragment>
 
     <fragment
@@ -781,4 +845,10 @@
 
     </fragment>
 
+
+    <include app:graph="@navigation/my_story_settings" />
+
+    <include app:graph="@navigation/private_story_settings" />
+
+    <include app:graph="@navigation/new_story" />
 </navigation>

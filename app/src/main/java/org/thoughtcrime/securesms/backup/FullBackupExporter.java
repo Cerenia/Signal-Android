@@ -18,19 +18,22 @@ import net.zetetic.database.sqlcipher.SQLiteDatabase;
 import org.greenrobot.eventbus.EventBus;
 import org.signal.core.util.Conversions;
 import org.signal.core.util.logging.Log;
+import org.signal.libsignal.protocol.kdf.HKDFv3;
+import org.signal.libsignal.protocol.util.ByteUtil;
 import org.thoughtcrime.securesms.attachments.AttachmentId;
 import org.thoughtcrime.securesms.crypto.AttachmentSecret;
 import org.thoughtcrime.securesms.crypto.ClassicDecryptingPartInputStream;
-import org.thoughtcrime.securesms.crypto.IdentityKeyUtil;
 import org.thoughtcrime.securesms.crypto.ModernDecryptingPartInputStream;
 import org.thoughtcrime.securesms.database.AttachmentDatabase;
 import org.thoughtcrime.securesms.database.EmojiSearchDatabase;
 import org.thoughtcrime.securesms.database.GroupReceiptDatabase;
 import org.thoughtcrime.securesms.database.KeyValueDatabase;
+import org.thoughtcrime.securesms.database.MentionDatabase;
 import org.thoughtcrime.securesms.database.MmsDatabase;
 import org.thoughtcrime.securesms.database.MmsSmsColumns;
 import org.thoughtcrime.securesms.database.OneTimePreKeyDatabase;
 import org.thoughtcrime.securesms.database.PendingRetryReceiptDatabase;
+import org.thoughtcrime.securesms.database.ReactionDatabase;
 import org.thoughtcrime.securesms.database.SearchDatabase;
 import org.thoughtcrime.securesms.database.SenderKeyDatabase;
 import org.thoughtcrime.securesms.database.SenderKeySharedDatabase;
@@ -39,16 +42,17 @@ import org.thoughtcrime.securesms.database.SignedPreKeyDatabase;
 import org.thoughtcrime.securesms.database.SmsDatabase;
 import org.thoughtcrime.securesms.database.StickerDatabase;
 import org.thoughtcrime.securesms.database.model.AvatarPickerDatabase;
+import org.thoughtcrime.securesms.database.model.MessageId;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.keyvalue.KeyValueDataSet;
 import org.thoughtcrime.securesms.keyvalue.SignalStore;
 import org.thoughtcrime.securesms.profiles.AvatarHelper;
-import org.thoughtcrime.securesms.util.SetUtil;
+import org.thoughtcrime.securesms.recipients.RecipientId;
+import org.signal.core.util.CursorUtil;
+import org.signal.core.util.SetUtil;
 import org.thoughtcrime.securesms.util.Stopwatch;
 import org.thoughtcrime.securesms.util.TextSecurePreferences;
 import org.thoughtcrime.securesms.util.Util;
-import org.whispersystems.libsignal.kdf.HKDFv3;
-import org.whispersystems.libsignal.util.ByteUtil;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -158,25 +162,23 @@ public class FullBackupExporter extends FullBackupBase {
       for (String table : tables) {
         throwIfCanceled(cancellationSignal);
         if (table.equals(MmsDatabase.TABLE_NAME)) {
-          count = exportTable(table, input, outputStream, FullBackupExporter::isNonExpiringMmsMessage, null, count, estimatedCount, cancellationSignal);
+          count = exportTable(table, input, outputStream, cursor -> isNonExpiringMmsMessage(cursor) && isNotReleaseChannel(cursor), null, count, estimatedCount, cancellationSignal);
         } else if (table.equals(SmsDatabase.TABLE_NAME)) {
-          count = exportTable(table, input, outputStream, FullBackupExporter::isNonExpiringSmsMessage, null, count, estimatedCount, cancellationSignal);
+          count = exportTable(table, input, outputStream, cursor -> isNonExpiringSmsMessage(cursor) && isNotReleaseChannel(cursor), null, count, estimatedCount, cancellationSignal);
+        } else if (table.equals(ReactionDatabase.TABLE_NAME)) {
+          count = exportTable(table, input, outputStream, cursor -> isForNonExpiringMessage(input, new MessageId(CursorUtil.requireLong(cursor, ReactionDatabase.MESSAGE_ID), CursorUtil.requireBoolean(cursor, ReactionDatabase.IS_MMS))), null, count, estimatedCount, cancellationSignal);
+        } else if (table.equals(MentionDatabase.TABLE_NAME)) {
+          count = exportTable(table, input, outputStream, cursor -> isForNonExpiringMmsMessageAndNotReleaseChannel(input, CursorUtil.requireLong(cursor, MentionDatabase.MESSAGE_ID)), null, count, estimatedCount, cancellationSignal);
         } else if (table.equals(GroupReceiptDatabase.TABLE_NAME)) {
-          count = exportTable(table, input, outputStream, cursor -> isForNonExpiringMessage(input, cursor.getLong(cursor.getColumnIndexOrThrow(GroupReceiptDatabase.MMS_ID))), null, count, estimatedCount, cancellationSignal);
+          count = exportTable(table, input, outputStream, cursor -> isForNonExpiringMmsMessageAndNotReleaseChannel(input, cursor.getLong(cursor.getColumnIndexOrThrow(GroupReceiptDatabase.MMS_ID))), null, count, estimatedCount, cancellationSignal);
         } else if (table.equals(AttachmentDatabase.TABLE_NAME)) {
-          count = exportTable(table, input, outputStream, cursor -> isForNonExpiringMessage(input, cursor.getLong(cursor.getColumnIndexOrThrow(AttachmentDatabase.MMS_ID))), (cursor, innerCount) -> exportAttachment(attachmentSecret, cursor, outputStream, innerCount, estimatedCount), count, estimatedCount, cancellationSignal);
+          count = exportTable(table, input, outputStream, cursor -> isForNonExpiringMmsMessageAndNotReleaseChannel(input, cursor.getLong(cursor.getColumnIndexOrThrow(AttachmentDatabase.MMS_ID))), (cursor, innerCount) -> exportAttachment(attachmentSecret, cursor, outputStream, innerCount, estimatedCount), count, estimatedCount, cancellationSignal);
         } else if (table.equals(StickerDatabase.TABLE_NAME)) {
           count = exportTable(table, input, outputStream, cursor -> true, (cursor, innerCount) -> exportSticker(attachmentSecret, cursor, outputStream, innerCount, estimatedCount), count, estimatedCount, cancellationSignal);
         } else if (!BLACKLISTED_TABLES.contains(table) && !table.startsWith("sqlite_")) {
           count = exportTable(table, input, outputStream, null, null, count, estimatedCount, cancellationSignal);
         }
         stopwatch.split("table::" + table);
-      }
-
-      for (BackupProtos.SharedPreference preference : IdentityKeyUtil.getBackupRecord(context)) {
-        throwIfCanceled(cancellationSignal);
-        EventBus.getDefault().post(new BackupEvent(BackupEvent.Type.PROGRESS, ++count, estimatedCount));
-        outputStream.write(preference);
       }
 
       for (BackupProtos.SharedPreference preference : TextSecurePreferences.getPreferencesToSaveToBackup(context)) {
@@ -439,7 +441,12 @@ public class FullBackupExporter extends FullBackupBase {
 
       Class<?> type = dataSet.getType(key);
       if (type == byte[].class) {
-        builder.setBlobValue(ByteString.copyFrom(dataSet.getBlob(key, null)));
+        byte[] data = dataSet.getBlob(key, null);
+        if (data != null) {
+          builder.setBlobValue(ByteString.copyFrom(dataSet.getBlob(key, null)));
+        } else {
+          Log.w(TAG, "Skipping storing null blob for key: " + key);
+        }
       } else if (type == Boolean.class) {
         builder.setBooleanValue(dataSet.getBoolean(key, false));
       } else if (type == Float.class) {
@@ -449,7 +456,12 @@ public class FullBackupExporter extends FullBackupBase {
       } else if (type == Long.class) {
         builder.setLongValue(dataSet.getLong(key, 0));
       } else if (type == String.class) {
-        builder.setStringValue(dataSet.getString(key, null));
+        String data = dataSet.getString(key, null);
+        if (data != null) {
+          builder.setStringValue(dataSet.getString(key, null));
+        } else {
+          Log.w(TAG, "Skipping storing null string for key: " + key);
+        }
       } else {
         throw new AssertionError("Unknown type: " + type);
       }
@@ -470,21 +482,46 @@ public class FullBackupExporter extends FullBackupBase {
     return cursor.getLong(cursor.getColumnIndexOrThrow(MmsSmsColumns.EXPIRES_IN)) <= 0;
   }
 
-  private static boolean isForNonExpiringMessage(@NonNull SQLiteDatabase db, long mmsId) {
-    String[] columns = new String[] { MmsDatabase.EXPIRES_IN, MmsDatabase.VIEW_ONCE};
-    String   where   = MmsDatabase.ID + " = ?";
-    String[] args    = new String[] { String.valueOf(mmsId) };
+  private static boolean isForNonExpiringMessage(@NonNull SQLiteDatabase db, @NonNull MessageId messageId) {
+    if (messageId.isMms()) {
+      return isForNonExpiringMmsMessageAndNotReleaseChannel(db, messageId.getId());
+    } else {
+      return isForNonExpiringSmsMessage(db, messageId.getId());
+    }
+  }
 
-    try (Cursor mmsCursor = db.query(MmsDatabase.TABLE_NAME, columns, where, args, null, null, null)) {
-      if (mmsCursor != null && mmsCursor.moveToFirst()) {
-        return mmsCursor.getLong(mmsCursor.getColumnIndexOrThrow(MmsDatabase.EXPIRES_IN)) == 0 &&
-               mmsCursor.getLong(mmsCursor.getColumnIndexOrThrow(MmsDatabase.VIEW_ONCE))  == 0;
+  private static boolean isForNonExpiringSmsMessage(@NonNull SQLiteDatabase db, long smsId) {
+    String[] columns = new String[] { SmsDatabase.EXPIRES_IN };
+    String   where   = SmsDatabase.ID + " = ?";
+    String[] args    = new String[] { String.valueOf(smsId) };
+
+    try (Cursor cursor = db.query(SmsDatabase.TABLE_NAME, columns, where, args, null, null, null)) {
+      if (cursor != null && cursor.moveToFirst()) {
+        return isNonExpiringSmsMessage(cursor);
       }
     }
 
     return false;
   }
 
+  private static boolean isForNonExpiringMmsMessageAndNotReleaseChannel(@NonNull SQLiteDatabase db, long mmsId) {
+    String[] columns = new String[] { MmsDatabase.RECIPIENT_ID, MmsDatabase.EXPIRES_IN, MmsDatabase.VIEW_ONCE};
+    String   where   = MmsDatabase.ID + " = ?";
+    String[] args    = new String[] { String.valueOf(mmsId) };
+
+    try (Cursor mmsCursor = db.query(MmsDatabase.TABLE_NAME, columns, where, args, null, null, null)) {
+      if (mmsCursor != null && mmsCursor.moveToFirst()) {
+        return isNonExpiringMmsMessage(mmsCursor) && isNotReleaseChannel(mmsCursor);
+      }
+    }
+
+    return false;
+  }
+
+  private static boolean isNotReleaseChannel(Cursor cursor) {
+    RecipientId releaseChannel = SignalStore.releaseChannelValues().getReleaseChannelRecipientId();
+    return releaseChannel == null || cursor.getLong(cursor.getColumnIndexOrThrow(MmsDatabase.RECIPIENT_ID)) != releaseChannel.toLong();
+  }
 
   private static class BackupFrameOutputStream extends BackupStream {
 

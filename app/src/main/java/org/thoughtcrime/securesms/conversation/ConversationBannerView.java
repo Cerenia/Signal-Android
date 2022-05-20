@@ -1,6 +1,7 @@
 package org.thoughtcrime.securesms.conversation;
 
 import android.content.Context;
+import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
@@ -20,7 +21,9 @@ import org.thoughtcrime.securesms.contacts.avatars.ResourceContactPhoto;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.mms.GlideRequests;
 import org.thoughtcrime.securesms.recipients.Recipient;
+import org.thoughtcrime.securesms.util.ContextUtil;
 import org.thoughtcrime.securesms.util.LongClickMovementMethod;
+import org.thoughtcrime.securesms.util.SpanUtil;
 
 public class ConversationBannerView extends ConstraintLayout {
 
@@ -78,11 +81,23 @@ public class ConversationBannerView extends ConstraintLayout {
     }
   }
 
-  public void setTitle(@Nullable CharSequence title) {
+  public String setTitle(@NonNull Recipient recipient) {
+    SpannableStringBuilder title = new SpannableStringBuilder(recipient.isSelf() ? getContext().getString(R.string.note_to_self) : recipient.getDisplayNameOrUsername(getContext()));
+    if (recipient.showVerified()) {
+      SpanUtil.appendCenteredImageSpan(title, ContextUtil.requireDrawable(getContext(), R.drawable.ic_official_28), 28, 28);
+    }
     contactTitle.setText(title);
+    return title.toString();
   }
 
-  public void setAbout(@Nullable String about) {
+  public void setAbout(@NonNull Recipient recipient) {
+    String about;
+    if (recipient.isReleaseNotes()) {
+      about = getContext().getString(R.string.ReleaseNotes__signal_release_notes_and_news);
+    } else {
+      about = recipient.getCombinedAboutAndEmoji();
+    }
+
     contactAbout.setText(about);
     contactAbout.setVisibility(TextUtils.isEmpty(about) ? GONE : VISIBLE);
   }

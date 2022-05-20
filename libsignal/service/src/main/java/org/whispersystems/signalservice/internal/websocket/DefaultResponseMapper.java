@@ -1,11 +1,12 @@
 package org.whispersystems.signalservice.internal.websocket;
 
-import org.whispersystems.libsignal.util.guava.Function;
+
 import org.whispersystems.signalservice.api.push.exceptions.MalformedResponseException;
 import org.whispersystems.signalservice.internal.ServiceResponse;
 import org.whispersystems.signalservice.internal.util.JsonUtil;
 
 import java.util.Objects;
+import java.util.function.Function;
 
 /**
  * A default implementation of a {@link ResponseMapper} that can parse most known
@@ -41,12 +42,17 @@ public class DefaultResponseMapper<Response> implements ResponseMapper<Response>
   }
 
   @Override
-  public ServiceResponse<Response> map(int status, String body, Function<String, String> getHeader) {
-    Throwable applicationError = errorMapper.parseError(status, body, getHeader);
+  public ServiceResponse<Response> map(int status, String body, Function<String, String> getHeader, boolean unidentified) {
+    Throwable applicationError;
+    try {
+      applicationError = errorMapper.parseError(status, body, getHeader);
+    } catch (MalformedResponseException e) {
+      applicationError = e;
+    }
     if (applicationError == null) {
       try {
         if (customResponseMapper != null) {
-          return Objects.requireNonNull(customResponseMapper.map(status, body, getHeader));
+          return Objects.requireNonNull(customResponseMapper.map(status, body, getHeader, unidentified));
         }
         return ServiceResponse.forResult(JsonUtil.fromJsonResponse(body, clazz), status, body);
       } catch (MalformedResponseException e) {
@@ -81,6 +87,6 @@ public class DefaultResponseMapper<Response> implements ResponseMapper<Response>
   }
 
   public interface CustomResponseMapper<T> {
-    ServiceResponse<T> map(int status, String body, Function<String, String> getHeader) throws MalformedResponseException;
+    ServiceResponse<T> map(int status, String body, Function<String, String> getHeader, boolean unidentified) throws MalformedResponseException;
   }
 }

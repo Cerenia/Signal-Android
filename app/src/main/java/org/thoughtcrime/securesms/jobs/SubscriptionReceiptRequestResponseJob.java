@@ -5,14 +5,18 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.signal.core.util.logging.Log;
-import org.signal.zkgroup.InvalidInputException;
-import org.signal.zkgroup.VerificationFailedException;
-import org.signal.zkgroup.receipts.ClientZkReceiptOperations;
-import org.signal.zkgroup.receipts.ReceiptCredential;
-import org.signal.zkgroup.receipts.ReceiptCredentialPresentation;
-import org.signal.zkgroup.receipts.ReceiptCredentialRequestContext;
-import org.signal.zkgroup.receipts.ReceiptCredentialResponse;
-import org.signal.zkgroup.receipts.ReceiptSerial;
+import org.signal.libsignal.zkgroup.InvalidInputException;
+import org.signal.libsignal.zkgroup.VerificationFailedException;
+import org.signal.libsignal.zkgroup.receipts.ClientZkReceiptOperations;
+import org.signal.libsignal.zkgroup.receipts.ReceiptCredential;
+import org.signal.libsignal.zkgroup.receipts.ReceiptCredentialPresentation;
+import org.signal.libsignal.zkgroup.receipts.ReceiptCredentialRequestContext;
+import org.signal.libsignal.zkgroup.receipts.ReceiptCredentialResponse;
+import org.signal.libsignal.zkgroup.receipts.ReceiptSerial;
+import org.thoughtcrime.securesms.components.settings.app.subscription.errors.DonationError;
+import org.thoughtcrime.securesms.components.settings.app.subscription.errors.DonationErrorSource;
+import org.thoughtcrime.securesms.database.SignalDatabase;
+import org.thoughtcrime.securesms.database.model.DonationReceiptRecord;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.jobmanager.Data;
 import org.thoughtcrime.securesms.jobmanager.Job;
@@ -88,7 +92,7 @@ public class SubscriptionReceiptRequestResponseJob extends BaseJob {
   public static JobManager.Chain createSubscriptionContinuationJobChain(boolean isForKeepAlive) {
     Subscriber                            subscriber           = SignalStore.donationsValues().requireSubscriber();
     SubscriptionReceiptRequestResponseJob requestReceiptJob    = createJob(subscriber.getSubscriberId(), isForKeepAlive);
-    DonationReceiptRedemptionJob          redeemReceiptJob     = DonationReceiptRedemptionJob.createJobForSubscription();
+    DonationReceiptRedemptionJob          redeemReceiptJob     = DonationReceiptRedemptionJob.createJobForSubscription(requestReceiptJob.getErrorSource());
     RefreshOwnProfileJob                  refreshOwnProfileJob = RefreshOwnProfileJob.forSubscription();
 
     return ApplicationDependencies.getJobManager()
@@ -134,19 +138,34 @@ public class SubscriptionReceiptRequestResponseJob extends BaseJob {
   }
 
   private void doRun() throws Exception {
-    ActiveSubscription.Subscription subscription = getLatestSubscriptionInformation();
+    ActiveSubscription              activeSubscription = getLatestSubscriptionInformation();
+    ActiveSubscription.Subscription subscription       = activeSubscription.getActiveSubscription();
+
     if (subscription == null) {
       Log.w(TAG, "Subscription is null.", true);
       throw new RetryableException();
     } else if (subscription.isFailedPayment()) {
-      Log.w(TAG, "Subscription payment failure in active subscription response (status = " + subscription.getStatus() + "). Passing through to redemption job.", true);
-      onPaymentFailure();
-      return;
+      ActiveSubscription.ChargeFailure chargeFailure = activeSubscription.getChargeFailure();
+      if (chargeFailure != null) {
+        Log.w(TAG, "Subscription payment charge failure code: " + chargeFailure.getCode() + ", message: " + chargeFailure.getMessage(), true);
+      }
+
+      Log.w(TAG, "Subscription payment failure in active subscription response (status = " + subscription.getStatus() + ").", true);
+      onPaymentFailure(subscription.getStatus(), chargeFailure, subscription.getEndOfCurrentPeriod());
+      throw new Exception("Subscription has a payment failure: " + subscription.getStatus());
     } else if (!subscription.isActive()) {
+      ActiveSubscription.ChargeFailure chargeFailure = activeSubscription.getChargeFailure();
+      if (chargeFailure != null) {
+        Log.w(TAG, "Subscription payment charge failure code: " + chargeFailure.getCode() + ", message: " + chargeFailure.getMessage(), true);
+      }
+
       Log.w(TAG, "Subscription is not yet active. Status: " + subscription.getStatus(), true);
       throw new RetryableException();
+    } else if (subscription.isCanceled()) {
+      Log.w(TAG, "Subscription is marked as cancelled, but it's possible that the user cancelled and then later tried to resubscribe. Scheduling a retry.", true);
+      throw new RetryableException();
     } else {
-      Log.i(TAG, "Recording end of period from active subscription.", true);
+      Log.i(TAG, "Recording end of period from active subscription: " + subscription.getStatus(), true);
       SignalStore.donationsValues().setLastEndOfPeriod(subscription.getEndOfCurrentPeriod());
       MultiDeviceSubscriptionSyncRequestJob.enqueue();
     }
@@ -162,29 +181,34 @@ public class SubscriptionReceiptRequestResponseJob extends BaseJob {
       ReceiptCredential receiptCredential = getReceiptCredential(response.getResult().get());
 
       if (!isCredentialValid(subscription, receiptCredential)) {
+        DonationError.routeDonationError(context, DonationError.genericBadgeRedemptionFailure(getErrorSource()));
         throw new IOException("Could not validate receipt credential");
       }
 
-      Log.d(TAG, "Validated credential. Handing off to redemption job.", true);
       ReceiptCredentialPresentation receiptCredentialPresentation = getReceiptCredentialPresentation(receiptCredential);
+
+      Log.d(TAG, "Validated credential. Recording receipt and handing off to redemption job.", true);
+      SignalDatabase.donationReceipts().addReceipt(DonationReceiptRecord.createForSubscription(subscription));
+
       setOutputData(new Data.Builder().putBlobAsString(DonationReceiptRedemptionJob.INPUT_RECEIPT_CREDENTIAL_PRESENTATION,
                                                        receiptCredentialPresentation.serialize())
                                       .build());
     } else {
-      Log.w(TAG, "Encountered a retryable exception: " + response.getStatus(), response.getExecutionError().orNull(), true);
+      Log.w(TAG, "Encountered a retryable exception: " + response.getStatus(), response.getExecutionError().orElse(null), true);
       throw new RetryableException();
     }
   }
 
-  private @Nullable ActiveSubscription.Subscription getLatestSubscriptionInformation() throws Exception {
+  private @NonNull ActiveSubscription getLatestSubscriptionInformation() throws Exception {
     ServiceResponse<ActiveSubscription> activeSubscription = ApplicationDependencies.getDonationsService()
                                                                                     .getSubscription(subscriberId)
                                                                                     .blockingGet();
 
     if (activeSubscription.getResult().isPresent()) {
-      return activeSubscription.getResult().get().getActiveSubscription();
+      return activeSubscription.getResult().get();
     } else if (activeSubscription.getApplicationError().isPresent()) {
       Log.w(TAG, "Unrecoverable error getting the user's current subscription. Failing.", activeSubscription.getApplicationError().get(), true);
+      DonationError.routeDonationError(context, DonationError.genericBadgeRedemptionFailure(getErrorSource()));
       throw new IOException(activeSubscription.getApplicationError().get());
     } else {
       throw new RetryableException();
@@ -221,40 +245,51 @@ public class SubscriptionReceiptRequestResponseJob extends BaseJob {
         throw new RetryableException();
       case 400:
         Log.w(TAG, "Receipt credential request failed to validate.", response.getApplicationError().get(), true);
+        DonationError.routeDonationError(context, DonationError.genericBadgeRedemptionFailure(getErrorSource()));
         throw new Exception(response.getApplicationError().get());
       case 402:
-        Log.w(TAG, "Subscription payment failure in credential response. Passing through to redemption job.", true);
-        onPaymentFailure();
-        break;
+        Log.w(TAG, "Payment looks like a failure but may be retried.", response.getApplicationError().get(), true);
+        throw new RetryableException();
       case 403:
         Log.w(TAG, "SubscriberId password mismatch or account auth was present.", response.getApplicationError().get(), true);
+        DonationError.routeDonationError(context, DonationError.genericBadgeRedemptionFailure(getErrorSource()));
         throw new Exception(response.getApplicationError().get());
       case 404:
         Log.w(TAG, "SubscriberId not found or misformed.", response.getApplicationError().get(), true);
+        DonationError.routeDonationError(context, DonationError.genericBadgeRedemptionFailure(getErrorSource()));
         throw new Exception(response.getApplicationError().get());
       case 409:
         onAlreadyRedeemed(response);
-        break;
+        throw new Exception(response.getApplicationError().get());
       default:
         Log.w(TAG, "Encountered a server failure response: " + response.getStatus(), response.getApplicationError().get(), true);
         throw new RetryableException();
     }
   }
 
-  private void onPaymentFailure() {
+  private void onPaymentFailure(@Nullable String status, @Nullable ActiveSubscription.ChargeFailure chargeFailure, long timestamp) {
     SignalStore.donationsValues().setShouldCancelSubscriptionBeforeNextSubscribeAttempt(true);
-    setOutputData(new Data.Builder().putBoolean(DonationReceiptRedemptionJob.INPUT_PAYMENT_FAILURE, true).build());
-    MultiDeviceSubscriptionSyncRequestJob.enqueue();
+    if (status == null) {
+      DonationError.routeDonationError(context, DonationError.genericPaymentFailure(getErrorSource()));
+    } else {
+      SignalStore.donationsValues().setUnexpectedSubscriptionCancelationChargeFailure(chargeFailure);
+      SignalStore.donationsValues().setUnexpectedSubscriptionCancelationReason(status);
+      SignalStore.donationsValues().setUnexpectedSubscriptionCancelationTimestamp(timestamp);
+      MultiDeviceSubscriptionSyncRequestJob.enqueue();
+    }
   }
 
-  private void onAlreadyRedeemed(ServiceResponse<ReceiptCredentialResponse> response) throws Exception {
+  private void onAlreadyRedeemed(ServiceResponse<ReceiptCredentialResponse> response) {
     if (isForKeepAlive) {
       Log.i(TAG, "KeepAlive: Latest paid receipt on subscription already redeemed with a different request credential, ignoring.", response.getApplicationError().get(), true);
-      setOutputData(new Data.Builder().putBoolean(DonationReceiptRedemptionJob.INPUT_KEEP_ALIVE_409, true).build());
     } else {
       Log.w(TAG, "Latest paid receipt on subscription already redeemed with a different request credential.", response.getApplicationError().get(), true);
-      throw new Exception(response.getApplicationError().get());
+      DonationError.routeDonationError(context, DonationError.genericBadgeRedemptionFailure(getErrorSource()));
     }
+  }
+
+  private DonationErrorSource getErrorSource() {
+    return isForKeepAlive ? DonationErrorSource.KEEP_ALIVE : DonationErrorSource.SUBSCRIPTION;
   }
 
   /**
@@ -262,11 +297,11 @@ public class SubscriptionReceiptRequestResponseJob extends BaseJob {
    * - level should match the current subscription level and be the same level you signed up for at the time the subscription was last updated
    * - expiration time should have the following characteristics:
    * - expiration_time mod 86400 == 0
-   * - expiration_time is between now and 60 days from now
+   * - expiration_time is between now and 90 days from now
    */
   private static boolean isCredentialValid(@NonNull ActiveSubscription.Subscription subscription, @NonNull ReceiptCredential receiptCredential) {
     long    now                     = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
-    long    maxExpirationTime       = now + TimeUnit.DAYS.toSeconds(60);
+    long    maxExpirationTime       = now + TimeUnit.DAYS.toSeconds(90);
     boolean isSameLevel             = subscription.getLevel() == receiptCredential.getReceiptLevel();
     boolean isExpirationAfterSub    = subscription.getEndOfCurrentPeriod() < receiptCredential.getReceiptExpirationTime();
     boolean isExpiration86400       = receiptCredential.getReceiptExpirationTime() % 86400 == 0;

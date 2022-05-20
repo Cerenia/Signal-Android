@@ -20,6 +20,8 @@ abstract class KeyboardEntryDialogFragment(@LayoutRes contentLayoutId: Int) :
 
   private var hasShown = false
 
+  protected open val withDim: Boolean = false
+
   override fun onCreate(savedInstanceState: Bundle?) {
     setStyle(STYLE_NORMAL, R.style.Theme_Signal_RoundedBottomSheet)
     super.onCreate(savedInstanceState)
@@ -29,8 +31,11 @@ abstract class KeyboardEntryDialogFragment(@LayoutRes contentLayoutId: Int) :
   override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
     val dialog = super.onCreateDialog(savedInstanceState)
 
-    dialog.window?.setDimAmount(0f)
-    dialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+    if (!withDim) {
+      dialog.window?.setDimAmount(0f)
+    }
+
+    dialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE or WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
 
     return dialog
   }

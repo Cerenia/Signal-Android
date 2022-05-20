@@ -5,8 +5,6 @@ import android.os.ResultReceiver;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.annimon.stream.Stream;
-
 import org.signal.core.util.ThreadUtil;
 import org.signal.core.util.logging.Log;
 import org.signal.ringrtc.CallException;
@@ -19,11 +17,8 @@ import org.thoughtcrime.securesms.ringrtc.CallState;
 import org.thoughtcrime.securesms.ringrtc.RemotePeer;
 import org.thoughtcrime.securesms.service.webrtc.state.WebRtcServiceState;
 import org.thoughtcrime.securesms.webrtc.audio.OutgoingRinger;
-import org.whispersystems.signalservice.api.messages.calls.IceUpdateMessage;
-import org.whispersystems.signalservice.api.messages.calls.SignalServiceCallMessage;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -46,6 +41,7 @@ public class ActiveCallActionProcessorDelegate extends WebRtcActionProcessor {
     put(CallEvent.ENDED_REMOTE_BUSY, WebRtcViewModel.State.CALL_BUSY);
     put(CallEvent.ENDED_REMOTE_HANGUP_NEED_PERMISSION, WebRtcViewModel.State.CALL_NEEDS_PERMISSION);
     put(CallEvent.ENDED_REMOTE_GLARE, WebRtcViewModel.State.CALL_DISCONNECTED_GLARE);
+    put(CallEvent.ENDED_REMOTE_RECALL, WebRtcViewModel.State.CALL_DISCONNECTED_GLARE);
   }};
 
   public ActiveCallActionProcessorDelegate(@NonNull WebRtcInteractor webRtcInteractor, @NonNull String tag) {
@@ -184,6 +180,8 @@ public class ActiveCallActionProcessorDelegate extends WebRtcActionProcessor {
       ringer.start(OutgoingRinger.Type.BUSY);
       ThreadUtil.runOnMainDelayed(ringer::stop, SignalCallManager.BUSY_TONE_LENGTH);
     } else if (endedRemoteEvent == CallEvent.ENDED_REMOTE_GLARE && incomingBeforeAccept) {
+      webRtcInteractor.insertMissedCall(remotePeer, remotePeer.getCallStartTimestamp(), currentState.getCallSetupState(remotePeer).isRemoteVideoOffer());
+    } else if (endedRemoteEvent == CallEvent.ENDED_REMOTE_RECALL && incomingBeforeAccept) {
       webRtcInteractor.insertMissedCall(remotePeer, remotePeer.getCallStartTimestamp(), currentState.getCallSetupState(remotePeer).isRemoteVideoOffer());
     }
 

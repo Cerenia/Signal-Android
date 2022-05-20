@@ -32,8 +32,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.jsoup.helper.StringUtil;
 import org.signal.core.util.logging.Log;
-import org.signal.zkgroup.InvalidInputException;
-import org.signal.zkgroup.groups.GroupMasterKey;
+import org.signal.libsignal.zkgroup.InvalidInputException;
+import org.signal.libsignal.zkgroup.groups.GroupMasterKey;
 import org.thoughtcrime.securesms.database.MessageDatabase.MarkedMessageInfo;
 import org.thoughtcrime.securesms.database.model.MediaMmsMessageRecord;
 import org.thoughtcrime.securesms.database.model.MessageRecord;
@@ -42,6 +42,7 @@ import org.thoughtcrime.securesms.database.model.RecipientRecord;
 import org.thoughtcrime.securesms.database.model.ThreadRecord;
 import org.thoughtcrime.securesms.groups.BadGroupIdException;
 import org.thoughtcrime.securesms.groups.GroupId;
+import org.thoughtcrime.securesms.keyvalue.SignalStore;
 import org.thoughtcrime.securesms.mms.Slide;
 import org.thoughtcrime.securesms.mms.SlideDeck;
 import org.thoughtcrime.securesms.mms.StickerSlide;
@@ -51,17 +52,17 @@ import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.recipients.RecipientUtil;
 import org.thoughtcrime.securesms.storage.StorageSyncHelper;
 import org.thoughtcrime.securesms.util.ConversationUtil;
-import org.thoughtcrime.securesms.util.CursorUtil;
+import org.signal.core.util.CursorUtil;
 import org.thoughtcrime.securesms.util.JsonUtils;
-import org.thoughtcrime.securesms.util.SqlUtil;
+import org.signal.core.util.SqlUtil;
 import org.thoughtcrime.securesms.util.TextSecurePreferences;
 import org.thoughtcrime.securesms.util.Util;
-import org.whispersystems.libsignal.util.guava.Optional;
-import org.whispersystems.signalservice.api.push.ACI;
+import org.whispersystems.signalservice.api.push.ServiceId;
 import org.whispersystems.signalservice.api.storage.SignalAccountRecord;
 import org.whispersystems.signalservice.api.storage.SignalContactRecord;
 import org.whispersystems.signalservice.api.storage.SignalGroupV1Record;
 import org.whispersystems.signalservice.api.storage.SignalGroupV2Record;
+import org.whispersystems.signalservice.api.util.OptionalUtil;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -76,7 +77,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
+
+import kotlin.Unit;
+import kotlin.collections.CollectionsKt;
 
 public class ThreadDatabase extends Database {
 
@@ -467,7 +472,7 @@ public class ThreadDatabase extends Database {
 
     db.beginTransaction();
     try {
-      SqlUtil.Query     query         = SqlUtil.buildCollectionQuery(ID, threadIds);
+      SqlUtil.Query     query         = SqlUtil.buildSingleCollectionQuery(ID, threadIds);
       ContentValues     contentValues = new ContentValues();
 
       contentValues.put(READ, ReadStatus.FORCED_UNREAD.serialize());
@@ -490,6 +495,19 @@ public class ThreadDatabase extends Database {
     }
   }
 
+  public long getUnreadThreadCount() {
+    SQLiteDatabase db         = databaseHelper.getSignalReadableDatabase();
+    String[]       projection = SqlUtil.buildArgs("COUNT(*)");
+    String         where      = READ + " != 1";
+
+    try (Cursor cursor = db.query(TABLE_NAME, projection, where, null, null, null, null)) {
+      if (cursor != null && cursor.moveToFirst()) {
+        return cursor.getLong(0);
+      } else {
+        return 0;
+      }
+    }
+  }
 
   public void incrementUnread(long threadId, int amount) {
     SQLiteDatabase db = databaseHelper.getSignalWritableDatabase();
@@ -555,16 +573,20 @@ public class ThreadDatabase extends Database {
   }
 
   public Cursor getRecentConversationList(int limit, boolean includeInactiveGroups, boolean hideV1Groups) {
-    return getRecentConversationList(limit, includeInactiveGroups, false, hideV1Groups, false);
+    return getRecentConversationList(limit, includeInactiveGroups, false, false, hideV1Groups, false);
   }
 
-  public Cursor getRecentConversationList(int limit, boolean includeInactiveGroups, boolean groupsOnly, boolean hideV1Groups, boolean hideSms) {
+  public Cursor getRecentConversationList(int limit, boolean includeInactiveGroups, boolean individualsOnly, boolean groupsOnly, boolean hideV1Groups, boolean hideSms) {
     SQLiteDatabase db    = databaseHelper.getSignalReadableDatabase();
     String         query = !includeInactiveGroups ? MEANINGFUL_MESSAGES + " != 0 AND (" + GroupDatabase.TABLE_NAME + "." + GroupDatabase.ACTIVE + " IS NULL OR " + GroupDatabase.TABLE_NAME + "." + GroupDatabase.ACTIVE + " = 1)"
                                                   : MEANINGFUL_MESSAGES + " != 0";
 
     if (groupsOnly) {
       query += " AND " + RecipientDatabase.TABLE_NAME + "." + RecipientDatabase.GROUP_ID + " NOT NULL";
+    }
+
+    if (individualsOnly) {
+      query += " AND " + RecipientDatabase.TABLE_NAME + "." + RecipientDatabase.GROUP_ID + " IS NULL";
     }
 
     if (hideV1Groups) {
@@ -578,6 +600,10 @@ public class ThreadDatabase extends Database {
     }
 
     query += " AND " + ARCHIVED + " = 0";
+
+    if (SignalStore.releaseChannelValues().getReleaseChannelRecipientId() != null) {
+      query += " AND " + RECIPIENT_ID + " != " + SignalStore.releaseChannelValues().getReleaseChannelRecipientId().toLong();
+    }
 
     return db.rawQuery(createQuery(query, 0, limit, true), null);
   }
@@ -874,14 +900,32 @@ public class ThreadDatabase extends Database {
   }
 
   public void unpinConversations(@NonNull Collection<Long> threadIds) {
-    SQLiteDatabase db            = databaseHelper.getSignalWritableDatabase();
-    ContentValues  contentValues = new ContentValues(1);
-    String         placeholders  = StringUtil.join(Stream.of(threadIds).map(unused -> "?").toList(), ",");
-    String         selection     = ID + " IN (" + placeholders + ")";
+    SQLiteDatabase db                     = databaseHelper.getSignalWritableDatabase();
+    ContentValues  contentValues          = new ContentValues(1);
+    String         placeholders           = StringUtil.join(Stream.of(threadIds).map(unused -> "?").toList(), ",");
+    String         selection              = ID + " IN (" + placeholders + ")";
+    List<Long>     remainingPinnedThreads = getPinnedThreadIds();
 
+    remainingPinnedThreads.removeAll(threadIds);
     contentValues.put(PINNED, 0);
 
-    db.update(TABLE_NAME, contentValues, selection, SqlUtil.buildArgs(Stream.of(threadIds).toArray()));
+    db.beginTransaction();
+    try {
+      db.update(TABLE_NAME, contentValues, selection, SqlUtil.buildArgs(Stream.of(threadIds).toArray()));
+
+      CollectionsKt.forEachIndexed(remainingPinnedThreads, (index, threadId) -> {
+        ContentValues values = new ContentValues(1);
+        values.put(PINNED, index + 1);
+        db.update(TABLE_NAME, values, ID_WHERE, SqlUtil.buildArgs(threadId));
+
+        return Unit.INSTANCE;
+      });
+
+      db.setTransactionSuccessful();
+    } finally {
+      db.endTransaction();
+    }
+
     notifyConversationListListeners();
 
     SignalDatabase.recipients().markNeedsSync(Recipient.self().getId());
@@ -1022,7 +1066,7 @@ public class ThreadDatabase extends Database {
 
   public Map<RecipientId, Long> getThreadIdsIfExistsFor(@NonNull RecipientId ... recipientIds) {
     SQLiteDatabase db    = databaseHelper.getSignalReadableDatabase();
-    SqlUtil.Query  query = SqlUtil.buildCollectionQuery(RECIPIENT_ID, Arrays.asList(recipientIds));
+    SqlUtil.Query  query = SqlUtil.buildSingleCollectionQuery(RECIPIENT_ID, Arrays.asList(recipientIds));
 
     Map<RecipientId, Long> results = new HashMap<>();
     try (Cursor cursor = db.query(TABLE_NAME, new String[]{ ID, RECIPIENT_ID }, query.getWhere(), query.getWhereArgs(), null, null, null, "1")) {
@@ -1100,7 +1144,7 @@ public class ThreadDatabase extends Database {
 
   public @NonNull List<RecipientId> getRecipientIdsForThreadIds(Collection<Long> threadIds) {
     SQLiteDatabase    db    = databaseHelper.getSignalReadableDatabase();
-    SqlUtil.Query     query = SqlUtil.buildCollectionQuery(ID, threadIds);
+    SqlUtil.Query     query = SqlUtil.buildSingleCollectionQuery(ID, threadIds);
     List<RecipientId> ids   = new ArrayList<>(threadIds.size());
 
     try (Cursor cursor = db.query(TABLE_NAME, new String[] { RECIPIENT_ID }, query.getWhere(), query.getWhereArgs(), null, null, null)) {
@@ -1182,7 +1226,7 @@ public class ThreadDatabase extends Database {
         Recipient pinnedRecipient;
 
         if (pinned.getContact().isPresent()) {
-          pinnedRecipient = Recipient.externalPush(context, pinned.getContact().get());
+          pinnedRecipient = Recipient.externalPush(pinned.getContact().get());
         } else if (pinned.getGroupV1Id().isPresent()) {
           try {
             pinnedRecipient = Recipient.externalGroupExact(context, GroupId.v1(pinned.getGroupV1Id().get()));
@@ -1268,7 +1312,7 @@ public class ThreadDatabase extends Database {
     try {
       record = mmsSmsDatabase.getConversationSnippet(threadId);
     } catch (NoSuchMessageException e) {
-      if (allowDeletion) {
+      if (allowDeletion && !SignalDatabase.mms().containsStories(threadId)) {
         deleteConversation(threadId);
       }
       return true;
@@ -1304,7 +1348,7 @@ public class ThreadDatabase extends Database {
     try {
       type = SignalDatabase.mmsSms().getConversationSnippetType(threadId);
     } catch (NoSuchMessageException e) {
-      Log.w(TAG, "Unable to find snippet message for thread: " + threadId, e);
+      Log.w(TAG, "Unable to find snippet message for thread: " + threadId);
       return;
     }
 
@@ -1412,7 +1456,9 @@ public class ThreadDatabase extends Database {
     if (!record.isMms() || record.isMmsNotification() || record.isGroupAction()) return null;
 
     SlideDeck slideDeck = ((MediaMmsMessageRecord)record).getSlideDeck();
-    Slide     thumbnail = Optional.fromNullable(slideDeck.getThumbnailSlide()).or(Optional.fromNullable(slideDeck.getStickerSlide())).orNull();
+    Slide     thumbnail = OptionalUtil.or(Optional.ofNullable(slideDeck.getThumbnailSlide()),
+                                          Optional.ofNullable(slideDeck.getStickerSlide()))
+                                      .orElse(null);
 
     if (thumbnail != null && !((MmsMessageRecord) record).isViewOnce()) {
       return thumbnail.getUri();
@@ -1444,7 +1490,7 @@ public class ThreadDatabase extends Database {
         if (threadRecipient.isPushV2Group()) {
           MessageRecord.InviteAddState inviteAddState = record.getGv2AddInviteState();
           if (inviteAddState != null) {
-            RecipientId from = RecipientId.from(ACI.from(inviteAddState.getAddedOrInvitedBy()), null);
+            RecipientId from = RecipientId.from(ServiceId.from(inviteAddState.getAddedOrInvitedBy()), null);
             if (inviteAddState.isInvited()) {
               Log.i(TAG, "GV2 invite message request from " + from);
               return Extra.forGroupV2invite(from, individualRecipientId);
@@ -1522,6 +1568,7 @@ public class ThreadDatabase extends Database {
     return MmsSmsColumns.Types.isProfileChange(type) ||
            MmsSmsColumns.Types.isGroupV1MigrationEvent(type) ||
            MmsSmsColumns.Types.isChangeNumber(type) ||
+           MmsSmsColumns.Types.isBoostRequest(type) ||
            MmsSmsColumns.Types.isGroupV2LeaveOnly(type);
   }
 
@@ -1572,12 +1619,14 @@ public class ThreadDatabase extends Database {
         if (group != null) {
           RecipientDetails details = new RecipientDetails(group.getTitle(),
                                                           null,
-                                                          group.hasAvatar() ? Optional.of(group.getAvatarId()) : Optional.absent(),
+                                                          group.hasAvatar() ? Optional.of(group.getAvatarId()) : Optional.empty(),
                                                           false,
                                                           false,
                                                           recipientSettings.getRegistered(),
                                                           recipientSettings,
-                                                          null);
+                                                          null,
+                                                          false);
+
           recipient = new Recipient(recipientId, details, false);
         } else {
           recipient = Recipient.live(recipientId).get();

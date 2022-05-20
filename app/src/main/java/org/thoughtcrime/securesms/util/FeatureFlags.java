@@ -3,7 +3,6 @@ package org.thoughtcrime.securesms.util;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.annotation.WorkerThread;
 
@@ -11,6 +10,7 @@ import com.annimon.stream.Stream;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.signal.core.util.SetUtil;
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.BuildConfig;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
@@ -84,14 +84,21 @@ public final class FeatureFlags {
   private static final String SUGGEST_SMS_BLACKLIST             = "android.suggestSmsBlacklist";
   private static final String MAX_GROUP_CALL_RING_SIZE          = "global.calling.maxGroupCallRingSize";
   private static final String GROUP_CALL_RINGING                = "android.calling.groupCallRinging";
-  private static final String CHANGE_NUMBER_ENABLED             = "android.changeNumber";
   private static final String DONOR_BADGES                      = "android.donorBadges.6";
   private static final String DONOR_BADGES_DISPLAY              = "android.donorBadges.display.4";
   private static final String CDSH                              = "android.cdsh";
-  private static final String VOICE_NOTE_RECORDING_V2           = "android.voiceNoteRecordingV2.2";
-  private static final String GROUPS_V2_UPDATE_PAGING           = "android.groupsv2.updatePaging";
-  private static final String HARDWARE_AEC_MODELS               = "android.calling.hardwareAecModels";
-  private static final String FORCE_DEFAULT_AEC                 = "android.calling.forceDefaultAec";
+  private static final String STORIES                           = "android.stories.2";
+  private static final String STORIES_TEXT_FUNCTIONS            = "android.stories.text.functions";
+  private static final String STORIES_TEXT_POSTS                = "android.stories.text.posts.2";
+  private static final String HARDWARE_AEC_BLOCKLIST_MODELS     = "android.calling.hardwareAecBlockList";
+  private static final String SOFTWARE_AEC_BLOCKLIST_MODELS     = "android.calling.softwareAecBlockList";
+  private static final String USE_HARDWARE_AEC_IF_OLD           = "android.calling.useHardwareAecIfOlderThanApi29";
+  private static final String USE_AEC3                          = "android.calling.useAec3";
+  private static final String PAYMENTS_COUNTRY_BLOCKLIST        = "android.payments.blocklist";
+  private static final String PNP_CDS                           = "android.pnp.cds";
+  private static final String USE_FCM_FOREGROUND_SERVICE        = "android.useFcmForegroundService.2";
+  private static final String STORIES_AUTO_DOWNLOAD_MAXIMUM     = "android.stories.autoDownloadMaximum";
+  private static final String GIFT_BADGES                       = "android.giftBadges";
 
   /**
    * We will only store remote values for flags in this set. If you want a flag to be controllable
@@ -132,16 +139,23 @@ public final class FeatureFlags {
       SENDER_KEY_MAX_AGE,
       DONOR_BADGES,
       DONOR_BADGES_DISPLAY,
-      CHANGE_NUMBER_ENABLED,
-      VOICE_NOTE_RECORDING_V2,
-      GROUPS_V2_UPDATE_PAGING,
-      HARDWARE_AEC_MODELS,
-      FORCE_DEFAULT_AEC
+      STORIES,
+      STORIES_TEXT_FUNCTIONS,
+      STORIES_TEXT_POSTS,
+      HARDWARE_AEC_BLOCKLIST_MODELS,
+      SOFTWARE_AEC_BLOCKLIST_MODELS,
+      USE_HARDWARE_AEC_IF_OLD,
+      USE_AEC3,
+      PAYMENTS_COUNTRY_BLOCKLIST,
+      USE_FCM_FOREGROUND_SERVICE,
+      STORIES_AUTO_DOWNLOAD_MAXIMUM,
+      GIFT_BADGES
   );
 
   @VisibleForTesting
   static final Set<String> NOT_REMOTE_CAPABLE = SetUtil.newHashSet(
-      PHONE_NUMBER_PRIVACY_VERSION
+      PHONE_NUMBER_PRIVACY_VERSION,
+      PNP_CDS
   );
 
   /**
@@ -191,9 +205,12 @@ public final class FeatureFlags {
       SENDER_KEY_MAX_AGE,
       DONOR_BADGES_DISPLAY,
       DONATE_MEGAPHONE,
-      VOICE_NOTE_RECORDING_V2,
-      GROUPS_V2_UPDATE_PAGING,
-      FORCE_DEFAULT_AEC
+      HARDWARE_AEC_BLOCKLIST_MODELS,
+      SOFTWARE_AEC_BLOCKLIST_MODELS,
+      USE_HARDWARE_AEC_IF_OLD,
+      USE_AEC3,
+      PAYMENTS_COUNTRY_BLOCKLIST,
+      USE_FCM_FOREGROUND_SERVICE
   );
 
   /**
@@ -212,13 +229,14 @@ public final class FeatureFlags {
    * These can be called on any thread, including the main thread, so be careful!
    *
    * Also note that this doesn't play well with {@link #FORCED_VALUES} -- changes there will not
-   * trigger changes in this map, so you'll have to do some manually hacking to get yourself in the
+   * trigger changes in this map, so you'll have to do some manual hacking to get yourself in the
    * desired test state.
    */
   private static final Map<String, OnFlagChange> FLAG_CHANGE_LISTENERS = new HashMap<String, OnFlagChange>() {{
     put(MESSAGE_PROCESSOR_ALARM_INTERVAL, change -> MessageProcessReceiver.startOrUpdateAlarm(ApplicationDependencies.getApplication()));
     put(SENDER_KEY, change -> ApplicationDependencies.getJobManager().add(new RefreshAttributesJob()));
-    put(CHANGE_NUMBER_ENABLED, change -> ApplicationDependencies.getJobManager().add(new RefreshAttributesJob()));
+    put(STORIES, change -> ApplicationDependencies.getJobManager().add(new RefreshAttributesJob()));
+    put(GIFT_BADGES, change -> ApplicationDependencies.getJobManager().add(new RefreshAttributesJob()));
   }};
 
   private static final Map<String, Object> REMOTE_VALUES = new TreeMap<>();
@@ -412,9 +430,9 @@ public final class FeatureFlags {
     return getBoolean(GROUP_CALL_RINGING, false);
   }
 
-  /** Whether or not to show change number in the UI. */
-  public static boolean changeNumber() {
-    return getBoolean(CHANGE_NUMBER_ENABLED, false);
+  /** A comma-separated list of country codes where payments should be disabled. */
+  public static String paymentsCountryBlocklist() {
+    return getString(PAYMENTS_COUNTRY_BLOCKLIST, "98,963,53,850,7");
   }
 
   /**
@@ -429,6 +447,33 @@ public final class FeatureFlags {
   }
 
   /**
+   * Whether or not stories are available
+   *
+   * NOTE: This feature is still under ongoing development, do not enable.
+   */
+  public static boolean stories() {
+    return getBoolean(STORIES, false);
+  }
+
+  /**
+   * Whether users can apply alignment and scale to text posts
+   *
+   * NOTE: This feature is still under ongoing development, do not enable.
+   */
+  public static boolean storiesTextFunctions() {
+    return getBoolean(STORIES_TEXT_FUNCTIONS, false);
+  }
+
+  /**
+   * Whether the user supports sending Story text posts
+   *
+   * NOTE: This feature is still under ongoing development, do not enable.
+   */
+  public static boolean storiesTextPosts() {
+    return getBoolean(STORIES_TEXT_POSTS, false);
+  }
+
+  /**
    * Whether or not donor badges should be displayed throughout the app.
    */
   public static boolean displayDonorBadges() {
@@ -439,24 +484,52 @@ public final class FeatureFlags {
     return Environment.IS_STAGING && getBoolean(CDSH, false);
   }
 
-  /** Whether or not to use the new voice note recorder backed by MediaRecorder. */
-  public static boolean voiceNoteRecordingV2() {
-    return getBoolean(VOICE_NOTE_RECORDING_V2, false);
+  /** A comma-separated list of models that should *not* use hardware AEC for calling. */
+  public static @NonNull String hardwareAecBlocklistModels() {
+    return getString(HARDWARE_AEC_BLOCKLIST_MODELS, "");
   }
 
-  /** Whether or not to use the proper paging when updating group state. */
-  public static boolean groupsV2UpdatePaging() {
-    return getBoolean(GROUPS_V2_UPDATE_PAGING, false);
+  /** A comma-separated list of models that should *not* use software AEC for calling. */
+  public static @NonNull String softwareAecBlocklistModels() {
+    return getString(SOFTWARE_AEC_BLOCKLIST_MODELS, "");
   }
 
-  /** A comma-separated list of models that should use hardware AEC for calling. */
-  public static @NonNull String hardwareAecModels() {
-    return getString(HARDWARE_AEC_MODELS, "");
+  /** Whether or not hardware AEC should be used for calling on devices older than API 29. */
+  public static boolean useHardwareAecIfOlderThanApi29() {
+    return getBoolean(USE_HARDWARE_AEC_IF_OLD, false);
   }
 
-  /** Whether or not all devices should be forced into using default AEC for calling. */
-  public static boolean forceDefaultAec() {
-    return getBoolean(FORCE_DEFAULT_AEC, false);
+  /** Whether or not {@link org.signal.ringrtc.CallManager.AudioProcessingMethod#ForceSoftwareAec3} can be used */
+  public static boolean useAec3() {
+    return getBoolean(USE_AEC3, true);
+  }
+
+  /**
+   * Whether or not to use the phone number privacy CDS flow. Only currently works in staging.
+   *
+   * Note: This feature is in very early stages of development and *will* break your contacts.
+   */
+  public static boolean usePnpCds() {
+    return Environment.IS_STAGING && getBoolean(PNP_CDS, false);
+  }
+
+  public static boolean useFcmForegroundService() {
+    return getBoolean(USE_FCM_FOREGROUND_SERVICE, false);
+  }
+
+  /**
+   * Prefetch count for stories from a given user.
+   */
+  public static int storiesAutoDownloadMaximum() {
+    return getInteger(STORIES_AUTO_DOWNLOAD_MAXIMUM, 2);
+  }
+  /**
+   * Whether or not Gifting Badges should be available on this client.
+   *
+   * NOTE: This feature is under development and should not be enabled on prod. Doing so is solely at your own risk.
+   */
+  public static boolean giftBadges() {
+    return getBoolean(GIFT_BADGES, Environment.IS_STAGING);
   }
 
   /** Only for rendering debug info. */

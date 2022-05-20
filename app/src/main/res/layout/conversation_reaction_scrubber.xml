@@ -5,17 +5,40 @@
     android:id="@+id/conversation_reaction_scrubber"
     android:layout_width="0dp"
     android:layout_height="0dp"
-    app:layout_constraintTop_toTopOf="@+id/status_bar_guideline"
-    app:layout_constraintBottom_toBottomOf="@+id/navigation_bar_guideline"
-    app:layout_constraintStart_toStartOf="@+id/parent_start_guideline"
-    app:layout_constraintEnd_toEndOf="@+id/parent_end_guideline"
     android:elevation="1000dp"
     android:visibility="gone"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toEndOf="@+id/parent_end_guideline"
+    app:layout_constraintStart_toStartOf="@+id/parent_start_guideline"
+    app:layout_constraintTop_toTopOf="@+id/status_bar_guideline"
     tools:visibility="visible">
 
-    <include
-        android:id="@+id/conversation_reaction_toolbar"
-        layout="@layout/conversation_reaction_long_press_toolbar" />
+    <Space
+        android:id="@+id/dropdown_anchor"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_gravity="left"
+        tools:ignore="RtlHardcoded" />
+
+    <FrameLayout
+        android:id="@+id/toolbar_shade"
+        android:layout_width="match_parent"
+        android:layout_height="?actionBarSize"
+        android:background="@color/reactions_screen_light_shade_color"
+        android:foreground="@color/reactions_screen_dark_shade_color" />
+
+    <FrameLayout
+        android:id="@+id/input_shade"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_gravity="bottom"
+        android:background="@color/reactions_screen_light_shade_color"
+        android:foreground="@color/reactions_screen_dark_shade_color" />
+
+    <View
+        android:id="@+id/conversation_item"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
 
     <View
         android:id="@+id/conversation_reaction_scrubber_background"
@@ -52,6 +75,7 @@
             android:layout_height="48dp"
             android:alpha="0"
             android:translationY="@dimen/reaction_scrubber_anim_start_translation_y"
+            app:forceJumbo="true"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/reaction_2"
             app:layout_constraintStart_toStartOf="parent"
@@ -65,6 +89,7 @@
             android:layout_height="48dp"
             android:alpha="0"
             android:translationY="@dimen/reaction_scrubber_anim_start_translation_y"
+            app:forceJumbo="true"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/reaction_3"
             app:layout_constraintStart_toEndOf="@id/reaction_1"
@@ -78,6 +103,7 @@
             android:layout_height="48dp"
             android:alpha="0"
             android:translationY="@dimen/reaction_scrubber_anim_start_translation_y"
+            app:forceJumbo="true"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/reaction_4"
             app:layout_constraintStart_toEndOf="@id/reaction_2"
@@ -91,6 +117,7 @@
             android:layout_height="48dp"
             android:alpha="0"
             android:translationY="@dimen/reaction_scrubber_anim_start_translation_y"
+            app:forceJumbo="true"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/reaction_5"
             app:layout_constraintStart_toEndOf="@id/reaction_3"
@@ -104,6 +131,7 @@
             android:layout_height="48dp"
             android:alpha="0"
             android:translationY="@dimen/reaction_scrubber_anim_start_translation_y"
+            app:forceJumbo="true"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/reaction_6"
             app:layout_constraintStart_toEndOf="@id/reaction_4"
@@ -117,6 +145,7 @@
             android:layout_height="48dp"
             android:alpha="0"
             android:translationY="@dimen/reaction_scrubber_anim_start_translation_y"
+            app:forceJumbo="true"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/reaction_7"
             app:layout_constraintStart_toEndOf="@id/reaction_5"
@@ -130,6 +159,7 @@
             android:layout_height="48dp"
             android:alpha="0"
             android:translationY="@dimen/reaction_scrubber_anim_start_translation_y"
+            app:forceJumbo="true"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/reaction_6"

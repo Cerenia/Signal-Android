@@ -23,6 +23,8 @@ import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.recipients.RecipientUtil;
 import org.thoughtcrime.securesms.transport.RetryLaterException;
 import org.thoughtcrime.securesms.util.GroupUtil;
+import org.signal.core.util.SetUtil;
+import org.thoughtcrime.securesms.util.Util;
 import org.whispersystems.signalservice.api.crypto.ContentHint;
 import org.whispersystems.signalservice.api.crypto.UntrustedIdentityException;
 import org.whispersystems.signalservice.api.messages.SendMessageResult;
@@ -65,8 +67,13 @@ public class RemoteDeleteSendJob extends BaseJob {
       throw new AssertionError("We have a message, but couldn't find the thread!");
     }
 
-    List<RecipientId> recipients = conversationRecipient.isGroup() ? Stream.of(RecipientUtil.getEligibleForSending(conversationRecipient.getParticipants())).map(Recipient::getId).toList()
-                                                                   : Stream.of(conversationRecipient.getId()).toList();
+    List<RecipientId> recipients;
+    if (conversationRecipient.isDistributionList()) {
+      recipients = SignalDatabase.storySends().getRemoteDeleteRecipients(message.getId(), message.getTimestamp());
+    } else {
+      recipients = conversationRecipient.isGroup() ? Stream.of(conversationRecipient.getParticipants()).map(Recipient::getId).toList()
+                                                   : Stream.of(conversationRecipient.getId()).toList();
+    }
 
     recipients.remove(Recipient.self().getId());
 
@@ -137,14 +144,27 @@ public class RemoteDeleteSendJob extends BaseJob {
       throw new IllegalStateException("Cannot delete a message that isn't yours!");
     }
 
-    List<Recipient> destinations = Stream.of(recipients).map(Recipient::resolved).toList();
-    List<Recipient> completions  = deliver(conversationRecipient, destinations, targetSentTimestamp);
+    List<Recipient>   possible = Stream.of(recipients).map(Recipient::resolved).toList();
+    List<Recipient>   eligible = RecipientUtil.getEligibleForSending(Stream.of(recipients).map(Recipient::resolved).toList());
+    List<RecipientId> skipped  = Stream.of(SetUtil.difference(possible, eligible)).map(Recipient::getId).toList();
 
-    for (Recipient completion : completions) {
+    GroupSendJobHelper.SendResult sendResult   = deliver(conversationRecipient, eligible, targetSentTimestamp);
+
+    for (Recipient completion : sendResult.completed) {
       recipients.remove(completion.getId());
     }
 
-    Log.i(TAG, "Completed now: " + completions.size() + ", Remaining: " + recipients.size());
+    for (RecipientId skip : skipped) {
+      recipients.remove(skip);
+    }
+
+    List<RecipientId> totalSkips = Util.join(skipped, sendResult.skipped);
+
+    Log.i(TAG, "Completed now: " + sendResult.completed.size() + ", Skipped: " + totalSkips.size() + ", Remaining: " + recipients.size());
+
+    if (totalSkips.size() > 0 && isMms && message.getRecipient().isGroup()) {
+      SignalDatabase.groupReceipts().setSkipped(totalSkips, messageId);
+    }
 
     if (recipients.isEmpty()) {
       db.markAsSent(messageId, true);
@@ -167,7 +187,7 @@ public class RemoteDeleteSendJob extends BaseJob {
     Log.w(TAG, "Failed to send remote delete to all recipients! (" + (initialRecipientCount - recipients.size() + "/" + initialRecipientCount + ")") );
   }
 
-  private @NonNull List<Recipient> deliver(@NonNull Recipient conversationRecipient, @NonNull List<Recipient> destinations, long targetSentTimestamp)
+  private @NonNull GroupSendJobHelper.SendResult deliver(@NonNull Recipient conversationRecipient, @NonNull List<Recipient> destinations, long targetSentTimestamp)
       throws IOException, UntrustedIdentityException
   {
     SignalServiceDataMessage.Builder dataMessageBuilder = SignalServiceDataMessage.newBuilder()
@@ -180,7 +200,7 @@ public class RemoteDeleteSendJob extends BaseJob {
 
     SignalServiceDataMessage dataMessage = dataMessageBuilder.build();
     List<SendMessageResult>  results     = GroupSendUtil.sendResendableDataMessage(context,
-                                                                                   conversationRecipient.getGroupId().transform(GroupId::requireV2).orNull(),
+                                                                                   conversationRecipient.getGroupId().map(GroupId::requireV2).orElse(null),
                                                                                    destinations,
                                                                                    false,
                                                                                    ContentHint.RESENDABLE,

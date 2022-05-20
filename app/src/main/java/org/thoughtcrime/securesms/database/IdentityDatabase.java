@@ -25,21 +25,22 @@ import androidx.annotation.Nullable;
 
 import org.greenrobot.eventbus.EventBus;
 import org.signal.core.util.logging.Log;
+import org.signal.libsignal.protocol.IdentityKey;
+import org.signal.libsignal.protocol.InvalidKeyException;
 import org.thoughtcrime.securesms.database.model.IdentityRecord;
 import org.thoughtcrime.securesms.database.model.IdentityStoreRecord;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
+import org.thoughtcrime.securesms.storage.StorageSyncHelper;
 import org.thoughtcrime.securesms.util.Base64;
-import org.thoughtcrime.securesms.util.CursorUtil;
+import org.signal.core.util.CursorUtil;
 import org.thoughtcrime.securesms.util.IdentityUtil;
-import org.thoughtcrime.securesms.util.SqlUtil;
-import org.whispersystems.libsignal.IdentityKey;
-import org.whispersystems.libsignal.InvalidKeyException;
-import org.whispersystems.libsignal.util.guava.Optional;
+import org.signal.core.util.SqlUtil;
 import org.whispersystems.signalservice.api.util.UuidUtil;
 
 import java.io.IOException;
+import java.util.Optional;
 
 public class IdentityDatabase extends Database {
 
@@ -141,6 +142,7 @@ public class IdentityDatabase extends Database {
   {
     saveIdentityInternal(addressName, recipientId, identityKey, verifiedStatus, firstUse, timestamp, nonBlockingApproval);
     SignalDatabase.recipients().markNeedsSync(recipientId);
+    StorageSyncHelper.scheduleSyncForDataChange();
   }
 
   public void setApproval(@NonNull String addressName, @NonNull RecipientId recipientId, boolean nonBlockingApproval) {
@@ -152,6 +154,7 @@ public class IdentityDatabase extends Database {
     database.update(TABLE_NAME, contentValues, ADDRESS + " = ?", SqlUtil.buildArgs(addressName));
 
     SignalDatabase.recipients().markNeedsSync(recipientId);
+    StorageSyncHelper.scheduleSyncForDataChange();
   }
 
   public void setVerified(@NonNull String addressName, @NonNull RecipientId recipientId, IdentityKey identityKey, VerifiedStatus verifiedStatus) {
@@ -169,11 +172,14 @@ public class IdentityDatabase extends Database {
       Optional<IdentityRecord> record = getIdentityRecord(addressName);
       if (record.isPresent()) EventBus.getDefault().post(record.get());
       SignalDatabase.recipients().markNeedsSync(recipientId);
+      StorageSyncHelper.scheduleSyncForDataChange();
     }
   }
 
   public void updateIdentityAfterSync(@NonNull String addressName, @NonNull RecipientId recipientId, IdentityKey identityKey, VerifiedStatus verifiedStatus) {
-    boolean hadEntry      = getIdentityRecord(addressName).isPresent();
+    Optional<IdentityRecord> existingRecord = getIdentityRecord(addressName);
+
+    boolean hadEntry      = existingRecord.isPresent();
     boolean keyMatches    = hasMatchingKey(addressName, identityKey);
     boolean statusMatches = keyMatches && hasMatchingStatus(addressName, identityKey, verifiedStatus);
 
@@ -186,11 +192,12 @@ public class IdentityDatabase extends Database {
         EventBus.getDefault().post(record.get());
       }
 
-      ApplicationDependencies.getIdentityStore().invalidate(addressName);
+      ApplicationDependencies.getProtocolStore().aci().identities().invalidate(addressName);
     }
 
     if (hadEntry && !keyMatches) {
-      IdentityUtil.markIdentityUpdate(context, RecipientId.fromExternalPush(addressName));
+      Log.w(TAG, "Updated identity key during storage sync for " + addressName + " | Existing: " + existingRecord.get().getIdentityKey().hashCode() + ", New: " + identityKey.hashCode());
+      IdentityUtil.markIdentityUpdate(context, recipientId);
     }
   }
 
@@ -211,7 +218,7 @@ public class IdentityDatabase extends Database {
       throw new AssertionError(e);
     }
 
-    return Optional.absent();
+    return Optional.empty();
   }
 
   private boolean hasMatchingKey(@NonNull String addressName, IdentityKey identityKey) {

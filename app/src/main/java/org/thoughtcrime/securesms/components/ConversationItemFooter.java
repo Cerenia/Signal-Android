@@ -41,10 +41,10 @@ import org.thoughtcrime.securesms.util.SignalLocalMetrics;
 import org.thoughtcrime.securesms.util.ViewUtil;
 import org.thoughtcrime.securesms.util.dualsim.SubscriptionInfoCompat;
 import org.thoughtcrime.securesms.util.dualsim.SubscriptionManagerCompat;
-import org.whispersystems.libsignal.util.guava.Optional;
 
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 public class ConversationItemFooter extends ConstraintLayout {
@@ -246,7 +246,7 @@ public class ConversationItemFooter extends ConstraintLayout {
                                });
 
     if (isOutgoing) {
-      dateView.setMaxWidth(ViewUtil.dpToPx(28));
+      dateView.setMaxWidth(ViewUtil.dpToPx(32));
     } else {
       ConstraintSet constraintSet = new ConstraintSet();
       constraintSet.clone(this);

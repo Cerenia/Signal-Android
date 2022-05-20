@@ -7,6 +7,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.greenrobot.eventbus.EventBus;
 import org.signal.core.util.logging.Log;
+import org.signal.libsignal.protocol.InvalidMessageException;
 import org.thoughtcrime.securesms.attachments.Attachment;
 import org.thoughtcrime.securesms.attachments.AttachmentId;
 import org.thoughtcrime.securesms.attachments.DatabaseAttachment;
@@ -20,13 +21,12 @@ import org.thoughtcrime.securesms.jobmanager.Job;
 import org.thoughtcrime.securesms.jobmanager.JobLogger;
 import org.thoughtcrime.securesms.jobmanager.impl.NetworkConstraint;
 import org.thoughtcrime.securesms.mms.MmsException;
+import org.thoughtcrime.securesms.releasechannel.ReleaseChannel;
 import org.thoughtcrime.securesms.transport.RetryLaterException;
 import org.thoughtcrime.securesms.util.AttachmentUtil;
 import org.thoughtcrime.securesms.util.Base64;
-import org.thoughtcrime.securesms.util.Hex;
+import org.signal.core.util.Hex;
 import org.thoughtcrime.securesms.util.Util;
-import org.whispersystems.libsignal.InvalidMessageException;
-import org.whispersystems.libsignal.util.guava.Optional;
 import org.whispersystems.signalservice.api.SignalServiceMessageReceiver;
 import org.whispersystems.signalservice.api.messages.SignalServiceAttachmentPointer;
 import org.whispersystems.signalservice.api.messages.SignalServiceAttachmentRemoteId;
@@ -38,7 +38,14 @@ import org.whispersystems.signalservice.api.push.exceptions.RangeException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
+import okio.Okio;
 
 public final class AttachmentDownloadJob extends BaseJob {
 
@@ -110,7 +117,10 @@ public final class AttachmentDownloadJob extends BaseJob {
   @Override
   public void onRun() throws Exception {
     doWork();
-    ApplicationDependencies.getMessageNotifier().updateNotification(context, 0);
+
+    if (!SignalDatabase.mms().isStory(messageId)) {
+      ApplicationDependencies.getMessageNotifier().updateNotification(context, 0);
+    }
   }
 
   public void doWork() throws IOException, RetryLaterException {
@@ -139,7 +149,11 @@ public final class AttachmentDownloadJob extends BaseJob {
     Log.i(TAG, "Downloading push part " + attachmentId);
     database.setTransferState(messageId, attachmentId, AttachmentDatabase.TRANSFER_PROGRESS_STARTED);
 
-    retrieveAttachment(messageId, attachmentId, attachment);
+    if (attachment.getCdnNumber() != ReleaseChannel.CDN_NUMBER) {
+      retrieveAttachment(messageId, attachmentId, attachment);
+    } else {
+      retrieveUrlAttachment(messageId, attachmentId, attachment);
+    }
   }
 
   @Override
@@ -206,19 +220,40 @@ public final class AttachmentDownloadJob extends BaseJob {
 
       return new SignalServiceAttachmentPointer(attachment.getCdnNumber(), remoteId, null, key,
                                                 Optional.of(Util.toIntExact(attachment.getSize())),
-                                                Optional.absent(),
+                                                Optional.empty(),
                                                 0, 0,
-                                                Optional.fromNullable(attachment.getDigest()),
-                                                Optional.fromNullable(attachment.getFileName()),
+                                                Optional.ofNullable(attachment.getDigest()),
+                                                Optional.ofNullable(attachment.getFileName()),
                                                 attachment.isVoiceNote(),
                                                 attachment.isBorderless(),
                                                 attachment.isVideoGif(),
-                                                Optional.absent(),
-                                                Optional.fromNullable(attachment.getBlurHash()).transform(BlurHash::getHash),
+                                                Optional.empty(),
+                                                Optional.ofNullable(attachment.getBlurHash()).map(BlurHash::getHash),
                                                 attachment.getUploadTimestamp());
     } catch (IOException | ArithmeticException e) {
       Log.w(TAG, e);
       throw new InvalidPartException(e);
+    }
+  }
+
+  private void retrieveUrlAttachment(long messageId,
+                                     final AttachmentId attachmentId,
+                                     final Attachment attachment)
+      throws IOException
+  {
+    Request request = new Request.Builder()
+        .get()
+        .url(Objects.requireNonNull(attachment.getFileName()))
+        .build();
+
+    try (Response response = ApplicationDependencies.getOkHttpClient().newCall(request).execute()) {
+      ResponseBody body = response.body();
+      if (body != null) {
+        SignalDatabase.attachments().insertAttachmentsForPlaceholder(messageId, attachmentId, Okio.buffer(body.source()).inputStream());
+      }
+    } catch (MmsException e) {
+      Log.w(TAG, "Experienced exception while trying to download an attachment.", e);
+      markFailed(messageId, attachmentId);
     }
   }
 

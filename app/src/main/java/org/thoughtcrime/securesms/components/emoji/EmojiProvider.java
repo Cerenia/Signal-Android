@@ -10,6 +10,7 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
+import android.text.TextUtils;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -19,7 +20,6 @@ import org.signal.core.util.ThreadUtil;
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.components.emoji.parsing.EmojiDrawInfo;
 import org.thoughtcrime.securesms.components.emoji.parsing.EmojiParser;
-import org.thoughtcrime.securesms.emoji.EmojiFiles;
 import org.thoughtcrime.securesms.emoji.EmojiPageCache;
 import org.thoughtcrime.securesms.emoji.EmojiSource;
 import org.thoughtcrime.securesms.emoji.JumboEmoji;
@@ -101,6 +101,10 @@ public class EmojiProvider {
   }
 
   static @Nullable Drawable getEmojiDrawable(@NonNull Context context, @Nullable CharSequence emoji, boolean jumboEmoji) {
+    if (TextUtils.isEmpty(emoji)) {
+      return null;
+    }
+
     EmojiDrawInfo drawInfo = EmojiSource.getLatest().getEmojiTree().getEmoji(emoji, 0, emoji.length());
     return getEmojiDrawable(context, drawInfo, null, jumboEmoji);
   }
@@ -149,8 +153,8 @@ public class EmojiProvider {
       throw new IllegalStateException("Unexpected subclass " + loadResult.getClass());
     }
 
-    if (jumboEmoji) {
-      JumboEmoji.LoadResult result = JumboEmoji.loadJumboEmoji(context, drawInfo.getRawEmoji());
+    if (jumboEmoji && drawInfo.getJumboSheet() != null) {
+      JumboEmoji.LoadResult result = JumboEmoji.loadJumboEmoji(context, drawInfo);
       if (result instanceof JumboEmoji.LoadResult.Immediate) {
         ThreadUtil.runOnMain(() -> {
           jumboLoaded.set(true);
@@ -171,7 +175,11 @@ public class EmojiProvider {
 
           @Override
           public void onFailure(ExecutionException exception) {
-            Log.d(TAG, "Failed to load jumbo emoji bitmap resource", exception);
+            if (exception.getCause() instanceof JumboEmoji.CannotAutoDownload) {
+              Log.i(TAG, "Download restrictions are preventing jumbomoji use");
+            } else {
+              Log.d(TAG, "Failed to load jumbo emoji bitmap resource", exception);
+            }
           }
         });
       }
@@ -200,15 +208,19 @@ public class EmojiProvider {
 
     Bitmap bitmap = null;
 
-    if (jumboEmoji) {
-      JumboEmoji.LoadResult result = JumboEmoji.loadJumboEmoji(context, drawInfo.getRawEmoji());
+    if (jumboEmoji && drawInfo.getJumboSheet() != null) {
+      JumboEmoji.LoadResult result = JumboEmoji.loadJumboEmoji(context, drawInfo);
       if (result instanceof JumboEmoji.LoadResult.Immediate) {
         bitmap = ((JumboEmoji.LoadResult.Immediate) result).getBitmap();
       } else if (result instanceof JumboEmoji.LoadResult.Async) {
         try {
           bitmap = ((JumboEmoji.LoadResult.Async) result).getTask().get(10, TimeUnit.SECONDS);
         } catch (InterruptedException | ExecutionException | TimeoutException exception) {
-          Log.d(TAG, "Failed to load jumbo emoji bitmap resource", exception);
+          if (exception.getCause() instanceof JumboEmoji.CannotAutoDownload) {
+            Log.i(TAG, "Download restrictions are preventing jumbomoji use");
+          } else {
+            Log.d(TAG, "Failed to load jumbo emoji bitmap resource", exception);
+          }
         }
       }
 

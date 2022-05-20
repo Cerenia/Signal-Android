@@ -27,14 +27,13 @@ import org.thoughtcrime.securesms.messages.IncomingMessageProcessor.Processor;
 import org.thoughtcrime.securesms.notifications.NotificationChannels;
 import org.thoughtcrime.securesms.push.SignalServiceNetworkAccess;
 import org.thoughtcrime.securesms.util.AppForegroundObserver;
-import org.thoughtcrime.securesms.util.TextSecurePreferences;
-import org.whispersystems.libsignal.util.guava.Optional;
 import org.whispersystems.signalservice.api.SignalWebSocket;
 import org.whispersystems.signalservice.api.messages.SignalServiceEnvelope;
 import org.whispersystems.signalservice.api.websocket.WebSocketUnavailableException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -42,15 +41,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * The application-level manager of our websocket connection.
- *
+ * <p>
  * This class is responsible for opening/closing the websocket based on the app's state and observing new inbound messages received on the websocket.
  */
 public class IncomingMessageObserver {
 
   private static final String TAG = Log.tag(IncomingMessageObserver.class);
 
-  public  static final  int FOREGROUND_ID            = 313399;
-  private static final long REQUEST_TIMEOUT_MINUTES  = 1;
+  public static final  int  FOREGROUND_ID           = 313399;
+  private static final long REQUEST_TIMEOUT_MINUTES = 1;
 
   private static final AtomicInteger INSTANCE_COUNT = new AtomicInteger(0);
 
@@ -160,9 +159,9 @@ public class IncomingMessageObserver {
     Log.d(TAG, String.format("Network: %s, Foreground: %s, FCM: %s, Censored: %s, Registered: %s, Proxy: %s",
                              hasNetwork, appVisible, fcmEnabled, networkAccess.isCensored(), registered, hasProxy));
 
-    return registered                  &&
+    return registered &&
            (appVisible || !fcmEnabled) &&
-           hasNetwork                  &&
+           hasNetwork &&
            !networkAccess.isCensored();
   }
 
@@ -272,7 +271,7 @@ public class IncomingMessageObserver {
     public int onStartCommand(Intent intent, int flags, int startId) {
       super.onStartCommand(intent, flags, startId);
 
-      NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext(), NotificationChannels.OTHER);
+      NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext(), NotificationChannels.BACKGROUND);
       builder.setContentTitle(getApplicationContext().getString(R.string.MessageRetrievalService_signal));
       builder.setContentText(getApplicationContext().getString(R.string.MessageRetrievalService_background_connection_enabled));
       builder.setPriority(NotificationCompat.PRIORITY_MIN);

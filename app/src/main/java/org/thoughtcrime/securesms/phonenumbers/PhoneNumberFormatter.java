@@ -1,7 +1,6 @@
 package org.thoughtcrime.securesms.phonenumbers;
 
 import android.content.Context;
-import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -12,19 +11,15 @@ import com.google.i18n.phonenumbers.Phonenumber;
 import com.google.i18n.phonenumbers.ShortNumberInfo;
 
 import org.signal.core.util.logging.Log;
+import org.signal.libsignal.protocol.util.Pair;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.groups.GroupId;
 import org.thoughtcrime.securesms.keyvalue.SignalStore;
-import org.thoughtcrime.securesms.recipients.Recipient;
-import org.thoughtcrime.securesms.util.SetUtil;
-import org.thoughtcrime.securesms.util.StringUtil;
-import org.thoughtcrime.securesms.util.TextSecurePreferences;
+import org.signal.core.util.SetUtil;
+import org.signal.core.util.StringUtil;
 import org.thoughtcrime.securesms.util.Util;
-import org.whispersystems.libsignal.util.Pair;
-import org.whispersystems.libsignal.util.guava.Optional;
 
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
@@ -62,7 +57,7 @@ public class PhoneNumberFormatter {
 
       return formatter;
     } else {
-      return new PhoneNumberFormatter(Util.getSimCountryIso(context).or("US"), true);
+      return new PhoneNumberFormatter(Util.getSimCountryIso(context).orElse("US"), true);
     }
   }
 
@@ -79,7 +74,7 @@ public class PhoneNumberFormatter {
   }
 
   PhoneNumberFormatter(@NonNull String localCountryCode, boolean countryCode) {
-    this.localNumber      = Optional.absent();
+    this.localNumber      = Optional.empty();
     this.localCountryCode = localCountryCode;
   }
 
@@ -111,7 +106,7 @@ public class PhoneNumberFormatter {
   }
 
 
-  public String format(@Nullable String number) {
+  public @NonNull String format(@Nullable String number) {
     if (number == null)                       return "Unknown";
     if (GroupId.isEncodedGroup(number))       return number;
     if (ALPHA_PATTERN.matcher(number).find()) return number.trim();
@@ -218,7 +213,7 @@ public class PhoneNumberFormatter {
     PhoneNumber(String e164Number, int countryCode, @Nullable String areaCode) {
       this.e164Number  = e164Number;
       this.countryCode = countryCode;
-      this.areaCode    = Optional.fromNullable(areaCode);
+      this.areaCode    = Optional.ofNullable(areaCode);
     }
 
     String getE164Number() {

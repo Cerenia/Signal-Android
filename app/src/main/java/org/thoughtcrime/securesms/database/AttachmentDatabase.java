@@ -36,6 +36,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.signal.core.util.CursorUtil;
+import org.signal.core.util.SqlUtil;
 import org.signal.core.util.StreamUtil;
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.attachments.Attachment;
@@ -54,15 +56,12 @@ import org.thoughtcrime.securesms.mms.PartAuthority;
 import org.thoughtcrime.securesms.mms.SentMediaQuality;
 import org.thoughtcrime.securesms.stickers.StickerLocator;
 import org.thoughtcrime.securesms.util.Base64;
-import org.thoughtcrime.securesms.util.CursorUtil;
 import org.thoughtcrime.securesms.util.FileUtils;
 import org.thoughtcrime.securesms.util.JsonUtils;
 import org.thoughtcrime.securesms.util.MediaUtil;
-import org.thoughtcrime.securesms.util.SetUtil;
-import org.thoughtcrime.securesms.util.SqlUtil;
+import org.signal.core.util.SetUtil;
 import org.thoughtcrime.securesms.util.StorageUtil;
 import org.thoughtcrime.securesms.video.EncryptedMediaDataSource;
-import org.whispersystems.libsignal.util.guava.Optional;
 import org.whispersystems.signalservice.internal.util.JsonUtil;
 
 import java.io.File;
@@ -81,6 +80,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -278,7 +278,7 @@ public class AttachmentDatabase extends Database {
     }
 
     SQLiteDatabase database = databaseHelper.getSignalReadableDatabase();
-    SqlUtil.Query  query    = SqlUtil.buildCollectionQuery(MMS_ID, mmsIds);
+    SqlUtil.Query  query    = SqlUtil.buildSingleCollectionQuery(MMS_ID, mmsIds);
 
     Map<Long, List<DatabaseAttachment>> output = new HashMap<>();
 
@@ -744,13 +744,17 @@ public class AttachmentDatabase extends Database {
     return databaseAttachment;
   }
 
-  public void updateMessageId(@NonNull Collection<AttachmentId> attachmentIds, long mmsId) {
+  public void updateMessageId(@NonNull Collection<AttachmentId> attachmentIds, long mmsId, boolean isStory) {
     SQLiteDatabase db = databaseHelper.getSignalWritableDatabase();
 
     db.beginTransaction();
     try {
       ContentValues values = new ContentValues(1);
       values.put(MMS_ID, mmsId);
+
+      if (!isStory) {
+        values.putNull(CAPTION);
+      }
 
       for (AttachmentId attachmentId : attachmentIds) {
         db.update(TABLE_NAME, values, PART_ID_WHERE, attachmentId.toStrings());
@@ -1130,7 +1134,7 @@ public class AttachmentDatabase extends Database {
                                         null,
                                         "1"))
     {
-      if (cursor == null || !cursor.moveToFirst()) return Optional.absent();
+      if (cursor == null || !cursor.moveToFirst()) return Optional.empty();
 
       if (cursor.getCount() > 0) {
         DataInfo dataInfo = new DataInfo(new File(CursorUtil.requireString(cursor, DATA)),
@@ -1139,7 +1143,7 @@ public class AttachmentDatabase extends Database {
                                          hash);
         return Optional.of(dataInfo);
       } else {
-        return Optional.absent();
+        return Optional.empty();
       }
     }
   }
@@ -1487,7 +1491,7 @@ public class AttachmentDatabase extends Database {
     }
 
     public static @NonNull TransformProperties forSentMediaQuality(@NonNull Optional<TransformProperties> currentProperties, @NonNull SentMediaQuality sentMediaQuality) {
-      TransformProperties existing = currentProperties.or(empty());
+      TransformProperties existing = currentProperties.orElse(empty());
       return new TransformProperties(existing.skipTransform, existing.videoTrim, existing.videoTrimStartTimeUs, existing.videoTrimEndTimeUs, sentMediaQuality.getCode());
     }
 

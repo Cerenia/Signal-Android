@@ -19,27 +19,33 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 
 import org.signal.core.util.logging.Log;
+import org.signal.libsignal.protocol.util.Pair;
 import org.thoughtcrime.securesms.PassphraseRequiredActivity;
 import org.thoughtcrime.securesms.R;
+import org.thoughtcrime.securesms.conversation.mutiselect.forward.MultiselectForwardFragment;
+import org.thoughtcrime.securesms.conversation.mutiselect.forward.MultiselectForwardFragmentArgs;
 import org.thoughtcrime.securesms.glide.cache.ApngOptions;
 import org.thoughtcrime.securesms.mms.DecryptableStreamUriLoader;
 import org.thoughtcrime.securesms.mms.GlideApp;
-import org.thoughtcrime.securesms.sharing.ShareActivity;
+import org.thoughtcrime.securesms.sharing.MultiShareArgs;
 import org.thoughtcrime.securesms.stickers.StickerManifest.Sticker;
 import org.thoughtcrime.securesms.util.DeviceProperties;
 import org.thoughtcrime.securesms.util.DynamicNoActionBarTheme;
 import org.thoughtcrime.securesms.util.DynamicTheme;
-import org.whispersystems.libsignal.util.Pair;
-import org.whispersystems.libsignal.util.guava.Optional;
+import org.whispersystems.signalservice.api.util.OptionalUtil;
+
+import java.util.Collections;
+import java.util.Optional;
+
 
 /**
  * Shows the contents of a pack and allows the user to install it (if not installed) or remove it
  * (if installed). This is also the handler for sticker pack deep links.
  */
 public final class StickerPackPreviewActivity extends PassphraseRequiredActivity
-                                              implements StickerRolloverTouchListener.RolloverEventListener,
-                                                         StickerRolloverTouchListener.RolloverStickerRetriever,
-                                                         StickerPackPreviewAdapter.EventListener
+    implements StickerRolloverTouchListener.RolloverEventListener,
+               StickerRolloverTouchListener.RolloverStickerRetriever,
+               StickerPackPreviewAdapter.EventListener
 {
 
   private static final String TAG = Log.tag(StickerPackPreviewActivity.class);
@@ -92,6 +98,12 @@ public final class StickerPackPreviewActivity extends PassphraseRequiredActivity
     initToolbar();
     initView();
     initViewModel(packId, packKey);
+
+    getSupportFragmentManager().setFragmentResultListener(MultiselectForwardFragment.RESULT_KEY, this, (requestKey, result) -> {
+      if (result.getBoolean(MultiselectForwardFragment.RESULT_SENT, false)) {
+        finish();
+      }
+    });
   }
 
   @Override
@@ -182,20 +194,20 @@ public final class StickerPackPreviewActivity extends PassphraseRequiredActivity
   }
 
   private void presentManifest(@NonNull StickerManifest manifest) {
-    stickerTitle.setText(manifest.getTitle().or(getString(R.string.StickerPackPreviewActivity_untitled)));
-    stickerAuthor.setText(manifest.getAuthor().or(getString(R.string.StickerPackPreviewActivity_unknown)));
+    stickerTitle.setText(manifest.getTitle().orElse(getString(R.string.StickerPackPreviewActivity_untitled)));
+    stickerAuthor.setText(manifest.getAuthor().orElse(getString(R.string.StickerPackPreviewActivity_unknown)));
     adapter.setStickers(manifest.getStickers());
 
     Sticker first = manifest.getStickers().isEmpty() ? null : manifest.getStickers().get(0);
-    Sticker cover = manifest.getCover().or(Optional.fromNullable(first)).orNull();
+    Sticker cover = OptionalUtil.or(manifest.getCover(), Optional.ofNullable(first)).orElse(null);
 
     if (cover != null) {
-      Object  model = cover.getUri().isPresent() ? new DecryptableStreamUriLoader.DecryptableUri(cover.getUri().get())
-                                                 : new StickerRemoteUri(cover.getPackId(), cover.getPackKey(), cover.getId());
+      Object model = cover.getUri().isPresent() ? new DecryptableStreamUriLoader.DecryptableUri(cover.getUri().get())
+                                                : new StickerRemoteUri(cover.getPackId(), cover.getPackKey(), cover.getId());
       GlideApp.with(this).load(model)
-                         .transition(DrawableTransitionOptions.withCrossFade())
-                         .set(ApngOptions.ANIMATE, DeviceProperties.shouldAllowApngStickerAnimation(this))
-                         .into(coverImage);
+              .transition(DrawableTransitionOptions.withCrossFade())
+              .set(ApngOptions.ANIMATE, DeviceProperties.shouldAllowApngStickerAnimation(this))
+              .into(coverImage);
     } else {
       coverImage.setImageDrawable(null);
     }
@@ -226,10 +238,16 @@ public final class StickerPackPreviewActivity extends PassphraseRequiredActivity
       shareButton.setVisibility(View.VISIBLE);
       shareButtonImage.setVisibility(View.VISIBLE);
       shareButton.setOnClickListener(v -> {
-        Intent composeIntent = new Intent(this, ShareActivity.class);
-        composeIntent.putExtra(Intent.EXTRA_TEXT, StickerUrl.createShareLink(packId, packKey));
-        startActivity(composeIntent);
-        finish();
+        MultiselectForwardFragment.showBottomSheet(
+            getSupportFragmentManager(),
+            new MultiselectForwardFragmentArgs(
+                true,
+                Collections.singletonList(new MultiShareArgs.Builder()
+                                              .withDraftText(StickerUrl.createShareLink(packId, packKey))
+                                              .build()),
+                R.string.MultiselectForwardFragment__share_with
+            )
+        );
       });
     } else {
       shareButton.setVisibility(View.GONE);

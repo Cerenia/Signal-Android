@@ -1,12 +1,13 @@
 package org.thoughtcrime.securesms.database.model;
 
-import org.junit.Before;
+import android.app.Application;
+import android.text.SpannableString;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
-import org.signal.core.util.ThreadUtil;
-import org.whispersystems.signalservice.api.push.ACI;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
+import org.whispersystems.signalservice.api.push.ServiceId;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -17,22 +18,16 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
-import static org.thoughtcrime.securesms.testutil.MainThreadUtil.setMainThread;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(ThreadUtil.class)
+@RunWith(RobolectricTestRunner.class)
+@Config(manifest = Config.NONE, application = Application.class)
 public final class UpdateDescriptionTest {
-
-  @Before
-  public void setup() {
-    setMainThread(true);
-  }
 
   @Test
   public void staticDescription_byGetStaticString() {
     UpdateDescription description = UpdateDescription.staticDescription("update", 0);
 
-    assertEquals("update", description.getStaticString());
+    assertEquals("update", description.getStaticSpannable().toString());
   }
 
   @Test
@@ -46,41 +41,30 @@ public final class UpdateDescriptionTest {
   public void staticDescription_byString() {
     UpdateDescription description = UpdateDescription.staticDescription("update", 0);
 
-    assertEquals("update", description.getString());
-  }
-
-  @Test(expected = AssertionError.class)
-  public void stringFactory_cannot_run_on_main_thread() {
-    UpdateDescription description = UpdateDescription.mentioning(Collections.singletonList(ACI.from(UUID.randomUUID())), () -> "update", 0);
-
-    setMainThread(true);
-
-    description.getString();
+    assertEquals("update", description.getSpannable().toString());
   }
 
   @Test(expected = UnsupportedOperationException.class)
   public void stringFactory_cannot_call_static_string() {
-    UpdateDescription description = UpdateDescription.mentioning(Collections.singletonList(ACI.from(UUID.randomUUID())), () -> "update", 0);
+    UpdateDescription description = UpdateDescription.mentioning(Collections.singletonList(ServiceId.from(UUID.randomUUID())), () -> new SpannableString("update"), 0);
 
-    description.getStaticString();
+    description.getStaticSpannable();
   }
 
   @Test
   public void stringFactory_not_evaluated_until_getString() {
     AtomicInteger factoryCalls = new AtomicInteger();
 
-    UpdateDescription.StringFactory stringFactory = () -> {
+    UpdateDescription.SpannableFactory stringFactory = () -> {
       factoryCalls.incrementAndGet();
-      return "update";
+      return new SpannableString("update");
     };
 
-    UpdateDescription description = UpdateDescription.mentioning(Collections.singletonList(ACI.from(UUID.randomUUID())), stringFactory, 0);
+    UpdateDescription description = UpdateDescription.mentioning(Collections.singletonList(ServiceId.from(UUID.randomUUID())), stringFactory, 0);
 
     assertEquals(0, factoryCalls.get());
 
-    setMainThread(false);
-
-    String string = description.getString();
+    String string = description.getSpannable().toString();
 
     assertEquals("update", string);
     assertEquals(1, factoryCalls.get());
@@ -88,15 +72,13 @@ public final class UpdateDescriptionTest {
 
   @Test
   public void stringFactory_reevaluated_on_every_call() {
-    AtomicInteger                   factoryCalls  = new AtomicInteger();
-    UpdateDescription.StringFactory stringFactory = () -> "call" + factoryCalls.incrementAndGet();
-    UpdateDescription               description   = UpdateDescription.mentioning(Collections.singletonList(ACI.from(UUID.randomUUID())), stringFactory, 0);
+    AtomicInteger                      factoryCalls  = new AtomicInteger();
+    UpdateDescription.SpannableFactory stringFactory = () -> new SpannableString( "call" + factoryCalls.incrementAndGet());
+    UpdateDescription                  description   = UpdateDescription.mentioning(Collections.singletonList(ServiceId.from(UUID.randomUUID())), stringFactory, 0);
 
-    setMainThread(false);
-
-    assertEquals("call1", description.getString());
-    assertEquals("call2", description.getString());
-    assertEquals("call3", description.getString());
+    assertEquals("call1", description.getSpannable().toString());
+    assertEquals("call2", description.getSpannable().toString());
+    assertEquals("call3", description.getSpannable().toString());
   }
 
   @Test
@@ -107,8 +89,8 @@ public final class UpdateDescriptionTest {
     UpdateDescription description = UpdateDescription.concatWithNewLines(Arrays.asList(description1, description2));
 
     assertTrue(description.isStringStatic());
-    assertEquals("update1\nupdate2", description.getStaticString());
-    assertEquals("update1\nupdate2", description.getString());
+    assertEquals("update1\nupdate2", description.getStaticSpannable().toString());
+    assertEquals("update1\nupdate2", description.getSpannable().toString());
   }
 
   @Test
@@ -122,12 +104,12 @@ public final class UpdateDescriptionTest {
 
   @Test
   public void concat_dynamic_lines() {
-    AtomicInteger                   factoryCalls1  = new AtomicInteger();
-    AtomicInteger                   factoryCalls2  = new AtomicInteger();
-    UpdateDescription.StringFactory stringFactory1 = () -> "update." + factoryCalls1.incrementAndGet();
-    UpdateDescription.StringFactory stringFactory2 = () -> "update." + factoryCalls2.incrementAndGet();
-    UpdateDescription               description1   = UpdateDescription.mentioning(Collections.singletonList(ACI.from(UUID.randomUUID())), stringFactory1, 0);
-    UpdateDescription               description2   = UpdateDescription.mentioning(Collections.singletonList(ACI.from(UUID.randomUUID())), stringFactory2, 0);
+    AtomicInteger                      factoryCalls1  = new AtomicInteger();
+    AtomicInteger                      factoryCalls2  = new AtomicInteger();
+    UpdateDescription.SpannableFactory stringFactory1 = () -> new SpannableString("update." + factoryCalls1.incrementAndGet());
+    UpdateDescription.SpannableFactory stringFactory2 = () -> new SpannableString("update." + factoryCalls2.incrementAndGet());
+    UpdateDescription                  description1   = UpdateDescription.mentioning(Collections.singletonList(ServiceId.from(UUID.randomUUID())), stringFactory1, 0);
+    UpdateDescription                  description2   = UpdateDescription.mentioning(Collections.singletonList(ServiceId.from(UUID.randomUUID())), stringFactory2, 0);
 
     factoryCalls1.set(10);
     factoryCalls2.set(20);
@@ -136,22 +118,20 @@ public final class UpdateDescriptionTest {
 
     assertFalse(description.isStringStatic());
 
-    setMainThread(false);
-
-    assertEquals("update.11\nupdate.21", description.getString());
-    assertEquals("update.12\nupdate.22", description.getString());
-    assertEquals("update.13\nupdate.23", description.getString());
+    assertEquals("update.11\nupdate.21", description.getSpannable().toString());
+    assertEquals("update.12\nupdate.22", description.getSpannable().toString());
+    assertEquals("update.13\nupdate.23", description.getSpannable().toString());
   }
 
   @Test
   public void concat_dynamic_lines_and_static_lines() {
-    AtomicInteger                   factoryCalls1  = new AtomicInteger();
-    AtomicInteger                   factoryCalls2  = new AtomicInteger();
-    UpdateDescription.StringFactory stringFactory1 = () -> "update." + factoryCalls1.incrementAndGet();
-    UpdateDescription.StringFactory stringFactory2 = () -> "update." + factoryCalls2.incrementAndGet();
-    UpdateDescription               description1   = UpdateDescription.mentioning(Collections.singletonList(ACI.from(UUID.randomUUID())), stringFactory1, 0);
-    UpdateDescription               description2   = UpdateDescription.staticDescription("static", 0);
-    UpdateDescription               description3   = UpdateDescription.mentioning(Collections.singletonList(ACI.from(UUID.randomUUID())), stringFactory2, 0);
+    AtomicInteger                      factoryCalls1  = new AtomicInteger();
+    AtomicInteger                      factoryCalls2  = new AtomicInteger();
+    UpdateDescription.SpannableFactory stringFactory1 = () -> new SpannableString("update." + factoryCalls1.incrementAndGet());
+    UpdateDescription.SpannableFactory stringFactory2 = () -> new SpannableString("update." + factoryCalls2.incrementAndGet());
+    UpdateDescription                  description1   = UpdateDescription.mentioning(Collections.singletonList(ServiceId.from(UUID.randomUUID())), stringFactory1, 0);
+    UpdateDescription                  description2   = UpdateDescription.staticDescription("static", 0);
+    UpdateDescription                  description3   = UpdateDescription.mentioning(Collections.singletonList(ServiceId.from(UUID.randomUUID())), stringFactory2, 0);
 
     factoryCalls1.set(100);
     factoryCalls2.set(200);
@@ -160,10 +140,8 @@ public final class UpdateDescriptionTest {
 
     assertFalse(description.isStringStatic());
 
-    setMainThread(false);
-
-    assertEquals("update.101\nstatic\nupdate.201", description.getString());
-    assertEquals("update.102\nstatic\nupdate.202", description.getString());
-    assertEquals("update.103\nstatic\nupdate.203", description.getString());
+    assertEquals("update.101\nstatic\nupdate.201", description.getSpannable().toString());
+    assertEquals("update.102\nstatic\nupdate.202", description.getSpannable().toString());
+    assertEquals("update.103\nstatic\nupdate.203", description.getSpannable().toString());
   }
 }

@@ -1,12 +1,13 @@
 package org.whispersystems.signalservice.api.groupsv2;
 
-import org.signal.zkgroup.profiles.ProfileKeyCredential;
-import org.whispersystems.libsignal.util.guava.Optional;
+import org.signal.libsignal.zkgroup.profiles.ProfileKey;
+import org.signal.libsignal.zkgroup.profiles.ProfileKeyCredential;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -37,6 +38,13 @@ public final class GroupCandidate {
     return profileKeyCredential;
   }
 
+  public ProfileKeyCredential requireProfileKeyCredential() {
+    if (profileKeyCredential.isPresent()) {
+      return profileKeyCredential.get();
+    }
+    throw new IllegalStateException("no profile key credential");
+  }
+
   public boolean hasProfileKeyCredential() {
     return profileKeyCredential.isPresent();
   }
@@ -52,7 +60,7 @@ public final class GroupCandidate {
   }
 
   public GroupCandidate withoutProfileKeyCredential() {
-    return hasProfileKeyCredential() ? new GroupCandidate(uuid, Optional.absent())
+    return hasProfileKeyCredential() ? new GroupCandidate(uuid, Optional.empty())
                                      : this;
   }
 

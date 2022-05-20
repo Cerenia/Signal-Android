@@ -20,11 +20,13 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.TaskStackBuilder;
 import androidx.fragment.app.FragmentActivity;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+
 import org.signal.core.util.concurrent.SignalExecutors;
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.WebRtcCallActivity;
-import org.thoughtcrime.securesms.contacts.sync.DirectoryHelper;
+import org.thoughtcrime.securesms.contacts.sync.ContactDiscovery;
 import org.thoughtcrime.securesms.conversation.ConversationIntents;
 import org.thoughtcrime.securesms.database.GroupDatabase;
 import org.thoughtcrime.securesms.database.SignalDatabase;
@@ -37,7 +39,7 @@ import org.thoughtcrime.securesms.permissions.Permissions;
 import org.thoughtcrime.securesms.proxy.ProxyBottomSheetFragment;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.sms.MessageSender;
-import org.thoughtcrime.securesms.util.concurrent.SimpleTask;
+import org.signal.core.util.concurrent.SimpleTask;
 import org.thoughtcrime.securesms.util.views.SimpleProgressDialog;
 
 import java.io.IOException;
@@ -62,7 +64,7 @@ public class CommunicationActions {
           if (resultCode == 1) {
             startCallInternal(activity, recipient, false);
           } else {
-            new AlertDialog.Builder(activity)
+            new MaterialAlertDialogBuilder(activity)
                 .setMessage(R.string.CommunicationActions_start_voice_call)
                 .setPositiveButton(R.string.CommunicationActions_call, (d, w) -> startCallInternal(activity, recipient, false))
                 .setNegativeButton(R.string.CommunicationActions_cancel, (d, w) -> d.dismiss())
@@ -197,7 +199,7 @@ public class CommunicationActions {
     GroupId.V2 groupId = GroupId.v2(groupInviteLinkUrl.getGroupMasterKey());
 
     SimpleTask.run(SignalExecutors.BOUNDED, () -> {
-      GroupDatabase.GroupRecord group = SignalDatabase.groups().getGroup(groupId).orNull();
+      GroupDatabase.GroupRecord group = SignalDatabase.groups().getGroup(groupId).orElse(null);
 
       return group != null && group.isActive() ? Recipient.resolved(group.getRecipientId())
                                                : null;
@@ -240,9 +242,9 @@ public class CommunicationActions {
       SimpleTask.run(() -> {
         Recipient recipient = Recipient.external(activity, e164);
 
-        if (!recipient.isRegistered() || !recipient.hasAci()) {
+        if (!recipient.isRegistered() || !recipient.hasServiceId()) {
           try {
-            DirectoryHelper.refreshDirectoryFor(activity, recipient, false);
+            ContactDiscovery.refresh(activity, recipient, false);
             recipient = Recipient.resolved(recipient.getId());
           } catch (IOException e) {
             Log.w(TAG, "[handlePotentialMeUrl] Failed to refresh directory for new contact.");

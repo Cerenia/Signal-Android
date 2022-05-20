@@ -33,11 +33,11 @@ import org.thoughtcrime.securesms.transport.RetryLaterException;
 import org.thoughtcrime.securesms.util.Base64;
 import org.thoughtcrime.securesms.util.ServiceUtil;
 import org.thoughtcrime.securesms.util.TextSecurePreferences;
-import org.whispersystems.libsignal.util.guava.Optional;
 
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 public class SmsReceiveJob extends BaseJob {
@@ -117,16 +117,18 @@ public class SmsReceiveJob extends BaseJob {
       }
     }
 
-    if (message.isPresent() && !isBlocked(message.get())) {
+    if (message.isPresent() && SignalStore.account().getE164() != null && message.get().getSender().equals(Recipient.self().getId())) {
+      Log.w(TAG, "Received an SMS from ourselves! Ignoring.");
+    } else if (message.isPresent() && !isBlocked(message.get())) {
       Optional<InsertResult> insertResult = storeMessage(message.get());
 
       if (insertResult.isPresent()) {
         ApplicationDependencies.getMessageNotifier().updateNotification(context, insertResult.get().getThreadId());
       }
     } else if (message.isPresent()) {
-      Log.w(TAG, "*** Received blocked SMS, ignoring...");
+      Log.w(TAG, "Received an SMS from a blocked user. Ignoring.");
     } else {
-      Log.w(TAG, "*** Failed to assemble message fragments!");
+      Log.w(TAG, "Failed to assemble message fragments!");
     }
   }
 
@@ -171,7 +173,7 @@ public class SmsReceiveJob extends BaseJob {
 
   private Optional<IncomingTextMessage> assembleMessageFragments(@Nullable Object[] pdus, int subscriptionId) {
     if (pdus == null) {
-      return Optional.absent();
+      return Optional.empty();
     }
 
     List<IncomingTextMessage> messages = new LinkedList<>();
@@ -183,7 +185,7 @@ public class SmsReceiveJob extends BaseJob {
     }
 
     if (messages.isEmpty()) {
-      return Optional.absent();
+      return Optional.empty();
     }
 
     return Optional.of(new IncomingTextMessage(messages));
@@ -194,7 +196,7 @@ public class SmsReceiveJob extends BaseJob {
 
     return new NotificationCompat.Builder(context, NotificationChannels.getMessagesChannel(context))
                                  .setStyle(new NotificationCompat.MessagingStyle(new Person.Builder()
-                                                                 .setName(sender.getE164().or(""))
+                                                                 .setName(sender.getE164().orElse(""))
                                                                  .build())
                                                                  .addMessage(new NotificationCompat.MessagingStyle.Message(message.getMessageBody(),
                                                                                                                            message.getSentTimestampMillis(),

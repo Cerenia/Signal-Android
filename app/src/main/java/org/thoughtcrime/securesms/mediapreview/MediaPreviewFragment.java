@@ -14,13 +14,14 @@ import org.thoughtcrime.securesms.attachments.AttachmentId;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.mms.PartUriParser;
 import org.thoughtcrime.securesms.util.MediaUtil;
-import org.thoughtcrime.securesms.util.concurrent.SimpleTask;
+import org.signal.core.util.concurrent.SimpleTask;
 
 import java.util.Objects;
 
 public abstract class MediaPreviewFragment extends Fragment {
 
-  static final String DATA_URI          = "DATA_URI";
+  public static final String DATA_URI = "DATA_URI";
+
   static final String DATA_SIZE         = "DATA_SIZE";
   static final String DATA_CONTENT_TYPE = "DATA_CONTENT_TYPE";
   static final String AUTO_PLAY         = "AUTO_PLAY";
@@ -62,11 +63,14 @@ public abstract class MediaPreviewFragment extends Fragment {
   @Override
   public void onAttach(@NonNull Context context) {
     super.onAttach(context);
-    if (!(context instanceof Events)) {
-      throw new AssertionError("Activity must support " + Events.class);
-    }
 
-    events = (Events) context;
+    if (context instanceof Events) {
+      events = (Events) context;
+    } else if (getParentFragment() instanceof Events) {
+      events = (Events) getParentFragment();
+    } else {
+      throw new AssertionError("Parent component must support " + Events.class);
+    }
   }
 
   @Override
@@ -98,5 +102,9 @@ public abstract class MediaPreviewFragment extends Fragment {
   public interface Events {
     boolean singleTapOnMedia();
     void mediaNotAvailable();
+    void onMediaReady();
+    default @Nullable VideoControlsDelegate getVideoControlsDelegate() {
+      return null;
+    }
   }
 }

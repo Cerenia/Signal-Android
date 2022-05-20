@@ -8,9 +8,11 @@ import androidx.annotation.WorkerThread;
 
 import com.google.protobuf.ByteString;
 
+import org.signal.core.util.StringUtil;
 import org.signal.core.util.logging.Log;
-import org.signal.zkgroup.InvalidInputException;
-import org.signal.zkgroup.groups.GroupMasterKey;
+import org.signal.libsignal.protocol.InvalidMessageException;
+import org.signal.libsignal.zkgroup.InvalidInputException;
+import org.signal.libsignal.zkgroup.groups.GroupMasterKey;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.database.GroupDatabase;
 import org.thoughtcrime.securesms.database.SignalDatabase;
@@ -20,7 +22,6 @@ import org.thoughtcrime.securesms.mms.MessageGroupContext;
 import org.thoughtcrime.securesms.mms.OutgoingGroupUpdateMessage;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
-import org.whispersystems.libsignal.util.guava.Optional;
 import org.whispersystems.signalservice.api.messages.SignalServiceContent;
 import org.whispersystems.signalservice.api.messages.SignalServiceDataMessage;
 import org.whispersystems.signalservice.api.messages.SignalServiceGroup;
@@ -31,6 +32,7 @@ import org.whispersystems.signalservice.internal.push.SignalServiceProtos.GroupC
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 public final class GroupUtil {
 
@@ -52,6 +54,12 @@ public final class GroupUtil {
                content.getSyncMessage().get().getSent().get().getMessage().getGroupContext().isPresent())
     {
       return content.getSyncMessage().get().getSent().get().getMessage().getGroupContext().get();
+    } else if (content.getStoryMessage().isPresent() && content.getStoryMessage().get().getGroupContext().isPresent()) {
+      try {
+        return SignalServiceGroupContext.create(null, content.getStoryMessage().get().getGroupContext().get());
+      } catch (InvalidMessageException e) {
+        throw new AssertionError(e);
+      }
     } else {
       return null;
     }
@@ -89,7 +97,7 @@ public final class GroupUtil {
     if (groupContext.isPresent()) {
       return Optional.of(idFromGroupContext(groupContext.get()));
     }
-    return Optional.absent();
+    return Optional.empty();
   }
 
   public static @NonNull GroupMasterKey requireMasterKey(@NonNull byte[] masterKey) {

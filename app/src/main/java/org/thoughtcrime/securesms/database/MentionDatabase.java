@@ -12,8 +12,8 @@ import com.annimon.stream.Stream;
 
 import org.thoughtcrime.securesms.database.model.Mention;
 import org.thoughtcrime.securesms.recipients.RecipientId;
-import org.thoughtcrime.securesms.util.CursorUtil;
-import org.thoughtcrime.securesms.util.SqlUtil;
+import org.signal.core.util.CursorUtil;
+import org.signal.core.util.SqlUtil;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -23,11 +23,11 @@ import java.util.Map;
 
 public class MentionDatabase extends Database {
 
-  static final String TABLE_NAME = "mention";
+  public static final String TABLE_NAME = "mention";
 
   private static final String ID           = "_id";
           static final String THREAD_ID    = "thread_id";
-          static final String MESSAGE_ID   = "message_id";
+  public  static final String MESSAGE_ID   = "message_id";
           static final String RECIPIENT_ID = "recipient_id";
   private static final String RANGE_START  = "range_start";
   private static final String RANGE_LENGTH = "range_length";

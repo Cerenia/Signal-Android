@@ -6,9 +6,9 @@
 
 package org.whispersystems.signalservice.api.crypto;
 
-import org.whispersystems.libsignal.InvalidMacException;
-import org.whispersystems.libsignal.InvalidMessageException;
-import org.whispersystems.libsignal.kdf.HKDFv3;
+import org.signal.libsignal.protocol.InvalidMacException;
+import org.signal.libsignal.protocol.InvalidMessageException;
+import org.signal.libsignal.protocol.kdf.HKDFv3;
 import org.whispersystems.signalservice.internal.util.ContentLengthInputStream;
 import org.whispersystems.signalservice.internal.util.Util;
 
@@ -128,6 +128,17 @@ public class AttachmentCipherInputStream extends FilterInputStream {
     } catch (NoSuchAlgorithmException | InvalidKeyException | NoSuchPaddingException | InvalidAlgorithmParameterException e) {
       throw new AssertionError(e);
     }
+  }
+
+  @Override
+  public int read() throws IOException {
+    byte[] buffer = new byte[1];
+    int    read;
+
+    //noinspection StatementWithEmptyBody
+    while ((read = read(buffer)) == 0);
+
+    return (read == -1) ? -1 : ((int) buffer[0]) & 0xFF;
   }
 
   @Override

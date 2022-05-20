@@ -66,8 +66,8 @@ class InternalSettingsViewModel(private val repository: InternalSettingsReposito
     refresh()
   }
 
-  fun setForceCensorship(enabled: Boolean) {
-    preferenceDataStore.putBoolean(InternalValues.FORCE_CENSORSHIP, enabled)
+  fun setAllowCensorshipSetting(enabled: Boolean) {
+    preferenceDataStore.putBoolean(InternalValues.ALLOW_CENSORSHIP_SETTING, enabled)
     refresh()
   }
 
@@ -91,9 +91,29 @@ class InternalSettingsViewModel(private val repository: InternalSettingsReposito
     refresh()
   }
 
-  fun setInternalAudioProcessingMethod(method: CallManager.AudioProcessingMethod) {
-    preferenceDataStore.putInt(InternalValues.AUDIO_PROCESSING_METHOD, method.ordinal)
+  fun setInternalCallingAudioProcessingMethod(method: CallManager.AudioProcessingMethod) {
+    preferenceDataStore.putInt(InternalValues.CALLING_AUDIO_PROCESSING_METHOD, method.ordinal)
     refresh()
+  }
+
+  fun setInternalCallingBandwidthMode(bandwidthMode: CallManager.BandwidthMode) {
+    preferenceDataStore.putInt(InternalValues.CALLING_BANDWIDTH_MODE, bandwidthMode.ordinal)
+    refresh()
+  }
+
+  fun setInternalCallingDisableTelecom(enabled: Boolean) {
+    preferenceDataStore.putBoolean(InternalValues.CALLING_DISABLE_TELECOM, enabled)
+    refresh()
+  }
+
+  fun toggleStories() {
+    val newState = !SignalStore.storyValues().isFeatureDisabled
+    SignalStore.storyValues().isFeatureDisabled = newState
+    store.update { getState().copy(disableStories = newState) }
+  }
+
+  fun addSampleReleaseNote() {
+    repository.addSampleReleaseNote()
   }
 
   private fun refresh() {
@@ -109,14 +129,17 @@ class InternalSettingsViewModel(private val repository: InternalSettingsReposito
     gv2ignoreP2PChanges = SignalStore.internalValues().gv2IgnoreP2PChanges(),
     disableAutoMigrationInitiation = SignalStore.internalValues().disableGv1AutoMigrateInitiation(),
     disableAutoMigrationNotification = SignalStore.internalValues().disableGv1AutoMigrateNotification(),
-    forceCensorship = SignalStore.internalValues().forcedCensorship(),
+    allowCensorshipSetting = SignalStore.internalValues().allowChangingCensorshipSetting(),
     callingServer = SignalStore.internalValues().groupCallingServer(),
-    audioProcessingMethod = SignalStore.internalValues().audioProcessingMethod(),
+    callingAudioProcessingMethod = SignalStore.internalValues().callingAudioProcessingMethod(),
+    callingBandwidthMode = SignalStore.internalValues().callingBandwidthMode(),
+    callingDisableTelecom = SignalStore.internalValues().callingDisableTelecom(),
     useBuiltInEmojiSet = SignalStore.internalValues().forceBuiltInEmoji(),
     emojiVersion = null,
     removeSenderKeyMinimium = SignalStore.internalValues().removeSenderKeyMinimum(),
     delayResends = SignalStore.internalValues().delayResends(),
-    disableStorageService = SignalStore.internalValues().storageServiceDisabled()
+    disableStorageService = SignalStore.internalValues().storageServiceDisabled(),
+    disableStories = SignalStore.storyValues().isFeatureDisabled
   )
 
   class Factory(private val repository: InternalSettingsRepository) : ViewModelProvider.Factory {

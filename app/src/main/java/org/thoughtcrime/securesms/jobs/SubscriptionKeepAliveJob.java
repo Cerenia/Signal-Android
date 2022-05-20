@@ -90,8 +90,21 @@ public class SubscriptionKeepAliveJob extends BaseJob {
     Log.i(TAG, "Successful call to GET active subscription", true);
 
     ActiveSubscription activeSubscription = activeSubscriptionResponse.getResult().get();
-    if (activeSubscription.getActiveSubscription() == null || !activeSubscription.getActiveSubscription().isActive()) {
-      Log.i(TAG, "User does not have an active subscription. Exiting.", true);
+    if (activeSubscription.getActiveSubscription() == null) {
+      Log.i(TAG, "User does not have a subscription. Exiting.", true);
+      return;
+    }
+
+    if (activeSubscription.isFailedPayment()) {
+      Log.i(TAG, "User has a subscription with a failed payment. Marking the payment failure. Status message: " + activeSubscription.getActiveSubscription().getStatus(), true);
+      SignalStore.donationsValues().setUnexpectedSubscriptionCancelationChargeFailure(activeSubscription.getChargeFailure());
+      SignalStore.donationsValues().setUnexpectedSubscriptionCancelationReason(activeSubscription.getActiveSubscription().getStatus());
+      SignalStore.donationsValues().setUnexpectedSubscriptionCancelationTimestamp(activeSubscription.getActiveSubscription().getEndOfCurrentPeriod());
+      return;
+    }
+
+    if (!activeSubscription.getActiveSubscription().isActive()) {
+      Log.i(TAG, "User has an inactive subscription. Status message: " + activeSubscription.getActiveSubscription().getStatus() + " Exiting.", true);
       return;
     }
 
@@ -104,7 +117,10 @@ public class SubscriptionKeepAliveJob extends BaseJob {
             true);
 
       SubscriptionReceiptRequestResponseJob.createSubscriptionContinuationJobChain(true).enqueue();
+      return;
     }
+
+    Log.i(TAG, "Subscription is active, and end of current period (remote) is after the latest checked end of period (local). Nothing to do.");
   }
 
   private <T> void verifyResponse(@NonNull ServiceResponse<T> response) throws Exception {

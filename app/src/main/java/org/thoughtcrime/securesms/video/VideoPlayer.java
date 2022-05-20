@@ -83,8 +83,8 @@ public class VideoPlayer extends FrameLayout {
     this.exoControls = new PlayerControlView(getContext());
     this.exoControls.setShowTimeoutMs(-1);
 
-    this.exoPlayerListener = new ExoPlayerListener(this, window, playerStateCallback, playerPositionDiscontinuityCallback);
-    this.playerListener = new Player.Listener() {
+    this.exoPlayerListener = new ExoPlayerListener();
+    this.playerListener    = new Player.Listener() {
       @Override
       public void onPlayWhenReadyChanged(boolean playWhenReady, int reason) {
         onPlaybackStateChanged(playWhenReady, exoPlayer.getPlaybackState());
@@ -270,31 +270,16 @@ public class VideoPlayer extends FrameLayout {
     }
   }
 
-  private static class ExoPlayerListener implements Player.Listener {
-    private final VideoPlayer                         videoPlayer;
-    private final Window                              window;
-    private final PlayerStateCallback                 playerStateCallback;
-    private final PlayerPositionDiscontinuityCallback playerPositionDiscontinuityCallback;
-
-    ExoPlayerListener(@NonNull VideoPlayer videoPlayer,
-                      @Nullable Window window,
-                      @Nullable PlayerStateCallback playerStateCallback,
-                      @Nullable PlayerPositionDiscontinuityCallback playerPositionDiscontinuityCallback)
-    {
-      this.videoPlayer                         = videoPlayer;
-      this.window                              = window;
-      this.playerStateCallback                 = playerStateCallback;
-      this.playerPositionDiscontinuityCallback = playerPositionDiscontinuityCallback;
-    }
+  private class ExoPlayerListener implements Player.Listener {
 
     @Override
     public void onPlayWhenReadyChanged(boolean playWhenReady, int reason) {
-      onPlaybackStateChanged(playWhenReady, videoPlayer.exoPlayer.getPlaybackState());
+      onPlaybackStateChanged(playWhenReady, exoPlayer.getPlaybackState());
     }
 
     @Override
     public void onPlaybackStateChanged(int playbackState) {
-      onPlaybackStateChanged(videoPlayer.exoPlayer.getPlayWhenReady(), playbackState);
+      onPlaybackStateChanged(exoPlayer.getPlayWhenReady(), playbackState);
     }
 
     private void onPlaybackStateChanged(boolean playWhenReady, int playbackState) {
@@ -327,7 +312,7 @@ public class VideoPlayer extends FrameLayout {
                                         int reason)
     {
       if (playerPositionDiscontinuityCallback != null) {
-        playerPositionDiscontinuityCallback.onPositionDiscontinuity(videoPlayer, reason);
+        playerPositionDiscontinuityCallback.onPositionDiscontinuity(VideoPlayer.this, reason);
       }
     }
 

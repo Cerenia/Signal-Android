@@ -89,6 +89,10 @@
   <string name="BlockUnblockDialog_group_members_will_be_able_to_add_you">グループのメンバーはあなたをもう一度このグループに加えることができるようになります。</string>
   <string name="BlockUnblockDialog_you_will_be_able_to_call_and_message_each_other">お互いにメッセージや通話ができるようになります。あなたの名前とプロフィール写真が相手と共有されます。</string>
   <string name="BlockUnblockDialog_blocked_people_wont_be_able_to_call_you_or_send_you_messages">ブロックされた相手は、あなたへのメッセージ送信や通話発信ができなくなります。</string>
+  <!--Message shown on block dialog when blocking the Signal release notes recipient-->
+  <string name="BlockUnblockDialog_block_getting_signal_updates_and_news">Signalのアップデート情報やニュースを受信しません。</string>
+  <!--Message shown on unblock dialog when unblocking the Signal release notes recipient-->
+  <string name="BlockUnblockDialog_resume_getting_signal_updates_and_news">Signalのアップデート情報やニュースを受信します。</string>
   <string name="BlockUnblockDialog_unblock_s">%1$s のブロックを解除しますか？</string>
   <string name="BlockUnblockDialog_block">ブロックする</string>
   <string name="BlockUnblockDialog_block_and_leave">ブロックして抜ける</string>
@@ -117,6 +121,15 @@
   <string name="CameraContacts_cant_find_who_youre_looking_for">探している人が見つかりませんか？</string>
   <string name="CameraContacts_invite_a_contact_to_join_signal">連絡先をSignalへ招待する</string>
   <string name="CameraContacts__menu_search">検索</string>
+  <!--Censorship Circumvention Megaphone-->
+  <!--Title for an alert that shows at the bottom of the chat list letting people know that circumvention is no longer needed-->
+  <string name="CensorshipCircumventionMegaphone_turn_off_censorship_circumvention">検閲回避を無効にしますか？</string>
+  <!--Body for an alert that shows at the bottom of the chat list letting people know that circumvention is no longer needed-->
+  <string name="CensorshipCircumventionMegaphone_you_can_now_connect_to_the_signal_service">Signalのサービスに直接接続して、より快適にご利用いただけるようになりました。</string>
+  <!--Action to prompt the user to disable circumvention since it is no longer needed-->
+  <string name="CensorshipCircumventionMegaphone_turn_off">無効にする</string>
+  <!--Action to prompt the user to dismiss the alert at the bottom of the chat list-->
+  <string name="CensorshipCircumventionMegaphone_no_thanks">今はしない</string>
   <!--ClearProfileActivity-->
   <string name="ClearProfileActivity_remove">削除する</string>
   <string name="ClearProfileActivity_remove_profile_photo">プロフィール画像を削除しますか？</string>
@@ -147,6 +160,10 @@
   <string name="ContactsCursorLoader_groups">グループ</string>
   <string name="ContactsCursorLoader_phone_number_search">電話番号検索</string>
   <string name="ContactsCursorLoader_username_search">ユーザー名検索</string>
+  <!--Label for my stories when selecting who to send media to-->
+  <string name="ContactsCursorLoader_my_stories">マイストーリー</string>
+  <!--Action for creating a new story-->
+  <string name="ContactsCursorLoader_new_story">新規ストーリー</string>
   <!--ContactsDatabase-->
   <string name="ContactsDatabase_message_s">%s にメッセージを送る</string>
   <string name="ContactsDatabase_signal_call_s">Signal通話 %s</string>
@@ -292,6 +309,16 @@
   <string name="ConversationFragment_your_safety_number_with_s_changed_likey_because_they_reinstalled_signal">相手がSignalを再インストールしたか端末を変更したため、%s に対する安全番号が変わりました。タップして新しい安全番号を検証してください。これは任意です。</string>
   <!--Message shown to indicate which notification profile is on/active-->
   <string name="ConversationFragment__s_on">%1$s 有効</string>
+  <!--Dialog title for block group link join requests-->
+  <string name="ConversationFragment__block_request">申請をブロックしますか？</string>
+  <!--Dialog message for block group link join requests-->
+  <string name="ConversationFragment__s_will_not_be_able_to_join_or_request_to_join_this_group_via_the_group_link">%1$s はこのグループリンクからの参加申請ができなくなりますが、手動でグループに追加されることはできます。</string>
+  <!--Dialog confirm block request button-->
+  <string name="ConversationFragment__block_request_button">申請をブロックする</string>
+  <!--Dialog cancel block request button-->
+  <string name="ConversationFragment__cancel">キャンセル</string>
+  <!--Message shown after successfully blocking join requests for a user-->
+  <string name="ConversationFragment__blocked">ブロック中のユーザー</string>
   <plurals name="ConversationListFragment_delete_selected_conversations">
     <item quantity="other">選択したチャットを削除しますか？</item>
   </plurals>
@@ -355,7 +382,6 @@
   <!--ConversationTypingView-->
   <string name="ConversationTypingView__plus_d">+%1$d</string>
   <!--CreateGroupActivity-->
-  <string name="CreateGroupActivity_some_contacts_cannot_be_in_legacy_groups">レガシーグループには入れられない連絡先があります。</string>
   <string name="CreateGroupActivity__select_members">メンバーの選択</string>
   <!--CreateProfileActivity-->
   <string name="CreateProfileActivity__profile">プロフィール</string>
@@ -376,6 +402,12 @@
   <string name="RestoreBackupFragment__to_continue_using_backups_please_choose_a_folder">バックアップを続けるには、フォルダを選択してください。新しいバックアップはこの場所に保存されます。</string>
   <string name="RestoreBackupFragment__choose_folder">フォルダを選択する</string>
   <string name="RestoreBackupFragment__not_now">今はしない</string>
+  <!--Couldn\'t find the selected backup-->
+  <string name="RestoreBackupFragment__backup_not_found">バックアップが見つかりません。</string>
+  <!--Couldn\'t read the selected backup-->
+  <string name="RestoreBackupFragment__backup_could_not_be_read">バックアップを読み込めませんでした。</string>
+  <!--Backup has an unsupported file extension-->
+  <string name="RestoreBackupFragment__backup_has_a_bad_extension">バックアップの拡張子が正しくありません。</string>
   <!--BackupsPreferenceFragment-->
   <string name="BackupsPreferenceFragment__chat_backups">チャットのバックアップ</string>
   <string name="BackupsPreferenceFragment__backups_are_encrypted_with_a_passphrase">バックアップはパスフレーズを用いて暗号化され、この端末内に保存されます。</string>
@@ -427,9 +459,6 @@
   <string name="DeviceListItem_today">今日</string>
   <!--DocumentView-->
   <string name="DocumentView_unnamed_file">無名のファイル</string>
-  <!--GroupCallingMegaphone-->
-  <!-- Removed by excludeNonTranslatables <string name="GroupCallingMegaphone__introducing_group_calls">グループ通話のご紹介</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="GroupCallingMegaphone__open_a_new_group_to_start">新しいグループで暗号化されたグループ通話を始めましょう</string> -->
   <!--DozeReminder-->
   <string name="DozeReminder_optimize_for_missing_play_services">Google Play開発者サービスの不在に対応する</string>
   <string name="DozeReminder_this_device_does_not_support_play_services_tap_to_disable_system_battery">この端末はGoogle Play開発者サービスをサポートしていません。Signalがいつでもメッセージを受信できるよう、タップしてバッテリー最適化機能を無効にしてください。</string>
@@ -441,10 +470,6 @@
     <item quantity="other">%d件のメンバー申請が保留中です。</item>
   </plurals>
   <string name="PendingGroupJoinRequestsReminder_view">表示する</string>
-  <!--ShareActivity-->
-  <string name="ShareActivity_share_with">共有</string>
-  <string name="ShareActivity_multiple_attachments_are_only_supported">画像と動画以外のファイルを複数添付することはできません。</string>
-  <string name="ShareActivity_you_do_not_have_permission_to_send_to_this_group">このグループに送信する権限がありません</string>
   <!--GcmRefreshJob-->
   <string name="GcmRefreshJob_Permanent_Signal_communication_failure">Signalの永続的な通信エラー！</string>
   <string name="GcmRefreshJob_Signal_was_unable_to_register_with_Google_Play_Services">Google Play開発者サービスにSignalを登録できなかったため、Signalのメッセージと通話は無効になっています。設定 &gt; 詳細設定で再登録を試してください。</string>
@@ -534,10 +559,6 @@
   <string name="LeaveGroupDialog_choose_new_admin">新しい管理者を選択してください</string>
   <string name="LeaveGroupDialog_before_you_leave_you_must_choose_at_least_one_new_admin_for_this_group">グループから抜ける前に、新しい管理者を1人以上選択する必要があります。</string>
   <string name="LeaveGroupDialog_choose_admin">管理者を選択する</string>
-  <!--LinkPreviewsMegaphone-->
-  <!-- Removed by excludeNonTranslatables <string name="LinkPreviewsMegaphone_disable">無効にする</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="LinkPreviewsMegaphone_preview_any_link">どんなリンクもプレビュー</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="LinkPreviewsMegaphone_you_can_now_retrieve_link_previews_directly_from_any_website">送信メッセージにて、どのウェヴサイトからでも直接リンクプレビューを取得できるようになりました。</string> -->
   <!--LinkPreviewView-->
   <string name="LinkPreviewView_no_link_preview_available">リンクプレビューは使用できません</string>
   <string name="LinkPreviewView_this_group_link_is_not_active">このグループリンクは利用できません</string>
@@ -594,21 +615,6 @@
   <string name="AddGroupDetailsFragment__remove">削除する</string>
   <string name="AddGroupDetailsFragment__sms_contact">SMS連絡先</string>
   <string name="AddGroupDetailsFragment__remove_s_from_this_group">このグループから %1$s を削除しますか？</string>
-  <plurals name="AddGroupDetailsFragment__d_members_do_not_support_new_groups">
-    <item quantity="other">新しいグループをサポートしないメンバーが%d人いるため、このグループはレガシーグループになります。</item>
-  </plurals>
-  <plurals name="AddGroupDetailsFragment__d_members_do_not_support_new_groups_so_this_group_cannot_be_created">
-    <item quantity="other">新しいグループをサポートしないメンバーが%d人いるため、このグループを作成できません。</item>
-  </plurals>
-  <!--NonGv2MemberDialog-->
-  <string name="NonGv2MemberDialog_single_users_are_non_gv2_capable">「%1$s」が古いバージョンのSignalを使用しているため、レガシーグループが作成されます。当該ユーザーのSignalをアップデートするか対象から外せば、新しいバージョンのグループを作成できます。</string>
-  <plurals name="NonGv2MemberDialog_d_users_are_non_gv2_capable">
-    <item quantity="other">古いバージョンのSignalを使用しているメンバーが%1$d人いるため、レガシーグループが作成されます。当該メンバーのSignalをアップデートするか対象から外せば、新しいバージョンのグループを作成できます。</item>
-  </plurals>
-  <string name="NonGv2MemberDialog_single_users_are_non_gv2_capable_forced_migration">「%1$s」が古いバージョンのSignalを使用しているため、このグループを作成できません。当該メンバーを削除すると、グループを作成できます。</string>
-  <plurals name="NonGv2MemberDialog_d_users_are_non_gv2_capable_forced_migration">
-    <item quantity="other">%1$d人のメンバーが古いバージョンのSignalを使用しているため、このグループを作成できません。当該メンバーを削除すると、グループを作成できます。</item>
-  </plurals>
   <!--ManageGroupActivity-->
   <string name="ManageGroupActivity_member_requests_and_invites">メンバー申請と招待</string>
   <string name="ManageGroupActivity_add_members">メンバーを追加</string>
@@ -713,7 +719,16 @@
   <string name="GroupJoinBottomSheetDialogFragment_unable_to_join_group_please_try_again_later">グループに参加できません。あとで再度試してください。</string>
   <string name="GroupJoinBottomSheetDialogFragment_encountered_a_network_error">ネットワークエラーが発生しました。</string>
   <string name="GroupJoinBottomSheetDialogFragment_this_group_link_is_not_active">このグループリンクは利用できません</string>
-  <string name="GroupJoinBottomSheetDialogFragment_unable_to_get_group_information_please_try_again_later">グループ情報を取得できません。あとで再度試してください。</string>
+  <!--Title shown when there was an known issue getting group information from a group link-->
+  <string name="GroupJoinBottomSheetDialogFragment_cant_join_group">グループに参加できません</string>
+  <!--Message shown when you try to get information for a group via link but an admin has removed you-->
+  <string name="GroupJoinBottomSheetDialogFragment_you_cant_join_this_group_via_the_group_link_because_an_admin_removed_you">管理者があなたを削除したため、グループリンクからはこのグループに参加できません。</string>
+  <!--Message shown when you try to get information for a group via link but the link is no longer valid-->
+  <string name="GroupJoinBottomSheetDialogFragment_this_group_link_is_no_longer_valid">このグループリンクはすでに無効です。</string>
+  <!--Title shown when there was an unknown issue getting group information from a group link-->
+  <string name="GroupJoinBottomSheetDialogFragment_link_error">リンクエラー</string>
+  <!--Message shown when you try to get information for a group via link but an unknown issue occurred-->
+  <string name="GroupJoinBottomSheetDialogFragment_joining_via_this_link_failed_try_joining_again_later">このリンク経由での参加に失敗しました。あとで再度試してください。</string>
   <string name="GroupJoinBottomSheetDialogFragment_direct_join">このグループに参加して、あなたの名前と画像をそのメンバーと共有しますか？</string>
   <string name="GroupJoinBottomSheetDialogFragment_admin_approval_needed">このグループに参加するには、管理者の承認が必要です。参加を申請すると、あなたの名前と画像がそのメンバーと共有されます。</string>
   <plurals name="GroupJoinBottomSheetDialogFragment_group_dot_d_members">
@@ -737,6 +752,8 @@
   <!--GV2 Request confirmation dialog-->
   <string name="RequestConfirmationDialog_add_s_to_the_group">「%1$s」をこのグループに追加しますか？</string>
   <string name="RequestConfirmationDialog_deny_request_from_s">「%1$s」からの申請を拒否しますか？</string>
+  <!--Confirm dialog message shown when deny a group link join request and group link is enabled.-->
+  <string name="RequestConfirmationDialog_deny_request_from_s_they_will_not_be_able_to_request">「%1$s」からの申請を拒否しますか？申請者は、このグループリンクから再申請できなくなります。</string>
   <string name="RequestConfirmationDialog_add">追加する</string>
   <string name="RequestConfirmationDialog_deny">拒否する</string>
   <!--ImageEditorHud-->
@@ -815,8 +832,6 @@
   <string name="MediaOverviewActivity_sent_by_s_to_s">%1$s が %2$s に送信</string>
   <string name="MediaOverviewActivity_sent_by_you_to_s">あなたが %1$s に送信</string>
   <!--Megaphones-->
-  <!-- Removed by excludeNonTranslatables <string name="Megaphones_introducing_reactions">リアクションのご紹介</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="Megaphones_tap_and_hold_any_message_to_quicky_share_how_you_feel">メッセージを長押しして、手軽にリアクションできます。</string> -->
   <string name="Megaphones_remind_me_later">あとで通知</string>
   <string name="Megaphones_verify_your_signal_pin">Signal PINの確認</string>
   <string name="Megaphones_well_occasionally_ask_you_to_verify_your_pin">PINを忘れないよう、確認をお願いします。</string>
@@ -1013,6 +1028,10 @@
   <!--GV2 group link requests-->
   <string name="MessageRecord_you_sent_a_request_to_join_the_group">グループ参加を申請しました。</string>
   <string name="MessageRecord_s_requested_to_join_via_the_group_link">%1$s がグループリンクから参加を申請しました。</string>
+  <!--Update message shown when someone requests to join via group link and cancels the request back to back-->
+  <plurals name="MessageRecord_s_requested_and_cancelled_their_request_to_join_via_the_group_link">
+    <item quantity="other">%1$s がグループリンクから参加を申請して、%2$d件の申請をキャンセルしました。</item>
+  </plurals>
   <!--GV2 group link approvals-->
   <string name="MessageRecord_s_approved_your_request_to_join_the_group">%1$s がグループ参加申請を承認しました。</string>
   <string name="MessageRecord_s_approved_a_request_to_join_the_group_from_s">%1$s が %2$s からのグループ参加申請を承認しました。</string>
@@ -1031,8 +1050,12 @@
   <string name="MessageRecord_you_marked_your_safety_number_with_s_verified_from_another_device">%s に対する安全番号を他の端末で検証済みにしました</string>
   <string name="MessageRecord_you_marked_your_safety_number_with_s_unverified">%s に対する安全番号を未検証にしました</string>
   <string name="MessageRecord_you_marked_your_safety_number_with_s_unverified_from_another_device">%s に対する安全番号を他の端末で未検証にしました</string>
-  <string name="MessageRecord_a_message_from_s_couldnt_be_delivered">%s からのメッセージを配信できませんでした</string>
-  <string name="MessageRecord_s_changed_their_number_to_a_new_number">%1$s が電話番号を変更しました。</string>
+  <string name="MessageRecord_a_message_from_s_couldnt_be_delivered">%s からのメッセージを配送できませんでした</string>
+  <string name="MessageRecord_s_changed_their_phone_number">%1$s が電話番号を変更しました。</string>
+  <!--Update item message shown in the release channel when someone is already a sustainer so we ask them if they want to boost.-->
+  <string name="MessageRecord_like_this_new_feature_say_thanks_with_a_boost">この新機能を気に入っていただけましたら、ブーストでご支援ください。</string>
+  <!--Update item message shown in the release channel when someone is not a sustainer so we ask them to consider becoming one-->
+  <string name="MessageRecord_signal_is_powered_by_people_like_you_become_a_sustainer_today">Signalはユーザの皆様によって支えられています。今日からサポーターになりませんか。</string>
   <!--Group Calling update messages-->
   <string name="MessageRecord_s_started_a_group_call_s">%1$s がグループ通話を開始しました · %2$s</string>
   <string name="MessageRecord_s_is_in_the_group_call_s">%1$s はグループ通話中です · %2$s</string>
@@ -1059,6 +1082,7 @@
   <string name="MessageRequestBottomView_unblock">ブロック解除</string>
   <string name="MessageRequestBottomView_do_you_want_to_let_s_message_you_they_wont_know_youve_seen_their_messages_until_you_accept">%1$s からメッセージを受信し、あなたの名前と画像を共有しますか？承認するまで、相手にはあなたがメッセージを見たことははわかりません。</string>
   <string name="MessageRequestBottomView_do_you_want_to_let_s_message_you_wont_receive_any_messages_until_you_unblock_them">%1$s にあなたへのメッセージ送信や、名前とプロフィール画像の共有を許可しますか？ブロックを解除するまでメッセージは届きません。</string>
+  <string name="MessageRequestBottomView_get_updates_and_news_from_s_you_wont_receive_any_updates_until_you_unblock_them">%1$s から更新情報やニュースを受け取りますか？ブロックを解除するまでは受け取りません。</string>
   <string name="MessageRequestBottomView_continue_your_conversation_with_this_group_and_share_your_name_and_photo">このグループとのチャットを継続して、あなたの名前と画像をそのメンバーと共有しますか？</string>
   <string name="MessageRequestBottomView_upgrade_this_group_to_activate_new_features">@メンションや管理者などの機能を有効にするため、グループをアップグレードしてください。名前や写真を共有していないグループメンバーは、改めて招待されます。</string>
   <string name="MessageRequestBottomView_this_legacy_group_can_no_longer_be_used">このレガシーグループは大きすぎるため使用できません。グループの最大人数は%1$d人です。</string>
@@ -1073,9 +1097,8 @@
   <plurals name="MessageRequestProfileView_members">
     <item quantity="other">メンバー %1$d人</item>
   </plurals>
-  <plurals name="MessageRequestProfileView_members_and_invited">
-    <item quantity="other">メンバー %1$d人 (+%2$d件の招待)</item>
-  </plurals>
+  <!--Describes the number of members in a group. The string MessageRequestProfileView_invited is nested in the parentheses.-->
+  <!--Describes the number of people invited to a group. Nested inside of the string MessageRequestProfileView_members_and_invited-->
   <plurals name="MessageRequestProfileView_member_of_d_additional_groups">
     <item quantity="other">ほか%dグループ</item>
   </plurals>
@@ -1163,6 +1186,8 @@
   <string name="RecaptchaRequiredBottomSheetFragment_after_verifying_you_can_continue_messaging">認証後は、メッセージの送受信を再開できます。保留中のメッセージは、自動で送信されます。</string>
   <!--Recipient-->
   <string name="Recipient_you">あなた</string>
+  <!--Name of recipient representing user\'s \'My Story\'-->
+  <string name="Recipient_my_story">マイストーリー</string>
   <!--RecipientPreferencesActivity-->
   <string name="RecipientPreferenceActivity_block">ブロックする</string>
   <string name="RecipientPreferenceActivity_unblock">ブロックを解除する</string>
@@ -1178,12 +1203,19 @@
   <string name="RedPhone_number_not_registered">未登録番号です！</string>
   <string name="RedPhone_the_number_you_dialed_does_not_support_secure_voice">ダイヤル先は安全な音声通話をサポートしていません！</string>
   <string name="RedPhone_got_it">分かりました</string>
+  <!--Valentine\'s Day Megaphone-->
+  <!--Title text for the Valentine\'s Day donation megaphone. The placeholder will always be a heart emoji. Needs to be a placeholder for Android reasons.-->
+  <string name="ValentinesDayMegaphone_happy_heart_day">Happy 💜 Day!</string>
+  <!--Body text for the Valentine\'s Day donation megaphone.-->
+  <string name="ValentinesDayMegaphone_show_your_affection">Signalのサポーターになって想いを表現してください。</string>
   <!--WebRtcCallActivity-->
   <string name="WebRtcCallActivity__tap_here_to_turn_on_your_video">タップして動画を有効にする</string>
   <string name="WebRtcCallActivity__to_call_s_signal_needs_access_to_your_camera">%1$s と通話するには、Signalにカメラへのアクセスを許可してください。</string>
   <string name="WebRtcCallActivity__signal_s">Signal %1$s</string>
   <string name="WebRtcCallActivity__calling">呼び出しています…</string>
   <string name="WebRtcCallActivity__group_is_too_large_to_ring_the_participants">グループが大きすぎるため、参加者を呼べません。</string>
+  <!--Call status shown when an active call was disconnected (e.g., network hiccup) and is trying to reconnect-->
+  <string name="WebRtcCallActivity__reconnecting">再接続しています…</string>
   <!--WebRtcCallView-->
   <string name="WebRtcCallView__signal_call">Signal通話</string>
   <string name="WebRtcCallView__signal_video_call">Signalビデオ通話</string>
@@ -1228,6 +1260,7 @@
   <string name="WebRtcCallView__flip">切り替え</string>
   <string name="WebRtcCallView__speaker">スピーカー</string>
   <string name="WebRtcCallView__camera">カメラ</string>
+  <string name="WebRtcCallView__unmute">ミュート解除</string>
   <string name="WebRtcCallView__mute">ミュート</string>
   <string name="WebRtcCallView__ring">呼び出し</string>
   <string name="WebRtcCallView__end_call">通話終了</string>
@@ -1319,14 +1352,14 @@
   <string name="SharedContactView_invite_to_signal">Signalに招待する</string>
   <string name="SharedContactView_message">Signalメッセージ</string>
   <!--SignalBottomActionBar-->
-  <string name="SignalBottomActionBar_more">続き</string>
+  <string name="SignalBottomActionBar_more">その他</string>
   <!--SignalPinReminders-->
-  <string name="SignalPinReminders_well_remind_you_again_later">あとで再度お知らせします。</string>
-  <string name="SignalPinReminders_well_remind_you_again_tomorrow">明日、再度お知らせします。</string>
-  <string name="SignalPinReminders_well_remind_you_again_in_a_few_days">数日後に再度お知らせします。</string>
-  <string name="SignalPinReminders_well_remind_you_again_in_a_week">1週間後に再度お知らせします。</string>
-  <string name="SignalPinReminders_well_remind_you_again_in_a_couple_weeks">2週間後に再度お知らせします。</string>
-  <string name="SignalPinReminders_well_remind_you_again_in_a_month">1ヶ月後に再度お知らせします。</string>
+  <string name="SignalPinReminders_well_remind_you_again_later">PINの確認ができました。またあとでお知らせします。</string>
+  <string name="SignalPinReminders_well_remind_you_again_tomorrow">PINの確認ができました。また明日お知らせします。</string>
+  <string name="SignalPinReminders_well_remind_you_again_in_a_few_days">PINの確認ができました。また数日後にお知らせします。</string>
+  <string name="SignalPinReminders_well_remind_you_again_in_a_week">PINの確認ができました。また1週間後にお知らせします。</string>
+  <string name="SignalPinReminders_well_remind_you_again_in_a_couple_weeks">PINの確認ができました。また2週間後にお知らせします。</string>
+  <string name="SignalPinReminders_well_remind_you_again_in_a_month">PINの確認ができました。また1ヶ月後にお知らせします。</string>
   <!--Slide-->
   <string name="Slide_image">画像</string>
   <string name="Slide_sticker">ステッカー</string>
@@ -1401,7 +1434,7 @@
   <string name="ThreadRecord_you_marked_verified">検証済みにしました</string>
   <string name="ThreadRecord_you_marked_unverified">未検証にしました</string>
   <string name="ThreadRecord_message_could_not_be_processed">メッセージを処理できませんでした</string>
-  <string name="ThreadRecord_delivery_issue">配信エラー</string>
+  <string name="ThreadRecord_delivery_issue">配送エラー</string>
   <string name="ThreadRecord_message_request">メッセージ申請</string>
   <string name="ThreadRecord_photo">写真</string>
   <string name="ThreadRecord_gif">GIF</string>
@@ -1472,15 +1505,19 @@
   <string name="MediaPreviewActivity_media_delete_confirmation_title">メッセージを削除しますか？</string>
   <string name="MediaPreviewActivity_media_delete_confirmation_message">このメッセージを完全に削除します。</string>
   <string name="MediaPreviewActivity_s_to_s">%1$s から %2$s</string>
+  <!--All media preview title when viewing media send by you to another recipient (allows changing of \'You\' based on context)-->
+  <string name="MediaPreviewActivity_you_to_s">あなたから %1$s</string>
+  <!--All media preview title when viewing media sent by another recipient to you (allows changing of \'You\' based on context)-->
+  <string name="MediaPreviewActivity_s_to_you">%1$s からあなた</string>
   <string name="MediaPreviewActivity_media_no_longer_available">メディアが存在しません。</string>
   <string name="MediaPreviewActivity_cant_find_an_app_able_to_share_this_media">このメディアを共有できるアプリが見つかりません。</string>
   <!--MessageNotifier-->
   <string name="MessageNotifier_d_new_messages_in_d_conversations">%2$d個のチャットに%1$d件の新着メッセージ</string>
   <string name="MessageNotifier_most_recent_from_s">最新の受信: %1$s</string>
   <string name="MessageNotifier_locked_message">ロックされたメッセージ</string>
-  <string name="MessageNotifier_message_delivery_failed">メッセージの配信に失敗しました。</string>
-  <string name="MessageNotifier_failed_to_deliver_message">メッセージの配信に失敗しました。</string>
-  <string name="MessageNotifier_error_delivering_message">メッセージの配信中にエラーが発生しました。</string>
+  <string name="MessageNotifier_message_delivery_failed">メッセージを配送できませんでした。</string>
+  <string name="MessageNotifier_failed_to_deliver_message">メッセージを配送できませんでした。</string>
+  <string name="MessageNotifier_error_delivering_message">メッセージの配送中にエラーが発生しました。</string>
   <string name="MessageNotifier_message_delivery_paused">メッセージの配送が保留されました。</string>
   <string name="MessageNotifier_verify_to_continue_messaging_on_signal">Signalでのメッセージ送受信を続けるため、認証してください。</string>
   <string name="MessageNotifier_mark_all_as_read">すべて既読にする</string>
@@ -1518,6 +1555,10 @@
   <string name="NotificationChannel_voice_notes">音声メモ</string>
   <string name="NotificationChannel_contact_joined_signal">連絡先のSignal参加時</string>
   <string name="NotificationChannels__no_activity_available_to_open_notification_channel_settings">通知チャネルの設定を開くためのアクティビティがありません。</string>
+  <!--Notification channel name for showing persistent background connection on devices without push notifications-->
+  <string name="NotificationChannel_background_connection">バックグラウンド接続</string>
+  <!--Notification channel name for showing call status information (like connection, ongoing, etc.) Not ringing.-->
+  <string name="NotificationChannel_call_status">通話状態</string>
   <!--ProfileEditNameFragment-->
   <!--QuickResponseService-->
   <string name="QuickResponseService_quick_response_unavailable_when_Signal_is_locked">Signalのロック中はクイックレスポンスを使えません！</string>
@@ -1603,6 +1644,10 @@
   <plurals name="contact_selection_list_item__number_of_members">
     <item quantity="other">メンバー %1$d人</item>
   </plurals>
+  <!--Displays number of viewers for a story-->
+  <plurals name="contact_selection_list_item__number_of_viewers">
+    <item quantity="other">閲覧者 %1$d人</item>
+  </plurals>
   <!--conversation_activity-->
   <string name="conversation_activity__type_message_push">Signalメッセージ</string>
   <string name="conversation_activity__type_message_sms_insecure">安全でないSMS</string>
@@ -1627,7 +1672,7 @@
   <!--conversation_item_sent-->
   <string name="conversation_item_sent__send_failed_indicator_description">送信失敗</string>
   <string name="conversation_item_sent__pending_approval_description">承認待ち</string>
-  <string name="conversation_item_sent__delivered_description">配信済み</string>
+  <string name="conversation_item_sent__delivered_description">配送済み</string>
   <string name="conversation_item_sent__message_read">既読</string>
   <!--conversation_item_received-->
   <string name="conversation_item_received__contact_photo_description">連絡先の写真</string>
@@ -1640,10 +1685,16 @@
   <string name="ConversationUpdateItem_invite_friends">友達を招待する</string>
   <string name="ConversationUpdateItem_enable_call_notifications">着信通知を有効にする</string>
   <string name="ConversationUpdateItem_update_contact">連絡先を更新する</string>
+  <!--Update item button text to show to block a recipient from requesting to join via group link-->
+  <string name="ConversationUpdateItem_block_request">申請をブロック</string>
   <string name="ConversationUpdateItem_no_groups_in_common_review_requests_carefully">共通のグループはありません。慎重に申請を確認してください。</string>
   <string name="ConversationUpdateItem_no_contacts_in_this_group_review_requests_carefully">このグループに連絡先の人はいません。慎重に申請を確認してください。</string>
   <string name="ConversationUpdateItem_view">表示する</string>
   <string name="ConversationUpdateItem_the_disappearing_message_time_will_be_set_to_s_when_you_message_them">メッセージの送信時に、消えるメッセージのタイマーが%1$sに設定されます。</string>
+  <!--Update item button text to show to boost a feature-->
+  <string name="ConversationUpdateItem_signal_boost">Signalブースト</string>
+  <!--Update item button text to show to become a sustainer in the release notes channel-->
+  <string name="ConversationUpdateItem_become_a_sustainer">サポーターになる</string>
   <!--audio_view-->
   <string name="audio_view__play_pause_accessibility_description">再生 … 停止</string>
   <string name="audio_view__download_accessibility_description">ダウンロード</string>
@@ -1656,6 +1707,12 @@
   <string name="QuoteView_sticker">ステッカー</string>
   <string name="QuoteView_you">あなた</string>
   <string name="QuoteView_original_missing">元のメッセージが見つかりません</string>
+  <!--Author formatting for group stories-->
+  <string name="QuoteView_s_story">%1$s · ストーリー</string>
+  <!--Label indicating that a quote is for a reply to a story you created-->
+  <string name="QuoteView_your_story">あなた · ストーリー</string>
+  <!--Label indicating that the story being replied to no longer exists-->
+  <string name="QuoteView_no_longer_available">削除済み</string>
   <!--conversation_fragment-->
   <string name="conversation_fragment__scroll_to_the_bottom_content_description">一番下までスクロール</string>
   <!--BubbleOptOutTooltip-->
@@ -1754,6 +1811,10 @@
   <!--message_recipients_list_item-->
   <string name="message_recipients_list_item__view">見る</string>
   <string name="message_recipients_list_item__resend">再送</string>
+  <!--Displayed in a toast when user long presses an item in MyStories-->
+  <string name="MyStoriesFragment__copied_sent_timestamp_to_clipboard">送信日時をクリップボードにコピーしました。</string>
+  <!--Displayed when there are no outgoing stories-->
+  <string name="MyStoriesFragment__updates_to_your_story_will_show_up_here">あなたのストーリーの更新がここに表示されます。</string>
   <!--GroupUtil-->
   <plurals name="GroupUtil_joined_the_group">
     <item quantity="other">%1$s がグループに加わりました。</item>
@@ -1762,12 +1823,12 @@
   <!--prompt_passphrase_activity-->
   <string name="prompt_passphrase_activity__unlock">ロック解除</string>
   <!--prompt_mms_activity-->
-  <string name="prompt_mms_activity__signal_requires_mms_settings_to_deliver_media_and_group_messages">Signalは、携帯電話回線を通じてメディアとグループメッセージを配信するためにMMSの設定を必要としますが、この端末の設定情報を利用できません。これは端末がロックされていたり、その他の制限のある場合に発生することがあります。</string>
+  <string name="prompt_mms_activity__signal_requires_mms_settings_to_deliver_media_and_group_messages">Signalは、携帯電話回線を通じてメディアとグループメッセージを配送するためにMMSの設定を必要としますが、この端末の設定情報を利用できません。これは端末がロックされていたり、その他の制限のある場合に発生することがあります。</string>
   <string name="prompt_mms_activity__to_send_media_and_group_messages_tap_ok">メディアやグループメッセージを送信するには「OK」をタップして設定を完了してください。MMSの設定は一般的には「アクセスポイント名」を探すことで見つかります。これは1度だけ行う必要があります。</string>
   <!--BadDecryptLearnMoreDialog-->
-  <string name="BadDecryptLearnMoreDialog_delivery_issue">配信エラー</string>
-  <string name="BadDecryptLearnMoreDialog_couldnt_be_delivered_individual">%s からのメッセージ、ステッカー、リアクションまたは既読通知を、あなたに配信できませんでした。直接またはグループで、送信しようとしているかもしれません。</string>
-  <string name="BadDecryptLearnMoreDialog_couldnt_be_delivered_group">%s からのメッセージ、ステッカー、リアクションまたは既読通知を、あなたに配信できませんでした。</string>
+  <string name="BadDecryptLearnMoreDialog_delivery_issue">配送エラー</string>
+  <string name="BadDecryptLearnMoreDialog_couldnt_be_delivered_individual">%s からのメッセージ、ステッカー、リアクションまたは既読通知を、あなたに配送できませんでした。直接またはグループで、送信しようとしているかもしれません。</string>
+  <string name="BadDecryptLearnMoreDialog_couldnt_be_delivered_group">%s からのメッセージ、ステッカー、リアクションまたは既読通知を、あなたに配送できませんでした。</string>
   <!--profile_create_activity-->
   <string name="CreateProfileActivity_first_name_required">名 (必須)</string>
   <string name="CreateProfileActivity_last_name_optional">姓 (任意)</string>
@@ -1826,10 +1887,11 @@
   <string name="message_details_recipient_header__pending_send">保留中</string>
   <string name="message_details_recipient_header__sent_to">宛先</string>
   <string name="message_details_recipient_header__sent_from">送信元</string>
-  <string name="message_details_recipient_header__delivered_to">配信先</string>
+  <string name="message_details_recipient_header__delivered_to">配送先</string>
   <string name="message_details_recipient_header__read_by">既読者</string>
   <string name="message_details_recipient_header__not_sent">未送信</string>
   <string name="message_details_recipient_header__viewed">閲覧済み</string>
+  <string name="message_details_recipient_header__skipped">スキップ</string>
   <!--message_Details_recipient-->
   <string name="message_details_recipient__failed_to_send">送信に失敗しました</string>
   <string name="message_details_recipient__new_safety_number">新しい安全番号</string>
@@ -1968,9 +2030,8 @@
   <string name="preferences__help">ヘルプ</string>
   <string name="preferences__advanced">詳細設定</string>
   <string name="preferences__donate_to_signal">Signalへの寄付</string>
-  <string name="preferences__subscription">サブスクリプション</string>
-  <string name="preferences__become_a_signal_sustainer">Signalサポーター</string>
-  <string name="preferences__signal_boost">Signalブースト</string>
+  <!--Preference label for making one-time donations to Signal-->
+  <string name="preferences__one_time_donation">1回限りの寄付</string>
   <string name="preferences__privacy">プライバシー</string>
   <string name="preferences__mms_user_agent">MMSユーザーエージェント</string>
   <string name="preferences__advanced_mms_access_point_names">手動MMS設定</string>
@@ -1979,8 +2040,8 @@
   <string name="preferences__mms_proxy_port">MMSプロキシポート</string>
   <string name="preferences__mmsc_username">MMSCユーザー名</string>
   <string name="preferences__mmsc_password">MMSCパスワード</string>
-  <string name="preferences__sms_delivery_reports">SMS配信レポート</string>
-  <string name="preferences__request_a_delivery_report_for_each_sms_message_you_send">送信するすべてのSMSメッセージで配信レポートを要求します。</string>
+  <string name="preferences__sms_delivery_reports">SMS配送レポート</string>
+  <string name="preferences__request_a_delivery_report_for_each_sms_message_you_send">送信するすべてのSMSメッセージで配送レポートを要求します。</string>
   <string name="preferences__data_and_storage">データとストレージ</string>
   <string name="preferences__storage">ストレージ</string>
   <string name="preferences__payments">決済機能</string>
@@ -2068,9 +2129,22 @@
   <string name="preferences_chats__message_text_size">メッセージのフォントサイズ</string>
   <string name="preferences_events__contact_joined_signal">連絡先のSignal参加時</string>
   <string name="preferences_notifications__priority">優先度</string>
+  <!--Heading for the \'censorship circumvention\' section of privacy preferences-->
+  <string name="preferences_communication__category_censorship_circumvention">閲覧回避</string>
+  <!--Title of the \'censorship circumvention\' toggle switch-->
+  <string name="preferences_communication__censorship_circumvention">閲覧回避</string>
+  <string name="preferences_communication__censorship_circumvention_if_enabled_signal_will_attempt_to_circumvent_censorship">有効にすると、Signalは検閲回避を試行します。Signalが検閲される場所にいない場合は、有効にしないでください。</string>
+  <!--Summary text for \'censorship circumvention\' toggle. Indicates that we automatically enabled it because we believe you\'re in a censored country-->
+  <string name="preferences_communication__censorship_circumvention_has_been_activated_based_on_your_accounts_phone_number">アカウントの電話番号に基づいた、検閲回避が有効になりました。</string>
+  <!--Summary text for \'censorship circumvention\' toggle. Indicates that you disabled it even though we believe you\'re in a censored country-->
+  <string name="preferences_communication__censorship_circumvention_you_have_manually_disabled">検閲回避を手動で無効にしました。</string>
+  <!--Summary text for \'censorship circumvention\' toggle. Indicates that you cannot use it because you\'re already connected to the Signal service-->
+  <string name="preferences_communication__censorship_circumvention_is_not_necessary_you_are_already_connected">すでにSignalサービスに接続しているため、検問回避は不要です。</string>
+  <!--Summary text for \'censorship circumvention\' toggle. Indicates that you cannot use it because you\'re not connected to the internet-->
+  <string name="preferences_communication__censorship_circumvention_can_only_be_activated_when_connected_to_the_internet">検閲回避は、インターネットに接続されている場合にのみ有効です。</string>
   <string name="preferences_communication__category_sealed_sender">送信者の秘匿化</string>
   <string name="preferences_communication__sealed_sender_display_indicators">アイコンを表示する</string>
-  <string name="preferences_communication__sealed_sender_display_indicators_description">送信者の秘匿化を用いて届けられたメッセージで「メッセージの詳細」を選択した際に、ステータスアイコンを表示します。</string>
+  <string name="preferences_communication__sealed_sender_display_indicators_description">送信者を秘匿化して届けられたメッセージで「メッセージの詳細」を選択した際に、ステータスアイコンを表示します。</string>
   <string name="preferences_communication__sealed_sender_allow_from_anyone">全員を許可する</string>
   <string name="preferences_communication__sealed_sender_allow_from_anyone_description">あなたのプロフィールを共有しておらず、連絡先にもないユーザーからのメッセージ受信において、送信者の秘匿化を有効にします。</string>
   <string name="preferences_communication__sealed_sender_learn_more">詳しく見る</string>
@@ -2237,18 +2311,32 @@
   <string name="conversation_callable_secure__menu_call">Signal通話</string>
   <string name="conversation_callable_secure__menu_video">Signalビデオ通話</string>
   <!--conversation_context-->
-  <string name="conversation_context__menu_message_details">メッセージの詳細</string>
-  <string name="conversation_context__menu_copy_text">テキストをコピー</string>
-  <string name="conversation_context__menu_delete_message">メッセージの削除</string>
-  <string name="conversation_context__menu_forward_message">メッセージの転送</string>
-  <string name="conversation_context__menu_resend_message">メッセージの再送信</string>
-  <string name="conversation_context__menu_reply_to_message">メッセージに返信</string>
-  <!--conversation_context_reacction-->
-  <string name="conversation_context__reaction_multi_select">複数を選択</string>
+  <!--Heading which shows how many messages are currently selected-->
+  <plurals name="conversation_context__s_selected">
+    <item quantity="other">%d件選択済み</item>
+  </plurals>
   <!--conversation_context_image-->
-  <string name="conversation_context_image__save_attachment">添付ファイルを保存</string>
+  <!--Button to save a message attachment (image, file etc.)-->
+  <string name="conversation_context_image__save_attachment">保存</string>
   <!--conversation_expiring_off-->
   <string name="conversation_expiring_off__disappearing_messages">消えるメッセージ</string>
+  <!--conversation_selection-->
+  <!--Button to view detailed information for a message-->
+  <string name="conversation_selection__menu_message_details">詳細</string>
+  <!--Button to copy a message\'s text to the clipboard-->
+  <string name="conversation_selection__menu_copy">コピー</string>
+  <!--Button to delete a message-->
+  <string name="conversation_selection__menu_delete">削除</string>
+  <!--Button to forward a message to another person or group chat-->
+  <string name="conversation_selection__menu_forward">転送</string>
+  <!--Button to reply to a message-->
+  <string name="conversation_selection__menu_reply">返信</string>
+  <!--Button to save a message attachment (image, file etc.)-->
+  <string name="conversation_selection__menu_save">保存</string>
+  <!--Button to retry sending a message-->
+  <string name="conversation_selection__menu_resend_message">再送</string>
+  <!--Button to select a message and enter selection mode-->
+  <string name="conversation_selection__menu_multi_select">選択</string>
   <!--conversation_expiring_on-->
   <!--conversation_insecure-->
   <string name="conversation_insecure__invite">招待</string>
@@ -2293,7 +2381,7 @@
   <string name="conversation_add_to_contacts__menu_add_to_contacts">連絡先に追加</string>
   <!--conversation_group_options-->
   <string name="convesation_group_options__recipients_list">宛先リスト</string>
-  <string name="conversation_group_options__delivery">配信</string>
+  <string name="conversation_group_options__delivery">配送</string>
   <string name="conversation_group_options__conversation">チャット</string>
   <string name="conversation_group_options__broadcast">一斉送信</string>
   <!--text_secure_normal-->
@@ -2425,16 +2513,6 @@
   <string name="KbsMegaphone__create_a_pin">PINを作成</string>
   <string name="KbsMegaphone__pins_keep_information_thats_stored_with_signal_encrytped">Signalで保管される情報はPINで暗号化されます。</string>
   <string name="KbsMegaphone__create_pin">PINを作成</string>
-  <!--Research Megaphone-->
-  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphone_tell_signal_what_you_think">Signalへご意見ください</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphone_to_make_signal_the_best_messaging_app_on_the_planet">Signalを地上最高のメッセージアプリにするため、皆様からのフィードバックをお待ちしています。</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphone_learn_more">詳しく見る</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphone_dismiss">キャンセル</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphoneDialog_signal_research">Signalリサーチ</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphoneDialog_we_believe_in_privacy"><![CDATA[<p><b>私たちはプライバシーを尊重しています。</b></p><p>Signalはあなたのデータを収集したり追跡することはありません。Signalをより良いものにするために、ユーザーの皆様からのフィードバックを<b>お待ちしています。</b></p><p>私たちは、あなたのSignalの使用方法についてアンケート調査を行っています。この調査では、あなたを特定するデータを収集することはありません。追加のフィードバックを共有されたい場合は、連絡先情報を提供することもできます。</p><p>お時間とご意見をお持ちの方は、ぜひご連絡ください。</p>]]></string> -->
-  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphoneDialog_take_the_survey">アンケートに参加する</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphoneDialog_no_thanks">参加しない</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphoneDialog_the_survey_is_hosted_by_alchemer_at_the_secure_domain">このアンケートは、Alchemerが安全なドメイン (surveys.signalusers.org) でホストしています。</string> -->
   <!--transport_selection_list_item-->
   <string name="transport_selection_list_item__transport_icon">転送アイコン</string>
   <string name="ConversationListFragment_loading">読み込んでいます…</string>
@@ -2491,7 +2569,7 @@
   <string name="LocalBackupJobApi29_there_is_not_enough_space">バックアップを保存できる十分なスペースがありません。</string>
   <string name="LocalBackupJobApi29_tap_to_manage_backups">タップしてバックアップを管理</string>
   <string name="ProgressPreference_d_messages_so_far">これまで%d件のメッセージ</string>
-  <string name="RegistrationActivity_wrong_number">番号が違います</string>
+  <string name="RegistrationActivity_wrong_number">電話番号を訂正</string>
   <string name="RegistrationActivity_call_me_instead_available_in">代わりに電話してください\n (利用可能になるまで %1$02d:%2$02d)</string>
   <string name="RegistrationActivity_contact_signal_support">Signalサポートに問い合わせ</string>
   <string name="RegistrationActivity_code_support_subject">Signal登録 - Android用認証コード</string>
@@ -2550,7 +2628,7 @@
   <string name="NewDeviceTransferInstructions__second_bullet">2.</string>
   <string name="NewDeviceTransferInstructions__tap_on_account">「アカウント」をタップ</string>
   <string name="NewDeviceTransferInstructions__third_bullet">3.</string>
-  <string name="NewDeviceTransferInstructions__tap_transfer_account_and_then_continue_on_both_devices">両方の端末で「アカウントの移転」、「続ける」の順にタップします</string>
+  <string name="NewDeviceTransferInstructions__tap_transfer_account_and_then_continue_on_both_devices">両方の端末で「アカウントの移行」、「続ける」の順にタップします</string>
   <!--NewDeviceTransferSetupFragment-->
   <string name="NewDeviceTransferSetup__preparing_to_connect_to_old_android_device">古いAndroid端末への接続を準備しています…</string>
   <string name="NewDeviceTransferSetup__take_a_moment_should_be_ready_soon">しばらくお待ちください</string>
@@ -2672,6 +2750,8 @@
   <string name="RecipientBottomSheet_remove_s_as_group_admin">%1$s をグループ管理者から外しますか？</string>
   <string name="RecipientBottomSheet_s_will_be_able_to_edit_group">「%1$s」がこのグループの設定やメンバーを編集できるようになります。</string>
   <string name="RecipientBottomSheet_remove_s_from_the_group">このグループから %1$s を削除しますか？</string>
+  <!--Dialog message shown when removing someone from a group with group link being active to indicate they will not be able to rejoin-->
+  <string name="RecipientBottomSheet_remove_s_from_the_group_they_will_not_be_able_to_rejoin">%1$s をこのグループから削除しますか？このユーザーは、このグループリンクから再申請できなくなります。</string>
   <string name="RecipientBottomSheet_remove">削除する</string>
   <string name="RecipientBottomSheet_copied_to_clipboard">クリップボードにコピーしました</string>
   <string name="GroupRecipientListItem_admin">管理者</string>
@@ -2759,6 +2839,8 @@
   <string name="DeleteAccountFragment__leaving_groups">グループから抜けています…</string>
   <!--Title of progress dialog shown when a user deletes their account and the process has left all groups-->
   <string name="DeleteAccountFragment__deleting_account">アカウントを削除しています…</string>
+  <!--Message of progress dialog shown when a user deletes their account and the process is canceling their subscription-->
+  <string name="DeleteAccountFragment__canceling_your_subscription">サブスクリプションを解除しています…</string>
   <!--Message of progress dialog shown when a user deletes their account and the process is leaving groups-->
   <string name="DeleteAccountFragment__depending_on_the_number_of_groups">参加しているグループ数によっては数分かかることがあります</string>
   <!--Message of progress dialog shown when a user deletes their account and the process has left all groups-->
@@ -2782,8 +2864,6 @@
   <!--MultiShareDialogs-->
   <string name="MultiShareDialogs__failed_to_send_to_some_users">数名のユーザーへの送信に失敗しました</string>
   <string name="MultiShareDialogs__you_can_only_share_with_up_to">共有できるチャットは%1$d件までです</string>
-  <!--ShareInterstitialActivity-->
-  <string name="ShareInterstitialActivity__forward_message">メッセージの転送</string>
   <!--ChatWallpaperActivity-->
   <string name="ChatWallpaperActivity__chat_wallpaper">チャットの壁紙</string>
   <!--ChatWallpaperFragment-->
@@ -2927,7 +3007,10 @@
   <!--ChangeNumberFragment-->
   <string name="ChangeNumberFragment__use_this_to_change_your_current_phone_number_to_a_new_phone_number">現在使用している電話番号を、新しい電話番号に変更する際に使用してください。この変更を元に戻すことはできません。続ける前に、新しい電話番号がSMSや通話を受信できることを確認してください。</string>
   <string name="ChangeNumberFragment__continue">続ける</string>
-  <string name="ChangeNumber__your_phone_number_has_been_changed">電話番号を変更しました。</string>
+  <!--Message shown on dialog after your number has been changed successfully.-->
+  <string name="ChangeNumber__your_phone_number_has_changed_to_s">あなたの電話番号は %1$s に変更されました。</string>
+  <!--Confirmation button to dismiss number changed dialog-->
+  <string name="ChangeNumber__okay">OK</string>
   <!--ChangeNumberEnterPhoneNumberFragment-->
   <string name="ChangeNumberEnterPhoneNumberFragment__change_number">電話番号の変更</string>
   <string name="ChangeNumberEnterPhoneNumberFragment__your_old_number">変更前の電話番号</string>
@@ -2956,12 +3039,19 @@
   <string name="ChangeNumberPinDiffersFragment__update_pin">PINを更新する</string>
   <string name="ChangeNumberPinDiffersFragment__keep_old_pin_question">古いPINを維持しますか？</string>
   <!--ChangeNumberLockActivity-->
+  <!--Info message shown to user if something crashed the app during the change number attempt and we were unable to confirm the change so we force them into this screen to check before letting them use the app-->
   <string name="ChangeNumberLockActivity__it_looks_like_you_tried_to_change_your_number_but_we_were_unable_to_determine_if_it_was_successful_rechecking_now">電話番号の変更が成功したかどうか、確認できませんでした。\n\n再確認しています…</string>
+  <!--Dialog title shown if we were able to confirm your change number status (meaning we now know what the server thinks our number is) after a crash during the regular flow-->
   <string name="ChangeNumberLockActivity__change_status_confirmed">変更状況確認済み</string>
+  <!--Dialog message shown if we were able to confirm your change number status (meaning we now know what the server thinks our number is) after a crash during the regular flow-->
   <string name="ChangeNumberLockActivity__your_number_has_been_confirmed_as_s">あなたの電話番号は %1$s であると確認されました。この電話番号が新しいものでない場合は、変更手続きを再度実施してください。</string>
+  <!--Dialog title shown if we were not able to confirm your phone number with the server and thus cannot let leave the change flow yet after a crash during the regular flow-->
   <string name="ChangeNumberLockActivity__change_status_unconfirmed">変更状況未確認</string>
+  <!--Dialog message shown when we can\'t verify the phone number on the server, only shown if there was a network error communicating with the server after a crash during the regular flow-->
   <string name="ChangeNumberLockActivity__we_could_not_determine_the_status_of_your_change_number_request">電話番号変更の状況を確認できませんでした。\n\n(エラー: %1$s)</string>
+  <!--Dialog button to retry confirming the number on the server-->
   <string name="ChangeNumberLockActivity__retry">再試行</string>
+  <!--Dialog button shown to leave the app when in the unconfirmed change status after a crash in the regular flow-->
   <string name="ChangeNumberLockActivity__leave">抜ける</string>
   <string name="ChangeNumberLockActivity__submit_debug_log">デバッグログを送信する</string>
   <!--ChatsSettingsFragment-->
@@ -2992,12 +3082,12 @@
   <string name="PrivacySettingsFragment__disappearing_messages">消えるメッセージ</string>
   <string name="PrivacySettingsFragment__app_security">アプリのセキュリティ</string>
   <string name="PrivacySettingsFragment__block_screenshots_in_the_recents_list_and_inside_the_app">「最近使ったアプリ」やアプリ内でのスクリーンショットをブロックします。</string>
-  <string name="PrivacySettingsFragment__signal_message_and_calls">Signalメッセージと通話, 通話を常に中継, 送信者の秘匿化</string>
+  <string name="PrivacySettingsFragment__signal_message_and_calls">Signalメッセージと通話、通話を常に中継、送信者の秘匿化</string>
   <string name="PrivacySettingsFragment__default_timer_for_new_changes">新規チャットの既定タイマー</string>
   <string name="PrivacySettingsFragment__set_a_default_disappearing_message_timer_for_all_new_chats_started_by_you">今後新しく始めるチャットについて、消えるメッセージのタイマーの既定値を設定します。</string>
   <!--AdvancedPrivacySettingsFragment-->
   <string name="AdvancedPrivacySettingsFragment__show_status_icon">ステータスアイコンを表示する</string>
-  <string name="AdvancedPrivacySettingsFragment__show_an_icon">送信者の秘匿化を用いて届けられたメッセージの詳細で、アイコンを表示します。</string>
+  <string name="AdvancedPrivacySettingsFragment__show_an_icon">送信者を秘匿化して届けられたメッセージの詳細で、アイコンを表示します。</string>
   <!--ExpireTimerSettingsFragment-->
   <string name="ExpireTimerSettingsFragment__when_enabled_new_messages_sent_and_received_in_new_chats_started_by_you_will_disappear_after_they_have_been_seen">有効にすると、あなたの新規チャットで新たに送受信されるメッセージは、閲覧後に消えます。</string>
   <string name="ExpireTimerSettingsFragment__when_enabled_new_messages_sent_and_received_in_this_chat_will_disappear_after_they_have_been_seen">有効にすると、このチャットで新たに送受信されたメッセージは、閲覧後に消えます。</string>
@@ -3045,7 +3135,7 @@
   </plurals>
   <string name="ChatColorSelectionFragment__delete_chat_color">チャットの色を削除しますか？</string>
   <!--CustomChatColorCreatorFragment-->
-  <string name="CustomChatColorCreatorFragment__solid">無地</string>
+  <string name="CustomChatColorCreatorFragment__solid">単色</string>
   <string name="CustomChatColorCreatorFragment__gradient">グラデーション</string>
   <string name="CustomChatColorCreatorFragment__hue">色相</string>
   <string name="CustomChatColorCreatorFragment__saturation">彩度</string>
@@ -3077,9 +3167,11 @@
   <string name="AddAProfilePhotoMegaphone__add_photo">画像を追加</string>
   <!--BecomeASustainerMegaphone-->
   <string name="BecomeASustainerMegaphone__become_a_sustainer">サポーターになりませんか</string>
-  <string name="BecomeASustainerMegaphone__signal_is_powered">Signalはユーザーの皆様によって支えられています。ご寄付いただきバッジを獲得してください。</string>
-  <string name="BecomeASustainerMegaphone__no_thanks">今はしない</string>
-  <string name="BecomeASustainerMegaphone__contribute">寄付する</string>
+  <!--Displayed in the Become a Sustainer megaphone-->
+  <string name="BecomeASustainerMegaphone__signal_is_powered_by">Signalは、あなたのようなユーザーの皆様によって支えられています。
+ぜひ寄付をして、バッジを手に入れましょう。</string>
+  <string name="BecomeASustainerMegaphone__not_now">今はしない</string>
+  <string name="BecomeASustainerMegaphone__donate">寄付する</string>
   <!--KeyboardPagerFragment-->
   <string name="KeyboardPagerFragment_emoji">絵文字</string>
   <string name="KeyboardPagerFragment_open_emoji_search">絵文字検索を開く</string>
@@ -3188,9 +3280,13 @@
   <!--ContactSelectionListItem-->
   <string name="ContactSelectionListItem__sms">SMS</string>
   <string name="ContactSelectionListItem__dot_s">· %1$s</string>
+  <!--Displayed in the toolbar when externally sharing text to multiple recipients-->
+  <string name="ShareInterstitialActivity__share">共有</string>
   <!--DSLSettingsToolbar-->
   <string name="DSLSettingsToolbar__navigate_up">上へ</string>
   <string name="MultiselectForwardFragment__forward_to">転送先</string>
+  <!--Displayed when sharing content via the fragment-->
+  <string name="MultiselectForwardFragment__share_with">共有</string>
   <string name="MultiselectForwardFragment__add_a_message">メッセージを追加してください</string>
   <string name="MultiselectForwardFragment__faster_forwards">より速い転送</string>
   <string name="MultiselectForwardFragment__forwarded_messages_are_now">転送メッセージがすぐに送信されるようになりました。</string>
@@ -3247,6 +3343,7 @@
   <string name="SubscribeFragment__signal_is_powered_by_people_like_you">Signalはユーザーの皆様によって支えられています</string>
   <string name="SubscribeFragment__support_technology_that_is_built_for_you">データのためではなく、あなたのために作られた技術を支える人々のコミュニティに参加して、ご支援をお願いします。</string>
   <string name="SubscribeFragment__support_technology_that_is_built_for_you_not">Signalを支えるコミュニティに参加して、データのためではなく、あなたのために作られた技術をサポートしてください。</string>
+  <string name="SubscribeFragment__make_a_recurring_monthly_donation">データ収集のためではなく、ユーザのために作られたアプリを維持するために、毎月の定期的な寄付をお願いします。</string>
   <string name="SubscribeFragment__currency">通貨</string>
   <string name="SubscribeFragment__more_payment_options">その他の決済方法</string>
   <string name="SubscribeFragment__cancel_subscription">サブスクリプションを解除</string>
@@ -3258,19 +3355,16 @@
   <string name="SubscribeFragment__your_subscription_has_been_cancelled">あなたのサブスクリプションは解除されました。</string>
   <string name="SubscribeFragment__update_subscription_question">サブスクリプションを更新しますか？</string>
   <string name="SubscribeFragment__update">更新する</string>
-  <string name="SubscribeFragment__you_will_be_charged_the_full_amount">本日、新しいサブスクリプション料金の全額が請求されます。サブスクリプションは、%1$sに更新されます。</string>
   <string name="SubscribeFragment__you_will_be_charged_the_full_amount_s_of">本日、新しいサブスクリプション価格の全額 (%1$s) が請求されます。あなたのサブスクリプションは毎月更新されます。</string>
   <string name="Subscription__s_per_month">%s/月</string>
   <string name="Subscription__s_per_month_dot_renews_s">%1$s/月 · 更新 %2$s</string>
   <string name="Subscription__s_per_month_dot_expires_s">%1$s/月 · 期限 %2$s</string>
-  <string name="SubscribeLearnMoreBottomSheetDialogFragment__signal_is_a_non_profit_with_no">Signalは、広告主や投資家を持たない非営利団体であり、Signalを利用し、評価くださる方々によって支えられています。毎月の定期的なご寄付をいただき、あなたのご支援を示すプロフィールバッジを受け取ってください。</string>
-  <string name="SubscribeLearnMoreBottomSheetDialogFragment__why_contribute">寄付をお願いする理由</string>
+  <!--First small text blurb on learn more sheet-->
+  <string name="SubscribeLearnMoreBottomSheetDialogFragment__signal_is_a_nonprofit_with_no">Signalは、広告主や投資家を持たない非営利団体であり、ユーザの皆様の寄付によって成り立っています。毎月の定期的な寄付をしていただくと、寄付をしたことを他のユーザに知らせることができる、プロフィールバッジをプレゼントします。</string>
+  <string name="SubscribeLearnMoreBottomSheetDialogFragment__why_donate">寄付をお願いする理由</string>
   <string name="SubscribeLearnMoreBottomSheetDialogFragment__signal_is_committed_to_developing">Signalは、表現の自由を守り、安全なグローバルコミュニケーションを可能にする、オープンソースのプライバシー保護技術の開発に取り組んでいます。</string>
-  <string name="SubscribeLearnMoreBottomSheetDialogFragment__your_contribution">あなたの寄付はこの活動を後押しし、何百万人もの人々がプライベートなコミュニケーションのために使用している、アプリの開発と運営に充てられます。広告はありません。トラッカーもいません。</string>
   <string name="SubscribeThanksForYourSupportBottomSheetDialogFragment__thanks_for_your_support">ご支援をありがとうございます！</string>
   <string name="SubscribeThanksForYourSupportBottomSheetDialogFragment__thanks_for_the_boost">ブーストをありがとうございます！</string>
-  <string name="SubscribeThanksForYourSupportBottomSheetDialogFragment__youve_earned_s_badge_help_signal">%sバッジを獲得しました！このバッジをプロフィールに表示して、Signalの認知度向上に貢献してください。</string>
-  <string name="SubscribeThanksForYourSupportBottomSheetDialogFragment__youve_earned_a_boost_badge_help_signal">ブーストバッジを獲得しました！このバッジをプロフィールに表示して、Signalの認知度向上に貢献してください。</string>
   <string name="SubscribeThanksForYourSupportBottomSheetDialogFragment__you_can_also">また、</string>
   <string name="SubscribeThanksForYourSupportBottomSheetDialogFragment__become_a_montly_sustainer">月次サポーターになることもできます。</string>
   <string name="SubscribeThanksForYourSupportBottomSheetDialogFragment__display_on_profile">プロフィールに表示する</string>
@@ -3279,13 +3373,21 @@
   <string name="ThanksForYourSupportBottomSheetFragment__when_you_have_more">複数のバッジを持っている場合は、自分のプロフィールに表示するバッジを選ぶことができます。</string>
   <string name="BecomeASustainerFragment__get_badges">Signalをサポートすると、あなたのプロフィールにバッジが表示されます。</string>
   <string name="BecomeASustainerFragment__signal_is_a_non_profit">Signalは広告主や投資家を持たない非営利団体で、ユーザーの皆様によって支えられています。</string>
-  <string name="ManageDonationsFragment__my_support">マイサポート</string>
+  <!--Button label for creating a monthly donation-->
+  <!--Heading for more area of manage subscriptions page-->
+  <string name="ManageDonationsFragment__more">その他</string>
+  <!--Heading for receipts area of manage subscriptions page-->
+  <!--Heading for my subscription area of manage subscriptions page-->
   <string name="ManageDonationsFragment__manage_subscription">サブスクリプションの管理</string>
+  <!--Label for Donation Receipts button-->
+  <string name="ManageDonationsFragment__donation_receipts">寄付の領収書</string>
   <string name="ManageDonationsFragment__badges">バッジ</string>
   <string name="ManageDonationsFragment__subscription_faq">サブスクリプションのよくある質問</string>
   <string name="ManageDonationsFragment__error_getting_subscription">サブスクリプションを取得できませんでした。</string>
+  <!--Preference heading for other ways to donate-->
+  <!--Preference label to launch badge gifting-->
   <string name="BoostFragment__give_signal_a_boost">Signalをブーストしましょう</string>
-  <string name="BoostFragment__say_thanks_and_earn">%1$d日間のブーストバッジを獲得しましょう。 </string>
+  <!--Description text in boost sheet-->
   <string name="Boost__enter_custom_amount">金額を入力してください</string>
   <string name="Boost__one_time_contribution">1回限りの寄付</string>
   <string name="MySupportPreference__add_a_signal_boost">Signalブーストを追加</string>
@@ -3295,18 +3397,22 @@
   <!--Displayed on "My Support" screen when user badge failed to be added to their account-->
   <string name="MySupportPreference__couldnt_add_badge_s">バッジを追加できませんでした。%1$s</string>
   <string name="MySupportPreference__please_contact_support">サポートにお問い合わせください。</string>
-  <string name="ExpiredBadgeBottomSheetDialogFragment__your_badge_has_expired">バッジの有効期限が切れました</string>
-  <string name="ExpiredBadgeBottomSheetDialogFragment__badge_expired">バッジが失効しました</string>
-  <string name="ExpiredBadgeBottomSheetDialogFragment__subscription_cancelled">サブスクリプションが解除されました</string>
-  <string name="ExpiredBadgeBottomSheetDialogFragment__your_boost_badge_has_expired">あなたのブーストバッジは有効期限が切れたため、プロフィールには表示されません。</string>
+  <!--Title of expiry sheet when boost badge falls off profile unexpectedly.-->
+  <!--Displayed in the bottom sheet if a monthly donation badge unexpectedly falls off the user\'s profile-->
+  <string name="ExpiredBadgeBottomSheetDialogFragment__monthly_donation_cancelled">月々の寄付をキャンセル</string>
+  <!--Displayed in the bottom sheet when a boost badge expires-->
   <string name="ExpiredBadgeBottomSheetDialogFragment__you_can_reactivate">1回の寄付で、ブーストバッジをさらに30日間有効にすることができます。</string>
-  <string name="ExpiredBadgeBottomSheetDialogFragment__to_continue_supporting_technology">あなたのために作られた技術を継続的にサポートするため、月次サポーターへの登録をご検討ください。</string>
+  <!--Displayed when we do not think the user is a subscriber when their boost expires-->
   <string name="ExpiredBadgeBottomSheetDialogFragment__become_a_sustainer">サポーターになりませんか</string>
   <string name="ExpiredBadgeBottomSheetDialogFragment__add_a_boost">ブーストを追加</string>
   <string name="ExpiredBadgeBottomSheetDialogFragment__not_now">あとで</string>
-  <string name="ExpiredBadgeBottomSheetDialogFragment__your_sustainer">長い間ご利用がなかったため、あなたのサポーターサブスクリプションは自動で解除されました。あなたの%1$sバッジは、プロフィールに表示されなくなっています。</string>
+  <!--Copy displayed when badge expires after user inactivity-->
+  <!--Copy displayed when badge expires after payment failure-->
   <string name="ExpiredBadgeBottomSheetDialogFragment__you_can">Signalは使い続けられますが、アプリのサポートやバッジを再び有効にするには、今すぐ更新してください。</string>
   <string name="ExpiredBadgeBottomSheetDialogFragment__renew_subscription">サブスクリプションを更新</string>
+  <string name="CantProcessSubscriptionPaymentBottomSheetDialogFragment__cant_process_subscription_payment">サブスクリプションの決済処理ができません</string>
+  <string name="CantProcessSubscriptionPaymentBottomSheetDialogFragment__were_having_trouble">Signalサポーターの決済処理に問題があります。あなたの決済方法が最新のものかご確認いただき、Google Payで修正ください。Signalは数日後に決済処理を再開します。</string>
+  <string name="CantProcessSubscriptionPaymentBottomSheetDialogFragment__dont_show_this_again">今後表示しない</string>
   <string name="Subscription__please_contact_support_for_more_information">詳しくはサポートにお問い合わせください。</string>
   <string name="Subscription__contact_support">サポートに問い合わせる</string>
   <string name="Subscription__earn_a_s_badge">%1$sバッジを獲得しましょう</string>
@@ -3319,6 +3425,10 @@
   <string name="DonationsErrors__your_payment">決済処理ができず、課金しませんでした。あとで再度試してください。</string>
   <string name="DonationsErrors__still_processing">処理を継続しています</string>
   <string name="DonationsErrors__couldnt_add_badge">バッジを追加できませんでした</string>
+  <!--Displayed when badge credential couldn\'t be verified-->
+  <!--Displayed when badge credential couldn\'t be verified-->
+  <!--Displayed as title when some generic error happens during gift badge sending-->
+  <!--Displayed as message when some generic error happens during gift badge sending-->
   <string name="DonationsErrors__your_badge_could_not">あなたのアカウントにバッジを追加できませんでしたが、課金はされている可能性があります。お手数ですが、サポートまでお問い合わせください。</string>
   <string name="DonationsErrors__your_payment_is_still">あなたの決済はまだ処理が続いています。接続状況によっては数分かかる場合があります。</string>
   <string name="DonationsErrors__google_pay_unavailable">Google Payを利用できません</string>
@@ -3328,6 +3438,41 @@
   <string name="ViewBadgeBottomSheetDialogFragment__your_device_doesn_t_support_google_pay_so_you_can_t_subscribe_to_earn_a_badge_you_can_still_support_signal_by_making_a_donation_on_our_website">お使いの端末がGoogle Payに対応していないため、バッジを獲得できるサブスクリプションができません。Signalのウェブサイトで寄付ただくことも可能です。</string>
   <string name="NetworkFailure__network_error_check_your_connection_and_try_again">ネットワークエラー。インターネット接続を確認して再度試してください。</string>
   <string name="NetworkFailure__retry">再試行</string>
+  <!--Gift message view title-->
+  <!--Gift message view expiry information-->
+  <!--Gift badge redeem action label-->
+  <!--Gift badge view action label-->
+  <string name="GiftMessageView__view">表示する</string>
+  <!--Gift badge redeeming action label-->
+  <!--Gift badge redeemed label-->
+  <!--Stripe decline code generic_failure-->
+  <string name="DeclineCode__try_another_payment_method_or_contact_your_bank">別の決済方法をお試しいただくか、取引先の銀行にお問い合わせください。</string>
+  <!--Stripe decline code verify on Google Pay and try again-->
+  <string name="DeclineCode__verify_your_payment_method_is_up_to_date_in_google_pay_and_try_again">Google Payの決済方法が最新であるか確認して、再度試してください。</string>
+  <!--Stripe decline code learn more action label-->
+  <string name="DeclineCode__learn_more">さらに詳しく</string>
+  <!--Stripe decline code contact issuer-->
+  <string name="DeclineCode__verify_your_payment_method_is_up_to_date_in_google_pay_and_try_again_if_the_problem">Google Payの決済方法が最新であるか確認して、再度試してください。問題が解消されない場合は、取引先の銀行にお問い合わせください。</string>
+  <!--Stripe decline code purchase not supported-->
+  <string name="DeclineCode__your_card_does_not_support_this_type_of_purchase">あなたのクレジットカードはこの支払いに対応していません。別の決済方法をお試しください。</string>
+  <!--Stripe decline code your card has expired-->
+  <string name="DeclineCode__your_card_has_expired">クレジットカードが失効しています。Google Payで決済方法を更新して、再度試してください。</string>
+  <!--Stripe decline code go to google pay action label-->
+  <string name="DeclineCode__go_to_google_pay">Google Payを開く</string>
+  <!--Stripe decline code incorrect card number-->
+  <string name="DeclineCode__your_card_number_is_incorrect">クレジットカード番号が正しくありません。Google Payで更新して、再度試してください。</string>
+  <!--Stripe decline code incorrect cvc-->
+  <string name="DeclineCode__your_cards_cvc_number_is_incorrect">クレジットカードのセキュリティコードが正しくありません。Google Payで更新して、再度試してください。</string>
+  <!--Stripe decline code insufficient funds-->
+  <string name="DeclineCode__your_card_does_not_have_sufficient_funds">あなたのクレジットカードは残高が不足しています。別の決済方法をお試しください。</string>
+  <!--Stripe decline code incorrect expiration month-->
+  <string name="DeclineCode__the_expiration_month">決済方法の有効期限の月が正しくありません。Google Payで更新して、再度試してください。</string>
+  <!--Stripe decline code incorrect expiration year-->
+  <string name="DeclineCode__the_expiration_year">決済方法の有効期限の年が正しくありません。Google Payで更新して、再度試してください。</string>
+  <!--Stripe decline code issuer not available-->
+  <string name="DeclineCode__try_completing_the_payment_again">再度、決済をお試しいただくか、取引先の銀行にお問い合わせください。</string>
+  <!--Stripe decline code processing error-->
+  <string name="DeclineCode__try_again">再度お試しいただくか、取引先の銀行にお問い合わせください。</string>
   <!--Title of create notification profile screen-->
   <string name="EditNotificationProfileFragment__name_your_profile">プロファイル名の選択</string>
   <!--Hint text for create/edit notification profile name-->
@@ -3458,15 +3603,310 @@
   <string name="NotificationProfileSelection__view_settings">設定</string>
   <!--Descriptor text indicating how long a profile will be on when there is a time component associated with it-->
   <string name="NotificationProfileSelection__on_until_s">%1$sまで有効</string>
-  <!--Title for notification profile megaphone-->
-  <string name="NotificationProfilesMegaphone__notification_profiles">通知プロファイル</string>
-  <!--Description for notification profile megaphone-->
-  <string name="NotificationProfilesMegaphone__only_get_notifications_from_the_people_and_groups_you_choose">通知を受け取りたい相手やグループを限定できます。</string>
-  <!--Call to action button to create a profile from megaphone-->
-  <string name="NotificationProfilesMegaphone__create_a_profile">プロファイルを作成</string>
-  <!--Button to dismiss notification profile megaphone-->
-  <string name="NotificationProfilesMegaphone__not_now">今はしない</string>
   <!--Displayed in a toast when we fail to open the ringtone picker-->
   <string name="NotificationSettingsFragment__failed_to_open_picker">ファイルピッカーを開けませんでした</string>
+  <!--Description shown for the Signal Release Notes channel-->
+  <string name="ReleaseNotes__signal_release_notes_and_news">Signalリリースノート&amp;ニュース</string>
+  <!--Donation receipts activity title-->
+  <string name="DonationReceiptListFragment__all_activity">すべての活動</string>
+  <!--Donation receipts all tab label-->
+  <string name="DonationReceiptListFragment__all">すべて</string>
+  <!--Donation receipts recurring tab label-->
+  <string name="DonationReceiptListFragment__recurring">サブスクリプション</string>
+  <!--Donation receipts one-time tab label-->
+  <string name="DonationReceiptListFragment__one_time">都度</string>
+  <!--Donation receipts gift tab label-->
+  <!--Donation receipts boost row label-->
+  <string name="DonationReceiptListFragment__boost">ブースト</string>
+  <!--Donation receipts details title-->
+  <string name="DonationReceiptDetailsFragment__details">詳細</string>
+  <!--Donation receipts donation type heading-->
+  <string name="DonationReceiptDetailsFragment__donation_type">寄付の種類</string>
+  <!--Donation receipts date paid heading-->
+  <string name="DonationReceiptDetailsFragment__date_paid">支払い日</string>
+  <!--Donation receipts share PNG-->
+  <string name="DonationReceiptDetailsFragment__share_receipt">領収書を共有</string>
+  <!--Donation receipts list end note-->
+  <string name="DonationReceiptListFragment__if_you_have">Signalをインストールし直すと、過去の寄付の領収書を表示できなくなります。</string>
+  <!--Donation receipts document title-->
+  <string name="DonationReceiptDetailsFragment__donation_receipt">寄付の領収書</string>
+  <!--Donation receipts amount title-->
+  <string name="DonationReceiptDetailsFragment__amount">寄付額</string>
+  <!--Donation receipts thanks-->
+  <string name="DonationReceiptDetailsFragment__thank_you_for_supporting">Signalをサポートいただき、ありがとうございます。皆様のご寄付は、表現の自由を守り、世界中の何百万人もの人々に安全なグローバルコミュニケーションを可能にするオープンソースのプライバシー技術の開発というミッションの推進に役立っています。米国にお住まいの方は、この領収書を税務記録のために保管しておいてください。Signal Technology Foundationは、米国内国歳入法第501c3条に基づく非課税の非営利団体です。連邦税IDは82-4506840です。</string>
+  <!--Donation receipt type-->
+  <string name="DonationReceiptDetailsFragment__s_dash_s">%1$s - %2$s</string>
+  <!--region "Stories Tab"-->
+  <!--Label for Chats tab in home app screen-->
+  <string name="ConversationListTabs__chats">チャット</string>
+  <!--Label for Stories tab in home app screen-->
+  <string name="ConversationListTabs__stories">ストーリー</string>
+  <!--String for counts above 99 in conversation list tabs-->
+  <string name="ConversationListTabs__99p">99+</string>
+  <!--Title for "My Stories" row item in Stories landing page-->
+  <string name="StoriesLandingFragment__my_stories">マイストーリー</string>
+  <!--Subtitle for "My Stories" row item when user has not added stories-->
+  <string name="StoriesLandingFragment__add_a_story">ストーリーを追加</string>
+  <!--Displayed when there are no stories to display-->
+  <!--Context menu option to hide a story-->
+  <string name="StoriesLandingItem__hide_story">ストーリーを閉じる</string>
+  <!--Context menu option to unhide a story-->
+  <string name="StoriesLandingItem__unhide_story">ストーリーを再表示</string>
+  <!--Context menu option to forward a story-->
+  <string name="StoriesLandingItem__forward">転送</string>
+  <!--Context menu option to share a story-->
+  <string name="StoriesLandingItem__share">共有…</string>
+  <!--Context menu option to go to story chat-->
+  <string name="StoriesLandingItem__go_to_chat">チャットする</string>
+  <!--Label when a story is pending sending-->
+  <string name="StoriesLandingItem__sending">送信しています…</string>
+  <!--Label when multiple stories are pending sending-->
+  <!--Label when a story fails to send-->
+  <string name="StoriesLandingItem__send_failed">送信に失敗しました。</string>
+  <!--Status label when a story fails to send indicating user action to retry-->
+  <!--Title of dialog confirming decision to hide a story-->
+  <string name="StoriesLandingFragment__hide_story">ストーリーを非表示にしますか？</string>
+  <!--Message of dialog confirming decision to hide a story-->
+  <!--Positive action of dialog confirming decision to hide a story-->
+  <string name="StoriesLandingFragment__hide">閉じる</string>
+  <!--Displayed in Snackbar after story is hidden-->
+  <string name="StoriesLandingFragment__story_hidden">ストーリーを非表示にしました</string>
+  <!--Section header for hidden stories-->
+  <string name="StoriesLandingFragment__hidden_stories">非表示のストーリー</string>
+  <!--Displayed on each sent story under My Stories-->
+  <plurals name="MyStories__d_views">
+    <item quantity="other">閲覧 %1$d件</item>
+  </plurals>
+  <!--Forward story label, displayed in My Stories context menu-->
+  <string name="MyStories_forward">転送</string>
+  <!--Label for stories for a single user. Format is {given name}\'s Story-->
+  <string name="MyStories__ss_story">%1$s ストーリー</string>
+  <!--Title of dialog to confirm deletion of story-->
+  <string name="MyStories__delete_story">ストーリーを削除しますか？</string>
+  <!--Message of dialog to confirm deletion of story-->
+  <string name="MyStories__this_story_will_be_deleted">このストーリーは、あなたと受け取ったすべての人から削除されます。</string>
+  <!--Displayed at bottom of story viewer when current item has views-->
+  <plurals name="StoryViewerFragment__d_views">
+    <item quantity="other">閲覧 %1$d件</item>
+  </plurals>
+  <!--Displayed at bottom of story viewer when current item has replies-->
+  <plurals name="StoryViewerFragment__d_replies">
+    <item quantity="other">返信 %1$d件</item>
+  </plurals>
+  <!--Used to join views and replies when both exist on a story item-->
+  <string name="StoryViewerFragment__s_s">%1$s %2$s</string>
+  <!--Displayed when viewing a post you sent-->
+  <string name="StoryViewerPageFragment__you">あなた</string>
+  <!--Displayed when viewing a post displayed to a group-->
+  <string name="StoryViewerPageFragment__s_to_s">%1$s から %2$s</string>
+  <!--Displayed when viewing a post from another user with no replies-->
+  <string name="StoryViewerPageFragment__reply">返信</string>
+  <!--Displayed when a story has no views-->
+  <string name="StoryViewsFragment__no_views_yet">閲覧 なし</string>
+  <!--Displayed when a story has no replies yet-->
+  <string name="StoryGroupReplyFragment__no_replies_yet">返信 なし</string>
+  <!--Displayed for each user that reacted to a story when viewing replies-->
+  <string name="StoryGroupReactionReplyItem__reacted_to_the_story">ストーリーにリアクションがありました</string>
+  <!--Label for story views tab-->
+  <string name="StoryViewsAndRepliesDialogFragment__views">閲覧</string>
+  <!--Label for story replies tab-->
+  <string name="StoryViewsAndRepliesDialogFragment__replies">返信</string>
+  <!--Description of action for reaction button-->
+  <string name="StoryReplyComposer__react_to_this_story">ストーリーにリアクション</string>
+  <!--Displayed when the user is replying privately to someone who replied to one of their stories-->
+  <string name="StoryReplyComposer__replying_privately_to_s">%1$s に個人的に返信しています</string>
+  <!--Context menu item to privately reply to a story response-->
+  <string name="StoryGroupReplyItem__private_reply">プライベートに返信</string>
+  <!--Context menu item to copy a story response-->
+  <string name="StoryGroupReplyItem__copy">コピー</string>
+  <!--Context menu item to delete a story response-->
+  <string name="StoryGroupReplyItem__delete">削除</string>
+  <!--Story settings page title-->
+  <string name="StorySettingsFragment__story_settings">ストーリーの設定</string>
+  <!--Story settings private stories heading-->
+  <string name="StorySettingsFragment__private_stories">プライベートストーリー</string>
+  <!--Note at bottom of story settings regarding who can see private stories.-->
+  <!--Option label for creating a new private story-->
+  <string name="StorySettingsFragment__new_private_story">新規プライベートストーリー</string>
+  <!--Page title for My Story options-->
+  <string name="MyStorySettingsFragment__my_story">マイストーリー</string>
+  <!--Section heading for story visibility-->
+  <string name="MyStorySettingsFragment__who_can_see_this_story">ストーリーを閲覧できる人</string>
+  <!--Clickable option for selecting people to hide your story from-->
+  <!--Summary of clickable option displaying how many people you have hidden your story from-->
+  <plurals name="MyStorySettingsFragment__d_people">
+    <item quantity="other">%1$d人</item>
+  </plurals>
+  <!--Section header for options related to replies and reactions-->
+  <string name="MyStorySettingsFragment__replies_amp_reactions">返信とリアクション</string>
+  <!--Switchable option for allowing replies and reactions on your stories-->
+  <string name="MyStorySettingsFragment__allow_replies_amp_reactions">返信とリアクションを許可する</string>
+  <!--Summary for switchable option allowing replies and reactions on your story-->
+  <string name="MyStorySettingsFragment__let_people_who_can_view_your_story_react_and_reply">あなたのストーリーを閲覧可能なユーザーに返信とリアクションを許可します</string>
+  <!--Note about default sharing-->
+  <!--Signal connections linked text that opens the Signal Connections sheet-->
+  <!--Displayed at the top of the signal connections sheet. Please remember to insert strong tag as required.-->
+  <!--Signal connections sheet bullet point 1-->
+  <string name="SignalConnectionsBottomSheet__starting_a_conversation">チャットを開始</string>
+  <!--Signal connections sheet bullet point 2-->
+  <string name="SignalConnectionsBottomSheet__accepting_a_message_request">メッセージ申請を承認しています</string>
+  <!--Signal connections sheet bullet point 3-->
+  <!--Note at the bottom of the Signal connections sheet-->
+  <!--Clickable option to add a viewer to a private story-->
+  <string name="PrivateStorySettingsFragment__add_viewer">閲覧できる人を追加</string>
+  <!--Clickable option to delete a custom story-->
+  <string name="PrivateStorySettingsFragment__delete_private_story">プライベートストーリーを削除</string>
+  <!--Dialog title when attempting to remove someone from a private story-->
+  <string name="PrivateStorySettingsFragment__remove_s">%1$s を削除しますか？</string>
+  <!--Dialog message when attempting to remove someone from a private story-->
+  <string name="PrivateStorySettingsFragment__this_person_will_no_longer">このユーザーは、あなたのストーリを見ることができなくなります。</string>
+  <!--Positive action label when attempting to remove someone from a private story-->
+  <string name="PrivateStorySettingsFragment__remove">削除</string>
+  <!--Dialog title when deleting a private story-->
+  <string name="PrivateStorySettingsFragment__are_you_sure">本当に削除しますか？</string>
+  <!--Dialog message when deleting a private story-->
+  <string name="PrivateStorySettingsFragment__this_action_cannot">削除すると復元することはできません。</string>
+  <!--Page title for editing a private story name-->
+  <string name="EditPrivateStoryNameFragment__edit_story_name">ストーリーの題名を編集</string>
+  <!--Input field hint when editing a private story name-->
+  <string name="EditPrivateStoryNameFragment__story_name">ストーリーの題名</string>
+  <!--Save button label when editing a private story name-->
+  <string name="EditPrivateStoryNameFragment__save">保存</string>
+  <!--Displayed in text post creator before user enters text-->
+  <string name="TextStoryPostCreationFragment__tap_to_add_text">タップしてテキストを追加</string>
+  <!--Button label for changing font when creating a text post-->
+  <string name="TextStoryPostTextEntryFragment__aa">Aa</string>
+  <!--Displayed in text post creator when prompting user to enter text-->
+  <string name="TextStoryPostTextEntryFragment__add_text">テキストを追加</string>
+  <!--Content description for \'done\' button when adding text to a story post-->
+  <string name="TextStoryPostTextEntryFragment__done_adding_text">テキストを追加しました</string>
+  <!--Text label for media selection toggle-->
+  <string name="MediaSelectionActivity__text">テキスト</string>
+  <!--Camera label for media selection toggle-->
+  <string name="MediaSelectionActivity__camera">カメラ</string>
+  <!--Hint for entering a URL for a text post-->
+  <string name="TextStoryPostLinkEntryFragment__type_or_paste_a_url">URLを入力するか貼り付けてください</string>
+  <!--Displayed prior to the user entering a URL for a text post-->
+  <!--Hint text for searching for a story text post recipient.-->
+  <string name="TextStoryPostSendFragment__search">検索</string>
+  <!--Title for screen allowing user to hide "My Story" entries from specific people-->
+  <!--Done button label for hide story from screen-->
+  <string name="HideStoryFromFragment__done">完了</string>
+  <!--Dialog title for first time adding something to a story-->
+  <string name="StoryDialogs__add_to_story_q">ストーリーに追加しますか？</string>
+  <!--Dialog message for first time adding something to a story-->
+  <string name="StoryDialogs__adding_content">ストーリーにコンテンツを追加すると、Signalのユーザーは24時間閲覧できます。ストーリーを閲覧できるユーザーは、設定で変更できます。</string>
+  <!--First time share to story dialog: Positive action to go ahead and add to story-->
+  <string name="StoryDialogs__add_to_story">ストーリーに追加</string>
+  <!--First time share to story dialog: Neutral action to edit who can view "My Story"-->
+  <string name="StoryDialogs__edit_viewers">閲覧者を編集</string>
+  <!--Error message shown when a failure occurs during story send-->
+  <!--Error message dialog button to resend a previously failed story send-->
+  <string name="StoryDialogs__send">送信する</string>
+  <!--Privacy Settings toggle title for stories-->
+  <string name="PrivacySettingsFragment__share_and_view_stories">ストーリーの共有と閲覧</string>
+  <!--Privacy Settings toggle summary for stories-->
+  <string name="PrivacySettingsFragment__you_will_no_longer_be_able">このオプションをオフにすると、ストーリーの共有や閲覧ができなくなります。</string>
+  <!--New story viewer selection screen title-->
+  <string name="CreateStoryViewerSelectionFragment__choose_viewers">閲覧できる人を選択</string>
+  <!--New story viewer selection action button label-->
+  <string name="CreateStoryViewerSelectionFragment__next">次へ</string>
+  <!--New story viewer selection screen title as recipients are selected-->
+  <plurals name="SelectViewersFragment__d_viewers">
+    <item quantity="other">閲覧者 %1$d人</item>
+  </plurals>
+  <!--Name story screen title-->
+  <!--Name story screen label hint-->
+  <string name="CreateStoryWithViewersFragment__story_name_required">ストーリー名 (必須)</string>
+  <!--Name story screen viewers subheading-->
+  <string name="CreateStoryWithViewersFragment__viewers">閲覧者</string>
+  <!--Name story screen create button label-->
+  <string name="CreateStoryWithViewersFragment__create">作成</string>
+  <!--Name story screen error when save attempted with no label-->
+  <string name="CreateStoryWithViewersFragment__this_field_is_required">この項目は必須です。</string>
+  <!--Name story screen error when save attempted but label is duplicate-->
+  <string name="CreateStoryWithViewersFragment__there_is_already_a_story_with_this_name">このストーリー名はすでに存在します。</string>
+  <!--Text for select all action when editing recipients for a story-->
+  <string name="BaseStoryRecipientSelectionFragment__select_all">すべて選択</string>
+  <!--Choose story type bottom sheet title-->
+  <string name="ChooseStoryTypeBottomSheet__choose_your_story_type">ストーリーの種類</string>
+  <!--Choose story type bottom sheet new story row title-->
+  <string name="ChooseStoryTypeBottomSheet__new_private_story">新規プライベートストーリー</string>
+  <!--Choose story type bottom sheet new story row summary-->
+  <string name="ChooseStoryTypeBottomSheet__visible_only_to">特定のユーザーのみ閲覧可能</string>
+  <!--Choose story type bottom sheet group story title-->
+  <string name="ChooseStoryTypeBottomSheet__group_story">グループストーリー</string>
+  <!--Choose story type bottom sheet group story summary-->
+  <string name="ChooseStoryTypeBottomSheet__share_to_an_existing_group">既存のグループに共有</string>
+  <!--Choose groups bottom sheet title-->
+  <string name="ChooseGroupStoryBottomSheet__choose_groups">グループを選択</string>
+  <!--Displayed when copying group story reply text to clipboard-->
+  <string name="StoryGroupReplyFragment__copied_to_clipboard">クリップボードにコピーしました</string>
+  <!--Displayed in story caption when content is longer than 5 lines-->
+  <string name="StoryViewerPageFragment__see_more">…続き</string>
+  <!--Displayed in toast after sending a direct reply-->
+  <string name="StoryDirectReplyDialogFragment__reply_sent">返信を送信しました</string>
+  <!--Displayed in toast after sending a direct reaction-->
+  <string name="StoryDirectReplyDialogFragment__reaction_sent">リアクションを送信しました</string>
+  <!--Displayed in the viewer when a story is no longer available-->
+  <string name="StorySlateView__this_story_is_no_longer_available">このストーリーはすでに削除されています。</string>
+  <!--Displayed in the viewer when the network is not available-->
+  <string name="StorySlateView__no_internet_connection">インターネット接続がありません</string>
+  <!--Displayed in the viewer when network is available but content could not be downloaded-->
+  <string name="StorySlateView__couldnt_load_content">コンテンツを読み込めませんでした</string>
+  <!--Toasted when the user externally shares to a text story successfully-->
+  <!--Toasted when the user external share to a text story fails-->
+  <!--Displayed in a dialog to let the user select a given users story-->
+  <!--Displayed in a dialog to let the user select a given users profile photo-->
+  <!--Title for a notification at the bottom of the chat list suggesting that the user disable censorship circumvention because the service has become reachable-->
+  <string name="TurnOffCircumventionMegaphone_turn_off_censorship_circumvention">検閲回避を無効にしますか？</string>
+  <!--Body for a notification at the bottom of the chat list suggesting that the user disable censorship circumvention because the service has become reachable-->
+  <string name="TurnOffCircumventionMegaphone_you_can_now_connect_to_the_signal_service_directly">Signalのサービスに直接接続して、より快適にご利用いただけるようになりました。</string>
+  <!--Label for a button to dismiss a notification at the bottom of the chat list suggesting that the user disable censorship circumvention because the service has become reachable-->
+  <string name="TurnOffCircumventionMegaphone_no_thanks">今はしない</string>
+  <!--Label for a button in a notification at the bottom of the chat list to turn off censorship circumvention-->
+  <string name="TurnOffCircumventionMegaphone_turn_off">無効にする</string>
+  <!--Conversation Item label for when you react to someone else\'s story-->
+  <string name="ConversationItem__you_reacted_to_s_story">%1$s のストーリーにリアクションしました</string>
+  <!--Conversation Item label for reactions to your story-->
+  <string name="ConversationItem__reacted_to_your_story">あなたのストーリーにリアクションされました</string>
+  <!--Conversation Item label for reactions to an unavailable story-->
+  <string name="ConversationItem__reacted_to_a_story">ストーリーにリアクションがありました</string>
+  <!--endregion-->
+  <!--Content description for expand contacts chevron-->
+  <string name="ExpandModel__view_more">続き</string>
+  <string name="StoriesLinkPopup__visit_link">表示</string>
+  <!--Tagline for gift row items-->
+  <!--Headline text on start fragment for gifting a badge-->
+  <!--Description text on start fragment for gifting a badge-->
+  <!--Action button label for start fragment for gifting a badge-->
+  <string name="GiftFlowStartFragment__next">次へ</string>
+  <!--Title text on choose recipient page for badge gifting-->
+  <!--Title text on confirm gift page-->
+  <!--Heading text specifying who the gift will be sent to-->
+  <string name="GiftFlowConfirmationFragment__send_to">宛先</string>
+  <!--Text explaining that gift will be sent to the chosen recipient-->
+  <!--Text explaining that this gift is a one time donation-->
+  <string name="GiftFlowConfirmationFragment__one_time_donation">1回の寄付</string>
+  <!--Hint for add message input-->
+  <string name="GiftFlowConfirmationFragment__add_a_message">メッセージを追加してください</string>
+  <!--Title for sheet shown when opening a redeemed gift-->
+  <!--Title for sheet shown when opening a sent gift-->
+  <string name="ViewSentGiftBottomSheet__thanks_for_your_support">ご支援をありがとうございます！</string>
+  <!--Description for sheet shown when opening a redeemed gift-->
+  <!--Description for sheet shown when opening a sent gift-->
+  <!--Primary action for pending gift sheet to redeem badge now-->
+  <!--Primary action for pending gift sheet to redeem badge later-->
+  <string name="ViewReceivedGiftSheet__not_now">今はしない</string>
+  <!--Dialog text while redeeming a gift-->
+  <!--Snackbar text when user presses "not now" on redemption sheet-->
+  <!--Description text in gift thanks sheet-->
+  <!--Expired gift sheet title-->
+  <!--Expired gift sheet top description text-->
+  <!--Expired gift sheet bottom description text-->
+  <string name="ExpiredGiftSheetConfiguration__to_continue">あなたのために作られた技術を継続的にサポートするため、月次サポーターへの登録をご検討ください。</string>
+  <!--Expired gift sheet make a monthly donation button-->
+  <!--Expired gift sheet not now button-->
+  <string name="ExpiredGiftSheetConfiguration__not_now">今はしない</string>
   <!--EOF-->
 </resources>

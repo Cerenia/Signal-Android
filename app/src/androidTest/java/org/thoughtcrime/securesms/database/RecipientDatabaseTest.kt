@@ -8,6 +8,9 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.signal.core.util.ThreadUtil
+import org.thoughtcrime.securesms.dependencies.ApplicationDependencies
+import org.thoughtcrime.securesms.jobs.RecipientChangedNumberJob
 import org.thoughtcrime.securesms.keyvalue.AccountValues
 import org.thoughtcrime.securesms.keyvalue.KeyValueDataSet
 import org.thoughtcrime.securesms.keyvalue.KeyValueStore
@@ -15,9 +18,9 @@ import org.thoughtcrime.securesms.keyvalue.MockKeyValuePersistentStorage
 import org.thoughtcrime.securesms.keyvalue.SignalStore
 import org.thoughtcrime.securesms.recipients.Recipient
 import org.thoughtcrime.securesms.recipients.RecipientId
-import org.whispersystems.libsignal.util.guava.Optional
 import org.whispersystems.signalservice.api.push.ACI
-import java.lang.IllegalArgumentException
+import org.whispersystems.signalservice.api.push.PNI
+import java.util.Optional
 import java.util.UUID
 
 @RunWith(AndroidJUnit4::class)
@@ -25,10 +28,16 @@ class RecipientDatabaseTest {
 
   private lateinit var recipientDatabase: RecipientDatabase
 
+  private val localAci = ACI.from(UUID.randomUUID())
+  private val localPni = PNI.from(UUID.randomUUID())
+
   @Before
   fun setup() {
     recipientDatabase = SignalDatabase.recipients
     ensureDbEmpty()
+
+    SignalStore.account().setAci(localAci)
+    SignalStore.account().setPni(localPni)
   }
 
   // ==============================================================
@@ -41,7 +50,7 @@ class RecipientDatabaseTest {
     val recipientId: RecipientId = recipientDatabase.getAndPossiblyMerge(ACI_A, null, true)
 
     val recipient = Recipient.resolved(recipientId)
-    assertEquals(ACI_A, recipient.requireAci())
+    assertEquals(ACI_A, recipient.requireServiceId())
     assertFalse(recipient.hasE164())
   }
 
@@ -51,7 +60,7 @@ class RecipientDatabaseTest {
     val recipientId: RecipientId = recipientDatabase.getAndPossiblyMerge(ACI_A, null, false)
 
     val recipient = Recipient.resolved(recipientId)
-    assertEquals(ACI_A, recipient.requireAci())
+    assertEquals(ACI_A, recipient.requireServiceId())
     assertFalse(recipient.hasE164())
   }
 
@@ -62,7 +71,7 @@ class RecipientDatabaseTest {
 
     val recipient = Recipient.resolved(recipientId)
     assertEquals(E164_A, recipient.requireE164())
-    assertFalse(recipient.hasAci())
+    assertFalse(recipient.hasServiceId())
   }
 
   /** If all you have is an E164, you can just store that, regardless of trust level. */
@@ -72,7 +81,7 @@ class RecipientDatabaseTest {
 
     val recipient = Recipient.resolved(recipientId)
     assertEquals(E164_A, recipient.requireE164())
-    assertFalse(recipient.hasAci())
+    assertFalse(recipient.hasServiceId())
   }
 
   /** With high trust, you can associate an ACI-e164 pair. */
@@ -81,7 +90,7 @@ class RecipientDatabaseTest {
     val recipientId: RecipientId = recipientDatabase.getAndPossiblyMerge(ACI_A, E164_A, true)
 
     val recipient = Recipient.resolved(recipientId)
-    assertEquals(ACI_A, recipient.requireAci())
+    assertEquals(ACI_A, recipient.requireServiceId())
     assertEquals(E164_A, recipient.requireE164())
   }
 
@@ -91,7 +100,7 @@ class RecipientDatabaseTest {
     val recipientId: RecipientId = recipientDatabase.getAndPossiblyMerge(ACI_A, E164_A, false)
 
     val recipient = Recipient.resolved(recipientId)
-    assertEquals(ACI_A, recipient.requireAci())
+    assertEquals(ACI_A, recipient.requireServiceId())
     assertFalse(recipient.hasE164())
   }
 
@@ -102,26 +111,26 @@ class RecipientDatabaseTest {
   /** With high trust, you can associate an e164 with an existing ACI. */
   @Test
   fun getAndPossiblyMerge_aciMapsToExistingUserButE164DoesNot_aciAndE164_highTrust() {
-    val existingId: RecipientId = recipientDatabase.getOrInsertFromAci(ACI_A)
+    val existingId: RecipientId = recipientDatabase.getOrInsertFromServiceId(ACI_A)
 
     val retrievedId: RecipientId = recipientDatabase.getAndPossiblyMerge(ACI_A, E164_A, true)
     assertEquals(existingId, retrievedId)
 
     val retrievedRecipient = Recipient.resolved(retrievedId)
-    assertEquals(ACI_A, retrievedRecipient.requireAci())
+    assertEquals(ACI_A, retrievedRecipient.requireServiceId())
     assertEquals(E164_A, retrievedRecipient.requireE164())
   }
 
   /** With low trust, you cannot associate an ACI-e164 pair, and therefore cannot store the e164. */
   @Test
   fun getAndPossiblyMerge_aciMapsToExistingUserButE164DoesNot_aciAndE164_lowTrust() {
-    val existingId: RecipientId = recipientDatabase.getOrInsertFromAci(ACI_A)
+    val existingId: RecipientId = recipientDatabase.getOrInsertFromServiceId(ACI_A)
 
     val retrievedId: RecipientId = recipientDatabase.getAndPossiblyMerge(ACI_A, E164_A, false)
     assertEquals(existingId, retrievedId)
 
     val retrievedRecipient = Recipient.resolved(retrievedId)
-    assertEquals(ACI_A, retrievedRecipient.requireAci())
+    assertEquals(ACI_A, retrievedRecipient.requireServiceId())
     assertFalse(retrievedRecipient.hasE164())
   }
 
@@ -134,7 +143,7 @@ class RecipientDatabaseTest {
     assertEquals(existingId, retrievedId)
 
     val retrievedRecipient = Recipient.resolved(retrievedId)
-    assertEquals(ACI_A, retrievedRecipient.requireAci())
+    assertEquals(ACI_A, retrievedRecipient.requireServiceId())
     assertEquals(E164_B, retrievedRecipient.requireE164())
   }
 
@@ -147,7 +156,7 @@ class RecipientDatabaseTest {
     assertEquals(existingId, retrievedId)
 
     val retrievedRecipient = Recipient.resolved(retrievedId)
-    assertEquals(ACI_A, retrievedRecipient.requireAci())
+    assertEquals(ACI_A, retrievedRecipient.requireServiceId())
     assertEquals(E164_A, retrievedRecipient.requireE164())
   }
 
@@ -164,7 +173,7 @@ class RecipientDatabaseTest {
     assertEquals(existingId, retrievedId)
 
     val retrievedRecipient = Recipient.resolved(retrievedId)
-    assertEquals(ACI_A, retrievedRecipient.requireAci())
+    assertEquals(ACI_A, retrievedRecipient.requireServiceId())
     assertEquals(E164_A, retrievedRecipient.requireE164())
   }
 
@@ -177,28 +186,30 @@ class RecipientDatabaseTest {
     assertNotEquals(existingId, retrievedId)
 
     val retrievedRecipient = Recipient.resolved(retrievedId)
-    assertEquals(ACI_A, retrievedRecipient.requireAci())
+    assertEquals(ACI_A, retrievedRecipient.requireServiceId())
     assertFalse(retrievedRecipient.hasE164())
 
     val existingRecipient = Recipient.resolved(existingId)
     assertEquals(E164_A, existingRecipient.requireE164())
-    assertFalse(existingRecipient.hasAci())
+    assertFalse(existingRecipient.hasServiceId())
   }
 
   /** We never change the ACI of an existing row. New ACI = new person, regardless of trust. But high trust lets us take the e164 from the current holder. */
   @Test
   fun getAndPossiblyMerge_e164MapsToExistingUserButAciDoesNot_aciAndE164_2_highTrust() {
     val existingId: RecipientId = recipientDatabase.getAndPossiblyMerge(ACI_A, E164_A, true)
+    recipientDatabase.setPni(existingId, PNI_A)
 
     val retrievedId: RecipientId = recipientDatabase.getAndPossiblyMerge(ACI_B, E164_A, true)
+    recipientDatabase.setPni(retrievedId, PNI_A)
     assertNotEquals(existingId, retrievedId)
 
     val retrievedRecipient = Recipient.resolved(retrievedId)
-    assertEquals(ACI_B, retrievedRecipient.requireAci())
+    assertEquals(ACI_B, retrievedRecipient.requireServiceId())
     assertEquals(E164_A, retrievedRecipient.requireE164())
 
     val existingRecipient = Recipient.resolved(existingId)
-    assertEquals(ACI_A, existingRecipient.requireAci())
+    assertEquals(ACI_A, existingRecipient.requireServiceId())
     assertFalse(existingRecipient.hasE164())
   }
 
@@ -211,11 +222,11 @@ class RecipientDatabaseTest {
     assertNotEquals(existingId, retrievedId)
 
     val retrievedRecipient = Recipient.resolved(retrievedId)
-    assertEquals(ACI_B, retrievedRecipient.requireAci())
+    assertEquals(ACI_B, retrievedRecipient.requireServiceId())
     assertFalse(retrievedRecipient.hasE164())
 
     val existingRecipient = Recipient.resolved(existingId)
-    assertEquals(ACI_A, existingRecipient.requireAci())
+    assertEquals(ACI_A, existingRecipient.requireServiceId())
     assertEquals(E164_A, existingRecipient.requireE164())
   }
 
@@ -234,11 +245,11 @@ class RecipientDatabaseTest {
     assertNotEquals(existingId, retrievedId)
 
     val retrievedRecipient = Recipient.resolved(retrievedId)
-    assertEquals(ACI_B, retrievedRecipient.requireAci())
+    assertEquals(ACI_B, retrievedRecipient.requireServiceId())
     assertFalse(retrievedRecipient.hasE164())
 
     val existingRecipient = Recipient.resolved(existingId)
-    assertEquals(ACI_A, existingRecipient.requireAci())
+    assertEquals(ACI_A, existingRecipient.requireServiceId())
     assertEquals(E164_A, existingRecipient.requireE164())
   }
 
@@ -255,48 +266,80 @@ class RecipientDatabaseTest {
     assertEquals(existingId, retrievedId)
 
     val retrievedRecipient = Recipient.resolved(retrievedId)
-    assertEquals(ACI_A, retrievedRecipient.requireAci())
+    assertEquals(ACI_A, retrievedRecipient.requireServiceId())
     assertEquals(E164_A, retrievedRecipient.requireE164())
   }
 
   /** High trust lets you merge two different users into one. You should prefer the ACI user. Not shown: merging threads, dropping e164 sessions, etc. */
   @Test
   fun getAndPossiblyMerge_bothAciAndE164MapToExistingUser_aciAndE164_merge_highTrust() {
-    val existingAciId: RecipientId = recipientDatabase.getOrInsertFromAci(ACI_A)
-    val existingE164Id: RecipientId = recipientDatabase.getOrInsertFromE164(E164_A)
+    val changeNumberListener = ChangeNumberListener()
+    changeNumberListener.enqueue()
+
+    val existingAciId: RecipientId = recipientDatabase.getAndPossiblyMerge(ACI_A, null, true)
+    val existingE164Id: RecipientId = recipientDatabase.getAndPossiblyMerge(null, E164_A, true)
 
     val retrievedId: RecipientId = recipientDatabase.getAndPossiblyMerge(ACI_A, E164_A, true)
     assertEquals(existingAciId, retrievedId)
 
     val retrievedRecipient = Recipient.resolved(retrievedId)
-    assertEquals(ACI_A, retrievedRecipient.requireAci())
+    assertEquals(ACI_A, retrievedRecipient.requireServiceId())
     assertEquals(E164_A, retrievedRecipient.requireE164())
 
     val existingE164Recipient = Recipient.resolved(existingE164Id)
     assertEquals(retrievedId, existingE164Recipient.id)
+
+    changeNumberListener.waitForJobManager()
+    assertFalse(changeNumberListener.numberChangeWasEnqueued)
+  }
+
+  /** Same as [getAndPossiblyMerge_bothAciAndE164MapToExistingUser_aciAndE164_merge_highTrust], but with a number change. */
+  @Test
+  fun getAndPossiblyMerge_bothAciAndE164MapToExistingUser_aciAndE164_merge_highTrust_changedNumber() {
+    val changeNumberListener = ChangeNumberListener()
+    changeNumberListener.enqueue()
+
+    val existingAciId: RecipientId = recipientDatabase.getAndPossiblyMerge(ACI_A, E164_B, true)
+    val existingE164Id: RecipientId = recipientDatabase.getAndPossiblyMerge(null, E164_A, true)
+
+    val retrievedId: RecipientId = recipientDatabase.getAndPossiblyMerge(ACI_A, E164_A, true)
+    assertEquals(existingAciId, retrievedId)
+
+    val retrievedRecipient = Recipient.resolved(retrievedId)
+    assertEquals(ACI_A, retrievedRecipient.requireServiceId())
+    assertEquals(E164_A, retrievedRecipient.requireE164())
+
+    val existingE164Recipient = Recipient.resolved(existingE164Id)
+    assertEquals(retrievedId, existingE164Recipient.id)
+
+    changeNumberListener.waitForJobManager()
+    assert(changeNumberListener.numberChangeWasEnqueued)
   }
 
   /** Low trust means you can’t merge. If you’re retrieving a user from the table with this data, prefer the ACI one. */
   @Test
   fun getAndPossiblyMerge_bothAciAndE164MapToExistingUser_aciAndE164_lowTrust() {
-    val existingAciId: RecipientId = recipientDatabase.getOrInsertFromAci(ACI_A)
+    val existingAciId: RecipientId = recipientDatabase.getOrInsertFromServiceId(ACI_A)
     val existingE164Id: RecipientId = recipientDatabase.getOrInsertFromE164(E164_A)
 
     val retrievedId: RecipientId = recipientDatabase.getAndPossiblyMerge(ACI_A, E164_A, false)
     assertEquals(existingAciId, retrievedId)
 
     val retrievedRecipient = Recipient.resolved(retrievedId)
-    assertEquals(ACI_A, retrievedRecipient.requireAci())
+    assertEquals(ACI_A, retrievedRecipient.requireServiceId())
     assertFalse(retrievedRecipient.hasE164())
 
     val existingE164Recipient = Recipient.resolved(existingE164Id)
     assertEquals(E164_A, existingE164Recipient.requireE164())
-    assertFalse(existingE164Recipient.hasAci())
+    assertFalse(existingE164Recipient.hasServiceId())
   }
 
   /** Another high trust case. No new rules here, just a more complex scenario to show how different rules interact. */
   @Test
   fun getAndPossiblyMerge_bothAciAndE164MapToExistingUser_aciAndE164_complex_highTrust() {
+    val changeNumberListener = ChangeNumberListener()
+    changeNumberListener.enqueue()
+
     val existingId1: RecipientId = recipientDatabase.getAndPossiblyMerge(ACI_A, E164_B, true)
     val existingId2: RecipientId = recipientDatabase.getAndPossiblyMerge(ACI_B, E164_A, true)
 
@@ -304,12 +347,14 @@ class RecipientDatabaseTest {
     assertEquals(existingId1, retrievedId)
 
     val retrievedRecipient = Recipient.resolved(retrievedId)
-    assertEquals(ACI_A, retrievedRecipient.requireAci())
+    assertEquals(ACI_A, retrievedRecipient.requireServiceId())
     assertEquals(E164_A, retrievedRecipient.requireE164())
 
     val existingRecipient2 = Recipient.resolved(existingId2)
-    assertEquals(ACI_B, existingRecipient2.requireAci())
+    assertEquals(ACI_B, existingRecipient2.requireServiceId())
     assertFalse(existingRecipient2.hasE164())
+
+    assert(changeNumberListener.numberChangeWasEnqueued)
   }
 
   /** Another low trust case. No new rules here, just a more complex scenario to show how different rules interact. */
@@ -322,11 +367,11 @@ class RecipientDatabaseTest {
     assertEquals(existingId1, retrievedId)
 
     val retrievedRecipient = Recipient.resolved(retrievedId)
-    assertEquals(ACI_A, retrievedRecipient.requireAci())
+    assertEquals(ACI_A, retrievedRecipient.requireServiceId())
     assertEquals(E164_B, retrievedRecipient.requireE164())
 
     val existingRecipient2 = Recipient.resolved(existingId2)
-    assertEquals(ACI_B, existingRecipient2.requireAci())
+    assertEquals(ACI_B, existingRecipient2.requireServiceId())
     assertEquals(E164_A, existingRecipient2.requireE164())
   }
 
@@ -343,7 +388,7 @@ class RecipientDatabaseTest {
     assertEquals(existingId1, retrievedId)
 
     val retrievedRecipient = Recipient.resolved(retrievedId)
-    assertEquals(ACI_A, retrievedRecipient.requireAci())
+    assertEquals(ACI_A, retrievedRecipient.requireServiceId())
     assertEquals(E164_A, retrievedRecipient.requireE164())
 
     assertFalse(recipientDatabase.getByE164(E164_B).isPresent)
@@ -368,12 +413,69 @@ class RecipientDatabaseTest {
     assertEquals(existingId2, retrievedId)
 
     val retrievedRecipient = Recipient.resolved(retrievedId)
-    assertEquals(ACI_A, retrievedRecipient.requireAci())
+    assertEquals(ACI_A, retrievedRecipient.requireServiceId())
     assertFalse(retrievedRecipient.hasE164())
 
     val recipientWithId1 = Recipient.resolved(existingId1)
-    assertEquals(ACI_B, recipientWithId1.requireAci())
+    assertEquals(ACI_B, recipientWithId1.requireServiceId())
     assertEquals(E164_A, recipientWithId1.requireE164())
+  }
+
+  /** This is a case where normally we'd update the E164 of a user, but here the changeSelf flag is disabled, so we shouldn't. */
+  @Test
+  fun getAndPossiblyMerge_aciMapsToExistingUserButE164DoesNot_aciBelongsToLocalUser_highTrust_changeSelfFalse() {
+    val dataSet = KeyValueDataSet().apply {
+      putString(AccountValues.KEY_E164, E164_A)
+      putString(AccountValues.KEY_ACI, ACI_A.toString())
+    }
+    SignalStore.inject(KeyValueStore(MockKeyValuePersistentStorage.withDataSet(dataSet)))
+
+    val existingId: RecipientId = recipientDatabase.getAndPossiblyMerge(ACI_A, E164_A, true)
+
+    val retrievedId: RecipientId = recipientDatabase.getAndPossiblyMerge(ACI_A, E164_B, highTrust = true, changeSelf = false)
+    assertEquals(existingId, retrievedId)
+
+    val retrievedRecipient = Recipient.resolved(retrievedId)
+    assertEquals(ACI_A, retrievedRecipient.requireServiceId())
+    assertEquals(E164_A, retrievedRecipient.requireE164())
+  }
+
+  /** This is a case where we're changing our own number, and it's allowed because changeSelf = true. */
+  @Test
+  fun getAndPossiblyMerge_aciMapsToExistingUserButE164DoesNot_aciBelongsToLocalUser_highTrust_changeSelfTrue() {
+    val dataSet = KeyValueDataSet().apply {
+      putString(AccountValues.KEY_E164, E164_A)
+      putString(AccountValues.KEY_ACI, ACI_A.toString())
+    }
+    SignalStore.inject(KeyValueStore(MockKeyValuePersistentStorage.withDataSet(dataSet)))
+
+    val existingId: RecipientId = recipientDatabase.getAndPossiblyMerge(ACI_A, E164_A, true)
+
+    val retrievedId: RecipientId = recipientDatabase.getAndPossiblyMerge(ACI_A, E164_B, highTrust = true, changeSelf = true)
+    assertEquals(existingId, retrievedId)
+
+    val retrievedRecipient = Recipient.resolved(retrievedId)
+    assertEquals(ACI_A, retrievedRecipient.requireServiceId())
+    assertEquals(E164_B, retrievedRecipient.requireE164())
+  }
+
+  /** Verifying a case where a change number job is expected to be enqueued. */
+  @Test
+  fun getAndPossiblyMerge_aciMapsToExistingUserButE164DoesNot_highTrust_changedNumber() {
+    val changeNumberListener = ChangeNumberListener()
+    changeNumberListener.enqueue()
+
+    val existingId: RecipientId = recipientDatabase.getAndPossiblyMerge(ACI_A, E164_A, true)
+
+    val retrievedId: RecipientId = recipientDatabase.getAndPossiblyMerge(ACI_A, E164_B, true)
+    assertEquals(existingId, retrievedId)
+
+    val retrievedRecipient = Recipient.resolved(retrievedId)
+    assertEquals(ACI_A, retrievedRecipient.requireServiceId())
+    assertEquals(E164_B, retrievedRecipient.requireE164())
+
+    changeNumberListener.waitForJobManager()
+    assert(changeNumberListener.numberChangeWasEnqueued)
   }
 
   // ==============================================================
@@ -400,18 +502,18 @@ class RecipientDatabaseTest {
   @Test
   fun createByUuidSanityCheck() {
     // GIVEN one recipient
-    val recipientId: RecipientId = recipientDatabase.getOrInsertFromAci(ACI_A)
+    val recipientId: RecipientId = recipientDatabase.getOrInsertFromServiceId(ACI_A)
 
     // WHEN I retrieve one by UUID
-    val possible: Optional<RecipientId> = recipientDatabase.getByAci(ACI_A)
+    val possible: Optional<RecipientId> = recipientDatabase.getByServiceId(ACI_A)
 
     // THEN I get it back, and it has the properties I expect
     assertTrue(possible.isPresent)
     assertEquals(recipientId, possible.get())
 
     val recipient = Recipient.resolved(recipientId)
-    assertTrue(recipient.aci.isPresent)
-    assertEquals(ACI_A, recipient.aci.get())
+    assertTrue(recipient.serviceId.isPresent)
+    assertEquals(ACI_A, recipient.serviceId.get())
   }
 
   @Test(expected = IllegalArgumentException::class)
@@ -420,15 +522,36 @@ class RecipientDatabaseTest {
   }
 
   private fun ensureDbEmpty() {
-    SignalDatabase.rawDatabase.rawQuery("SELECT COUNT(*) FROM ${RecipientDatabase.TABLE_NAME}", null).use { cursor ->
+    SignalDatabase.rawDatabase.rawQuery("SELECT COUNT(*) FROM ${RecipientDatabase.TABLE_NAME} WHERE ${RecipientDatabase.DISTRIBUTION_LIST_ID} IS NULL ", null).use { cursor ->
       assertTrue(cursor.moveToFirst())
       assertEquals(0, cursor.getLong(0))
+    }
+  }
+
+  private class ChangeNumberListener {
+
+    var numberChangeWasEnqueued = false
+      private set
+
+    fun waitForJobManager() {
+      ApplicationDependencies.getJobManager().flush()
+      ThreadUtil.sleep(500)
+    }
+
+    fun enqueue() {
+      ApplicationDependencies.getJobManager().addListener(
+        { job -> job.factoryKey == RecipientChangedNumberJob.KEY },
+        { _, _ -> numberChangeWasEnqueued = true }
+      )
     }
   }
 
   companion object {
     val ACI_A = ACI.from(UUID.fromString("3436efbe-5a76-47fa-a98a-7e72c948a82e"))
     val ACI_B = ACI.from(UUID.fromString("8de7f691-0b60-4a68-9cd9-ed2f8453f9ed"))
+
+    val PNI_A = PNI.from(UUID.fromString("154b8d92-c960-4f6c-8385-671ad2ffb999"))
+    val PNI_B = PNI.from(UUID.fromString("ba92b1fb-cd55-40bf-adda-c35a85375533"))
 
     const val E164_A = "+12221234567"
     const val E164_B = "+13331234567"

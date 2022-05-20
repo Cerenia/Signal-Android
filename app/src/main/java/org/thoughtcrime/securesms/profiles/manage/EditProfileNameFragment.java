@@ -22,7 +22,8 @@ import org.signal.core.util.EditTextUtil;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.profiles.ProfileName;
 import org.thoughtcrime.securesms.recipients.Recipient;
-import org.thoughtcrime.securesms.util.StringUtil;
+import org.signal.core.util.StringUtil;
+import org.thoughtcrime.securesms.util.ViewUtil;
 import org.thoughtcrime.securesms.util.text.AfterTextChanged;
 
 /**
@@ -53,7 +54,7 @@ public class EditProfileNameFragment extends Fragment {
     this.givenName.setText(Recipient.self().getProfileName().getGivenName());
     this.familyName.setText(Recipient.self().getProfileName().getFamilyName());
 
-    viewModel.onGivenNameLengthChanged(this.givenName.getText().length());
+    viewModel.onGivenNameChanged(this.givenName.getText().toString());
 
     view.<Toolbar>findViewById(R.id.toolbar)
         .setNavigationOnClickListener(v -> Navigation.findNavController(view)
@@ -64,13 +65,15 @@ public class EditProfileNameFragment extends Fragment {
 
     this.givenName.addTextChangedListener(new AfterTextChanged(s -> {
       trimFieldToMaxByteLength(s);
-      viewModel.onGivenNameLengthChanged(s.length());
+      viewModel.onGivenNameChanged(s.toString());
     }));
     this.familyName.addTextChangedListener(new AfterTextChanged(EditProfileNameFragment::trimFieldToMaxByteLength));
 
     saveButton.setOnClickListener(v -> viewModel.onSaveClicked(requireContext(),
                                                                givenName.getText().toString(),
                                                                familyName.getText().toString()));
+
+    ViewUtil.focusAndMoveCursorToEndAndOpenKeyboard(this.givenName);
   }
 
   private void initializeViewModel() {

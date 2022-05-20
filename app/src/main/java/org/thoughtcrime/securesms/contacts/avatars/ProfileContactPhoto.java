@@ -7,10 +7,10 @@ import android.net.Uri;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import org.signal.libsignal.protocol.util.ByteUtil;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.profiles.AvatarHelper;
 import org.thoughtcrime.securesms.recipients.Recipient;
-import org.whispersystems.libsignal.util.ByteUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -65,10 +65,6 @@ public class ProfileContactPhoto implements ContactPhoto {
   }
 
   private long getFileLastModified() {
-    if (!recipient.isSelf()) {
-      return 0;
-    }
-
     return AvatarHelper.getLastModified(ApplicationDependencies.getApplication(), recipient.getId());
   }
 }

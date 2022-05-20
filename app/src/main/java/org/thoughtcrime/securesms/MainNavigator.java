@@ -2,18 +2,13 @@ package org.thoughtcrime.securesms;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.os.Bundle;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
-import org.thoughtcrime.securesms.components.settings.DSLSettingsActivity;
 import org.thoughtcrime.securesms.components.settings.app.AppSettingsActivity;
 import org.thoughtcrime.securesms.conversation.ConversationIntents;
-import org.thoughtcrime.securesms.conversationlist.ConversationListArchiveFragment;
-import org.thoughtcrime.securesms.conversationlist.ConversationListFragment;
 import org.thoughtcrime.securesms.groups.ui.creategroup.CreateGroupActivity;
 import org.thoughtcrime.securesms.insights.InsightsLauncher;
 import org.thoughtcrime.securesms.recipients.RecipientId;
@@ -34,16 +29,6 @@ public class MainNavigator {
     }
 
     return ((MainActivity) activity).getNavigator();
-  }
-
-  public void onCreate(@Nullable Bundle savedInstanceState) {
-    if (savedInstanceState != null) {
-      return;
-    }
-
-    getFragmentManager().beginTransaction()
-                        .add(R.id.fragment_container, ConversationListFragment.newInstance())
-                        .commit();
   }
 
   /**
@@ -72,14 +57,6 @@ public class MainNavigator {
 
   public void goToAppSettings() {
     activity.startActivityForResult(AppSettingsActivity.home(activity), REQUEST_CONFIG_CHANGES);
-  }
-
-  public void goToArchiveList() {
-    getFragmentManager().beginTransaction()
-                        .setCustomAnimations(R.anim.slide_from_end, R.anim.slide_to_start, R.anim.slide_from_start, R.anim.slide_to_end)
-                        .replace(R.id.fragment_container, ConversationListArchiveFragment.newInstance())
-                        .addToBackStack(null)
-                        .commit();
   }
 
   public void goToGroupCreation() {

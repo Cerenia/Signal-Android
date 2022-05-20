@@ -2,6 +2,7 @@ package org.thoughtcrime.securesms.linkpreview;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.text.HtmlCompat;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -10,9 +11,9 @@ import org.thoughtcrime.securesms.attachments.Attachment;
 import org.thoughtcrime.securesms.attachments.AttachmentId;
 import org.thoughtcrime.securesms.attachments.DatabaseAttachment;
 import org.thoughtcrime.securesms.util.JsonUtils;
-import org.whispersystems.libsignal.util.guava.Optional;
 
 import java.io.IOException;
+import java.util.Optional;
 
 public class LinkPreview {
 
@@ -60,10 +61,10 @@ public class LinkPreview {
   {
     this.url          = url;
     this.title        = title;
-    this.description  = Optional.fromNullable(description).or("");
+    this.description  = Optional.ofNullable(description).orElse("");
     this.date         = date;
     this.attachmentId = attachmentId;
-    this.thumbnail    = Optional.absent();
+    this.thumbnail    = Optional.empty();
   }
 
   public @NonNull String getUrl() {
@@ -71,14 +72,15 @@ public class LinkPreview {
   }
 
   public @NonNull String getTitle() {
-    return title;
+    return HtmlCompat.fromHtml(title, 0).toString();
   }
 
   public @NonNull String getDescription() {
     if (description.equals(title)) {
       return "";
+    } else {
+      return HtmlCompat.fromHtml(description, 0).toString();
     }
-    return description;
   }
 
   public long getDate() {

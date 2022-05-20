@@ -25,15 +25,15 @@ buildscript {
         classpath 'androidx.navigation:navigation-safe-args-gradle-plugin:2.3.5'
         classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.17'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath "org.jlleitschuh.gradle:ktlint-gradle:10.0.0"
+        classpath "org.jlleitschuh.gradle:ktlint-gradle:10.2.1"
         classpath 'app.cash.exhaustive:exhaustive-gradle:0.1.1'
     }
 }
 
 ext {
-    BUILD_TOOL_VERSION = '30.0.2'
+    BUILD_TOOL_VERSION = '31.0.0'
 
-    COMPILE_SDK = 30
+    COMPILE_SDK = 31
     TARGET_SDK  = 30
     MINIMUM_SDK = 19
 
@@ -71,7 +71,7 @@ subprojects {
         task qa {
             group 'Verification'
             description 'Quality Assurance. Run before pushing'
-            dependsOn 'testReleaseUnitTest', 'lintRelease'
+            dependsOn 'clean', 'testReleaseUnitTest', 'lintRelease'
         }
     }
 }
@@ -79,9 +79,14 @@ subprojects {
 task qa {
     group 'Verification'
     description 'Quality Assurance. Run before pushing.'
-    dependsOn ':Signal-Android:testPlayProdReleaseUnitTest',
+    dependsOn 'clean',
+            ':Signal-Android:testPlayProdReleaseUnitTest',
             ':Signal-Android:lintPlayProdRelease',
             'Signal-Android:ktlintCheck',
             ':libsignal-service:test',
             ':Signal-Android:assemblePlayProdRelease'
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
 }

@@ -10,20 +10,20 @@ import com.annimon.stream.Stream;
 
 import org.signal.core.util.concurrent.SignalExecutors;
 import org.signal.core.util.logging.Log;
+import org.signal.libsignal.protocol.InvalidMessageException;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.database.StickerDatabase;
 import org.thoughtcrime.securesms.database.model.StickerPackRecord;
 import org.thoughtcrime.securesms.database.model.StickerRecord;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
-import org.thoughtcrime.securesms.util.Hex;
-import org.whispersystems.libsignal.InvalidMessageException;
-import org.whispersystems.libsignal.util.guava.Optional;
+import org.signal.core.util.Hex;
 import org.whispersystems.signalservice.api.SignalServiceMessageReceiver;
 import org.whispersystems.signalservice.api.messages.SignalServiceStickerManifest;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public final class StickerPackPreviewRepository {
 
@@ -72,7 +72,7 @@ public final class StickerPackPreviewRepository {
       return Optional.of(new StickerManifestResult(manifest, record.isInstalled()));
     }
 
-    return Optional.absent();
+    return Optional.empty();
   }
 
   @WorkerThread
@@ -95,7 +95,7 @@ public final class StickerPackPreviewRepository {
       Log.w(TAG, "Failed to retrieve pack manifest.", e);
     }
 
-    return Optional.absent();
+    return Optional.empty();
   }
 
   @WorkerThread
@@ -120,7 +120,7 @@ public final class StickerPackPreviewRepository {
                                                               @NonNull Optional<SignalServiceStickerManifest.StickerInfo> remoteSticker)
   {
     return remoteSticker.isPresent() ? Optional.of(toSticker(packId, packKey, remoteSticker.get()))
-                                     : Optional.absent();
+                                     : Optional.empty();
   }
 
   private StickerManifest.Sticker toSticker(@NonNull String packId,

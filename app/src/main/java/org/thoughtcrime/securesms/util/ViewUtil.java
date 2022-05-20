@@ -52,17 +52,10 @@ public final class ViewUtil {
   }
 
   public static void focusAndMoveCursorToEndAndOpenKeyboard(@NonNull EditText input) {
-    input.requestFocus();
-
     int numberLength = input.getText().length();
     input.setSelection(numberLength, numberLength);
 
-    InputMethodManager imm = (InputMethodManager) input.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-    imm.showSoftInput(input, InputMethodManager.SHOW_IMPLICIT);
-
-    if (!imm.isAcceptingText()) {
-      imm.toggleSoftInput(InputMethodManager.SHOW_IMPLICIT, InputMethodManager.HIDE_IMPLICIT_ONLY);
-    }
+    focusAndShowKeyboard(input);
   }
 
   public static void focusAndShowKeyboard(@NonNull View view) {
@@ -97,6 +90,10 @@ public final class ViewUtil {
   }
 
   public static <T extends View> Stub<T> findStubById(@NonNull Activity parent, @IdRes int resId) {
+    return new Stub<>(parent.findViewById(resId));
+  }
+
+  public static <T extends View> Stub<T> findStubById(@NonNull View parent, @IdRes int resId) {
     return new Stub<>(parent.findViewById(resId));
   }
 
@@ -331,6 +328,15 @@ public final class ViewUtil {
   public static int getStatusBarHeight(@NonNull View view) {
     int result = 0;
     int resourceId = view.getResources().getIdentifier("status_bar_height", "dimen", "android");
+    if (resourceId > 0) {
+      result = view.getResources().getDimensionPixelSize(resourceId);
+    }
+    return result;
+  }
+
+  public static int getNavigationBarHeight(@NonNull View view) {
+    int result = 0;
+    int resourceId = view.getResources().getIdentifier("navigation_bar_height", "dimen", "android");
     if (resourceId > 0) {
       result = view.getResources().getDimensionPixelSize(resourceId);
     }

@@ -50,7 +50,6 @@ public class NetworkConstraint implements Constraint {
     return activeNetworkInfo != null && activeNetworkInfo.isConnected();
   }
 
-
   public static final class Factory implements Constraint.Factory<NetworkConstraint> {
 
     private final Application application;

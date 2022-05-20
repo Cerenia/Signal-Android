@@ -16,7 +16,6 @@ import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -35,7 +34,6 @@ import android.widget.Toast;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator;
@@ -45,12 +43,17 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import org.signal.core.util.ThreadUtil;
 import org.signal.core.util.concurrent.SignalExecutors;
 import org.signal.core.util.logging.Log;
+import org.signal.libsignal.protocol.IdentityKey;
+import org.signal.libsignal.protocol.fingerprint.Fingerprint;
+import org.signal.libsignal.protocol.fingerprint.FingerprintVersionMismatchException;
+import org.signal.libsignal.protocol.fingerprint.NumericFingerprintGenerator;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.crypto.IdentityKeyParcelable;
 import org.thoughtcrime.securesms.crypto.ReentrantSessionLock;
 import org.thoughtcrime.securesms.database.IdentityDatabase;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.jobs.MultiDeviceVerifiedUpdateJob;
+import org.thoughtcrime.securesms.keyvalue.SignalStore;
 import org.thoughtcrime.securesms.qr.QrCode;
 import org.thoughtcrime.securesms.recipients.LiveRecipient;
 import org.thoughtcrime.securesms.recipients.Recipient;
@@ -60,11 +63,7 @@ import org.thoughtcrime.securesms.util.FeatureFlags;
 import org.thoughtcrime.securesms.util.IdentityUtil;
 import org.thoughtcrime.securesms.util.Util;
 import org.thoughtcrime.securesms.util.ViewUtil;
-import org.thoughtcrime.securesms.util.concurrent.SimpleTask;
-import org.whispersystems.libsignal.IdentityKey;
-import org.whispersystems.libsignal.fingerprint.Fingerprint;
-import org.whispersystems.libsignal.fingerprint.FingerprintVersionMismatchException;
-import org.whispersystems.libsignal.fingerprint.NumericFingerprintGenerator;
+import org.signal.core.util.concurrent.SimpleTask;
 import org.whispersystems.signalservice.api.SignalSessionLock;
 
 import java.nio.charset.Charset;
@@ -212,18 +211,18 @@ public class VerifyDisplayFragment extends Fragment implements ViewTreeObserver.
     //noinspection WrongThread
     Recipient resolved = recipient.resolve();
 
-    if (FeatureFlags.verifyV2() && resolved.getAci().isPresent()) {
+    if (FeatureFlags.verifyV2() && resolved.getServiceId().isPresent()) {
       Log.i(TAG, "Using UUID (version 2).");
       version  = 2;
-      localId  = Recipient.self().requireAci().toByteArray();
-      remoteId = resolved.requireAci().toByteArray();
+      localId  = SignalStore.account().requireAci().toByteArray();
+      remoteId = resolved.requireServiceId().toByteArray();
     } else if (!FeatureFlags.verifyV2() && resolved.getE164().isPresent()) {
       Log.i(TAG, "Using E164 (version 1).");
       version  = 1;
       localId  = Recipient.self().requireE164().getBytes();
       remoteId = resolved.requireE164().getBytes();
     } else {
-      Log.w(TAG, String.format(Locale.ENGLISH, "Could not show proper verification! verifyV2: %s, hasUuid: %s, hasE164: %s", FeatureFlags.verifyV2(), resolved.getAci().isPresent(), resolved.getE164().isPresent()));
+      Log.w(TAG, String.format(Locale.ENGLISH, "Could not show proper verification! verifyV2: %s, hasUuid: %s, hasE164: %s", FeatureFlags.verifyV2(), resolved.getServiceId().isPresent(), resolved.getE164().isPresent()));
       new MaterialAlertDialogBuilder(requireContext())
           .setMessage(getString(R.string.VerifyIdentityActivity_you_must_first_exchange_messages_in_order_to_view, resolved.getDisplayName(requireContext())))
           .setPositiveButton(android.R.string.ok, (dialog, which) -> requireActivity().finish())
@@ -351,7 +350,7 @@ public class VerifyDisplayFragment extends Fragment implements ViewTreeObserver.
   }
 
   private void handleCopyToClipboard(Fingerprint fingerprint, int segmentCount) {
-    Util.writeTextToClipboard(getActivity(), getFormattedSafetyNumbers(fingerprint, segmentCount));
+    Util.writeTextToClipboard(requireContext(), "Safety numbers", getFormattedSafetyNumbers(fingerprint, segmentCount));
   }
 
   private void handleCompareWithClipboard(Fingerprint fingerprint) {
@@ -394,7 +393,9 @@ public class VerifyDisplayFragment extends Fragment implements ViewTreeObserver.
   }
 
   private void setRecipientText(Recipient recipient) {
-    description.setText(Html.fromHtml(String.format(getActivity().getString(R.string.verify_display_fragment__to_verify_the_security_of_your_end_to_end_encryption_with_s), recipient.getDisplayName(getContext()))));
+    String escapedDisplayName = Html.escapeHtml(recipient.getDisplayName(getContext()));
+
+    description.setText(Html.fromHtml(String.format(getActivity().getString(R.string.verify_display_fragment__to_verify_the_security_of_your_end_to_end_encryption_with_s), escapedDisplayName)));
     description.setMovementMethod(LinkMovementMethod.getInstance());
   }
 
@@ -541,7 +542,7 @@ public class VerifyDisplayFragment extends Fragment implements ViewTreeObserver.
         try (SignalSessionLock.Lock unused = ReentrantSessionLock.INSTANCE.acquire()) {
           if (verified) {
             Log.i(TAG, "Saving identity: " + recipientId);
-            ApplicationDependencies.getIdentityStore()
+            ApplicationDependencies.getProtocolStore().aci().identities()
                                    .saveIdentityWithoutSideEffects(recipientId,
                                                                    remoteIdentity,
                                                                    IdentityDatabase.VerifiedStatus.VERIFIED,
@@ -549,7 +550,7 @@ public class VerifyDisplayFragment extends Fragment implements ViewTreeObserver.
                                                                    System.currentTimeMillis(),
                                                                    true);
           } else {
-            ApplicationDependencies.getIdentityStore().setVerified(recipientId, remoteIdentity, IdentityDatabase.VerifiedStatus.DEFAULT);
+            ApplicationDependencies.getProtocolStore().aci().identities().setVerified(recipientId, remoteIdentity, IdentityDatabase.VerifiedStatus.DEFAULT);
           }
 
           ApplicationDependencies.getJobManager()

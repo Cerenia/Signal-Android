@@ -17,8 +17,8 @@ import org.thoughtcrime.securesms.linkpreview.LinkPreview;
 import org.thoughtcrime.securesms.sharing.MultiShareArgs;
 import org.thoughtcrime.securesms.sharing.MultiShareSender;
 import org.thoughtcrime.securesms.util.DefaultValueLiveData;
-import org.thoughtcrime.securesms.util.adapter.mapping.MappingModelList;
 import org.thoughtcrime.securesms.util.Util;
+import org.thoughtcrime.securesms.util.adapter.mapping.MappingModelList;
 
 class ShareInterstitialViewModel extends ViewModel {
 
@@ -33,7 +33,7 @@ private final MultiShareArgs                      args;
     this.recipients  = new MutableLiveData<>();
     this.draftText   = new DefaultValueLiveData<>(Util.firstNonNull(args.getDraftText(), ""));
 
-    repository.loadRecipients(args.getShareContactAndThreads(),
+    repository.loadRecipients(args.getRecipientSearchKeys(),
                               list -> recipients.postValue(Stream.of(list)
                                                                  .mapIndexed((i, r) -> new ShareInterstitialMappingModel(r, i == 0))
                                                                  .collect(MappingModelList.toMappingModelList())));

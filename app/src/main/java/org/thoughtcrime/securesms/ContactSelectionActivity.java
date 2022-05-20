@@ -20,22 +20,23 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.components.ContactFilterView;
 import org.thoughtcrime.securesms.contacts.ContactsCursorLoader.DisplayMode;
-import org.thoughtcrime.securesms.contacts.sync.DirectoryHelper;
+import org.thoughtcrime.securesms.contacts.sync.ContactDiscovery;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.util.DynamicNoActionBarTheme;
 import org.thoughtcrime.securesms.util.DynamicTheme;
 import org.thoughtcrime.securesms.util.ServiceUtil;
 import org.thoughtcrime.securesms.util.Util;
-import org.whispersystems.libsignal.util.guava.Optional;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 /**
@@ -123,12 +124,12 @@ public abstract class ContactSelectionActivity extends PassphraseRequiredActivit
   }
 
   @Override
-  public void onBeforeContactSelected(Optional<RecipientId> recipientId, String number, Consumer<Boolean> callback) {
+  public void onBeforeContactSelected(@NonNull Optional<RecipientId> recipientId, String number, @NonNull Consumer<Boolean> callback) {
     callback.accept(true);
   }
 
   @Override
-  public void onContactDeselected(Optional<RecipientId> recipientId, String number) {}
+  public void onContactDeselected(@NonNull Optional<RecipientId> recipientId, String number) {}
 
   @Override
   public void onBeginScroll() {
@@ -152,7 +153,7 @@ public abstract class ContactSelectionActivity extends PassphraseRequiredActivit
     @Override
     protected Void doInBackground(Context... params) {
       try {
-        DirectoryHelper.refreshDirectory(params[0], true);
+        ContactDiscovery.refreshAll(params[0], true);
       } catch (IOException e) {
         Log.w(TAG, e);
       }

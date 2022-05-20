@@ -8,12 +8,12 @@ import android.database.Cursor;
 import androidx.annotation.NonNull;
 
 import org.signal.core.util.logging.Log;
+import org.signal.libsignal.protocol.SignalProtocolAddress;
 import org.thoughtcrime.securesms.recipients.Recipient;
-import org.whispersystems.libsignal.SignalProtocolAddress;
-import org.whispersystems.signalservice.api.push.DistributionId;
 import org.thoughtcrime.securesms.recipients.RecipientId;
-import org.thoughtcrime.securesms.util.CursorUtil;
-import org.thoughtcrime.securesms.util.SqlUtil;
+import org.signal.core.util.CursorUtil;
+import org.signal.core.util.SqlUtil;
+import org.whispersystems.signalservice.api.push.DistributionId;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -145,8 +145,8 @@ public class SenderKeySharedDatabase extends Database {
     SQLiteDatabase db        = databaseHelper.getSignalWritableDatabase();
     Recipient      recipient = Recipient.resolved(recipientId);
 
-    if (recipient.hasAci()) {
-      db.delete(TABLE_NAME, ADDRESS + " = ?", SqlUtil.buildArgs(recipient.requireAci().toString()));
+    if (recipient.hasServiceId()) {
+      db.delete(TABLE_NAME, ADDRESS + " = ?", SqlUtil.buildArgs(recipient.requireServiceId().toString()));
     } else {
       Log.w(TAG, "Recipient doesn't have a UUID! " + recipientId);
     }

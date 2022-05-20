@@ -40,8 +40,8 @@ import org.thoughtcrime.securesms.contacts.ContactSelectionListAdapter.ViewHolde
 import org.thoughtcrime.securesms.database.CursorRecyclerViewAdapter;
 import org.thoughtcrime.securesms.mms.GlideRequests;
 import org.thoughtcrime.securesms.recipients.RecipientId;
-import org.thoughtcrime.securesms.util.CharacterIterable;
-import org.thoughtcrime.securesms.util.CursorUtil;
+import org.signal.core.util.CharacterIterable;
+import org.signal.core.util.CursorUtil;
 import org.thoughtcrime.securesms.util.StickyHeaderDecoration.StickyHeaderAdapter;
 import org.thoughtcrime.securesms.util.Util;
 

@@ -76,11 +76,24 @@ message ProfileChangeDetails {
 
 message BodyRangeList {
     message BodyRange {
+        enum Style {
+            BOLD   = 0;
+            ITALIC = 1;
+        }
+
+        message Button {
+            string label  = 1;
+            string action = 2;
+        }
+
         int32 start  = 1;
         int32 length = 2;
 
         oneof associatedValue {
             string mentionUuid = 3;
+            Style  style       = 4;
+            string link        = 5;
+            Button button      = 6;
         }
     }
 
@@ -165,7 +178,9 @@ message ChatColor {
 }
 
 message RecipientExtras {
-    bool manuallyShownAvatar = 1;
+    bool  manuallyShownAvatar = 1;
+    bool  hideStory           = 2;
+    int64 lastStoryView       = 3;
 }
 
 message CustomAvatar {
@@ -190,4 +205,33 @@ message CustomAvatar {
         Vector vector = 2;
         Photo  photo  = 3;
     }
+}
+
+message StoryTextPost {
+    enum Style {
+        DEFAULT   = 0;
+        REGULAR   = 1;
+        BOLD      = 2;
+        SERIF     = 3;
+        SCRIPT    = 4;
+        CONDENSED = 5;
+    }
+
+    string    body                = 1;
+    Style     style               = 2;
+    int32     textForegroundColor = 3;
+    int32     textBackgroundColor = 4;
+    ChatColor background          = 5;
+}
+
+message GiftBadge {
+    enum RedemptionState {
+        PENDING =  0;
+        STARTED =  1;
+        REDEEMED = 2;
+        FAILED =   3;
+    }
+
+    bytes           redemptionToken = 1;
+    RedemptionState redemptionState = 2;
 }

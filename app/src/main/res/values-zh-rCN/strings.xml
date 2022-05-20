@@ -89,6 +89,8 @@
   <string name="BlockUnblockDialog_group_members_will_be_able_to_add_you">组成员将能够再次将您添加到此组。</string>
   <string name="BlockUnblockDialog_you_will_be_able_to_call_and_message_each_other">您将能与之通话和发消息，同时分享您的昵称和头像。</string>
   <string name="BlockUnblockDialog_blocked_people_wont_be_able_to_call_you_or_send_you_messages">被屏蔽的用户无法向你发起通话或给你发送消息。</string>
+  <!--Message shown on block dialog when blocking the Signal release notes recipient-->
+  <!--Message shown on unblock dialog when unblocking the Signal release notes recipient-->
   <string name="BlockUnblockDialog_unblock_s">解除屏蔽%1$s?</string>
   <string name="BlockUnblockDialog_block">屏蔽</string>
   <string name="BlockUnblockDialog_block_and_leave">屏蔽并离开</string>
@@ -117,6 +119,13 @@
   <string name="CameraContacts_cant_find_who_youre_looking_for">未找到联系人？</string>
   <string name="CameraContacts_invite_a_contact_to_join_signal">邀请联系人加入 Signal</string>
   <string name="CameraContacts__menu_search">搜索</string>
+  <!--Censorship Circumvention Megaphone-->
+  <!--Title for an alert that shows at the bottom of the chat list letting people know that circumvention is no longer needed-->
+  <!--Body for an alert that shows at the bottom of the chat list letting people know that circumvention is no longer needed-->
+  <!--Action to prompt the user to disable circumvention since it is no longer needed-->
+  <string name="CensorshipCircumventionMegaphone_turn_off">关闭</string>
+  <!--Action to prompt the user to dismiss the alert at the bottom of the chat list-->
+  <string name="CensorshipCircumventionMegaphone_no_thanks">不，谢谢。</string>
   <!--ClearProfileActivity-->
   <string name="ClearProfileActivity_remove">删除</string>
   <string name="ClearProfileActivity_remove_profile_photo">删除头像</string>
@@ -147,6 +156,8 @@
   <string name="ContactsCursorLoader_groups">群组</string>
   <string name="ContactsCursorLoader_phone_number_search">手机号码搜索</string>
   <string name="ContactsCursorLoader_username_search">用户名搜索</string>
+  <!--Label for my stories when selecting who to send media to-->
+  <!--Action for creating a new story-->
   <!--ContactsDatabase-->
   <string name="ContactsDatabase_message_s">消息 %s</string>
   <string name="ContactsDatabase_signal_call_s">Signal 呼叫 %s</string>
@@ -289,6 +300,13 @@
   <string name="ConversationFragment_your_safety_number_with_s_changed">您与 %s 的安全码已更改</string>
   <string name="ConversationFragment_your_safety_number_with_s_changed_likey_because_they_reinstalled_signal">您与 %s 的安全码已更改，很可能是因为他们重新安装了 Signal 或更改了设备。点击“验证”以确认新的安全码。该操作可选。</string>
   <!--Message shown to indicate which notification profile is on/active-->
+  <!--Dialog title for block group link join requests-->
+  <!--Dialog message for block group link join requests-->
+  <!--Dialog confirm block request button-->
+  <!--Dialog cancel block request button-->
+  <string name="ConversationFragment__cancel">取消</string>
+  <!--Message shown after successfully blocking join requests for a user-->
+  <string name="ConversationFragment__blocked">已屏蔽</string>
   <plurals name="ConversationListFragment_delete_selected_conversations">
     <item quantity="other">删除已选对话？</item>
   </plurals>
@@ -319,7 +337,6 @@
   <!--ConversationTypingView-->
   <string name="ConversationTypingView__plus_d">+%1$d</string>
   <!--CreateGroupActivity-->
-  <string name="CreateGroupActivity_some_contacts_cannot_be_in_legacy_groups">部分联系人无法被置于旧版群组中。</string>
   <string name="CreateGroupActivity__select_members">选择成员</string>
   <!--CreateProfileActivity-->
   <string name="CreateProfileActivity__profile">个人资料</string>
@@ -339,6 +356,9 @@
   <string name="RestoreBackupFragment__to_continue_using_backups_please_choose_a_folder">请选择文件以进行备份，新的备份将保存到该位置。</string>
   <string name="RestoreBackupFragment__choose_folder">选择文件夹</string>
   <string name="RestoreBackupFragment__not_now">稍后再说</string>
+  <!--Couldn\'t find the selected backup-->
+  <!--Couldn\'t read the selected backup-->
+  <!--Backup has an unsupported file extension-->
   <!--BackupsPreferenceFragment-->
   <string name="BackupsPreferenceFragment__chat_backups">聊天备份</string>
   <string name="BackupsPreferenceFragment__backups_are_encrypted_with_a_passphrase">备份通过密码加密并保存在您的设备上。</string>
@@ -389,9 +409,6 @@
   <string name="DeviceListItem_today">今天</string>
   <!--DocumentView-->
   <string name="DocumentView_unnamed_file">未命名文件</string>
-  <!--GroupCallingMegaphone-->
-  <!-- Removed by excludeNonTranslatables <string name="GroupCallingMegaphone__introducing_group_calls">隆重推出“群语音通话”功能</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="GroupCallingMegaphone__open_a_new_group_to_start">打开一个新版群组来开始一次免费的加密群语音通话</string> -->
   <!--DozeReminder-->
   <string name="DozeReminder_optimize_for_missing_play_services">缺失 Google Play 服务时优化</string>
   <string name="DozeReminder_this_device_does_not_support_play_services_tap_to_disable_system_battery">该设备不支持 Google Play 服务。点击禁用系统电池优化，防止 Signal 非活动时无法获取新消息。</string>
@@ -403,9 +420,6 @@
     <item quantity="other">%d 待处理成员请求。</item>
   </plurals>
   <string name="PendingGroupJoinRequestsReminder_view">查看</string>
-  <!--ShareActivity-->
-  <string name="ShareActivity_share_with">分享至</string>
-  <string name="ShareActivity_multiple_attachments_are_only_supported">多个附件只支持图像和视频</string>
   <!--GcmRefreshJob-->
   <string name="GcmRefreshJob_Permanent_Signal_communication_failure">Signal 持续连接失效！</string>
   <string name="GcmRefreshJob_Signal_was_unable_to_register_with_Google_Play_Services">Signal 无法注册 Google Play 服务。Signal 消息和呼叫已禁用。请尝试在设置 &gt; 高级中重新注册。</string>
@@ -495,10 +509,6 @@
   <string name="LeaveGroupDialog_choose_new_admin">选择新的管理员。</string>
   <string name="LeaveGroupDialog_before_you_leave_you_must_choose_at_least_one_new_admin_for_this_group">在离开群组之前，必须选择至少一位新的管理员。</string>
   <string name="LeaveGroupDialog_choose_admin">选择管理员</string>
-  <!--LinkPreviewsMegaphone-->
-  <!-- Removed by excludeNonTranslatables <string name="LinkPreviewsMegaphone_disable">关闭</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="LinkPreviewsMegaphone_preview_any_link">预览任意链接</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="LinkPreviewsMegaphone_you_can_now_retrieve_link_previews_directly_from_any_website">您可直接从您发送的链接网站中生成预览。</string> -->
   <!--LinkPreviewView-->
   <string name="LinkPreviewView_no_link_preview_available">没有预览链接可用</string>
   <string name="LinkPreviewView_this_group_link_is_not_active">此群组链接未激活</string>
@@ -554,21 +564,6 @@
   <string name="AddGroupDetailsFragment__remove">删除</string>
   <string name="AddGroupDetailsFragment__sms_contact">短信联系人</string>
   <string name="AddGroupDetailsFragment__remove_s_from_this_group">将 %1$s 从群组移除？</string>
-  <plurals name="AddGroupDetailsFragment__d_members_do_not_support_new_groups">
-    <item quantity="other">有%d位成员无法使用新版群组，所以将创建旧版群组。</item>
-  </plurals>
-  <plurals name="AddGroupDetailsFragment__d_members_do_not_support_new_groups_so_this_group_cannot_be_created">
-    <item quantity="other">%d位成员不支持新版群组，因此无法创建此群组。</item>
-  </plurals>
-  <!--NonGv2MemberDialog-->
-  <string name="NonGv2MemberDialog_single_users_are_non_gv2_capable">将创建旧版群组，因为“%1$s”还在使用旧版 Signal。您可以在他们都升级到新版 Signal 后创建新版群组，或将他们排除后再建群。</string>
-  <plurals name="NonGv2MemberDialog_d_users_are_non_gv2_capable">
-    <item quantity="other">将创建旧版群组因为%1$d位群成员还在使用旧版 Signal。您可以在他们都升级到新版 Signal 后创建新版群组，或将他们排除后再建群。</item>
-  </plurals>
-  <string name="NonGv2MemberDialog_single_users_are_non_gv2_capable_forced_migration">“%1$s”仍在使用旧版 Signal，因此无法创建此此群组。您需要将其移出后才能建群。</string>
-  <plurals name="NonGv2MemberDialog_d_users_are_non_gv2_capable_forced_migration">
-    <item quantity="other">%1$d位成员仍在使用旧版 Signal，因此无法创建此此群组。您需要将其移出后才能建群。</item>
-  </plurals>
   <!--ManageGroupActivity-->
   <string name="ManageGroupActivity_member_requests_and_invites">入群申请和邀请</string>
   <string name="ManageGroupActivity_add_members">添加成员</string>
@@ -670,7 +665,13 @@
   <string name="GroupJoinBottomSheetDialogFragment_unable_to_join_group_please_try_again_later">无法加入群组，请稍候再试</string>
   <string name="GroupJoinBottomSheetDialogFragment_encountered_a_network_error">网络出错。</string>
   <string name="GroupJoinBottomSheetDialogFragment_this_group_link_is_not_active">此群组链接未激活</string>
-  <string name="GroupJoinBottomSheetDialogFragment_unable_to_get_group_information_please_try_again_later">无法获取群组信息，请稍候再试</string>
+  <!--Title shown when there was an known issue getting group information from a group link-->
+  <!--Message shown when you try to get information for a group via link but an admin has removed you-->
+  <!--Message shown when you try to get information for a group via link but the link is no longer valid-->
+  <string name="GroupJoinBottomSheetDialogFragment_this_group_link_is_no_longer_valid">此群组链接已失效。</string>
+  <!--Title shown when there was an unknown issue getting group information from a group link-->
+  <!--Message shown when you try to get information for a group via link but an unknown issue occurred-->
+  <string name="GroupJoinBottomSheetDialogFragment_joining_via_this_link_failed_try_joining_again_later">通过该链接加入失败，请稍后尝试再次加入。</string>
   <string name="GroupJoinBottomSheetDialogFragment_direct_join">您要加入此群组并向其成员分享您的名字和头像吗？</string>
   <string name="GroupJoinBottomSheetDialogFragment_admin_approval_needed">您需要经过此群管理员同意才能加入群组。当您申请入群时，群组成员将能看到您的您的昵称和头像。</string>
   <plurals name="GroupJoinBottomSheetDialogFragment_group_dot_d_members">
@@ -694,6 +695,7 @@
   <!--GV2 Request confirmation dialog-->
   <string name="RequestConfirmationDialog_add_s_to_the_group">将“%1$s”添加到群组？</string>
   <string name="RequestConfirmationDialog_deny_request_from_s">拒绝“%1$s”的入群申请？</string>
+  <!--Confirm dialog message shown when deny a group link join request and group link is enabled.-->
   <string name="RequestConfirmationDialog_add">添加</string>
   <string name="RequestConfirmationDialog_deny">拒绝</string>
   <!--ImageEditorHud-->
@@ -760,8 +762,6 @@
   <string name="MediaOverviewActivity_sent_by_s_to_s">由 %1$s 发送至 %2$s</string>
   <string name="MediaOverviewActivity_sent_by_you_to_s">由您发送至 %1$s</string>
   <!--Megaphones-->
-  <!-- Removed by excludeNonTranslatables <string name="Megaphones_introducing_reactions">新推出“回应”功能</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="Megaphones_tap_and_hold_any_message_to_quicky_share_how_you_feel">长按任何消息，即刻分享感受。</string> -->
   <string name="Megaphones_remind_me_later">稍后提醒</string>
   <string name="Megaphones_verify_your_signal_pin">验证 Signal PIN 码</string>
   <string name="Megaphones_well_occasionally_ask_you_to_verify_your_pin">为了方便记住 PIN 密码，将偶尔提示验证。</string>
@@ -952,6 +952,7 @@
   <!--GV2 group link requests-->
   <string name="MessageRecord_you_sent_a_request_to_join_the_group">您发送了入群请求。</string>
   <string name="MessageRecord_s_requested_to_join_via_the_group_link">%1$s 通过群组链接申请入群。</string>
+  <!--Update message shown when someone requests to join via group link and cancels the request back to back-->
   <!--GV2 group link approvals-->
   <string name="MessageRecord_s_approved_your_request_to_join_the_group">%1$s 同意了您的入群申请。</string>
   <string name="MessageRecord_s_approved_a_request_to_join_the_group_from_s">%1$s 同意了 %2$s 的入群申请。</string>
@@ -971,6 +972,8 @@
   <string name="MessageRecord_you_marked_your_safety_number_with_s_unverified">已将您与 %s 的安全码标记为未验证</string>
   <string name="MessageRecord_you_marked_your_safety_number_with_s_unverified_from_another_device">已在另一设备上将您与 %s 的安全码标记为未验证</string>
   <string name="MessageRecord_a_message_from_s_couldnt_be_delivered">来自 %s 消息无法送到</string>
+  <!--Update item message shown in the release channel when someone is already a sustainer so we ask them if they want to boost.-->
+  <!--Update item message shown in the release channel when someone is not a sustainer so we ask them to consider becoming one-->
   <!--Group Calling update messages-->
   <string name="MessageRecord_s_started_a_group_call_s">%1$s发起了群组通话  · %2$s</string>
   <string name="MessageRecord_s_is_in_the_group_call_s">%1$s 在群通话中 · %2$s</string>
@@ -1011,9 +1014,8 @@
   <plurals name="MessageRequestProfileView_members">
     <item quantity="other">%1$d 成员</item>
   </plurals>
-  <plurals name="MessageRequestProfileView_members_and_invited">
-    <item quantity="other">%1$d成员(+%2$d 获邀请)</item>
-  </plurals>
+  <!--Describes the number of members in a group. The string MessageRequestProfileView_invited is nested in the parentheses.-->
+  <!--Describes the number of people invited to a group. Nested inside of the string MessageRequestProfileView_members_and_invited-->
   <plurals name="MessageRequestProfileView_member_of_d_additional_groups">
     <item quantity="other">更多%d个群组</item>
   </plurals>
@@ -1102,6 +1104,7 @@
   <string name="RecaptchaRequiredBottomSheetFragment_after_verifying_you_can_continue_messaging">验证之后，可继续发送消息。任何暂停消息将自动发送。</string>
   <!--Recipient-->
   <string name="Recipient_you">您</string>
+  <!--Name of recipient representing user\'s \'My Story\'-->
   <!--RecipientPreferencesActivity-->
   <string name="RecipientPreferenceActivity_block">屏蔽</string>
   <string name="RecipientPreferenceActivity_unblock">取消屏蔽</string>
@@ -1117,11 +1120,16 @@
   <string name="RedPhone_number_not_registered">号码未注册！</string>
   <string name="RedPhone_the_number_you_dialed_does_not_support_secure_voice">您输入的号码不支持加密语音！</string>
   <string name="RedPhone_got_it">知道了</string>
+  <!--Valentine\'s Day Megaphone-->
+  <!--Title text for the Valentine\'s Day donation megaphone. The placeholder will always be a heart emoji. Needs to be a placeholder for Android reasons.-->
+  <!--Body text for the Valentine\'s Day donation megaphone.-->
   <!--WebRtcCallActivity-->
   <string name="WebRtcCallActivity__tap_here_to_turn_on_your_video">点击这里以启用视频</string>
   <string name="WebRtcCallActivity__to_call_s_signal_needs_access_to_your_camera">Signal 需要访问您的麦克风来呼叫 %1$s</string>
   <string name="WebRtcCallActivity__signal_s">Signal 呼叫 %1$s</string>
   <string name="WebRtcCallActivity__calling">呼叫中…</string>
+  <!--Call status shown when an active call was disconnected (e.g., network hiccup) and is trying to reconnect-->
+  <string name="WebRtcCallActivity__reconnecting">重连中…</string>
   <!--WebRtcCallView-->
   <string name="WebRtcCallView__signal_call">Signal 通话</string>
   <string name="WebRtcCallView__start_call">发起通话</string>
@@ -1142,6 +1150,7 @@
   </plurals>
   <string name="WebRtcCallView__speaker">扬声器</string>
   <string name="WebRtcCallView__camera">相机</string>
+  <string name="WebRtcCallView__unmute">取消静音</string>
   <string name="WebRtcCallView__mute">静音</string>
   <string name="WebRtcCallView__end_call">结束呼叫</string>
   <!--CallParticipantsListDialog-->
@@ -1234,12 +1243,6 @@
   <!--SignalBottomActionBar-->
   <string name="SignalBottomActionBar_more">更多</string>
   <!--SignalPinReminders-->
-  <string name="SignalPinReminders_well_remind_you_again_later">稍后提示。</string>
-  <string name="SignalPinReminders_well_remind_you_again_tomorrow">明天提示。</string>
-  <string name="SignalPinReminders_well_remind_you_again_in_a_few_days">几天后提示。</string>
-  <string name="SignalPinReminders_well_remind_you_again_in_a_week">一周后提示。</string>
-  <string name="SignalPinReminders_well_remind_you_again_in_a_couple_weeks">几周后提示。</string>
-  <string name="SignalPinReminders_well_remind_you_again_in_a_month">我们会在一个月后再次提醒您。</string>
   <!--Slide-->
   <string name="Slide_image">图片</string>
   <string name="Slide_sticker">表情</string>
@@ -1388,6 +1391,8 @@
   <string name="MediaPreviewActivity_media_delete_confirmation_title">删除消息？</string>
   <string name="MediaPreviewActivity_media_delete_confirmation_message">这将永久删除该消息。</string>
   <string name="MediaPreviewActivity_s_to_s">%1$s 至 %2$s</string>
+  <!--All media preview title when viewing media send by you to another recipient (allows changing of \'You\' based on context)-->
+  <!--All media preview title when viewing media sent by another recipient to you (allows changing of \'You\' based on context)-->
   <string name="MediaPreviewActivity_media_no_longer_available">媒体已失效。</string>
   <string name="MediaPreviewActivity_cant_find_an_app_able_to_share_this_media">未找到可分享此媒体的应用。</string>
   <!--MessageNotifier-->
@@ -1433,6 +1438,8 @@
   <string name="NotificationChannel_voice_notes">语音笔记</string>
   <string name="NotificationChannel_contact_joined_signal">联系人加入 Signal</string>
   <string name="NotificationChannels__no_activity_available_to_open_notification_channel_settings">无可用活动以打开通知渠道设置。</string>
+  <!--Notification channel name for showing persistent background connection on devices without push notifications-->
+  <!--Notification channel name for showing call status information (like connection, ongoing, etc.) Not ringing.-->
   <!--ProfileEditNameFragment-->
   <!--QuickResponseService-->
   <string name="QuickResponseService_quick_response_unavailable_when_Signal_is_locked">Signal 锁定时不可使用快速回复。</string>
@@ -1517,6 +1524,7 @@
   <plurals name="contact_selection_list_item__number_of_members">
     <item quantity="other">%1$d位成员</item>
   </plurals>
+  <!--Displays number of viewers for a story-->
   <!--conversation_activity-->
   <string name="conversation_activity__type_message_push">发送 Signal 消息</string>
   <string name="conversation_activity__type_message_sms_insecure">不安全短信</string>
@@ -1554,10 +1562,13 @@
   <string name="ConversationUpdateItem_invite_friends">邀请好友</string>
   <string name="ConversationUpdateItem_enable_call_notifications">启用通话通知</string>
   <string name="ConversationUpdateItem_update_contact">更新联系人</string>
+  <!--Update item button text to show to block a recipient from requesting to join via group link-->
   <string name="ConversationUpdateItem_no_groups_in_common_review_requests_carefully">无共同群组。请仔细审查请求。</string>
   <string name="ConversationUpdateItem_no_contacts_in_this_group_review_requests_carefully">该群组无联系人。请仔细审查请求。</string>
   <string name="ConversationUpdateItem_view">查看</string>
   <string name="ConversationUpdateItem_the_disappearing_message_time_will_be_set_to_s_when_you_message_them">在您向他们发送消息时，限时消息时间将设置为 %1$s。</string>
+  <!--Update item button text to show to boost a feature-->
+  <!--Update item button text to show to become a sustainer in the release notes channel-->
   <!--audio_view-->
   <string name="audio_view__play_pause_accessibility_description">播放 … 暂停</string>
   <string name="audio_view__download_accessibility_description">下载</string>
@@ -1570,6 +1581,9 @@
   <string name="QuoteView_sticker">表情</string>
   <string name="QuoteView_you">您</string>
   <string name="QuoteView_original_missing">未找到原始消息</string>
+  <!--Author formatting for group stories-->
+  <!--Label indicating that a quote is for a reply to a story you created-->
+  <!--Label indicating that the story being replied to no longer exists-->
   <!--conversation_fragment-->
   <string name="conversation_fragment__scroll_to_the_bottom_content_description">滚动到底部</string>
   <!--BubbleOptOutTooltip-->
@@ -1667,6 +1681,8 @@
   <!--message_recipients_list_item-->
   <string name="message_recipients_list_item__view">查看</string>
   <string name="message_recipients_list_item__resend">重新发送</string>
+  <!--Displayed in a toast when user long presses an item in MyStories-->
+  <!--Displayed when there are no outgoing stories-->
   <!--GroupUtil-->
   <plurals name="GroupUtil_joined_the_group">
     <item quantity="other">%1$s 加入群组。</item>
@@ -1735,6 +1751,7 @@
   <string name="message_details_recipient_header__read_by">已读</string>
   <string name="message_details_recipient_header__not_sent">未发</string>
   <string name="message_details_recipient_header__viewed">已查看：</string>
+  <string name="message_details_recipient_header__skipped">已跳过</string>
   <!--message_Details_recipient-->
   <string name="message_details_recipient__failed_to_send">发送失败</string>
   <string name="message_details_recipient__new_safety_number">新的安全码</string>
@@ -1863,6 +1880,7 @@
   <string name="preferences__help">帮助</string>
   <string name="preferences__advanced">高级</string>
   <string name="preferences__donate_to_signal">捐赠 Signal</string>
+  <!--Preference label for making one-time donations to Signal-->
   <string name="preferences__privacy">隐私</string>
   <string name="preferences__mms_user_agent">彩信用户代理</string>
   <string name="preferences__advanced_mms_access_point_names">手动设置彩信</string>
@@ -1960,6 +1978,17 @@
   <string name="preferences_chats__message_text_size">消息字体大小</string>
   <string name="preferences_events__contact_joined_signal">联系人加入 Signal</string>
   <string name="preferences_notifications__priority">优先级</string>
+  <!--Heading for the \'censorship circumvention\' section of privacy preferences-->
+  <!--Title of the \'censorship circumvention\' toggle switch-->
+  <string name="preferences_communication__censorship_circumvention_if_enabled_signal_will_attempt_to_circumvent_censorship">若启用，Signal 会尝试规避审查。除非 Signal 在您所在地受到审查，否则不要打开该功能。</string>
+  <!--Summary text for \'censorship circumvention\' toggle. Indicates that we automatically enabled it because we believe you\'re in a censored country-->
+  <string name="preferences_communication__censorship_circumvention_has_been_activated_based_on_your_accounts_phone_number">已根据您的电话号码启动审查规避。</string>
+  <!--Summary text for \'censorship circumvention\' toggle. Indicates that you disabled it even though we believe you\'re in a censored country-->
+  <string name="preferences_communication__censorship_circumvention_you_have_manually_disabled">您已手动禁用了审查规避功能</string>
+  <!--Summary text for \'censorship circumvention\' toggle. Indicates that you cannot use it because you\'re already connected to the Signal service-->
+  <string name="preferences_communication__censorship_circumvention_is_not_necessary_you_are_already_connected">不需要规避审查；您已连接上了 Signal 服务。</string>
+  <!--Summary text for \'censorship circumvention\' toggle. Indicates that you cannot use it because you\'re not connected to the internet-->
+  <string name="preferences_communication__censorship_circumvention_can_only_be_activated_when_connected_to_the_internet">审查规避只能在联网时启动。</string>
   <string name="preferences_communication__category_sealed_sender">密封发送人</string>
   <string name="preferences_communication__sealed_sender_display_indicators">显示状态</string>
   <string name="preferences_communication__sealed_sender_display_indicators_description">对于使用密封发送人送达的消息，在“消息详情”内显示状态图标。</string>
@@ -2129,18 +2158,29 @@
   <string name="conversation_callable_secure__menu_call">Signal 呼叫</string>
   <string name="conversation_callable_secure__menu_video">Signal 视频通话</string>
   <!--conversation_context-->
-  <string name="conversation_context__menu_message_details">消息详情</string>
-  <string name="conversation_context__menu_copy_text">复制文本</string>
-  <string name="conversation_context__menu_delete_message">删除</string>
-  <string name="conversation_context__menu_forward_message">转发消息</string>
-  <string name="conversation_context__menu_resend_message">重新发送信息</string>
-  <string name="conversation_context__menu_reply_to_message">回复消息</string>
-  <!--conversation_context_reacction-->
-  <string name="conversation_context__reaction_multi_select">多选</string>
+  <!--Heading which shows how many messages are currently selected-->
   <!--conversation_context_image-->
-  <string name="conversation_context_image__save_attachment">保存附件</string>
+  <!--Button to save a message attachment (image, file etc.)-->
+  <string name="conversation_context_image__save_attachment">保存</string>
   <!--conversation_expiring_off-->
   <string name="conversation_expiring_off__disappearing_messages">阅后即焚</string>
+  <!--conversation_selection-->
+  <!--Button to view detailed information for a message-->
+  <string name="conversation_selection__menu_message_details">信息</string>
+  <!--Button to copy a message\'s text to the clipboard-->
+  <string name="conversation_selection__menu_copy">复制</string>
+  <!--Button to delete a message-->
+  <string name="conversation_selection__menu_delete">删除</string>
+  <!--Button to forward a message to another person or group chat-->
+  <string name="conversation_selection__menu_forward">转发</string>
+  <!--Button to reply to a message-->
+  <string name="conversation_selection__menu_reply">回复</string>
+  <!--Button to save a message attachment (image, file etc.)-->
+  <string name="conversation_selection__menu_save">保存</string>
+  <!--Button to retry sending a message-->
+  <string name="conversation_selection__menu_resend_message">重新发送</string>
+  <!--Button to select a message and enter selection mode-->
+  <string name="conversation_selection__menu_multi_select">选择</string>
   <!--conversation_expiring_on-->
   <!--conversation_insecure-->
   <string name="conversation_insecure__invite">邀请</string>
@@ -2316,16 +2356,6 @@
   <string name="KbsMegaphone__create_a_pin">创建 PIN 码</string>
   <string name="KbsMegaphone__pins_keep_information_thats_stored_with_signal_encrytped">Signal 储存的信息使用你的 PIN 码来加密。</string>
   <string name="KbsMegaphone__create_pin">创建 PIN 码</string>
-  <!--Research Megaphone-->
-  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphone_tell_signal_what_you_think">发表您的 Signal 的感想</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphone_to_make_signal_the_best_messaging_app_on_the_planet">您的意见将成为 Signal 称霸即时通信界的基础，我们期待您的反馈！</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphone_learn_more">了解更多</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphone_dismiss">清除</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphoneDialog_signal_research">Signal 搜索</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphoneDialog_we_believe_in_privacy"><![CDATA[<p><b>我们尊重隐私。</b></p><p>Signal 不会跟踪或搜集您的数据。我们需要用户反馈来改进 Signal ，<b>你的宝贵意见不可或缺。</b></p><p>我们正在做一份关于您使用 Signal 的调研。此调研不会搜集任何泄漏您身份的信息。若有兴趣分享更多反馈，您可以选择性提供联系方式。</p><p>如果您能抽出几分钟完成调研，我们将翘首以待。</p>]]></string> -->
-  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphoneDialog_take_the_survey">参与调研</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphoneDialog_no_thanks">不，谢谢。</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphoneDialog_the_survey_is_hosted_by_alchemer_at_the_secure_domain">该调查使用 Alchemer 并托管在安全域名 surveys.signalusers.org 上</string> -->
   <!--transport_selection_list_item-->
   <string name="transport_selection_list_item__transport_icon">传输图标</string>
   <string name="ConversationListFragment_loading">正在加载…</string>
@@ -2560,6 +2590,7 @@
   <string name="RecipientBottomSheet_remove_s_as_group_admin">取消 %1$s 的管理员身份？</string>
   <string name="RecipientBottomSheet_s_will_be_able_to_edit_group">“%1$s” 将能编辑此群组及其成员。</string>
   <string name="RecipientBottomSheet_remove_s_from_the_group">将 %1$s 从群组移除？</string>
+  <!--Dialog message shown when removing someone from a group with group link being active to indicate they will not be able to rejoin-->
   <string name="RecipientBottomSheet_remove">移除</string>
   <string name="RecipientBottomSheet_copied_to_clipboard">已复制到剪切板</string>
   <string name="GroupRecipientListItem_admin">管理员</string>
@@ -2645,6 +2676,7 @@
   <string name="DeleteAccountFragment__launch_app_settings">打开应用设置</string>
   <!--Title of progress dialog shown when a user deletes their account and the process is leaving all groups-->
   <!--Title of progress dialog shown when a user deletes their account and the process has left all groups-->
+  <!--Message of progress dialog shown when a user deletes their account and the process is canceling their subscription-->
   <!--Message of progress dialog shown when a user deletes their account and the process is leaving groups-->
   <!--Message of progress dialog shown when a user deletes their account and the process has left all groups-->
   <!--Title of error dialog shown when a network error occurs during account deletion-->
@@ -2664,8 +2696,6 @@
   <!--MultiShareDialogs-->
   <string name="MultiShareDialogs__failed_to_send_to_some_users">无法发送给某些用户</string>
   <string name="MultiShareDialogs__you_can_only_share_with_up_to">最多只能分享 %1$d 个对话</string>
-  <!--ShareInterstitialActivity-->
-  <string name="ShareInterstitialActivity__forward_message">转发消息</string>
   <!--ChatWallpaperActivity-->
   <string name="ChatWallpaperActivity__chat_wallpaper">聊天墙纸</string>
   <!--ChatWallpaperFragment-->
@@ -2807,6 +2837,9 @@
   <string name="AccountSettingsFragment__require_your_signal_pin">再次用您的手机号码注册 Signal，要求输入 Signal PIN 码。</string>
   <!--ChangeNumberFragment-->
   <string name="ChangeNumberFragment__continue">继续</string>
+  <!--Message shown on dialog after your number has been changed successfully.-->
+  <!--Confirmation button to dismiss number changed dialog-->
+  <string name="ChangeNumber__okay">好的</string>
   <!--ChangeNumberEnterPhoneNumberFragment-->
   <string name="ChangeNumberEnterPhoneNumberFragment__change_number">更换号码</string>
   <string name="ChangeNumberEnterPhoneNumberFragment__the_phone_number_you_entered_doesnt_match_your_accounts">您输入的手机号码和您的帐户不符。</string>
@@ -2818,7 +2851,14 @@
   <!--ChangeNumberPinDiffersFragment-->
   <string name="ChangeNumberPinDiffersFragment__update_pin">更新 PIN</string>
   <!--ChangeNumberLockActivity-->
+  <!--Info message shown to user if something crashed the app during the change number attempt and we were unable to confirm the change so we force them into this screen to check before letting them use the app-->
+  <!--Dialog title shown if we were able to confirm your change number status (meaning we now know what the server thinks our number is) after a crash during the regular flow-->
+  <!--Dialog message shown if we were able to confirm your change number status (meaning we now know what the server thinks our number is) after a crash during the regular flow-->
+  <!--Dialog title shown if we were not able to confirm your phone number with the server and thus cannot let leave the change flow yet after a crash during the regular flow-->
+  <!--Dialog message shown when we can\'t verify the phone number on the server, only shown if there was a network error communicating with the server after a crash during the regular flow-->
+  <!--Dialog button to retry confirming the number on the server-->
   <string name="ChangeNumberLockActivity__retry">重试</string>
+  <!--Dialog button shown to leave the app when in the unconfirmed change status after a crash in the regular flow-->
   <string name="ChangeNumberLockActivity__leave">离开群组</string>
   <string name="ChangeNumberLockActivity__submit_debug_log">提交调试日志</string>
   <!--ChatsSettingsFragment-->
@@ -2922,7 +2962,9 @@
   <!--AddAProfilePhotoMegaphone-->
   <string name="AddAProfilePhotoMegaphone__not_now">稍后再说</string>
   <!--BecomeASustainerMegaphone-->
-  <string name="BecomeASustainerMegaphone__no_thanks">不，谢谢。</string>
+  <!--Displayed in the Become a Sustainer megaphone-->
+  <string name="BecomeASustainerMegaphone__not_now">稍后再说</string>
+  <string name="BecomeASustainerMegaphone__donate">捐赠</string>
   <!--KeyboardPagerFragment-->
   <string name="KeyboardPagerFragment_emoji">表情符号</string>
   <string name="KeyboardPagerFragment_open_emoji_search">打开表情符号搜索</string>
@@ -3016,7 +3058,11 @@
   <!--ContactSelectionListItem-->
   <string name="ContactSelectionListItem__sms">短信</string>
   <string name="ContactSelectionListItem__dot_s">· %1$s</string>
+  <!--Displayed in the toolbar when externally sharing text to multiple recipients-->
+  <string name="ShareInterstitialActivity__share">分享</string>
   <!--DSLSettingsToolbar-->
+  <!--Displayed when sharing content via the fragment-->
+  <string name="MultiselectForwardFragment__share_with">分享至</string>
   <!--Media V2-->
   <string name="ImageEditorHud__cancel">取消</string>
   <string name="ImageEditorHud__blur">模糊</string>
@@ -3030,15 +3076,58 @@
   <string name="SubscribeFragment__not_now">稍后再说</string>
   <string name="SubscribeFragment__confirm">确认</string>
   <string name="SubscribeFragment__update">更新</string>
+  <!--First small text blurb on learn more sheet-->
+  <string name="SubscribeLearnMoreBottomSheetDialogFragment__why_donate">为什么捐赠？</string>
   <string name="SubscribeThanksForYourSupportBottomSheetDialogFragment__done">完成</string>
+  <!--Button label for creating a monthly donation-->
+  <!--Heading for more area of manage subscriptions page-->
+  <string name="ManageDonationsFragment__more">更多</string>
+  <!--Heading for receipts area of manage subscriptions page-->
+  <!--Heading for my subscription area of manage subscriptions page-->
+  <!--Label for Donation Receipts button-->
+  <!--Preference heading for other ways to donate-->
+  <!--Preference label to launch badge gifting-->
+  <!--Description text in boost sheet-->
   <string name="Boost__enter_custom_amount">输入自定义金额</string>
   <!--Displayed on "My Support" screen when user badge failed to be added to their account-->
+  <!--Title of expiry sheet when boost badge falls off profile unexpectedly.-->
+  <!--Displayed in the bottom sheet if a monthly donation badge unexpectedly falls off the user\'s profile-->
+  <!--Displayed in the bottom sheet when a boost badge expires-->
+  <!--Displayed when we do not think the user is a subscriber when their boost expires-->
   <string name="ExpiredBadgeBottomSheetDialogFragment__not_now">稍后再说</string>
+  <!--Copy displayed when badge expires after user inactivity-->
+  <!--Copy displayed when badge expires after payment failure-->
   <string name="Subscription__contact_support">联系支持</string>
   <string name="SubscribeFragment__processing_payment">正在处理付款…</string>
   <!--Displayed in notification when user payment fails to process on Stripe-->
   <!--Displayed on "My Support" screen when user subscription payment method failed.-->
+  <!--Displayed when badge credential couldn\'t be verified-->
+  <!--Displayed when badge credential couldn\'t be verified-->
+  <!--Displayed as title when some generic error happens during gift badge sending-->
+  <!--Displayed as message when some generic error happens during gift badge sending-->
   <string name="NetworkFailure__retry">重试</string>
+  <!--Gift message view title-->
+  <!--Gift message view expiry information-->
+  <!--Gift badge redeem action label-->
+  <!--Gift badge view action label-->
+  <string name="GiftMessageView__view">查看</string>
+  <!--Gift badge redeeming action label-->
+  <!--Gift badge redeemed label-->
+  <!--Stripe decline code generic_failure-->
+  <!--Stripe decline code verify on Google Pay and try again-->
+  <!--Stripe decline code learn more action label-->
+  <string name="DeclineCode__learn_more">了解更多</string>
+  <!--Stripe decline code contact issuer-->
+  <!--Stripe decline code purchase not supported-->
+  <!--Stripe decline code your card has expired-->
+  <!--Stripe decline code go to google pay action label-->
+  <!--Stripe decline code incorrect card number-->
+  <!--Stripe decline code incorrect cvc-->
+  <!--Stripe decline code insufficient funds-->
+  <!--Stripe decline code incorrect expiration month-->
+  <!--Stripe decline code incorrect expiration year-->
+  <!--Stripe decline code issuer not available-->
+  <!--Stripe decline code processing error-->
   <!--Title of create notification profile screen-->
   <!--Hint text for create/edit notification profile name-->
   <string name="EditNotificationProfileFragment__profile_name">个人资料名称</string>
@@ -3125,11 +3214,205 @@
   <string name="NotificationProfileSelection__until_s">直到 %1$s</string>
   <!--Option to view profile details-->
   <!--Descriptor text indicating how long a profile will be on when there is a time component associated with it-->
-  <!--Title for notification profile megaphone-->
-  <!--Description for notification profile megaphone-->
-  <!--Call to action button to create a profile from megaphone-->
-  <!--Button to dismiss notification profile megaphone-->
-  <string name="NotificationProfilesMegaphone__not_now">稍后再说</string>
   <!--Displayed in a toast when we fail to open the ringtone picker-->
+  <!--Description shown for the Signal Release Notes channel-->
+  <!--Donation receipts activity title-->
+  <string name="DonationReceiptListFragment__all_activity">全部活动</string>
+  <!--Donation receipts all tab label-->
+  <string name="DonationReceiptListFragment__all">全部</string>
+  <!--Donation receipts recurring tab label-->
+  <!--Donation receipts one-time tab label-->
+  <string name="DonationReceiptListFragment__one_time">一次性</string>
+  <!--Donation receipts gift tab label-->
+  <!--Donation receipts boost row label-->
+  <!--Donation receipts details title-->
+  <string name="DonationReceiptDetailsFragment__details">更多</string>
+  <!--Donation receipts donation type heading-->
+  <!--Donation receipts date paid heading-->
+  <!--Donation receipts share PNG-->
+  <!--Donation receipts list end note-->
+  <!--Donation receipts document title-->
+  <!--Donation receipts amount title-->
+  <!--Donation receipts thanks-->
+  <!--Donation receipt type-->
+  <!--region "Stories Tab"-->
+  <!--Label for Chats tab in home app screen-->
+  <string name="ConversationListTabs__chats">聊天</string>
+  <!--Label for Stories tab in home app screen-->
+  <!--String for counts above 99 in conversation list tabs-->
+  <!--Title for "My Stories" row item in Stories landing page-->
+  <!--Subtitle for "My Stories" row item when user has not added stories-->
+  <!--Displayed when there are no stories to display-->
+  <!--Context menu option to hide a story-->
+  <!--Context menu option to unhide a story-->
+  <!--Context menu option to forward a story-->
+  <string name="StoriesLandingItem__forward">转发</string>
+  <!--Context menu option to share a story-->
+  <!--Context menu option to go to story chat-->
+  <!--Label when a story is pending sending-->
+  <string name="StoriesLandingItem__sending">正在发送…</string>
+  <!--Label when multiple stories are pending sending-->
+  <!--Label when a story fails to send-->
+  <string name="StoriesLandingItem__send_failed">发送失败</string>
+  <!--Status label when a story fails to send indicating user action to retry-->
+  <!--Title of dialog confirming decision to hide a story-->
+  <!--Message of dialog confirming decision to hide a story-->
+  <!--Positive action of dialog confirming decision to hide a story-->
+  <string name="StoriesLandingFragment__hide">隐藏</string>
+  <!--Displayed in Snackbar after story is hidden-->
+  <!--Section header for hidden stories-->
+  <!--Displayed on each sent story under My Stories-->
+  <!--Forward story label, displayed in My Stories context menu-->
+  <string name="MyStories_forward">转发</string>
+  <!--Label for stories for a single user. Format is {given name}\'s Story-->
+  <!--Title of dialog to confirm deletion of story-->
+  <!--Message of dialog to confirm deletion of story-->
+  <!--Displayed at bottom of story viewer when current item has views-->
+  <!--Displayed at bottom of story viewer when current item has replies-->
+  <!--Used to join views and replies when both exist on a story item-->
+  <string name="StoryViewerFragment__s_s">%1$s %2$s</string>
+  <!--Displayed when viewing a post you sent-->
+  <string name="StoryViewerPageFragment__you">您</string>
+  <!--Displayed when viewing a post displayed to a group-->
+  <string name="StoryViewerPageFragment__s_to_s">%1$s 至 %2$s</string>
+  <!--Displayed when viewing a post from another user with no replies-->
+  <string name="StoryViewerPageFragment__reply">回复</string>
+  <!--Displayed when a story has no views-->
+  <!--Displayed when a story has no replies yet-->
+  <!--Displayed for each user that reacted to a story when viewing replies-->
+  <!--Label for story views tab-->
+  <!--Label for story replies tab-->
+  <!--Description of action for reaction button-->
+  <!--Displayed when the user is replying privately to someone who replied to one of their stories-->
+  <!--Context menu item to privately reply to a story response-->
+  <!--Context menu item to copy a story response-->
+  <string name="StoryGroupReplyItem__copy">复制</string>
+  <!--Context menu item to delete a story response-->
+  <string name="StoryGroupReplyItem__delete">删除</string>
+  <!--Story settings page title-->
+  <!--Story settings private stories heading-->
+  <!--Note at bottom of story settings regarding who can see private stories.-->
+  <!--Option label for creating a new private story-->
+  <!--Page title for My Story options-->
+  <!--Section heading for story visibility-->
+  <!--Clickable option for selecting people to hide your story from-->
+  <!--Summary of clickable option displaying how many people you have hidden your story from-->
+  <!--Section header for options related to replies and reactions-->
+  <!--Switchable option for allowing replies and reactions on your stories-->
+  <!--Summary for switchable option allowing replies and reactions on your story-->
+  <!--Note about default sharing-->
+  <!--Signal connections linked text that opens the Signal Connections sheet-->
+  <!--Displayed at the top of the signal connections sheet. Please remember to insert strong tag as required.-->
+  <!--Signal connections sheet bullet point 1-->
+  <!--Signal connections sheet bullet point 2-->
+  <!--Signal connections sheet bullet point 3-->
+  <!--Note at the bottom of the Signal connections sheet-->
+  <!--Clickable option to add a viewer to a private story-->
+  <!--Clickable option to delete a custom story-->
+  <!--Dialog title when attempting to remove someone from a private story-->
+  <!--Dialog message when attempting to remove someone from a private story-->
+  <!--Positive action label when attempting to remove someone from a private story-->
+  <string name="PrivateStorySettingsFragment__remove">移除</string>
+  <!--Dialog title when deleting a private story-->
+  <!--Dialog message when deleting a private story-->
+  <!--Page title for editing a private story name-->
+  <!--Input field hint when editing a private story name-->
+  <!--Save button label when editing a private story name-->
+  <string name="EditPrivateStoryNameFragment__save">保存</string>
+  <!--Displayed in text post creator before user enters text-->
+  <!--Button label for changing font when creating a text post-->
+  <!--Displayed in text post creator when prompting user to enter text-->
+  <!--Content description for \'done\' button when adding text to a story post-->
+  <!--Text label for media selection toggle-->
+  <string name="MediaSelectionActivity__text">文本</string>
+  <!--Camera label for media selection toggle-->
+  <string name="MediaSelectionActivity__camera">相机</string>
+  <!--Hint for entering a URL for a text post-->
+  <!--Displayed prior to the user entering a URL for a text post-->
+  <!--Hint text for searching for a story text post recipient.-->
+  <string name="TextStoryPostSendFragment__search">搜索</string>
+  <!--Title for screen allowing user to hide "My Story" entries from specific people-->
+  <!--Done button label for hide story from screen-->
+  <string name="HideStoryFromFragment__done">完成</string>
+  <!--Dialog title for first time adding something to a story-->
+  <!--Dialog message for first time adding something to a story-->
+  <!--First time share to story dialog: Positive action to go ahead and add to story-->
+  <!--First time share to story dialog: Neutral action to edit who can view "My Story"-->
+  <!--Error message shown when a failure occurs during story send-->
+  <!--Error message dialog button to resend a previously failed story send-->
+  <string name="StoryDialogs__send">发送</string>
+  <!--Privacy Settings toggle title for stories-->
+  <!--Privacy Settings toggle summary for stories-->
+  <!--New story viewer selection screen title-->
+  <!--New story viewer selection action button label-->
+  <string name="CreateStoryViewerSelectionFragment__next">下一步</string>
+  <!--New story viewer selection screen title as recipients are selected-->
+  <!--Name story screen title-->
+  <!--Name story screen label hint-->
+  <!--Name story screen viewers subheading-->
+  <!--Name story screen create button label-->
+  <string name="CreateStoryWithViewersFragment__create">创建</string>
+  <!--Name story screen error when save attempted with no label-->
+  <string name="CreateStoryWithViewersFragment__this_field_is_required">必须填写此项。</string>
+  <!--Name story screen error when save attempted but label is duplicate-->
+  <!--Text for select all action when editing recipients for a story-->
+  <string name="BaseStoryRecipientSelectionFragment__select_all">选择全部</string>
+  <!--Choose story type bottom sheet title-->
+  <!--Choose story type bottom sheet new story row title-->
+  <!--Choose story type bottom sheet new story row summary-->
+  <!--Choose story type bottom sheet group story title-->
+  <!--Choose story type bottom sheet group story summary-->
+  <!--Choose groups bottom sheet title-->
+  <!--Displayed when copying group story reply text to clipboard-->
+  <string name="StoryGroupReplyFragment__copied_to_clipboard">已复制到剪切板</string>
+  <!--Displayed in story caption when content is longer than 5 lines-->
+  <!--Displayed in toast after sending a direct reply-->
+  <!--Displayed in toast after sending a direct reaction-->
+  <!--Displayed in the viewer when a story is no longer available-->
+  <!--Displayed in the viewer when the network is not available-->
+  <string name="StorySlateView__no_internet_connection">无可用的互联网连接</string>
+  <!--Displayed in the viewer when network is available but content could not be downloaded-->
+  <!--Toasted when the user externally shares to a text story successfully-->
+  <!--Toasted when the user external share to a text story fails-->
+  <!--Displayed in a dialog to let the user select a given users story-->
+  <!--Displayed in a dialog to let the user select a given users profile photo-->
+  <!--Title for a notification at the bottom of the chat list suggesting that the user disable censorship circumvention because the service has become reachable-->
+  <!--Body for a notification at the bottom of the chat list suggesting that the user disable censorship circumvention because the service has become reachable-->
+  <!--Label for a button to dismiss a notification at the bottom of the chat list suggesting that the user disable censorship circumvention because the service has become reachable-->
+  <string name="TurnOffCircumventionMegaphone_no_thanks">不，谢谢。</string>
+  <!--Label for a button in a notification at the bottom of the chat list to turn off censorship circumvention-->
+  <string name="TurnOffCircumventionMegaphone_turn_off">关闭</string>
+  <!--Conversation Item label for when you react to someone else\'s story-->
+  <!--Conversation Item label for reactions to your story-->
+  <!--Conversation Item label for reactions to an unavailable story-->
+  <!--endregion-->
+  <!--Content description for expand contacts chevron-->
+  <!--Tagline for gift row items-->
+  <!--Headline text on start fragment for gifting a badge-->
+  <!--Description text on start fragment for gifting a badge-->
+  <!--Action button label for start fragment for gifting a badge-->
+  <string name="GiftFlowStartFragment__next">下一步</string>
+  <!--Title text on choose recipient page for badge gifting-->
+  <!--Title text on confirm gift page-->
+  <!--Heading text specifying who the gift will be sent to-->
+  <!--Text explaining that gift will be sent to the chosen recipient-->
+  <!--Text explaining that this gift is a one time donation-->
+  <!--Hint for add message input-->
+  <!--Title for sheet shown when opening a redeemed gift-->
+  <!--Title for sheet shown when opening a sent gift-->
+  <!--Description for sheet shown when opening a redeemed gift-->
+  <!--Description for sheet shown when opening a sent gift-->
+  <!--Primary action for pending gift sheet to redeem badge now-->
+  <!--Primary action for pending gift sheet to redeem badge later-->
+  <string name="ViewReceivedGiftSheet__not_now">稍后再说</string>
+  <!--Dialog text while redeeming a gift-->
+  <!--Snackbar text when user presses "not now" on redemption sheet-->
+  <!--Description text in gift thanks sheet-->
+  <!--Expired gift sheet title-->
+  <!--Expired gift sheet top description text-->
+  <!--Expired gift sheet bottom description text-->
+  <!--Expired gift sheet make a monthly donation button-->
+  <!--Expired gift sheet not now button-->
+  <string name="ExpiredGiftSheetConfiguration__not_now">稍后再说</string>
   <!--EOF-->
 </resources>

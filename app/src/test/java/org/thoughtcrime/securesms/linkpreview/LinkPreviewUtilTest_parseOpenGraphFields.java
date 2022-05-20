@@ -1,16 +1,20 @@
 package org.thoughtcrime.securesms.linkpreview;
 
+import android.app.Application;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.whispersystems.libsignal.util.guava.Optional;
+import org.robolectric.ParameterizedRobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Optional;
 
 import static junit.framework.TestCase.assertEquals;
 
-@RunWith(Parameterized.class)
+@RunWith(ParameterizedRobolectricTestRunner.class)
+@Config(manifest = Config.NONE, application = Application.class)
 public class LinkPreviewUtilTest_parseOpenGraphFields {
 
   private final String html;
@@ -19,7 +23,7 @@ public class LinkPreviewUtilTest_parseOpenGraphFields {
   private final long   date;
   private final String imageUrl;
 
-  @Parameterized.Parameters
+  @ParameterizedRobolectricTestRunner.Parameters
   public static Collection<Object[]> data() {
     return Arrays.asList(new Object[][]{
         // Normal
@@ -150,6 +154,16 @@ public class LinkPreviewUtilTest_parseOpenGraphFields {
             694051200000L,
             null},
 
+        // Double encoded HTML
+        { "<meta content=\"Daily Bugle\" property=\"og:title\">\n" +
+          "<meta content=\"https://images.com/my-image.jpg\" property=\"og:image\">" +
+          "<meta content=\"A newspaper&amp;#39;s\" property=\"og:description\">" +
+          "<meta content=\"1991-12-30T00:00:00+00:00\" property=\"og:published_time\">",
+          "Daily Bugle",
+          "A newspaper's",
+          694051200000L,
+          "https://images.com/my-image.jpg"},
+
     });
   }
 
@@ -163,10 +177,10 @@ public class LinkPreviewUtilTest_parseOpenGraphFields {
 
   @Test
   public void parseOpenGraphFields() {
-    LinkPreviewUtil.OpenGraph openGraph = LinkPreviewUtil.parseOpenGraphFields(html, html -> html);
-    assertEquals(Optional.fromNullable(title), openGraph.getTitle());
-    assertEquals(Optional.fromNullable(description), openGraph.getDescription());
+    LinkPreviewUtil.OpenGraph openGraph = LinkPreviewUtil.parseOpenGraphFields(html);
+    assertEquals(Optional.ofNullable(title), openGraph.getTitle());
+    assertEquals(Optional.ofNullable(description), openGraph.getDescription());
     assertEquals(date, openGraph.getDate());
-    assertEquals(Optional.fromNullable(imageUrl), openGraph.getImageUrl());
+    assertEquals(Optional.ofNullable(imageUrl), openGraph.getImageUrl());
   }
 }

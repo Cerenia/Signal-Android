@@ -12,8 +12,16 @@ public class RequestMessage {
 
   private final Request request;
 
+  public static RequestMessage forType(Request.Type type) {
+    return new RequestMessage(Request.newBuilder().setType(type).build());
+  }
+
   public RequestMessage(Request request) {
     this.request = request;
+  }
+
+  public Request getRequest() {
+    return request;
   }
 
   public boolean isContactsRequest() {
@@ -34,5 +42,9 @@ public class RequestMessage {
 
   public boolean isKeysRequest() {
     return request.getType() == Request.Type.KEYS;
+  }
+
+  public boolean isPniIdentityRequest() {
+    return request.getType() == Request.Type.PNI_IDENTITY;
   }
 }

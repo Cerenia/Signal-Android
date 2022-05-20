@@ -332,7 +332,7 @@
   <!--ConversationTypingView-->
   <string name="ConversationTypingView__plus_d">+%1$d</string>
   <!--CreateGroupActivity-->
-  <string name="CreateGroupActivity_some_contacts_cannot_be_in_legacy_groups">కొన్ని పరిచయాలు పురాతన సమూహాలలో ఉండలేవు</string>
+  <!-- Removed by excludeNonTranslatables <string name="CreateGroupActivity_some_contacts_cannot_be_in_legacy_groups">కొన్ని పరిచయాలు పురాతన సమూహాలలో ఉండలేవు</string> -->
   <string name="CreateGroupActivity__select_members">సభ్యులను ఎంచుకోండి</string>
   <!--CreateProfileActivity-->
   <string name="CreateProfileActivity__profile">రూపం</string>
@@ -424,9 +424,9 @@
   </plurals>
   <string name="PendingGroupJoinRequestsReminder_view">వీక్షణ</string>
   <!--ShareActivity-->
-  <string name="ShareActivity_share_with">తో పంచు</string>
-  <string name="ShareActivity_multiple_attachments_are_only_supported">కేవలం ఛాయాచిత్రములు మరియు చలనచిత్రములు మాత్రమే ఒకటి కన్నా ఎక్కువ పంపగలం</string>
-  <string name="ShareActivity_you_do_not_have_permission_to_send_to_this_group">నీకు లేదు అనుమతి కు పంపండి దీనికి సమూహం</string>
+  <!-- Removed by excludeNonTranslatables <string name="ShareActivity_share_with">తో పంచు</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="ShareActivity_multiple_attachments_are_only_supported">కేవలం ఛాయాచిత్రములు మరియు చలనచిత్రములు మాత్రమే ఒకటి కన్నా ఎక్కువ పంపగలం</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="ShareActivity_you_do_not_have_permission_to_send_to_this_group">నీకు లేదు అనుమతి కు పంపండి దీనికి సమూహం</string> -->
   <!--GcmRefreshJob-->
   <string name="GcmRefreshJob_Permanent_Signal_communication_failure">Signal లో శాశ్వత సమాచార వైఫల్యం!</string>
   <string name="GcmRefreshJob_Signal_was_unable_to_register_with_Google_Play_Services">గూగ్లె ప్లే సదుపాయలతొ Signal నమోదు కాలెదు. Signal సందెశాలు మరియు  కాల్స్ నిలిపివేయబడ్డాయి. దయచేసి ఆధునిక అమరికలు లో మళ్ళి నమోదు చెసుకొనగలరు.</string>
@@ -591,25 +591,25 @@
   <string name="AddGroupDetailsFragment__remove">తొలగించు</string>
   <string name="AddGroupDetailsFragment__sms_contact">SMS పరిచయం</string>
   <string name="AddGroupDetailsFragment__remove_s_from_this_group">ఈ గుంపు నుండి %1$s ను తొలగించాలా?</string>
-  <plurals name="AddGroupDetailsFragment__d_members_do_not_support_new_groups">
+  <!-- Removed by excludeNonTranslatables <plurals name="AddGroupDetailsFragment__d_members_do_not_support_new_groups">
     <item quantity="one">%d సభ్యుడు క్రొత్త సమూహాలకు మద్దతు ఇవ్వరు, కాబట్టి ఇది లెగసీ గ్రూప్ అవుతుంది.</item>
     <item quantity="other">%d మంది సభ్యులు కొత్త సమూహాలకు మద్దతు ఇవ్వరు, కాబట్టి ఈ సమూహం లెగసీ గ్రూప్ అవుతుంది.</item>
-  </plurals>
-  <plurals name="AddGroupDetailsFragment__d_members_do_not_support_new_groups_so_this_group_cannot_be_created">
+  </plurals> -->
+  <!-- Removed by excludeNonTranslatables <plurals name="AddGroupDetailsFragment__d_members_do_not_support_new_groups_so_this_group_cannot_be_created">
     <item quantity="one">%d సభ్యుడు క్రొత్త సమూహాలకు మద్దతు ఇవ్వరు, కాబట్టి ఈ గుంపు సృష్టించబడదు.</item>
     <item quantity="other">%d సభ్యులు క్రొత్త సమూహాలకు మద్దతు ఇవ్వరు, కాబట్టి ఈ గుంపు సృష్టించబడదు.</item>
-  </plurals>
+  </plurals> -->
   <!--NonGv2MemberDialog-->
-  <string name="NonGv2MemberDialog_single_users_are_non_gv2_capable">లెగసీ గ్రూప్ సృష్టించబడుతుంది ఎందుకంటే “%1$s” Signal యొక్క పాత వెర్షన్‌ను ఉపయోగిస్తోంది. వారు Signal‌ను నవీకరించిన తర్వాత మీరు వారితో కొత్త శైలి సమూహాన్ని సృష్టించవచ్చు లేదా సమూహాన్ని సృష్టించే ముందు వాటిని తొలగించవచ్చు.</string>
-  <plurals name="NonGv2MemberDialog_d_users_are_non_gv2_capable">
+  <!-- Removed by excludeNonTranslatables <string name="NonGv2MemberDialog_single_users_are_non_gv2_capable">లెగసీ గ్రూప్ సృష్టించబడుతుంది ఎందుకంటే “%1$s” Signal యొక్క పాత వెర్షన్‌ను ఉపయోగిస్తోంది. వారు Signal‌ను నవీకరించిన తర్వాత మీరు వారితో కొత్త శైలి సమూహాన్ని సృష్టించవచ్చు లేదా సమూహాన్ని సృష్టించే ముందు వాటిని తొలగించవచ్చు.</string> -->
+  <!-- Removed by excludeNonTranslatables <plurals name="NonGv2MemberDialog_d_users_are_non_gv2_capable">
     <item quantity="one">%1$d మంది సభ్యుడు Signal యొక్క పాత సంస్కరణను ఉపయోగిస్తున్నందున లెగసీ గ్రూప్ సృష్టించబడుతుంది. వారు Signal‌ను నవీకరించిన తర్వాత మీరు వారితో కొత్త శైలి సమూహాన్ని సృష్టించవచ్చు లేదా సమూహాన్ని సృష్టించే ముందు వాటిని తొలగించవచ్చు.</item>
     <item quantity="other">లెగసీ గ్రూప్ సృష్టించబడుతుంది ఎందుకంటే %1$d మంది సభ్యులు Signal యొక్క పాత వెర్షన్‌ను ఉపయోగిస్తున్నారు. వారు Signal‌ను నవీకరించిన తర్వాత మీరు వారితో కొత్త శైలి సమూహాన్ని సృష్టించవచ్చు లేదా సమూహాన్ని సృష్టించే ముందు వాటిని తొలగించవచ్చు.</item>
-  </plurals>
-  <string name="NonGv2MemberDialog_single_users_are_non_gv2_capable_forced_migration">ఈ గుంపు సృష్టించబడదు ఎందుకంటే “%1$s” Signal యొక్క పాత సంస్కరణను ఉపయోగిస్తోంది. సమూహాన్ని సృష్టించే ముందు మీరు వాటిని తీసివేయాలి.</string>
-  <plurals name="NonGv2MemberDialog_d_users_are_non_gv2_capable_forced_migration">
+  </plurals> -->
+  <!-- Removed by excludeNonTranslatables <string name="NonGv2MemberDialog_single_users_are_non_gv2_capable_forced_migration">ఈ గుంపు సృష్టించబడదు ఎందుకంటే “%1$s” Signal యొక్క పాత సంస్కరణను ఉపయోగిస్తోంది. సమూహాన్ని సృష్టించే ముందు మీరు వాటిని తీసివేయాలి.</string> -->
+  <!-- Removed by excludeNonTranslatables <plurals name="NonGv2MemberDialog_d_users_are_non_gv2_capable_forced_migration">
     <item quantity="one">%1$d సభ్యుడు Signal యొక్క పాత సంస్కరణను ఉపయోగిస్తున్నందున ఈ గుంపు సృష్టించబడదు. సమూహాన్ని సృష్టించే ముందు మీరు వాటిని తీసివేయాలి.</item>
     <item quantity="other">%1$d మంది సభ్యులు Signal యొక్క పాత సంస్కరణను ఉపయోగిస్తున్నందున ఈ సమూహాన్ని సృష్టించడం సాధ్యం కాదు. సమూహాన్ని సృష్టించే ముందు మీరు వాటిని తీసివేయాలి.</item>
-  </plurals>
+  </plurals> -->
   <!--ManageGroupActivity-->
   <string name="ManageGroupActivity_member_requests_and_invites">సభ్యుల అభ్యర్థనలు &amp; ఆహ్వానిస్తుంది</string>
   <string name="ManageGroupActivity_add_members">సభ్యులను జోడించండి</string>
@@ -716,7 +716,7 @@
   <string name="GroupJoinBottomSheetDialogFragment_unable_to_join_group_please_try_again_later">సమూహంలో చేరడం సాధ్యం కాలేదు. దయచేసి తర్వాత మళ్లీ ప్రయత్నించండి</string>
   <string name="GroupJoinBottomSheetDialogFragment_encountered_a_network_error">నెట్‌వర్క్ లోపాన్ని ఎదుర్కొంది.</string>
   <string name="GroupJoinBottomSheetDialogFragment_this_group_link_is_not_active">ఈ సమూహ లింక్ సక్రియంగా లేదు</string>
-  <string name="GroupJoinBottomSheetDialogFragment_unable_to_get_group_information_please_try_again_later">సమూహ సమాచారాన్ని పొందడం సాధ్యం కాలేదు, దయచేసి తర్వాత మళ్లీ ప్రయత్నించండి</string>
+  <!-- Removed by excludeNonTranslatables <string name="GroupJoinBottomSheetDialogFragment_unable_to_get_group_information_please_try_again_later">సమూహ సమాచారాన్ని పొందడం సాధ్యం కాలేదు, దయచేసి తర్వాత మళ్లీ ప్రయత్నించండి</string> -->
   <string name="GroupJoinBottomSheetDialogFragment_direct_join">మీరు ఈ గుంపులో చేరాలని మరియు మీ పేరు మరియు ఛాయాచిత్రని సభ్యులతో పంచుకోవాలనుకుంటున్నారా?</string>
   <string name="GroupJoinBottomSheetDialogFragment_admin_approval_needed">మీరు ఈ గుంపులో చేరడానికి ముందు ఈ గుంపు యొక్క నిర్వాహకుడు మీ అభ్యర్థనను ఆమోదించాలి. మీరు చేరమని అభ్యర్థించినప్పుడు, మీ పేరు మరియు ఫోటో దాని సభ్యులతో భాగస్వామ్యం చేయబడుతుంది.</string>
   <plurals name="GroupJoinBottomSheetDialogFragment_group_dot_d_members">
@@ -2080,14 +2080,14 @@
   <string name="conversation_callable_secure__menu_call">Signal కాల్</string>
   <string name="conversation_callable_secure__menu_video">Signal వీడియో కాల్</string>
   <!--conversation_context-->
-  <string name="conversation_context__menu_message_details">సందేశం వివరాలు</string>
-  <string name="conversation_context__menu_copy_text">మూల గ్రంథము అనుకరణ</string>
-  <string name="conversation_context__menu_delete_message">సందేశాన్ని తొలగించు</string>
-  <string name="conversation_context__menu_forward_message">సందేశాన్ని బదలాయించు</string>
-  <string name="conversation_context__menu_resend_message">సందేశాన్ని తిరిగి పంపు</string>
-  <string name="conversation_context__menu_reply_to_message">సందేశానికి ప్రత్యుత్తరం ఇవ్వండి</string>
+  <!-- Removed by excludeNonTranslatables <string name="conversation_context__menu_message_details">సందేశం వివరాలు</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="conversation_context__menu_copy_text">మూల గ్రంథము అనుకరణ</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="conversation_context__menu_delete_message">సందేశాన్ని తొలగించు</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="conversation_context__menu_forward_message">సందేశాన్ని బదలాయించు</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="conversation_context__menu_resend_message">సందేశాన్ని తిరిగి పంపు</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="conversation_context__menu_reply_to_message">సందేశానికి ప్రత్యుత్తరం ఇవ్వండి</string> -->
   <!--conversation_context_reacction-->
-  <string name="conversation_context__reaction_multi_select">బహుళ ఎంచుకోండి</string>
+  <!-- Removed by excludeNonTranslatables <string name="conversation_context__reaction_multi_select">బహుళ ఎంచుకోండి</string> -->
   <!--conversation_context_image-->
   <string name="conversation_context_image__save_attachment">జత పరిచినది దాచి పెట్టు </string>
   <!--conversation_expiring_off-->
@@ -2515,7 +2515,7 @@
   <string name="MultiShareDialogs__failed_to_send_to_some_users">కొంతమంది వినియోగదారులకు పంపడంలో విఫలమైంది</string>
   <string name="MultiShareDialogs__you_can_only_share_with_up_to">మీరు %1$d చాట్‌లతో మాత్రమే భాగస్వామ్యం చేయవచ్చు</string>
   <!--ShareInterstitialActivity-->
-  <string name="ShareInterstitialActivity__forward_message">సందేశాన్ని బదలాయించు</string>
+  <!-- Removed by excludeNonTranslatables <string name="ShareInterstitialActivity__forward_message">సందేశాన్ని బదలాయించు</string> -->
   <!--ChatWallpaperActivity-->
   <string name="ChatWallpaperActivity__chat_wallpaper">సంభాషణ వాల్పేపర్</string>
   <!--ChatWallpaperFragment-->

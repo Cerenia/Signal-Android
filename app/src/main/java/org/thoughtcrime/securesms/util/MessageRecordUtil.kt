@@ -4,9 +4,12 @@ package org.thoughtcrime.securesms.util
 
 import android.content.Context
 import org.thoughtcrime.securesms.R
+import org.thoughtcrime.securesms.database.MmsSmsColumns
 import org.thoughtcrime.securesms.database.model.MediaMmsMessageRecord
 import org.thoughtcrime.securesms.database.model.MessageRecord
 import org.thoughtcrime.securesms.database.model.MmsMessageRecord
+import org.thoughtcrime.securesms.database.model.databaseprotos.GiftBadge
+import org.thoughtcrime.securesms.mms.TextSlide
 import org.thoughtcrime.securesms.stickers.StickerUrl
 
 const val MAX_BODY_DISPLAY_LENGTH = 1000
@@ -35,6 +38,9 @@ fun MessageRecord.isCaptionlessMms(context: Context): Boolean =
 
 fun MessageRecord.hasThumbnail(): Boolean =
   isMms && (this as MmsMessageRecord).slideDeck.thumbnailSlide != null
+
+fun MessageRecord.isStoryReaction(): Boolean =
+  isMms && MmsSmsColumns.Types.isStoryReaction((this as MmsMessageRecord).type)
 
 fun MessageRecord.isBorderless(context: Context): Boolean {
   return isCaptionlessMms(context) &&
@@ -74,6 +80,12 @@ fun MessageRecord.hasQuote(): Boolean =
 fun MessageRecord.hasLinkPreview(): Boolean =
   isMms && (this as MmsMessageRecord).linkPreviews.isNotEmpty()
 
+fun MessageRecord.hasTextSlide(): Boolean =
+  isMms && (this as MmsMessageRecord).slideDeck.textSlide != null && this.slideDeck.textSlide?.uri != null
+
+fun MessageRecord.requireTextSlide(): TextSlide =
+  requireNotNull((this as MmsMessageRecord).slideDeck.textSlide)
+
 fun MessageRecord.hasBigImageLinkPreview(context: Context): Boolean {
   if (!hasLinkPreview()) {
     return false
@@ -90,6 +102,14 @@ fun MessageRecord.hasBigImageLinkPreview(context: Context): Boolean {
   return linkPreview.thumbnail.isPresent && linkPreview.thumbnail.get().width >= minWidth && !StickerUrl.isValidShareLink(linkPreview.url)
 }
 
+fun MessageRecord.hasGiftBadge(): Boolean {
+  return (this as? MmsMessageRecord)?.giftBadge != null
+}
+
+fun MessageRecord.requireGiftBadge(): GiftBadge {
+  return (this as MmsMessageRecord).giftBadge!!
+}
+
 fun MessageRecord.isTextOnly(context: Context): Boolean {
   return !isMms ||
     (
@@ -103,6 +123,7 @@ fun MessageRecord.isTextOnly(context: Context): Boolean {
         !hasLocation() &&
         !hasSharedContact() &&
         !hasSticker() &&
-        !isCaptionlessMms(context)
+        !isCaptionlessMms(context) &&
+        !hasGiftBadge()
       )
 }

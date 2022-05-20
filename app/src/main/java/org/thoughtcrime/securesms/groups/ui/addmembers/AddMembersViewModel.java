@@ -15,8 +15,8 @@ import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.groups.GroupId;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
-import org.thoughtcrime.securesms.util.concurrent.SimpleTask;
-import org.whispersystems.libsignal.util.guava.Preconditions;
+import org.signal.core.util.concurrent.SimpleTask;
+import org.whispersystems.signalservice.api.util.Preconditions;
 
 import java.util.List;
 import java.util.Objects;

@@ -8,7 +8,6 @@ import androidx.annotation.Nullable;
 
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.crypto.ReentrantSessionLock;
-import org.thoughtcrime.securesms.crypto.IdentityKeyUtil;
 import org.thoughtcrime.securesms.database.GroupDatabase;
 import org.thoughtcrime.securesms.database.MessageDatabase.SyncMessageId;
 import org.thoughtcrime.securesms.database.MmsSmsDatabase;
@@ -25,7 +24,7 @@ import org.thoughtcrime.securesms.messages.MessageDecryptionUtil.DecryptionResul
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.util.GroupUtil;
-import org.thoughtcrime.securesms.util.SetUtil;
+import org.signal.core.util.SetUtil;
 import org.thoughtcrime.securesms.util.Stopwatch;
 import org.thoughtcrime.securesms.util.TextSecurePreferences;
 import org.whispersystems.signalservice.api.SignalSessionLock;
@@ -143,7 +142,7 @@ public class IncomingMessageProcessor {
         stopwatch.split("group-check");
 
         try {
-          MessageContentProcessor processor = new MessageContentProcessor(context);
+          MessageContentProcessor processor = MessageContentProcessor.forNormalContent(context);
           processor.process(result.getState(), result.getContent(), result.getException(), envelope.getTimestamp(), -1);
           return null;
         } catch (IOException | GroupChangeBusyException e) {
@@ -168,7 +167,6 @@ public class IncomingMessageProcessor {
 
     private boolean needsToEnqueueDecryption() {
       return !jobManager.areQueuesEmpty(SetUtil.newHashSet(Job.Parameters.MIGRATION_QUEUE_KEY, PushDecryptMessageJob.QUEUE)) ||
-             !IdentityKeyUtil.hasIdentityKey(context)                                                                        ||
              TextSecurePreferences.getNeedsSqlCipherMigration(context);
     }
 

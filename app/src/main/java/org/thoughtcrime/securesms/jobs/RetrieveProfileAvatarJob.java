@@ -6,7 +6,7 @@ import android.text.TextUtils;
 import androidx.annotation.NonNull;
 
 import org.signal.core.util.logging.Log;
-import org.signal.zkgroup.profiles.ProfileKey;
+import org.signal.libsignal.zkgroup.profiles.ProfileKey;
 import org.thoughtcrime.securesms.crypto.ProfileKeyUtil;
 import org.thoughtcrime.securesms.database.RecipientDatabase;
 import org.thoughtcrime.securesms.database.SignalDatabase;
@@ -18,7 +18,6 @@ import org.thoughtcrime.securesms.keyvalue.SignalStore;
 import org.thoughtcrime.securesms.profiles.AvatarHelper;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
-import org.thoughtcrime.securesms.util.Util;
 import org.whispersystems.signalservice.api.SignalServiceMessageReceiver;
 import org.whispersystems.signalservice.api.push.exceptions.NonSuccessfulResponseCodeException;
 import org.whispersystems.signalservice.api.push.exceptions.PushNetworkException;
@@ -81,19 +80,22 @@ public class RetrieveProfileAvatarJob extends BaseJob {
       return;
     }
 
-    if (Util.equals(profileAvatar, recipient.resolve().getProfileAvatar())) {
+    if (profileAvatar != null && profileAvatar.equals(recipient.resolve().getProfileAvatar())) {
       Log.w(TAG, "Already retrieved profile avatar: " + profileAvatar);
       return;
     }
 
     if (TextUtils.isEmpty(profileAvatar)) {
-      Log.w(TAG, "Removing profile avatar (no url) for: " + recipient.getId().serialize());
-      AvatarHelper.delete(context, recipient.getId());
-      database.setProfileAvatar(recipient.getId(), profileAvatar);
+      if (AvatarHelper.hasAvatar(context, recipient.getId())) {
+        Log.w(TAG, "Removing profile avatar (no url) for: " + recipient.getId().serialize());
+        AvatarHelper.delete(context, recipient.getId());
+        database.setProfileAvatar(recipient.getId(), profileAvatar);
+      }
+
       return;
     }
 
-    File downloadDestination = File.createTempFile("avatar", "jpg", context.getCacheDir());
+      File downloadDestination = File.createTempFile("avatar", "jpg", context.getCacheDir());
 
     try {
       SignalServiceMessageReceiver receiver     = ApplicationDependencies.getSignalServiceMessageReceiver();

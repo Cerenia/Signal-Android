@@ -7,6 +7,7 @@ import android.provider.Settings;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.WorkerThread;
 
 import com.annimon.stream.Stream;
 
@@ -15,7 +16,6 @@ import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.badges.models.Badge;
 import org.thoughtcrime.securesms.components.settings.app.AppSettingsActivity;
-import org.thoughtcrime.securesms.conversationlist.ConversationListFragment;
 import org.thoughtcrime.securesms.database.model.MegaphoneRecord;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.jobmanager.impl.NetworkConstraint;
@@ -24,16 +24,14 @@ import org.thoughtcrime.securesms.lock.SignalPinReminderDialog;
 import org.thoughtcrime.securesms.lock.SignalPinReminders;
 import org.thoughtcrime.securesms.lock.v2.CreateKbsPinActivity;
 import org.thoughtcrime.securesms.lock.v2.KbsMigrationActivity;
-import org.thoughtcrime.securesms.messagerequests.MessageRequestMegaphoneActivity;
 import org.thoughtcrime.securesms.notifications.NotificationChannels;
 import org.thoughtcrime.securesms.profiles.AvatarHelper;
-import org.thoughtcrime.securesms.profiles.ProfileName;
 import org.thoughtcrime.securesms.profiles.manage.ManageProfileActivity;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.util.FeatureFlags;
 import org.thoughtcrime.securesms.util.LocaleFeatureFlags;
 import org.thoughtcrime.securesms.util.PlayServicesUtil;
-import org.thoughtcrime.securesms.util.TextSecurePreferences;
+import org.signal.core.util.SetUtil;
 import org.thoughtcrime.securesms.util.VersionTracker;
 import org.thoughtcrime.securesms.util.dynamiclanguage.DynamicLanguageContextWrapper;
 import org.thoughtcrime.securesms.wallpaper.ChatWallpaperActivity;
@@ -43,18 +41,19 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
  * Creating a new megaphone:
  * - Add an enum to {@link Event}
  * - Return a megaphone in {@link #forRecord(Context, MegaphoneRecord)}
- * - Include the event in {@link #buildDisplayOrder(Context)}
+ * - Include the event in {@link #buildDisplayOrder(Context, Map)}
  *
  * Common patterns:
  * - For events that have a snooze-able recurring display schedule, use a {@link RecurringSchedule}.
  * - For events guarded by feature flags, set a {@link ForeverSchedule} with false in
- *   {@link #buildDisplayOrder(Context)}.
+ *   {@link #buildDisplayOrder(Context, Map)}.
  * - For events that change, return different megaphones in {@link #forRecord(Context, MegaphoneRecord)}
  *   based on whatever properties you're interested in.
  */
@@ -65,12 +64,16 @@ public final class Megaphones {
   private static final MegaphoneSchedule ALWAYS = new ForeverSchedule(true);
   private static final MegaphoneSchedule NEVER  = new ForeverSchedule(false);
 
+  private static final Set<Event> DONATE_EVENTS                      = SetUtil.newHashSet(Event.BECOME_A_SUSTAINER);
+  private static final long       MIN_TIME_BETWEEN_DONATE_MEGAPHONES = TimeUnit.DAYS.toMillis(30);
+
   private Megaphones() {}
 
+  @WorkerThread
   static @Nullable Megaphone getNextMegaphone(@NonNull Context context, @NonNull Map<Event, MegaphoneRecord> records) {
     long currentTime = System.currentTimeMillis();
 
-    List<Megaphone> megaphones = Stream.of(buildDisplayOrder(context))
+    List<Megaphone> megaphones = Stream.of(buildDisplayOrder(context, records))
                                        .filter(e -> {
                                          MegaphoneRecord   record = Objects.requireNonNull(records.get(e.getKey()));
                                          MegaphoneSchedule schedule = e.getValue();
@@ -95,19 +98,19 @@ public final class Megaphones {
    *
    * This is also when you would hide certain megaphones based on things like {@link FeatureFlags}.
    */
-  private static Map<Event, MegaphoneSchedule> buildDisplayOrder(@NonNull Context context) {
+  private static Map<Event, MegaphoneSchedule> buildDisplayOrder(@NonNull Context context, @NonNull Map<Event, MegaphoneRecord> records) {
     return new LinkedHashMap<Event, MegaphoneSchedule>() {{
       put(Event.PINS_FOR_ALL, new PinsForAllSchedule());
-      put(Event.NOTIFICATIONS, shouldShowNotificationsMegaphone(context) ? RecurringSchedule.every(TimeUnit.DAYS.toMillis(30)) : NEVER);
-      put(Event.BECOME_A_SUSTAINER, shouldShowDonateMegaphone(context) ? ShowForDurationSchedule.showForDays(7) : NEVER);
-      put(Event.PIN_REMINDER, new SignalPinReminderSchedule());
       put(Event.CLIENT_DEPRECATED, SignalStore.misc().isClientDeprecated() ? ALWAYS : NEVER);
+      put(Event.NOTIFICATIONS, shouldShowNotificationsMegaphone(context) ? RecurringSchedule.every(TimeUnit.DAYS.toMillis(30)) : NEVER);
       put(Event.ONBOARDING, shouldShowOnboardingMegaphone(context) ? ALWAYS : NEVER);
+      put(Event.TURN_OFF_CENSORSHIP_CIRCUMVENTION, shouldShowTurnOffCircumventionMegaphone() ? RecurringSchedule.every(TimeUnit.DAYS.toMillis(7)) : NEVER);
+      put(Event.BECOME_A_SUSTAINER, shouldShowDonateMegaphone(context, records) ? ShowForDurationSchedule.showForDays(7) : NEVER);
+      put(Event.PIN_REMINDER, new SignalPinReminderSchedule());
 
       // Feature-introduction megaphones should *probably* be added below this divider
       put(Event.CHAT_COLORS, ALWAYS);
       put(Event.ADD_A_PROFILE_PHOTO, shouldShowAddAProfilePhotoMegaphone(context) ? ALWAYS : NEVER);
-      put(Event.NOTIFICATION_PROFILES, ShowForDurationSchedule.showForDays(7));
     }};
   }
 
@@ -129,8 +132,8 @@ public final class Megaphones {
         return buildAddAProfilePhotoMegaphone(context);
       case BECOME_A_SUSTAINER:
         return buildBecomeASustainerMegaphone(context);
-      case NOTIFICATION_PROFILES:
-        return buildNotificationProfilesMegaphone(context);
+      case TURN_OFF_CENSORSHIP_CIRCUMVENTION:
+        return buildTurnOffCircumventionMegaphone(context);
       default:
         throw new IllegalArgumentException("Event not handled!");
     }
@@ -264,45 +267,53 @@ public final class Megaphones {
     return new Megaphone.Builder(Event.BECOME_A_SUSTAINER, Megaphone.Style.BASIC)
         .setTitle(R.string.BecomeASustainerMegaphone__become_a_sustainer)
         .setImage(R.drawable.ic_become_a_sustainer_megaphone)
-        .setBody(R.string.BecomeASustainerMegaphone__signal_is_powered)
-        .setActionButton(R.string.BecomeASustainerMegaphone__contribute, (megaphone, listener) -> {
+        .setBody(R.string.BecomeASustainerMegaphone__signal_is_powered_by)
+        .setActionButton(R.string.BecomeASustainerMegaphone__donate, (megaphone, listener) -> {
           listener.onMegaphoneNavigationRequested(AppSettingsActivity.subscriptions(context));
           listener.onMegaphoneCompleted(Event.BECOME_A_SUSTAINER);
         })
-        .setSecondaryButton(R.string.BecomeASustainerMegaphone__no_thanks, (megaphone, listener) -> {
+        .setSecondaryButton(R.string.BecomeASustainerMegaphone__not_now, (megaphone, listener) -> {
           listener.onMegaphoneCompleted(Event.BECOME_A_SUSTAINER);
         })
         .build();
   }
 
-  private static @NonNull Megaphone buildNotificationProfilesMegaphone(@NonNull Context context) {
-    return new Megaphone.Builder(Event.NOTIFICATION_PROFILES, Megaphone.Style.BASIC)
-        .setTitle(R.string.NotificationProfilesMegaphone__notification_profiles)
-        .setImage(R.drawable.ic_notification_profiles_megaphone)
-        .setBody(R.string.NotificationProfilesMegaphone__only_get_notifications_from_the_people_and_groups_you_choose)
-        .setActionButton(R.string.NotificationProfilesMegaphone__create_a_profile, (megaphone, listener) -> {
-          listener.onMegaphoneNavigationRequested(AppSettingsActivity.notificationProfiles(context));
-          listener.onMegaphoneCompleted(Event.NOTIFICATION_PROFILES);
+  private static @NonNull Megaphone buildTurnOffCircumventionMegaphone(@NonNull Context context) {
+    return new Megaphone.Builder(Event.TURN_OFF_CENSORSHIP_CIRCUMVENTION, Megaphone.Style.BASIC)
+        .setTitle(R.string.CensorshipCircumventionMegaphone_turn_off_censorship_circumvention)
+        .setImage(R.drawable.ic_censorship_megaphone_64)
+        .setBody(R.string.CensorshipCircumventionMegaphone_you_can_now_connect_to_the_signal_service)
+        .setActionButton(R.string.CensorshipCircumventionMegaphone_turn_off, (megaphone, listener) -> {
+          SignalStore.settings().setCensorshipCircumventionEnabled(false);
+          listener.onMegaphoneSnooze(Event.TURN_OFF_CENSORSHIP_CIRCUMVENTION);
         })
-        .setSecondaryButton(R.string.NotificationProfilesMegaphone__not_now, (megaphone, listener) -> {
-          listener.onMegaphoneCompleted(Event.NOTIFICATION_PROFILES);
+        .setSecondaryButton(R.string.CensorshipCircumventionMegaphone_no_thanks, (megaphone, listener) -> {
+          listener.onMegaphoneSnooze(Event.TURN_OFF_CENSORSHIP_CIRCUMVENTION);
         })
         .build();
   }
 
-  private static boolean shouldShowDonateMegaphone(@NonNull Context context) {
-    return VersionTracker.getDaysSinceFirstInstalled(context) >= 3 &&
+  private static boolean shouldShowDonateMegaphone(@NonNull Context context, @NonNull Map<Event, MegaphoneRecord> records) {
+    long timeSinceLastDonatePrompt = timeSinceLastDonatePrompt(records);
+
+    return timeSinceLastDonatePrompt > MIN_TIME_BETWEEN_DONATE_MEGAPHONES &&
+           VersionTracker.getDaysSinceFirstInstalled(context) >= 7 &&
            LocaleFeatureFlags.isInDonateMegaphone() &&
            PlayServicesUtil.getPlayServicesStatus(context) == PlayServicesUtil.PlayServicesStatus.SUCCESS &&
            Recipient.self()
-                     .getBadges()
-                     .stream()
-                     .filter(Objects::nonNull)
-                     .noneMatch(badge -> badge.getCategory() == Badge.Category.Donor);
+                    .getBadges()
+                    .stream()
+                    .filter(Objects::nonNull)
+                    .noneMatch(badge -> badge.getCategory() == Badge.Category.Donor);
   }
 
   private static boolean shouldShowOnboardingMegaphone(@NonNull Context context) {
     return SignalStore.onboarding().hasOnboarding(context);
+  }
+
+  private static boolean shouldShowTurnOffCircumventionMegaphone() {
+    return ApplicationDependencies.getSignalServiceNetworkAccess().isCensored() &&
+           SignalStore.misc().isServiceReachableWithoutCircumvention();
   }
 
   private static boolean shouldShowNotificationsMegaphone(@NonNull Context context) {
@@ -316,7 +327,8 @@ public final class Megaphones {
                .textExistsInUsersLanguage(R.string.NotificationsMegaphone_turn_on_notifications,
                                           R.string.NotificationsMegaphone_never_miss_a_message,
                                           R.string.NotificationsMegaphone_turn_on,
-                                          R.string.NotificationsMegaphone_not_now)) {
+                                          R.string.NotificationsMegaphone_not_now))
+      {
         Log.i(TAG, "Would show NotificationsMegaphone but is not yet translated in " + locale);
         return false;
       }
@@ -338,6 +350,23 @@ public final class Megaphones {
     return true;
   }
 
+  /**
+   * Unfortunately lastSeen is only set today upon snoozing, which never happens to donate prompts.
+   * So we use firstVisible as a proxy.
+   */
+  private static long timeSinceLastDonatePrompt(@NonNull Map<Event, MegaphoneRecord> records) {
+    long lastSeenDonatePrompt = records.entrySet()
+                                       .stream()
+                                       .filter(e -> DONATE_EVENTS.contains(e.getKey()))
+                                       .map(e -> e.getValue().getFirstVisible())
+                                       .filter(t -> t > 0)
+                                       .sorted()
+                                       .findFirst()
+                                       .orElse(0L);
+    return System.currentTimeMillis() - lastSeenDonatePrompt;
+  }
+
+
   public enum Event {
     PINS_FOR_ALL("pins_for_all"),
     PIN_REMINDER("pin_reminder"),
@@ -347,7 +376,8 @@ public final class Megaphones {
     CHAT_COLORS("chat_colors"),
     ADD_A_PROFILE_PHOTO("add_a_profile_photo"),
     BECOME_A_SUSTAINER("become_a_sustainer"),
-    NOTIFICATION_PROFILES("notification_profiles");
+    VALENTINES_DONATIONS_2022("valentines_donations_2022"),
+    TURN_OFF_CENSORSHIP_CIRCUMVENTION("turn_off_censorship_circumvention");
 
     private final String key;
 

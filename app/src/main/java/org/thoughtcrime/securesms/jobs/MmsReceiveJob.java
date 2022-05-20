@@ -8,6 +8,7 @@ import com.google.android.mms.pdu_alt.PduHeaders;
 import com.google.android.mms.pdu_alt.PduParser;
 
 import org.signal.core.util.logging.Log;
+import org.signal.libsignal.protocol.util.Pair;
 import org.thoughtcrime.securesms.database.MessageDatabase;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
@@ -16,7 +17,6 @@ import org.thoughtcrime.securesms.jobmanager.Job;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.util.Base64;
 import org.thoughtcrime.securesms.util.Util;
-import org.whispersystems.libsignal.util.Pair;
 
 import java.io.IOException;
 
@@ -71,7 +71,11 @@ public class MmsReceiveJob extends BaseJob {
       Log.w(TAG, e);
     }
 
-    if (isNotification(pdu) && !isBlocked(pdu)) {
+    if (isNotification(pdu) && isBlocked(pdu)) {
+      Log.w(TAG, "Received an MMS from a blocked user. Ignoring.");
+    } else if (isNotification(pdu) && isSelf(pdu)) {
+      Log.w(TAG, "Received an MMS from ourselves! Ignoring.");
+    } else if (isNotification(pdu)) {
       MessageDatabase  database           = SignalDatabase.mms();
       Pair<Long, Long> messageAndThreadId = database.insertMessageInbox((NotificationInd)pdu, subscriptionId);
 
@@ -80,8 +84,8 @@ public class MmsReceiveJob extends BaseJob {
       ApplicationDependencies.getJobManager().add(new MmsDownloadJob(messageAndThreadId.first(),
                                                                      messageAndThreadId.second(),
                                                                      true));
-    } else if (isNotification(pdu)) {
-      Log.w(TAG, "*** Received blocked MMS, ignoring...");
+    } else {
+      Log.w(TAG, "Unable to process MMS.");
     }
   }
 
@@ -99,6 +103,15 @@ public class MmsReceiveJob extends BaseJob {
     if (pdu.getFrom() != null && pdu.getFrom().getTextString() != null) {
       Recipient recipients = Recipient.external(context, Util.toIsoString(pdu.getFrom().getTextString()));
       return recipients.isBlocked();
+    }
+
+    return false;
+  }
+
+  private boolean isSelf(GenericPdu pdu) {
+    if (pdu.getFrom() != null && pdu.getFrom().getTextString() != null) {
+      Recipient recipients = Recipient.external(context, Util.toIsoString(pdu.getFrom().getTextString()));
+      return recipients.isSelf();
     }
 
     return false;

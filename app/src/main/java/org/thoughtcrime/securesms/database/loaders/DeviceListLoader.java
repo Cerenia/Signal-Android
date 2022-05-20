@@ -4,19 +4,21 @@ import android.content.Context;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 
 import com.annimon.stream.Stream;
 
 import org.signal.core.util.logging.Log;
-import org.thoughtcrime.securesms.crypto.IdentityKeyUtil;
+import org.signal.libsignal.protocol.IdentityKeyPair;
+import org.signal.libsignal.protocol.InvalidKeyException;
+import org.signal.libsignal.protocol.ecc.Curve;
+import org.signal.libsignal.protocol.ecc.ECPrivateKey;
+import org.signal.libsignal.protocol.ecc.ECPublicKey;
+import org.signal.libsignal.protocol.util.ByteUtil;
 import org.thoughtcrime.securesms.devicelist.Device;
+import org.thoughtcrime.securesms.keyvalue.SignalStore;
 import org.thoughtcrime.securesms.util.AsyncLoader;
 import org.thoughtcrime.securesms.util.Base64;
-import org.whispersystems.libsignal.InvalidKeyException;
-import org.whispersystems.libsignal.ecc.Curve;
-import org.whispersystems.libsignal.ecc.ECPrivateKey;
-import org.whispersystems.libsignal.ecc.ECPublicKey;
-import org.whispersystems.libsignal.util.ByteUtil;
 import org.whispersystems.signalservice.api.SignalServiceAccountManager;
 import org.whispersystems.signalservice.api.messages.multidevice.DeviceInfo;
 import org.whispersystems.signalservice.api.push.SignalServiceAddress;
@@ -75,35 +77,7 @@ public class DeviceListLoader extends AsyncLoader<List<Device>> {
         throw new IOException("Got a DeviceName that wasn't properly populated.");
       }
 
-      byte[]       syntheticIv     = deviceName.getSyntheticIv().toByteArray();
-      byte[]       cipherText      = deviceName.getCiphertext().toByteArray();
-      ECPrivateKey identityKey     = IdentityKeyUtil.getIdentityKeyPair(getContext()).getPrivateKey();
-      ECPublicKey  ephemeralPublic = Curve.decodePoint(deviceName.getEphemeralPublic().toByteArray(), 0);
-      byte[]       masterSecret    = Curve.calculateAgreement(ephemeralPublic, identityKey);
-
-      Mac mac = Mac.getInstance("HmacSHA256");
-      mac.init(new SecretKeySpec(masterSecret, "HmacSHA256"));
-      byte[] cipherKeyPart1 = mac.doFinal("cipher".getBytes());
-
-      mac.init(new SecretKeySpec(cipherKeyPart1, "HmacSHA256"));
-      byte[] cipherKey = mac.doFinal(syntheticIv);
-
-      Cipher cipher = Cipher.getInstance("AES/CTR/NoPadding");
-      cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(cipherKey, "AES"), new IvParameterSpec(new byte[16]));
-      final byte[] plaintext = cipher.doFinal(cipherText);
-
-      mac.init(new SecretKeySpec(masterSecret, "HmacSHA256"));
-      byte[] verificationPart1 = mac.doFinal("auth".getBytes());
-
-      mac.init(new SecretKeySpec(verificationPart1, "HmacSHA256"));
-      byte[] verificationPart2 = mac.doFinal(plaintext);
-      byte[] ourSyntheticIv    = ByteUtil.trim(verificationPart2, 16);
-
-      if (!MessageDigest.isEqual(ourSyntheticIv, syntheticIv)) {
-        throw new GeneralSecurityException("The computed syntheticIv didn't match the actual syntheticIv.");
-      }
-
-      return new Device(deviceInfo.getId(), new String(plaintext), deviceInfo.getCreated(), deviceInfo.getLastSeen());
+      return new Device(deviceInfo.getId(), new String(decryptName(deviceName, SignalStore.account().getAciIdentityKey())), deviceInfo.getCreated(), deviceInfo.getLastSeen());
 
     } catch (IOException e) {
       Log.w(TAG, "Failed while reading the protobuf.", e);
@@ -112,6 +86,39 @@ public class DeviceListLoader extends AsyncLoader<List<Device>> {
     }
 
     return new Device(deviceInfo.getId(), deviceInfo.getName(), deviceInfo.getCreated(), deviceInfo.getLastSeen());
+  }
+
+  @VisibleForTesting
+  public static byte[] decryptName(DeviceName deviceName, IdentityKeyPair identityKeyPair) throws InvalidKeyException, GeneralSecurityException {
+    byte[]       syntheticIv     = deviceName.getSyntheticIv().toByteArray();
+    byte[]       cipherText      = deviceName.getCiphertext().toByteArray();
+    ECPrivateKey identityKey     = identityKeyPair.getPrivateKey();
+    ECPublicKey  ephemeralPublic = Curve.decodePoint(deviceName.getEphemeralPublic().toByteArray(), 0);
+    byte[]       masterSecret    = Curve.calculateAgreement(ephemeralPublic, identityKey);
+
+    Mac mac = Mac.getInstance("HmacSHA256");
+    mac.init(new SecretKeySpec(masterSecret, "HmacSHA256"));
+    byte[] cipherKeyPart1 = mac.doFinal("cipher".getBytes());
+
+    mac.init(new SecretKeySpec(cipherKeyPart1, "HmacSHA256"));
+    byte[] cipherKey = mac.doFinal(syntheticIv);
+
+    Cipher cipher = Cipher.getInstance("AES/CTR/NoPadding");
+    cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(cipherKey, "AES"), new IvParameterSpec(new byte[16]));
+    final byte[] plaintext = cipher.doFinal(cipherText);
+
+    mac.init(new SecretKeySpec(masterSecret, "HmacSHA256"));
+    byte[] verificationPart1 = mac.doFinal("auth".getBytes());
+
+    mac.init(new SecretKeySpec(verificationPart1, "HmacSHA256"));
+    byte[] verificationPart2 = mac.doFinal(plaintext);
+    byte[] ourSyntheticIv    = ByteUtil.trim(verificationPart2, 16);
+
+    if (!MessageDigest.isEqual(ourSyntheticIv, syntheticIv)) {
+      throw new GeneralSecurityException("The computed syntheticIv didn't match the actual syntheticIv.");
+    }
+
+    return plaintext;
   }
 
   private static class DeviceComparator implements Comparator<Device> {

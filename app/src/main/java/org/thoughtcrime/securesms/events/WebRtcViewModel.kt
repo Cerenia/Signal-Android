@@ -23,6 +23,7 @@ class WebRtcViewModel(state: WebRtcServiceState) {
     CALL_DISCONNECTED,
     CALL_DISCONNECTED_GLARE,
     CALL_NEEDS_PERMISSION,
+    CALL_RECONNECTING,
 
     // Error states
     NETWORK_FAILURE,
@@ -82,7 +83,7 @@ class WebRtcViewModel(state: WebRtcServiceState) {
   }
 
   val state: State = state.callInfoState.callState
-  val groupState: GroupCallState = state.callInfoState.groupCallState
+  val groupState: GroupCallState = state.callInfoState.groupState
   val recipient: Recipient = state.callInfoState.callRecipient
   val isRemoteVideoOffer: Boolean = state.getCallSetupState(state.callInfoState.activePeer?.callId).isRemoteVideoOffer
   val callConnectedTime: Long = state.callInfoState.callConnectedTime

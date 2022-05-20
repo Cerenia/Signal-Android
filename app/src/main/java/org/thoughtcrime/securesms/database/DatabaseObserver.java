@@ -3,10 +3,13 @@ package org.thoughtcrime.securesms.database;
 import android.app.Application;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 
 import org.jetbrains.annotations.NotNull;
 import org.signal.core.util.concurrent.SignalExecutors;
 import org.thoughtcrime.securesms.database.model.MessageId;
+import org.thoughtcrime.securesms.recipients.Recipient;
+import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.util.concurrent.SerialExecutor;
 
 import java.util.HashMap;
@@ -14,6 +17,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 
 /**
@@ -22,6 +26,21 @@ import java.util.concurrent.Executor;
  * A replacement for the observer system in {@link Database}. We should move to this over time.
  */
 public class DatabaseObserver {
+
+  private static final String KEY_CONVERSATION          = "Conversation:";
+  private static final String KEY_VERBOSE_CONVERSATION  = "VerboseConversation:";
+  private static final String KEY_CONVERSATION_LIST     = "ConversationList";
+  private static final String KEY_PAYMENT               = "Payment:";
+  private static final String KEY_ALL_PAYMENTS          = "AllPayments";
+  private static final String KEY_CHAT_COLORS           = "ChatColors";
+  private static final String KEY_STICKERS              = "Stickers";
+  private static final String KEY_STICKER_PACKS         = "StickerPacks";
+  private static final String KEY_ATTACHMENTS           = "Attachments";
+  private static final String KEY_MESSAGE_UPDATE        = "MessageUpdate:";
+  private static final String KEY_MESSAGE_INSERT        = "MessageInsert:";
+  private static final String KEY_NOTIFICATION_PROFILES = "NotificationProfiles";
+  private static final String KEY_RECIPIENT             = "Recipient";
+  private static final String KEY_STORY_OBSERVER        = "Story";
 
   private final Application application;
   private final Executor    executor;
@@ -38,6 +57,7 @@ public class DatabaseObserver {
   private final Set<MessageObserver>            messageUpdateObservers;
   private final Map<Long, Set<MessageObserver>> messageInsertObservers;
   private final Set<Observer>                   notificationProfileObservers;
+  private final Map<RecipientId, Set<Observer>> storyObservers;
 
   public DatabaseObserver(Application application) {
     this.application                  = application;
@@ -54,6 +74,7 @@ public class DatabaseObserver {
     this.messageUpdateObservers       = new HashSet<>();
     this.messageInsertObservers       = new HashMap<>();
     this.notificationProfileObservers = new HashSet<>();
+    this.storyObservers               = new HashMap<>();
   }
 
   public void registerConversationListObserver(@NonNull Observer listener) {
@@ -128,6 +149,15 @@ public class DatabaseObserver {
     });
   }
 
+  /**
+   * Adds an observer which will be notified whenever a new Story message is inserted into the database.
+   */
+  public void registerStoryObserver(@NonNull RecipientId recipientId, @NonNull Observer listener) {
+    executor.execute(() -> {
+      registerMapped(storyObservers, recipientId, listener);
+    });
+  }
+
   public void unregisterObserver(@NonNull Observer listener) {
     executor.execute(() -> {
       conversationListObservers.remove(listener);
@@ -139,6 +169,7 @@ public class DatabaseObserver {
       stickerPackObservers.remove(listener);
       attachmentObservers.remove(listener);
       notificationProfileObservers.remove(listener);
+      unregisterMapped(storyObservers, listener);
     });
   }
 
@@ -150,37 +181,28 @@ public class DatabaseObserver {
   }
 
   public void notifyConversationListeners(Set<Long> threadIds) {
-    executor.execute(() -> {
-      for (long threadId : threadIds) {
-        notifyMapped(conversationObservers, threadId);
-        notifyMapped(verboseConversationObservers, threadId);
-      }
-    });
+    for (long threadId : threadIds) {
+      notifyConversationListeners(threadId);
+    }
   }
 
   public void notifyConversationListeners(long threadId) {
-    executor.execute(() -> {
+    runPostSuccessfulTransaction(KEY_CONVERSATION + threadId, () -> {
       notifyMapped(conversationObservers, threadId);
       notifyMapped(verboseConversationObservers, threadId);
     });
   }
 
   public void notifyVerboseConversationListeners(Set<Long> threadIds) {
-    executor.execute(() -> {
-      for (long threadId : threadIds) {
+    for (long threadId : threadIds) {
+      runPostSuccessfulTransaction(KEY_VERBOSE_CONVERSATION + threadId, () -> {
         notifyMapped(verboseConversationObservers, threadId);
-      }
-    });
-  }
-
-  public void notifyVerboseConversationListeners(long threadId) {
-    executor.execute(() -> {
-      notifyMapped(verboseConversationObservers, threadId);
-    });
+      });
+    }
   }
 
   public void notifyConversationListListeners() {
-    executor.execute(() -> {
+    runPostSuccessfulTransaction(KEY_CONVERSATION_LIST, () -> {
       for (Observer listener : conversationListObservers) {
         listener.onChanged();
       }
@@ -188,19 +210,19 @@ public class DatabaseObserver {
   }
 
   public void notifyPaymentListeners(@NonNull UUID paymentId) {
-    executor.execute(() -> {
+    runPostSuccessfulTransaction(KEY_PAYMENT + paymentId.toString(), () -> {
       notifyMapped(paymentObservers, paymentId);
     });
   }
 
   public void notifyAllPaymentsListeners() {
-    executor.execute(() -> {
+    runPostSuccessfulTransaction(KEY_ALL_PAYMENTS, () -> {
       notifySet(allPaymentsObservers);
     });
   }
 
   public void notifyChatColorsListeners() {
-    executor.execute(() -> {
+    runPostSuccessfulTransaction(KEY_CHAT_COLORS, () -> {
       for (Observer chatColorsObserver : chatColorsObservers) {
         chatColorsObserver.onChanged();
       }
@@ -208,31 +230,31 @@ public class DatabaseObserver {
   }
 
   public void notifyStickerObservers() {
-    executor.execute(() -> {
+    runPostSuccessfulTransaction(KEY_STICKERS, () -> {
       notifySet(stickerObservers);
     });
   }
 
   public void notifyStickerPackObservers() {
-    executor.execute(() -> {
+    runPostSuccessfulTransaction(KEY_STICKER_PACKS, () -> {
       notifySet(stickerPackObservers);
     });
   }
 
   public void notifyAttachmentObservers() {
-    executor.execute(() -> {
+    runPostSuccessfulTransaction(KEY_ATTACHMENTS, () -> {
       notifySet(attachmentObservers);
     });
   }
 
   public void notifyMessageUpdateObservers(@NonNull MessageId messageId) {
-    executor.execute(() -> {
+    runPostSuccessfulTransaction(KEY_MESSAGE_UPDATE + messageId.toString(), () -> {
       messageUpdateObservers.stream().forEach(l -> l.onMessageChanged(messageId));
     });
   }
 
   public void notifyMessageInsertObservers(long threadId, @NonNull MessageId messageId) {
-    executor.execute(() -> {
+    runPostSuccessfulTransaction(KEY_MESSAGE_INSERT + messageId, () -> {
       Set<MessageObserver> listeners = messageInsertObservers.get(threadId);
 
       if (listeners != null) {
@@ -242,8 +264,26 @@ public class DatabaseObserver {
   }
 
   public void notifyNotificationProfileObservers() {
-    executor.execute(() -> {
+    runPostSuccessfulTransaction(KEY_NOTIFICATION_PROFILES, () -> {
       notifySet(notificationProfileObservers);
+    });
+  }
+
+  public void notifyRecipientChanged(@NonNull RecipientId recipientId) {
+    SignalDatabase.runPostSuccessfulTransaction(KEY_RECIPIENT + recipientId.serialize(), () -> {
+      Recipient.live(recipientId).refresh();
+    });
+  }
+
+  public void notifyStoryObservers(@NonNull RecipientId recipientId) {
+    runPostSuccessfulTransaction(KEY_STORY_OBSERVER, () -> {
+      notifyMapped(storyObservers, recipientId);
+    });
+  }
+
+  private void runPostSuccessfulTransaction(@NonNull String dedupeKey, @NonNull Runnable runnable) {
+    SignalDatabase.runPostSuccessfulTransaction(dedupeKey, () -> {
+      executor.execute(runnable);
     });
   }
 
@@ -274,9 +314,24 @@ public class DatabaseObserver {
     }
   }
 
-  public static void notifySet(@NonNull Set<Observer> set) {
+  private static void notifySet(@NonNull Set<Observer> set) {
     for (final Observer observer : set) {
       observer.onChanged();
+    }
+  }
+
+  /**
+   * Blocks until the executor is empty. Only intended to be used for testing.
+   */
+  @VisibleForTesting
+  void flush() {
+    CountDownLatch latch = new CountDownLatch(1);
+    executor.execute(latch::countDown);
+
+    try {
+      latch.await();
+    } catch (InterruptedException e) {
+      throw new AssertionError();
     }
   }
 

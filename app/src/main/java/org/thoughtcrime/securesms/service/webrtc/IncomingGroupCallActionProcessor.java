@@ -24,9 +24,9 @@ import org.thoughtcrime.securesms.ringrtc.RemotePeer;
 import org.thoughtcrime.securesms.service.webrtc.state.WebRtcServiceState;
 import org.thoughtcrime.securesms.util.NetworkUtil;
 import org.thoughtcrime.securesms.webrtc.locks.LockManager;
-import org.whispersystems.libsignal.util.guava.Optional;
-import org.whispersystems.signalservice.api.push.ACI;
+import org.whispersystems.signalservice.api.push.ServiceId;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.thoughtcrime.securesms.webrtc.CallNotificationBuilder.TYPE_INCOMING_CONNECTING;
@@ -138,7 +138,7 @@ public final class IncomingGroupCallActionProcessor extends DeviceAwareActionPro
                        .changeCallSetupState(RemotePeer.GROUP_CALL_ID)
                        .isRemoteVideoOffer(true)
                        .ringId(ringId)
-                       .ringerRecipient(Recipient.externalPush(context, ACI.from(uuid), null, false))
+                       .ringerRecipient(Recipient.externalPush(ServiceId.from(uuid), null, false))
                        .commit()
                        .changeCallInfoState()
                        .activePeer(new RemotePeer(currentState.getCallInfoState().getCallRecipient().getId(), RemotePeer.GROUP_CALL_ID))
@@ -153,6 +153,7 @@ public final class IncomingGroupCallActionProcessor extends DeviceAwareActionPro
                                                                                            false,
                                                                                            true,
                                                                                            currentState.getLocalDeviceState().getOrientation().getDegrees()),
+                                                                    true,
                                                                     true,
                                                                     false,
                                                                     0,
@@ -170,6 +171,7 @@ public final class IncomingGroupCallActionProcessor extends DeviceAwareActionPro
     GroupCall groupCall = webRtcInteractor.getCallManager().createGroupCall(groupId,
                                                                             SignalStore.internalValues().groupCallingServer(),
                                                                             new byte[0],
+                                                                            AUDIO_LEVELS_INTERVAL,
                                                                             AudioProcessingMethodSelector.get(),
                                                                             webRtcInteractor.getGroupCallObserver());
 
@@ -226,8 +228,8 @@ public final class IncomingGroupCallActionProcessor extends DeviceAwareActionPro
     long              ringId    = currentState.getCallSetupState(RemotePeer.GROUP_CALL_ID).getRingId();
 
     SignalDatabase.groupCallRings().insertOrUpdateGroupRing(ringId,
-                                                                              System.currentTimeMillis(),
-                                                                              CallManager.RingUpdate.DECLINED_ON_ANOTHER_DEVICE);
+                                                            System.currentTimeMillis(),
+                                                            CallManager.RingUpdate.DECLINED_ON_ANOTHER_DEVICE);
 
     try {
       webRtcInteractor.getCallManager().cancelGroupRing(groupId.get().getDecodedId(),

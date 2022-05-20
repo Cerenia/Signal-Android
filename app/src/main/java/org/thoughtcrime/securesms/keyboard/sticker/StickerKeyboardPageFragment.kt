@@ -10,12 +10,12 @@ import androidx.recyclerview.widget.LinearSmoothScroller
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.SmoothScroller
 import com.google.android.material.appbar.AppBarLayout
+import org.signal.libsignal.protocol.util.Pair
 import org.thoughtcrime.securesms.LoggingFragment
 import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.database.DatabaseObserver
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies
 import org.thoughtcrime.securesms.keyboard.emoji.KeyboardPageSearchView
-import org.thoughtcrime.securesms.keyboard.findListener
 import org.thoughtcrime.securesms.mms.GlideApp
 import org.thoughtcrime.securesms.stickers.StickerEventListener
 import org.thoughtcrime.securesms.stickers.StickerRolloverTouchListener
@@ -25,7 +25,8 @@ import org.thoughtcrime.securesms.util.InsetItemDecoration
 import org.thoughtcrime.securesms.util.Throttler
 import org.thoughtcrime.securesms.util.adapter.mapping.MappingModel
 import org.thoughtcrime.securesms.util.adapter.mapping.MappingModelList
-import org.whispersystems.libsignal.util.Pair
+import org.thoughtcrime.securesms.util.fragments.findListener
+import org.thoughtcrime.securesms.util.fragments.requireListener
 import java.util.Optional
 import kotlin.math.abs
 import kotlin.math.max
@@ -87,11 +88,14 @@ class StickerKeyboardPageFragment :
 
     view.findViewById<KeyboardPageSearchView>(R.id.sticker_keyboard_search_text).callbacks = object : KeyboardPageSearchView.Callbacks {
       override fun onClicked() {
-        StickerSearchDialogFragment.show(requireActivity().supportFragmentManager)
+        requireListener<Callback>().openStickerSearch()
       }
     }
 
-    view.findViewById<View>(R.id.sticker_search).setOnClickListener { StickerSearchDialogFragment.show(requireActivity().supportFragmentManager) }
+    view.findViewById<View>(R.id.sticker_search).setOnClickListener {
+      requireListener<Callback>().openStickerSearch()
+    }
+
     view.findViewById<View>(R.id.sticker_manage).setOnClickListener { findListener<StickerEventListener>()?.onStickerManagementClicked() }
 
     ApplicationDependencies.getDatabaseObserver().registerStickerObserver(this)
@@ -236,5 +240,9 @@ class StickerKeyboardPageFragment :
         viewModel.selectPack((item.get() as KeyboardStickerListAdapter.HasPackId).packId)
       }
     }
+  }
+
+  interface Callback {
+    fun openStickerSearch()
   }
 }

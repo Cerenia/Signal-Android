@@ -61,6 +61,7 @@
     <color name="signal_inverse_transparent_10">@color/transparent_white_10</color>
     <color name="signal_inverse_transparent_15">@color/transparent_white_15</color>
     <color name="signal_inverse_transparent_20">@color/transparent_white_20</color>
+    <color name="signal_inverse_transparent_25">@color/transparent_white_25</color>
     <color name="signal_inverse_transparent_40">@color/transparent_white_40</color>
     <color name="signal_inverse_transparent_60">@color/transparent_white_60</color>
     <color name="signal_inverse_transparent_80">@color/transparent_white_80</color>
@@ -101,6 +102,11 @@
     <color name="conversation_list_camera_button_background">@color/core_grey_85</color>
     <color name="conversation_list_selected_color">#4c6191f3</color>
 
+    <color name="signal_colorPrimaryContainer">#464B5C</color>
+    <color name="signal_colorOnPrimaryContainer">#E2E1E5</color>
+    <color name="signal_colorSecondaryContainer">#23242A</color>
+    <color name="signal_colorOnSecondaryContainer">#E2E1E5</color>
+
     <color name="camera_icon_background_tint">@color/core_grey_75</color>
 
     <color name="debuglog_color_none">@color/debuglog_dark_none</color>
@@ -111,6 +117,7 @@
     <color name="debuglog_color_error">@color/debuglog_dark_error</color>
 
     <color name="conversation_mention_background_color">@color/core_grey_60</color>
+    <color name="story_bullet_color">@color/core_grey_60</color>
 
     <color name="login_top_background">@color/black</color>
 
@@ -126,7 +133,9 @@
 
     <color name="reactions_pill_text_color">@color/core_grey_35</color>
     <color name="reactions_pill_selected_text_color">@color/core_grey_15</color>
-    <color name="reactions_screen_shade_color">@color/transparent_black_60</color>
+    <color name="reactions_screen_dark_shade_color">@color/transparent_black_70</color>
+    <color name="reactions_screen_light_shade_color">#df5e5e5e</color>
+    <color name="reactions_status_bar_shade">#191919</color>
 
     <color name="recipient_contact_button_color">@color/core_grey_80</color>
 
@@ -157,7 +166,8 @@
 
     <color name="quote_view_background">@color/transparent_black_40</color>
     <color name="conversation_item_outgoing_footer_fg">@color/transparent_white_60</color>
-    <color name="quote_preview_background">@color/core_grey_80</color>
+    <color name="quote_preview_background">@color/core_grey_60</color>
+    <color name="quote_incoming_story_background">@color/core_grey_80</color>
 
     <color name="react_with_any_background">@color/core_grey_75</color>
     <color name="react_with_any_search_background">@color/core_grey_65</color>
@@ -172,4 +182,7 @@
     <color name="notification_profile_moon_tint">#8B8BF9</color>
 
     <color name="top_toast_background_color">@color/core_grey_80</color>
+
+    <color name="sent_gift_button_tint">@color/transparent_white_20</color>
+    <color name="recv_gift_button_tint">@color/transparent_white_20</color>
 </resources>

@@ -1,7 +1,6 @@
 package org.thoughtcrime.securesms.megaphone;
 
 import android.app.Application;
-import android.content.Context;
 
 import androidx.annotation.AnyThread;
 import androidx.annotation.NonNull;
@@ -52,7 +51,6 @@ public class MegaphoneRepository {
     executor.execute(() -> {
       database.markFinished(Event.CHAT_COLORS);
       database.markFinished(Event.ADD_A_PROFILE_PHOTO);
-      database.markFinished(Event.NOTIFICATION_PROFILES);
       resetDatabaseCache();
     });
   }

@@ -90,6 +90,10 @@
   <string name="BlockUnblockDialog_group_members_will_be_able_to_add_you">Anëtarë të grupit do të jenë në gjendje t\’ju rishtojnë te ky grup.</string>
   <string name="BlockUnblockDialog_you_will_be_able_to_call_and_message_each_other">Do të jeni në gjendje t\’i dërgoni mesazhe dhe t\’i bëni thirrje njëri-tjetrit, dhe emri juaj dhe fotoja do të jenë të dukshëm për të.</string>
   <string name="BlockUnblockDialog_blocked_people_wont_be_able_to_call_you_or_send_you_messages">Personat e bllokuar s\’do të jenë në gjendje t\’ju bëjnë thirrje apo t\’ju dërgojnë mesazhe.</string>
+  <!--Message shown on block dialog when blocking the Signal release notes recipient-->
+  <string name="BlockUnblockDialog_block_getting_signal_updates_and_news">Blloko marrje përditësimesh dhe lajmesh mbi Signal-in.</string>
+  <!--Message shown on unblock dialog when unblocking the Signal release notes recipient-->
+  <string name="BlockUnblockDialog_resume_getting_signal_updates_and_news">Rifillo marrje përditësimesh dhe lajmesh mbi Signal-in.</string>
   <string name="BlockUnblockDialog_unblock_s">Të zhbllokohet %1$s?</string>
   <string name="BlockUnblockDialog_block">Bllokoje</string>
   <string name="BlockUnblockDialog_block_and_leave">Bllokoje dhe Braktise</string>
@@ -118,6 +122,15 @@
   <string name="CameraContacts_cant_find_who_youre_looking_for">S\’gjeni dot atë që po kërkoni?</string>
   <string name="CameraContacts_invite_a_contact_to_join_signal">Ftoni një kontakt të bëhet pjesë e Signal-it</string>
   <string name="CameraContacts__menu_search">Kërko</string>
+  <!--Censorship Circumvention Megaphone-->
+  <!--Title for an alert that shows at the bottom of the chat list letting people know that circumvention is no longer needed-->
+  <string name="CensorshipCircumventionMegaphone_turn_off_censorship_circumvention">Të çaktivizohet anashkalimi i censurimit?</string>
+  <!--Body for an alert that shows at the bottom of the chat list letting people know that circumvention is no longer needed-->
+  <string name="CensorshipCircumventionMegaphone_you_can_now_connect_to_the_signal_service">Tani mund të lidheni te shërbimi Signal drejtpërsëdrejti, për punim më të mirë.</string>
+  <!--Action to prompt the user to disable circumvention since it is no longer needed-->
+  <string name="CensorshipCircumventionMegaphone_turn_off">Çaktivizoje</string>
+  <!--Action to prompt the user to dismiss the alert at the bottom of the chat list-->
+  <string name="CensorshipCircumventionMegaphone_no_thanks">Jo, faleminderit</string>
   <!--ClearProfileActivity-->
   <string name="ClearProfileActivity_remove">Hiqe</string>
   <string name="ClearProfileActivity_remove_profile_photo">Të hiqet foto profili?</string>
@@ -148,6 +161,10 @@
   <string name="ContactsCursorLoader_groups">Grupe</string>
   <string name="ContactsCursorLoader_phone_number_search">Kërkim numri telefoni</string>
   <string name="ContactsCursorLoader_username_search">Kërkim emri përdoruesit</string>
+  <!--Label for my stories when selecting who to send media to-->
+  <string name="ContactsCursorLoader_my_stories">Historitë e Mia</string>
+  <!--Action for creating a new story-->
+  <string name="ContactsCursorLoader_new_story">Histori e Re</string>
   <!--ContactsDatabase-->
   <string name="ContactsDatabase_message_s">%s mesazhi</string>
   <string name="ContactsDatabase_signal_call_s">Thirrje Signal me %s</string>
@@ -299,6 +316,16 @@
   <string name="ConversationFragment_your_safety_number_with_s_changed_likey_because_they_reinstalled_signal">Numri juaj i aigurisë me %s ndryshoi, gjasat janë ngaqë ai riinstaloi Signal-in ose ndërroi pajisjet. Prekni mbi Verifikoje që të ripohoni numrin e ri të sigurisë. Kjo është opsionale.</string>
   <!--Message shown to indicate which notification profile is on/active-->
   <string name="ConversationFragment__s_on">%1$s aktiv</string>
+  <!--Dialog title for block group link join requests-->
+  <string name="ConversationFragment__block_request">Të bllokohet kërkesa?</string>
+  <!--Dialog message for block group link join requests-->
+  <string name="ConversationFragment__s_will_not_be_able_to_join_or_request_to_join_this_group_via_the_group_link">%1$s s’do të jetë në gjendje të hyjë ose të kërkojë të hyjë në këtë grup përmes lidhje grupi. Mundet prapë të shtohet te grupi dorazi.</string>
+  <!--Dialog confirm block request button-->
+  <string name="ConversationFragment__block_request_button">Bllokoje kërkesën</string>
+  <!--Dialog cancel block request button-->
+  <string name="ConversationFragment__cancel">Anuloje</string>
+  <!--Message shown after successfully blocking join requests for a user-->
+  <string name="ConversationFragment__blocked">E bllokuar</string>
   <plurals name="ConversationListFragment_delete_selected_conversations">
     <item quantity="one">Të fshihet biseda e përzgjedhur?</item>
     <item quantity="other">Të fshihen bisedat e përzgjedhura?</item>
@@ -363,7 +390,7 @@
   <!--Show in conversation list overflow menu to open selection bottom sheet-->
   <string name="ConversationListFragment__notification_profile">Profil njoftimesh</string>
   <!--Tooltip shown after you have created your first notification profile-->
-  <string name="ConversationListFragment__turn_your_notification_profile_on_or_off_here">Aktivizoni ose çaktivizoni nga këtu profilin tuaj të njoftimeve</string>
+  <string name="ConversationListFragment__turn_your_notification_profile_on_or_off_here">Aktivizoni ose çaktivizoni nga këtu profilin tuaj të njoftimeve.</string>
   <!--Message shown in top toast to indicate the named profile is on-->
   <string name="ConversationListFragment__s_on">%1$s aktiv</string>
   <!--ConversationListItem-->
@@ -376,7 +403,6 @@
   <!--ConversationTypingView-->
   <string name="ConversationTypingView__plus_d">+%1$d</string>
   <!--CreateGroupActivity-->
-  <string name="CreateGroupActivity_some_contacts_cannot_be_in_legacy_groups">Disa kontakte s\’mund të jenë në grupe të dikurshëm.</string>
   <string name="CreateGroupActivity__select_members">Përzgjidhni anëtarë</string>
   <!--CreateProfileActivity-->
   <string name="CreateProfileActivity__profile">Profil</string>
@@ -397,6 +423,12 @@
   <string name="RestoreBackupFragment__to_continue_using_backups_please_choose_a_folder">Që të vazhdoni të përdorni kopjeruajtje, ju lutemi, zgjidhni një dosje. Kopjeruajtjet e reja do të ruhen te kjo vendndodhje.</string>
   <string name="RestoreBackupFragment__choose_folder">Zgjidhni dosje</string>
   <string name="RestoreBackupFragment__not_now">Jo tani</string>
+  <!--Couldn\'t find the selected backup-->
+  <string name="RestoreBackupFragment__backup_not_found">S’u gjet kopjeruatje.</string>
+  <!--Couldn\'t read the selected backup-->
+  <string name="RestoreBackupFragment__backup_could_not_be_read">Kopjeruajtja s’u lexua dot.</string>
+  <!--Backup has an unsupported file extension-->
+  <string name="RestoreBackupFragment__backup_has_a_bad_extension">Kopjeruajtja ka zgjatim të gabuar.</string>
   <!--BackupsPreferenceFragment-->
   <string name="BackupsPreferenceFragment__chat_backups">Kopjeruajtje fjalosjesh</string>
   <string name="BackupsPreferenceFragment__backups_are_encrypted_with_a_passphrase">Kopjeruajtjet fshehtëzohen me një frazëkalim dhe depozitohe te pajisja juaj.</string>
@@ -448,9 +480,6 @@
   <string name="DeviceListItem_today">Sot</string>
   <!--DocumentView-->
   <string name="DocumentView_unnamed_file">Kartelë e paemërtuar</string>
-  <!--GroupCallingMegaphone-->
-  <!-- Removed by excludeNonTranslatables <string name="GroupCallingMegaphone__introducing_group_calls">Ju paraqesim Thirrje Grupi</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="GroupCallingMegaphone__open_a_new_group_to_start">Që të nisni një thirrje të lirë, të fshehtëzuar, në grup, hapni një Grup të Ri</string> -->
   <!--DozeReminder-->
   <string name="DozeReminder_optimize_for_missing_play_services">Optimizoje për Shërbime Play që mungojnë</string>
   <string name="DozeReminder_this_device_does_not_support_play_services_tap_to_disable_system_battery">Kjo pajisje nuk mbulon Shërbime Play. Prekeni që të çaktivizohen optimizime baterie sistemi të cilat e pengojnë Signal-in të marrë mesazhe teksa është joaktiv.</string>
@@ -463,10 +492,6 @@
     <item quantity="other">%d kërkesa anëtarësimi pezull.</item>
   </plurals>
   <string name="PendingGroupJoinRequestsReminder_view">Shihni</string>
-  <!--ShareActivity-->
-  <string name="ShareActivity_share_with">Ndaje me</string>
-  <string name="ShareActivity_multiple_attachments_are_only_supported">Disa bashkëngjitje njëherësh mbulohen vetëm për figura dhe video</string>
-  <string name="ShareActivity_you_do_not_have_permission_to_send_to_this_group">S\’keni leje të dërgoni në këtë grup</string>
   <!--GcmRefreshJob-->
   <string name="GcmRefreshJob_Permanent_Signal_communication_failure">Dështim i përhershëm komunikimi nga Signal!</string>
   <string name="GcmRefreshJob_Signal_was_unable_to_register_with_Google_Play_Services">Signal-i s\’arriti të bëjë regjistrimin me Google Play Services. Mesashet dhe thirrjet Signal janë çaktivizuar, ju lutemi, provoni riregjistrimin që nga Rregullime &gt; Të mëtejshme.</string>
@@ -569,10 +594,6 @@ grupit dhe s\’do të marrë mesazhe grupi përpara se ta pranojë:</item>
   <string name="LeaveGroupDialog_choose_new_admin">Zgjidhni përgjegjës të ri</string>
   <string name="LeaveGroupDialog_before_you_leave_you_must_choose_at_least_one_new_admin_for_this_group">Përpara se të largoheni, duhet të zgjidhni të paktën një përgjegjës të ri për këtë grup.</string>
   <string name="LeaveGroupDialog_choose_admin">Zgjidhni përgjegjës</string>
-  <!--LinkPreviewsMegaphone-->
-  <!-- Removed by excludeNonTranslatables <string name="LinkPreviewsMegaphone_disable">Çaktivizoje</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="LinkPreviewsMegaphone_preview_any_link">Bëni paraparje të çfarëdo lidhjeje</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="LinkPreviewsMegaphone_you_can_now_retrieve_link_previews_directly_from_any_website">Tanimë, për mesazhet që dërgoni, mund të bëni paraparje lidhjesh drejt e nga çfarëdo sajti.</string> -->
   <!--LinkPreviewView-->
   <string name="LinkPreviewView_no_link_preview_available">S\’ka lidhje për paraparje</string>
   <string name="LinkPreviewView_this_group_link_is_not_active">Kjo lidhje grupi s\’është aktive</string>
@@ -633,28 +654,6 @@ grupit dhe s\’do të marrë mesazhe grupi përpara se ta pranojë:</item>
   <string name="AddGroupDetailsFragment__remove">Hiqe</string>
   <string name="AddGroupDetailsFragment__sms_contact">Kontakt SMS</string>
   <string name="AddGroupDetailsFragment__remove_s_from_this_group">Të hiqet %1$s prej këtij grupi?</string>
-  <plurals name="AddGroupDetailsFragment__d_members_do_not_support_new_groups">
-    <item quantity="one">%d anëtar nuk mbulon Grupe të Rinj, ndaj ky do të jetë Grup i Dikurshëm.</item>
-    <item quantity="other">%d anëtarë nuk mbulojnë Grupe të Rinj, ndaj ky grup do të jetë Grup i Dikurshëm.</item>
-  </plurals>
-  <plurals name="AddGroupDetailsFragment__d_members_do_not_support_new_groups_so_this_group_cannot_be_created">
-    <item quantity="one">%d anëtar nuk mbulon Grupe të Rinj, ndaj ky grup s\’mund të krijohet.</item>
-    <item quantity="other">%d anëtarë nuk mbulojnë Grupe të Rinj, ndaj ky grup s\’mund të krijohet.</item>
-  </plurals>
-  <!--NonGv2MemberDialog-->
-  <string name="NonGv2MemberDialog_single_users_are_non_gv2_capable">Do të krijohet një Grup i Dikurshëm, ngaqë “%1$s” po përdor një version të vjetër të Signal-it. Mund të krijoni një Grup në Stil të Ri me të pasi të përditësojë Signal-in, ose ta hiqni para krijimit të grupit.</string>
-  <plurals name="NonGv2MemberDialog_d_users_are_non_gv2_capable">
-    <item quantity="one">Do të krijohet një Grup i Dikurshëm, ngaqë %1$d anëtar po përdor një
- version të vjetër të Signal-it. Mund të krijoni një Grup në Stil të Ri 
-me të pasi të përditësojë Signal-in, ose ta hiqni para krijimit të grupit.</item>
-    <item quantity="other">Do të krijohet një Grup i Dikurshëm, ngaqë %1$d anëtarë po përdorin një version të vjetër të Signal-it. Mund të krijoni një Grup në Stil të Ri me ta, pasi 
-të përditësojnë Signal-in, ose t\’i hiqni para krijimit të grupit.</item>
-  </plurals>
-  <string name="NonGv2MemberDialog_single_users_are_non_gv2_capable_forced_migration">Ky grup s\’mund të krijohet, ngaqë “%1$s” po përdor një version të vjetër të Signal-it. Duhet ta hiqni para krijimit të grupit.</string>
-  <plurals name="NonGv2MemberDialog_d_users_are_non_gv2_capable_forced_migration">
-    <item quantity="one">Ky grup s\’mund të krijohet, ngaqë %1$d anëtar i grupit po përdor një version të vjetër të Signal-it. Duhet ta hiqni, para krijimit të grupit.</item>
-    <item quantity="other">Ky grup s\’mund të krijohet, ngaqë %1$d anëtarë të grupit po përdorin një version të vjetër të Signal-it. Duhet t\’i hiqni, para krijimit të grupit.</item>
-  </plurals>
   <!--ManageGroupActivity-->
   <string name="ManageGroupActivity_member_requests_and_invites">Kërkesa &amp; ftesa anëtarësie</string>
   <string name="ManageGroupActivity_add_members">Shtoni anëtarë</string>
@@ -763,7 +762,16 @@ të përditësojnë Signal-in, ose t\’i hiqni para krijimit të grupit.</item>
   <string name="GroupJoinBottomSheetDialogFragment_unable_to_join_group_please_try_again_later">S\’arrihet të bëhet pjesë e grupit. Ju lutemi, riprovoni më vonë</string>
   <string name="GroupJoinBottomSheetDialogFragment_encountered_a_network_error">U has një gabim rrjeti.</string>
   <string name="GroupJoinBottomSheetDialogFragment_this_group_link_is_not_active">Kjo lidhje grupi s\’është aktive</string>
-  <string name="GroupJoinBottomSheetDialogFragment_unable_to_get_group_information_please_try_again_later">S\’arrihet të merren të dhëna grupi, ju lutemi, riprovoni më vonë</string>
+  <!--Title shown when there was an known issue getting group information from a group link-->
+  <string name="GroupJoinBottomSheetDialogFragment_cant_join_group">S’bëhet dot pjesë e grupit</string>
+  <!--Message shown when you try to get information for a group via link but an admin has removed you-->
+  <string name="GroupJoinBottomSheetDialogFragment_you_cant_join_this_group_via_the_group_link_because_an_admin_removed_you">S’mund të bëheni pjesë e këtij grupi përmes lidhjes së grupit, ngaqë ju ka hequr një përgjegjës.</string>
+  <!--Message shown when you try to get information for a group via link but the link is no longer valid-->
+  <string name="GroupJoinBottomSheetDialogFragment_this_group_link_is_no_longer_valid">Kjo lidhje grupi s’është më e vlefshme.</string>
+  <!--Title shown when there was an unknown issue getting group information from a group link-->
+  <string name="GroupJoinBottomSheetDialogFragment_link_error">Gabim lidhjeje</string>
+  <!--Message shown when you try to get information for a group via link but an unknown issue occurred-->
+  <string name="GroupJoinBottomSheetDialogFragment_joining_via_this_link_failed_try_joining_again_later">Pjesëmarrja përmes kësaj lidhjeje dështoi. Provoni të bëheni pjesë më vonë.</string>
   <string name="GroupJoinBottomSheetDialogFragment_direct_join">Doni të bëheni pjesë e këtij grupi dhe të ndani me anëtarët e tij emrin dhe foton tuaj?</string>
   <string name="GroupJoinBottomSheetDialogFragment_admin_approval_needed">Përpara se të bëheni pjesë e këtij grupi, kërkesën tuaj duhet ta miratojë një përgjegjës i grupit. Kur kërkoni të bëheni pjesë, emri dhe fotoja juaj do të ndahet me anëtarët e tij.</string>
   <plurals name="GroupJoinBottomSheetDialogFragment_group_dot_d_members">
@@ -788,6 +796,8 @@ të përditësojnë Signal-in, ose t\’i hiqni para krijimit të grupit.</item>
   <!--GV2 Request confirmation dialog-->
   <string name="RequestConfirmationDialog_add_s_to_the_group">Të shtohet “%1$s” te grupi?</string>
   <string name="RequestConfirmationDialog_deny_request_from_s">Të hidhet poshtë kërkesa prej “%1$s”?</string>
+  <!--Confirm dialog message shown when deny a group link join request and group link is enabled.-->
+  <string name="RequestConfirmationDialog_deny_request_from_s_they_will_not_be_able_to_request">Të mohohet kërkesa prej “%1$s”? S’do të jetë në gjendje të kërkojë të hyjë sërish përmes një lidhjeje grupi.</string>
   <string name="RequestConfirmationDialog_add">Shtoje</string>
   <string name="RequestConfirmationDialog_deny">Hidhe poshtë</string>
   <!--ImageEditorHud-->
@@ -872,8 +882,6 @@ të përditësojnë Signal-in, ose t\’i hiqni para krijimit të grupit.</item>
   <string name="MediaOverviewActivity_sent_by_s_to_s">Dërguar nga %1$s për %2$s</string>
   <string name="MediaOverviewActivity_sent_by_you_to_s">Dërguar nga ju për %1$s</string>
   <!--Megaphones-->
-  <!-- Removed by excludeNonTranslatables <string name="Megaphones_introducing_reactions">Ju Prezantojmë Reagimet</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="Megaphones_tap_and_hold_any_message_to_quicky_share_how_you_feel">Prekeni dhe mbajeni të prekur cilindo mesazh që të ndani me të tjerët se si ndjeheni prej tij.</string> -->
   <string name="Megaphones_remind_me_later">Kujtomë më vonë</string>
   <string name="Megaphones_verify_your_signal_pin">Verifikoni PIN-in tuaj të Signal-it</string>
   <string name="Megaphones_well_occasionally_ask_you_to_verify_your_pin">Me raste, do t\’ju kërkojmë të verifikoni PIN-in tuaj, që kështu të mund ta mbani mend.</string>
@@ -1078,6 +1086,11 @@ të përditësojnë Signal-in, ose t\’i hiqni para krijimit të grupit.</item>
   <!--GV2 group link requests-->
   <string name="MessageRecord_you_sent_a_request_to_join_the_group">Dërguat një kërkesë të bëheni pjesë e grupit.</string>
   <string name="MessageRecord_s_requested_to_join_via_the_group_link">%1$s kërkoi të bëhet pjesë e grupit përmes lidhjes së grupit.</string>
+  <!--Update message shown when someone requests to join via group link and cancels the request back to back-->
+  <plurals name="MessageRecord_s_requested_and_cancelled_their_request_to_join_via_the_group_link">
+    <item quantity="one">%1$s kërkoi dhe anuloi kërkesën e vet për të marrë pjesë përmes idhjes së grupit.</item>
+    <item quantity="other">%1$s kërkoi dhe anuloi %2$d kërkesa për të marrë pjesë përmes lidhjeje grupi.</item>
+  </plurals>
   <!--GV2 group link approvals-->
   <string name="MessageRecord_s_approved_your_request_to_join_the_group">%1$s miratoi kërkesën tuaj për t\’u bërë pjesë e grupit.</string>
   <string name="MessageRecord_s_approved_a_request_to_join_the_group_from_s">%1$s miratoi një kërkesë për t\’u bërë pjesë e grupit nga %2$s.</string>
@@ -1097,7 +1110,11 @@ të përditësojnë Signal-in, ose t\’i hiqni para krijimit të grupit.</item>
   <string name="MessageRecord_you_marked_your_safety_number_with_s_unverified">E shënuat numrin tuaj të sigurisë me %s si të paverifikuar</string>
   <string name="MessageRecord_you_marked_your_safety_number_with_s_unverified_from_another_device">E shënuat numrin tuaj të sigurisë me %s si të paverifikuar nga një tjetër pajisje</string>
   <string name="MessageRecord_a_message_from_s_couldnt_be_delivered">S\’u dërgua dot një mesazh prej %s</string>
-  <string name="MessageRecord_s_changed_their_number_to_a_new_number">%1$s e ndryshoi numrin e vet me një numër të ri.</string>
+  <string name="MessageRecord_s_changed_their_phone_number">%1$s ndryshoi numrin e vet të telefonit.</string>
+  <!--Update item message shown in the release channel when someone is already a sustainer so we ask them if they want to boost.-->
+  <string name="MessageRecord_like_this_new_feature_say_thanks_with_a_boost">Ju pëlqen kjo veçori e re? Thoni faleminderit me një Përforcim.</string>
+  <!--Update item message shown in the release channel when someone is not a sustainer so we ask them to consider becoming one-->
+  <string name="MessageRecord_signal_is_powered_by_people_like_you_become_a_sustainer_today">Signal-i bazohet në njerëz si ju. Bëhuni një përkrahës që sot.</string>
   <!--Group Calling update messages-->
   <string name="MessageRecord_s_started_a_group_call_s">%1$s nisi një thirrje grupi · %2$s</string>
   <string name="MessageRecord_s_is_in_the_group_call_s">%1$s gjendet te thirrja e grupit · %2$s</string>
@@ -1126,6 +1143,7 @@ të përditësojnë Signal-in, ose t\’i hiqni para krijimit të grupit.</item>
   <string name="MessageRequestBottomView_unblock">Zhbllokoje</string>
   <string name="MessageRequestBottomView_do_you_want_to_let_s_message_you_they_wont_know_youve_seen_their_messages_until_you_accept">Të lejohet %1$s t\’ju dërgojë mesazh dhe të ndajë emrin dhe foton tuaj me të tjerë? S\’do ta dijë se e keni parë mesazhin e tij, para se të pranoni këtë.</string>
   <string name="MessageRequestBottomView_do_you_want_to_let_s_message_you_wont_receive_any_messages_until_you_unblock_them">Të lejohet %1$s t\’ju dërgojë mesazh dhe të ndajë emrin dhe foton tuaj me të tjerë? S\’do të merrni ndonjë mesazh, para se ta zhbllokoni.</string>
+  <string name="MessageRequestBottomView_get_updates_and_news_from_s_you_wont_receive_any_updates_until_you_unblock_them">Merrni përditësime dhe lajme nga 1%1$s? S’do të merrni ndonjë përditësim, para se t’i zhbllokoni.</string>
   <string name="MessageRequestBottomView_continue_your_conversation_with_this_group_and_share_your_name_and_photo">Të vazhdohet biseda juaj me këtë grup dhe t\’u jepet emri dhe fotoja juaj anëtarëve të tij?</string>
   <string name="MessageRequestBottomView_upgrade_this_group_to_activate_new_features">Përmirësojeni këtë grup, që të aktivizohen veçori të reja, të tilla si @përmendje dhe përgjegjës. Anëtarët që nuk kanë dhënë emrin ose foton e tyre te ky grup, do të ftohen të bëhen pjesë.</string>
   <string name="MessageRequestBottomView_this_legacy_group_can_no_longer_be_used">Ky Grup i Dikurshëm s\’mund të përdoret më, ngaqë është shumë i madh. Madhësia maksimum për grupet është %1$d.</string>
@@ -1141,9 +1159,15 @@ të përditësojnë Signal-in, ose t\’i hiqni para krijimit të grupit.</item>
     <item quantity="one">%1$d anëtar</item>
     <item quantity="other">%1$d anëtarë</item>
   </plurals>
+  <!--Describes the number of members in a group. The string MessageRequestProfileView_invited is nested in the parentheses.-->
   <plurals name="MessageRequestProfileView_members_and_invited">
-    <item quantity="one">%1$d anëtar (+%2$d të ftuar)</item>
-    <item quantity="other">%1$d anëtarë (+%2$d të ftuar)</item>
+    <item quantity="one">%1$d anëtar (%2$s)</item>
+    <item quantity="other">%1$d anëtarë (%2$s)</item>
+  </plurals>
+  <!--Describes the number of people invited to a group. Nested inside of the string MessageRequestProfileView_members_and_invited-->
+  <plurals name="MessageRequestProfileView_invited">
+    <item quantity="one">+%1$d të ftuar</item>
+    <item quantity="other">+%1$d të ftuar</item>
   </plurals>
   <plurals name="MessageRequestProfileView_member_of_d_additional_groups">
     <item quantity="one">%d grup shtesë</item>
@@ -1236,6 +1260,8 @@ të përditësojnë Signal-in, ose t\’i hiqni para krijimit të grupit.</item>
   <string name="RecaptchaRequiredBottomSheetFragment_after_verifying_you_can_continue_messaging">Pas verifikimit, mund të vazhdoni të shkëmbeni mesazhe. Çfarëdo mesazhesh të ndalur do të dërgohen automatikisht.</string>
   <!--Recipient-->
   <string name="Recipient_you">Ju</string>
+  <!--Name of recipient representing user\'s \'My Story\'-->
+  <string name="Recipient_my_story">Historia Ime</string>
   <!--RecipientPreferencesActivity-->
   <string name="RecipientPreferenceActivity_block">Bllokoje</string>
   <string name="RecipientPreferenceActivity_unblock">Zhbllokoje</string>
@@ -1251,12 +1277,19 @@ të përditësojnë Signal-in, ose t\’i hiqni para krijimit të grupit.</item>
   <string name="RedPhone_number_not_registered">Numër i paregjistruar!</string>
   <string name="RedPhone_the_number_you_dialed_does_not_support_secure_voice">Numri që thirrët nuk mbulon thirrje me zë të sigurta!</string>
   <string name="RedPhone_got_it">E mora</string>
+  <!--Valentine\'s Day Megaphone-->
+  <!--Title text for the Valentine\'s Day donation megaphone. The placeholder will always be a heart emoji. Needs to be a placeholder for Android reasons.-->
+  <string name="ValentinesDayMegaphone_happy_heart_day">Gëzuar Ditën e 💜!</string>
+  <!--Body text for the Valentine\'s Day donation megaphone.-->
+  <string name="ValentinesDayMegaphone_show_your_affection">Shpalosni dhembshurinë tuaj duke u bërë një përkrahës i Signal-it.</string>
   <!--WebRtcCallActivity-->
   <string name="WebRtcCallActivity__tap_here_to_turn_on_your_video">Prekeni këtu që të ktheni te videoja juaj</string>
   <string name="WebRtcCallActivity__to_call_s_signal_needs_access_to_your_camera">Për të thirrur %1$s, Signal-i lyp leje përdorimi të kamerës tuaj</string>
   <string name="WebRtcCallActivity__signal_s">Signal %1$s</string>
   <string name="WebRtcCallActivity__calling">Po thirret…</string>
   <string name="WebRtcCallActivity__group_is_too_large_to_ring_the_participants">Grupi është shumë i madh për t\’u rënë ziles së pjesëmarrësve.</string>
+  <!--Call status shown when an active call was disconnected (e.g., network hiccup) and is trying to reconnect-->
+  <string name="WebRtcCallActivity__reconnecting">Po rilidhet…</string>
   <!--WebRtcCallView-->
   <string name="WebRtcCallView__signal_call">Thirrje Signal</string>
   <string name="WebRtcCallView__signal_video_call">Thirrje Signal Me Video</string>
@@ -1306,6 +1339,7 @@ të përditësojnë Signal-in, ose t\’i hiqni para krijimit të grupit.</item>
   <string name="WebRtcCallView__flip">Ktheje më anë tjetër</string>
   <string name="WebRtcCallView__speaker">Altoparlant</string>
   <string name="WebRtcCallView__camera">Kamerë</string>
+  <string name="WebRtcCallView__unmute">Çheshtoji</string>
   <string name="WebRtcCallView__mute">Heshtoje</string>
   <string name="WebRtcCallView__ring">Bjeri ziles</string>
   <string name="WebRtcCallView__end_call">Përfundoje thirrjen</string>
@@ -1407,12 +1441,12 @@ të përditësojnë Signal-in, ose t\’i hiqni para krijimit të grupit.</item>
   <!--SignalBottomActionBar-->
   <string name="SignalBottomActionBar_more">Më tepër</string>
   <!--SignalPinReminders-->
-  <string name="SignalPinReminders_well_remind_you_again_later">Do t\’jua kujtojmë më vonë.</string>
-  <string name="SignalPinReminders_well_remind_you_again_tomorrow">Do t\’jua kujtojmë prapë nesër.</string>
-  <string name="SignalPinReminders_well_remind_you_again_in_a_few_days">Do t\’jua kujtojmë prapë pas pak ditësh.</string>
-  <string name="SignalPinReminders_well_remind_you_again_in_a_week">Do t\’jua kujtojmë prapë pas një jave.</string>
-  <string name="SignalPinReminders_well_remind_you_again_in_a_couple_weeks">Do t\’jua kujtojmë prapë pas dy javësh.</string>
-  <string name="SignalPinReminders_well_remind_you_again_in_a_month">Do t\’jua kujtojmë sërish pas një muaji.</string>
+  <string name="SignalPinReminders_well_remind_you_again_later">PIN-i u verifikua me sukses. Do t’jua kujtojmë sërish më vonë.</string>
+  <string name="SignalPinReminders_well_remind_you_again_tomorrow">PIN-i u verifikua me sukses. Do t’jua kujtojmë sërish nesër.</string>
+  <string name="SignalPinReminders_well_remind_you_again_in_a_few_days">PIN-i u verifikua me sukses. Do t’jua kujtojmë sërish pas pak ditësh.</string>
+  <string name="SignalPinReminders_well_remind_you_again_in_a_week">PIN-i u verifikua me sukses. Do t’jua kujtojmë sërish pas një jave.</string>
+  <string name="SignalPinReminders_well_remind_you_again_in_a_couple_weeks">PIN-i u verifikua me sukses. Do t’jua kujtojmë sërish pas nja dy javësh.</string>
+  <string name="SignalPinReminders_well_remind_you_again_in_a_month">PIN-i u verifikua me sukses. Do t’jua kujtojmë sërish pas një muaji.</string>
   <!--Slide-->
   <string name="Slide_image">Figurë</string>
   <string name="Slide_sticker">Ngjitës</string>
@@ -1562,6 +1596,10 @@ të përditësojnë Signal-in, ose t\’i hiqni para krijimit të grupit.</item>
   <string name="MediaPreviewActivity_media_delete_confirmation_title">Të fshihet mesazhi?</string>
   <string name="MediaPreviewActivity_media_delete_confirmation_message">Kjo do ta fshijë përgjithmonë këtë mesazh.</string>
   <string name="MediaPreviewActivity_s_to_s">%1$s për %2$s</string>
+  <!--All media preview title when viewing media send by you to another recipient (allows changing of \'You\' based on context)-->
+  <string name="MediaPreviewActivity_you_to_s">Ju për %1$s</string>
+  <!--All media preview title when viewing media sent by another recipient to you (allows changing of \'You\' based on context)-->
+  <string name="MediaPreviewActivity_s_to_you">%1$s për ju</string>
   <string name="MediaPreviewActivity_media_no_longer_available">Media s\’është më e passhme.</string>
   <string name="MediaPreviewActivity_cant_find_an_app_able_to_share_this_media">S\’gjendet dot një aplikacion për të ndarë me të tjerët këtë media.</string>
   <!--MessageNotifier-->
@@ -1608,6 +1646,10 @@ të përditësojnë Signal-in, ose t\’i hiqni para krijimit të grupit.</item>
   <string name="NotificationChannel_voice_notes">Shënime Zanore</string>
   <string name="NotificationChannel_contact_joined_signal">Kontakti zuri të përdorë Signal-in</string>
   <string name="NotificationChannels__no_activity_available_to_open_notification_channel_settings">S\’ka veprimtari për hapje rregullimesh kanali njoftimesh.</string>
+  <!--Notification channel name for showing persistent background connection on devices without push notifications-->
+  <string name="NotificationChannel_background_connection">Lidhje në prapaskenë</string>
+  <!--Notification channel name for showing call status information (like connection, ongoing, etc.) Not ringing.-->
+  <string name="NotificationChannel_call_status">Gjendje thirrjeje</string>
   <!--ProfileEditNameFragment-->
   <!--QuickResponseService-->
   <string name="QuickResponseService_quick_response_unavailable_when_Signal_is_locked">S\’bëhet dot përgjigje e shpejtë, kur Signal-i është i kyçur!</string>
@@ -1696,6 +1738,11 @@ të përditësojnë Signal-in, ose t\’i hiqni para krijimit të grupit.</item>
     <item quantity="one">%1$d anëtar</item>
     <item quantity="other">%1$d anëtarë</item>
   </plurals>
+  <!--Displays number of viewers for a story-->
+  <plurals name="contact_selection_list_item__number_of_viewers">
+    <item quantity="one">%1$d shikues</item>
+    <item quantity="other">%1$d shikues</item>
+  </plurals>
   <!--conversation_activity-->
   <string name="conversation_activity__type_message_push">Mesazh Signal</string>
   <string name="conversation_activity__type_message_sms_insecure">SMS e pasiguruar</string>
@@ -1733,10 +1780,16 @@ të përditësojnë Signal-in, ose t\’i hiqni para krijimit të grupit.</item>
   <string name="ConversationUpdateItem_invite_friends">Ftoni shokë</string>
   <string name="ConversationUpdateItem_enable_call_notifications">Aktivizo Njoftime Thirrjesh</string>
   <string name="ConversationUpdateItem_update_contact">Përditësoni kontaktin</string>
+  <!--Update item button text to show to block a recipient from requesting to join via group link-->
+  <string name="ConversationUpdateItem_block_request">Bllokoje kërkesën</string>
   <string name="ConversationUpdateItem_no_groups_in_common_review_requests_carefully">Pa grupe të përbashkët. Shqyrtojini me kujdes kërkesat.</string>
   <string name="ConversationUpdateItem_no_contacts_in_this_group_review_requests_carefully">Pa kontakte në këtë grup. Shqyrtojini me kujdes kërkesat.</string>
   <string name="ConversationUpdateItem_view">Shihni</string>
   <string name="ConversationUpdateItem_the_disappearing_message_time_will_be_set_to_s_when_you_message_them">Koha për mesazhe që treten do të caktohet si %1$s, kur u dërgoni mesazhe.</string>
+  <!--Update item button text to show to boost a feature-->
+  <string name="ConversationUpdateItem_signal_boost">Fuqizim Signal-i</string>
+  <!--Update item button text to show to become a sustainer in the release notes channel-->
+  <string name="ConversationUpdateItem_become_a_sustainer">Bëhuni një Mbështetës</string>
   <!--audio_view-->
   <string name="audio_view__play_pause_accessibility_description">Luaje … Pauzë</string>
   <string name="audio_view__download_accessibility_description">Shkarkoje</string>
@@ -1749,6 +1802,12 @@ të përditësojnë Signal-in, ose t\’i hiqni para krijimit të grupit.</item>
   <string name="QuoteView_sticker">Ngjitës</string>
   <string name="QuoteView_you">Ju</string>
   <string name="QuoteView_original_missing">S\’u gjet mesazhi origjinal</string>
+  <!--Author formatting for group stories-->
+  <string name="QuoteView_s_story">%1$s · Histori</string>
+  <!--Label indicating that a quote is for a reply to a story you created-->
+  <string name="QuoteView_your_story">Ju · Histori</string>
+  <!--Label indicating that the story being replied to no longer exists-->
+  <string name="QuoteView_no_longer_available">S’mund të kihet më</string>
   <!--conversation_fragment-->
   <string name="conversation_fragment__scroll_to_the_bottom_content_description">Rrëshqit drejt fundit</string>
   <!--BubbleOptOutTooltip-->
@@ -1853,6 +1912,10 @@ të përditësojnë Signal-in, ose t\’i hiqni para krijimit të grupit.</item>
   <!--message_recipients_list_item-->
   <string name="message_recipients_list_item__view">SHIHENI</string>
   <string name="message_recipients_list_item__resend">RIDËRGOJE</string>
+  <!--Displayed in a toast when user long presses an item in MyStories-->
+  <string name="MyStoriesFragment__copied_sent_timestamp_to_clipboard">U kopjua në të papastër vulë kohore dërgimi.</string>
+  <!--Displayed when there are no outgoing stories-->
+  <string name="MyStoriesFragment__updates_to_your_story_will_show_up_here">Këtu do të shfaqen përditësime te historia juaj.</string>
   <!--GroupUtil-->
   <plurals name="GroupUtil_joined_the_group">
     <item quantity="one">%1$s u bë pjesë e grupit.</item>
@@ -1930,6 +1993,7 @@ të përditësojnë Signal-in, ose t\’i hiqni para krijimit të grupit.</item>
   <string name="message_details_recipient_header__read_by">Lexuar nga</string>
   <string name="message_details_recipient_header__not_sent">S\’u dërgua</string>
   <string name="message_details_recipient_header__viewed">Parë nga</string>
+  <string name="message_details_recipient_header__skipped">Të anashkaluar</string>
   <!--message_Details_recipient-->
   <string name="message_details_recipient__failed_to_send">Dështoi dërgimi</string>
   <string name="message_details_recipient__new_safety_number">Numër i ri sigurie</string>
@@ -2069,9 +2133,8 @@ të përditësojnë Signal-in, ose t\’i hiqni para krijimit të grupit.</item>
   <string name="preferences__help">Ndihmë</string>
   <string name="preferences__advanced">Të mëtejshme</string>
   <string name="preferences__donate_to_signal">Dhuroni për Signal-in</string>
-  <string name="preferences__subscription">Pajtim</string>
-  <string name="preferences__become_a_signal_sustainer">Bëhuni një Mbështetës Signal-i</string>
-  <string name="preferences__signal_boost">Fuqizim Signal-i</string>
+  <!--Preference label for making one-time donations to Signal-->
+  <string name="preferences__one_time_donation">Dhurim Një Herë</string>
   <string name="preferences__privacy">Privatësi</string>
   <string name="preferences__mms_user_agent">Agjent Përdoruesi MMS</string>
   <string name="preferences__advanced_mms_access_point_names">Rregullime dorazi për MMS-në</string>
@@ -2171,6 +2234,19 @@ aktivizoni Kyçje Regjistrimi, teksa PIN-i është i çaktivizuar.</string>
   <string name="preferences_chats__message_text_size">Madhësi shkronjash mesazhi</string>
   <string name="preferences_events__contact_joined_signal">Kontakti zuri të përdorë Signal-in</string>
   <string name="preferences_notifications__priority">Përparësi</string>
+  <!--Heading for the \'censorship circumvention\' section of privacy preferences-->
+  <string name="preferences_communication__category_censorship_circumvention">Anashkalim censurimi</string>
+  <!--Title of the \'censorship circumvention\' toggle switch-->
+  <string name="preferences_communication__censorship_circumvention">Anashkalim censurimi</string>
+  <string name="preferences_communication__censorship_circumvention_if_enabled_signal_will_attempt_to_circumvent_censorship">Në u aktivizoftë, Signal-i do të përpiqet të anashkalojë censurime. Mos e aktivizoni këtë veçori, po qe se nuk gjendeni diku ku Signal-i censurohet.</string>
+  <!--Summary text for \'censorship circumvention\' toggle. Indicates that we automatically enabled it because we believe you\'re in a censored country-->
+  <string name="preferences_communication__censorship_circumvention_has_been_activated_based_on_your_accounts_phone_number">Anashkalimi i censurimit është aktivizuar për numrin e telefonit të llogarisë tuaj.</string>
+  <!--Summary text for \'censorship circumvention\' toggle. Indicates that you disabled it even though we believe you\'re in a censored country-->
+  <string name="preferences_communication__censorship_circumvention_you_have_manually_disabled">Anashkalimin e censurës e keni çaktivizuar dorazi.</string>
+  <!--Summary text for \'censorship circumvention\' toggle. Indicates that you cannot use it because you\'re already connected to the Signal service-->
+  <string name="preferences_communication__censorship_circumvention_is_not_necessary_you_are_already_connected">Anashkalimi i censurimit s’është i nevojshëm; jeni tashmë i lidhur me shërbimin Signal.</string>
+  <!--Summary text for \'censorship circumvention\' toggle. Indicates that you cannot use it because you\'re not connected to the internet-->
+  <string name="preferences_communication__censorship_circumvention_can_only_be_activated_when_connected_to_the_internet">Anashkalimi i censurimit mund të aktivizohet vetëm kur jeni i lidhur në internet.</string>
   <string name="preferences_communication__category_sealed_sender">Dërgues i Vulosur</string>
   <string name="preferences_communication__sealed_sender_display_indicators">Shfaq tregues</string>
   <string name="preferences_communication__sealed_sender_display_indicators_description">Shfaq një ikonë gjendjesh, kur përzgjidhni \"Hollësi mesazhi\" për mesazhe që qenë dërguar duke përdorur dërgues të vulosur.</string>
@@ -2340,18 +2416,33 @@ aktivizoni Kyçje Regjistrimi, teksa PIN-i është i çaktivizuar.</string>
   <string name="conversation_callable_secure__menu_call">Thirrje përmes Signal-i</string>
   <string name="conversation_callable_secure__menu_video">Thirrje video Signal</string>
   <!--conversation_context-->
-  <string name="conversation_context__menu_message_details">Hollësi mesazhi</string>
-  <string name="conversation_context__menu_copy_text">Kopjo tekstin</string>
-  <string name="conversation_context__menu_delete_message">Fshije mesazhin</string>
-  <string name="conversation_context__menu_forward_message">Përcille mesazhin</string>
-  <string name="conversation_context__menu_resend_message">Ridërgoje mesazhin</string>
-  <string name="conversation_context__menu_reply_to_message">Përgjigjuni mesazhin</string>
-  <!--conversation_context_reacction-->
-  <string name="conversation_context__reaction_multi_select">Përzgjidhni disa</string>
+  <!--Heading which shows how many messages are currently selected-->
+  <plurals name="conversation_context__s_selected">
+    <item quantity="one">%d i përsgjedhur</item>
+    <item quantity="other">%d të përzgjedhur</item>
+  </plurals>
   <!--conversation_context_image-->
-  <string name="conversation_context_image__save_attachment">Ruaje bashkëngjitjen</string>
+  <!--Button to save a message attachment (image, file etc.)-->
+  <string name="conversation_context_image__save_attachment">Ruaji</string>
   <!--conversation_expiring_off-->
   <string name="conversation_expiring_off__disappearing_messages">Tretje mesazhesh</string>
+  <!--conversation_selection-->
+  <!--Button to view detailed information for a message-->
+  <string name="conversation_selection__menu_message_details">Info</string>
+  <!--Button to copy a message\'s text to the clipboard-->
+  <string name="conversation_selection__menu_copy">Kopjoje</string>
+  <!--Button to delete a message-->
+  <string name="conversation_selection__menu_delete">Fshiji</string>
+  <!--Button to forward a message to another person or group chat-->
+  <string name="conversation_selection__menu_forward">Përcjellje</string>
+  <!--Button to reply to a message-->
+  <string name="conversation_selection__menu_reply">Përgjigju</string>
+  <!--Button to save a message attachment (image, file etc.)-->
+  <string name="conversation_selection__menu_save">Ruaji</string>
+  <!--Button to retry sending a message-->
+  <string name="conversation_selection__menu_resend_message">Ridërgoje</string>
+  <!--Button to select a message and enter selection mode-->
+  <string name="conversation_selection__menu_multi_select">Përzgjidhni</string>
   <!--conversation_expiring_on-->
   <!--conversation_insecure-->
   <string name="conversation_insecure__invite">Fto</string>
@@ -2537,16 +2628,6 @@ spastrohet dhe krejt lënda do të fshihet.</item>
   <string name="KbsMegaphone__create_a_pin">Krijoni PIN</string>
   <string name="KbsMegaphone__pins_keep_information_thats_stored_with_signal_encrytped">PIN-et i mbajnë të fshehtëzuara të dhënat që depozitohen me Signal-in.</string>
   <string name="KbsMegaphone__create_pin">Krijoni PIN</string>
-  <!--Research Megaphone-->
-  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphone_tell_signal_what_you_think">Tregojini Signal-it se çfarë mendoni</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphone_to_make_signal_the_best_messaging_app_on_the_planet">Për ta bërë Signal-in aplikacionin më të mirë në planet për shkëmbim mesazhesh, do të na pëlqente fort të dëgjonim mendimin tuaj.</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphone_learn_more">Mësoni më tepër</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphone_dismiss">Hidhe tej</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphoneDialog_signal_research">Kërkime rreth Signal-it</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphoneDialog_we_believe_in_privacy"><![CDATA[<p><b>Besojmë në privatësinë.</b></p><p>Signal-i nuk ju ndjek, as grumbullon të dhëna tuajat. Që Signal-i të përmirësohet për këdo, bazohemi në mendimet e përdoruesve, <b>dhe do ta donim edhe tuajin.</b></p><p>Po kryejmë një pyetësor për të kuptuar se si e përdorni Signal-in. Pyetësori ynë s\’grumbullon ndonjë të dhënë që lejon identifikimin tuaj. Nëse ju intereson të jepni përshtypje shtesë, keni mundësinë të jepni të dhëna kontakti.</p><p>Nëse keni ndoca minuta dhe përshtypje për të dhënë, do të donim fort t\’i dëgjonim.</p>]]></string> -->
-  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphoneDialog_take_the_survey">Plotësoni pyetësorin</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphoneDialog_no_thanks">Jo, faleminderit</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphoneDialog_the_survey_is_hosted_by_alchemer_at_the_secure_domain">Pyetësori strehohet nga Alchemer, në përkatësinë e sigurt surveys.signalusers.org</string> -->
   <!--transport_selection_list_item-->
   <string name="transport_selection_list_item__transport_icon">Ikonë bartjesh</string>
   <string name="ConversationListFragment_loading">Po ngarkohet…</string>
@@ -2784,6 +2865,8 @@ spastrohet dhe krejt lënda do të fshihet.</item>
   <string name="RecipientBottomSheet_remove_s_as_group_admin">Të hiqet %1$s nga përgjegjës grupi?</string>
   <string name="RecipientBottomSheet_s_will_be_able_to_edit_group">\"%1$s\" do të jetë në gjendje të përpunojë këtë grup dhe anëtarët e tij.</string>
   <string name="RecipientBottomSheet_remove_s_from_the_group">Të hiqet \"%1$s\" prej grupit?</string>
+  <!--Dialog message shown when removing someone from a group with group link being active to indicate they will not be able to rejoin-->
+  <string name="RecipientBottomSheet_remove_s_from_the_group_they_will_not_be_able_to_rejoin">Të hiqet %1$s nga grupi? S’do të jetë në gjendje të rihyjë përmes një lidhjeje grupi.</string>
   <string name="RecipientBottomSheet_remove">Hiqe</string>
   <string name="RecipientBottomSheet_copied_to_clipboard">U kopjua në të papastër</string>
   <string name="GroupRecipientListItem_admin">Përgjegjës</string>
@@ -2873,6 +2956,8 @@ spastrohet dhe krejt lënda do të fshihet.</item>
   <string name="DeleteAccountFragment__leaving_groups">Po braktisen grupe…</string>
   <!--Title of progress dialog shown when a user deletes their account and the process has left all groups-->
   <string name="DeleteAccountFragment__deleting_account">Po fshihet llogaria…</string>
+  <!--Message of progress dialog shown when a user deletes their account and the process is canceling their subscription-->
+  <string name="DeleteAccountFragment__canceling_your_subscription">Po anulohet pajtimi juaj…</string>
   <!--Message of progress dialog shown when a user deletes their account and the process is leaving groups-->
   <string name="DeleteAccountFragment__depending_on_the_number_of_groups">Në varësi të numrit të grupeve ku gjendeni, kjo mund të dojë pak minuta</string>
   <!--Message of progress dialog shown when a user deletes their account and the process has left all groups-->
@@ -2897,8 +2982,6 @@ spastrohet dhe krejt lënda do të fshihet.</item>
   <!--MultiShareDialogs-->
   <string name="MultiShareDialogs__failed_to_send_to_some_users">S\’u arrit të dërgoheshin ca përdorues</string>
   <string name="MultiShareDialogs__you_can_only_share_with_up_to">Mund të shkëmbeni deri me %1$d fjalosje</string>
-  <!--ShareInterstitialActivity-->
-  <string name="ShareInterstitialActivity__forward_message">Përcille mesazhin</string>
   <!--ChatWallpaperActivity-->
   <string name="ChatWallpaperActivity__chat_wallpaper">Sfond fjalosjesh</string>
   <!--ChatWallpaperFragment-->
@@ -3034,6 +3117,7 @@ spastrohet dhe krejt lënda do të fshihet.</item>
   <string name="QualitySelectorBottomSheetDialog__photo_quality">Cilësi fotografie</string>
   <!--AppSettingsFragment-->
   <string name="AppSettingsFragment__invite_your_friends">Ftoni shokët tuaj</string>
+  <string name="AppSettingsFragment__copied_subscriber_id_to_clipboard">ID-ja e pajtimtarit u kopjua në të papastër</string>
   <!--AccountSettingsFragment-->
   <string name="AccountSettingsFragment__account">Llogari</string>
   <string name="AccountSettingsFragment__youll_be_asked_less_frequently">Me kalimin e kohës, do të pyeteni më rrallë</string>
@@ -3042,7 +3126,10 @@ spastrohet dhe krejt lënda do të fshihet.</item>
   <!--ChangeNumberFragment-->
   <string name="ChangeNumberFragment__use_this_to_change_your_current_phone_number_to_a_new_phone_number">Përdoreni këtë që të ndryshoni numrin tuaj të tanishëm të telefonit me një numër të ri. Këtë ndryshim s\’mund ta zhbëni.\n\nPara se të vazhdoni, sigurohuni se numri juaj i ri mund të marrë SMS ose thirrje.</string>
   <string name="ChangeNumberFragment__continue">Vazhdo</string>
-  <string name="ChangeNumber__your_phone_number_has_been_changed">Numri juaj i telefonit është ndryshuar.</string>
+  <!--Message shown on dialog after your number has been changed successfully.-->
+  <string name="ChangeNumber__your_phone_number_has_changed_to_s">Numri juaj i telefonit ka është ndryshuar si %1$s</string>
+  <!--Confirmation button to dismiss number changed dialog-->
+  <string name="ChangeNumber__okay">OK</string>
   <!--ChangeNumberEnterPhoneNumberFragment-->
   <string name="ChangeNumberEnterPhoneNumberFragment__change_number">Ndrysho Numrin</string>
   <string name="ChangeNumberEnterPhoneNumberFragment__your_old_number">Numri juaj i vjetër</string>
@@ -3071,12 +3158,19 @@ spastrohet dhe krejt lënda do të fshihet.</item>
   <string name="ChangeNumberPinDiffersFragment__update_pin">Përditësoni PIN-in</string>
   <string name="ChangeNumberPinDiffersFragment__keep_old_pin_question">Të mbahet PIN-i i vjetër?</string>
   <!--ChangeNumberLockActivity-->
+  <!--Info message shown to user if something crashed the app during the change number attempt and we were unable to confirm the change so we force them into this screen to check before letting them use the app-->
   <string name="ChangeNumberLockActivity__it_looks_like_you_tried_to_change_your_number_but_we_were_unable_to_determine_if_it_was_successful_rechecking_now">Duket sikur provuat të ndryshonit numrin tuaj, por s\’qemë në gjendje të përcaktojmë nëse kjo qe e suksesshme.\n\nPo rikontrollohet tani…</string>
+  <!--Dialog title shown if we were able to confirm your change number status (meaning we now know what the server thinks our number is) after a crash during the regular flow-->
   <string name="ChangeNumberLockActivity__change_status_confirmed">Ndryshim gjendjeje i verifikuar</string>
+  <!--Dialog message shown if we were able to confirm your change number status (meaning we now know what the server thinks our number is) after a crash during the regular flow-->
   <string name="ChangeNumberLockActivity__your_number_has_been_confirmed_as_s">Numri juaj është verifikuar si %1$s. Nëse ky s\’është numri juaj i ri, ju lutemi, rinisni procesin e ndryshimit të numrit.</string>
+  <!--Dialog title shown if we were not able to confirm your phone number with the server and thus cannot let leave the change flow yet after a crash during the regular flow-->
   <string name="ChangeNumberLockActivity__change_status_unconfirmed">Ndryshim gjendjeje i paverifikuar</string>
+  <!--Dialog message shown when we can\'t verify the phone number on the server, only shown if there was a network error communicating with the server after a crash during the regular flow-->
   <string name="ChangeNumberLockActivity__we_could_not_determine_the_status_of_your_change_number_request">S\’përcaktuam dot gjendjen e kërkesës tuaj për ndryshim numri.\n\n(Gabim: %1$s)</string>
+  <!--Dialog button to retry confirming the number on the server-->
   <string name="ChangeNumberLockActivity__retry">Riprovo</string>
+  <!--Dialog button shown to leave the app when in the unconfirmed change status after a crash in the regular flow-->
   <string name="ChangeNumberLockActivity__leave">Braktise</string>
   <string name="ChangeNumberLockActivity__submit_debug_log">Parashtro regjistër diagnostikimi</string>
   <!--ChatsSettingsFragment-->
@@ -3094,7 +3188,7 @@ spastrohet dhe krejt lënda do të fshihet.</item>
   <!--Notification preference option header-->
   <string name="NotificationsSettingsFragment__profiles">Profile</string>
   <!--Notification preference summary text-->
-  <string name="NotificationsSettingsFragment__create_a_profile_to_receive_notifications_only_from_people_and_groups_you_choose">Krijoni një profil që të merrni njoftime vetëm nga persona dhe grupe që zgjidhni ju</string>
+  <string name="NotificationsSettingsFragment__create_a_profile_to_receive_notifications_only_from_people_and_groups_you_choose">Krijoni një profil që të merrni njoftime vetëm nga persona dhe grupe që zgjidhni ju.</string>
   <!--NotificationProfilesFragment-->
   <!--Title for notification profiles screen that shows all existing profiles-->
   <string name="NotificationProfilesFragment__notification_profiles">Profile njoftimesh</string>
@@ -3194,9 +3288,10 @@ spastrohet dhe krejt lënda do të fshihet.</item>
   <string name="AddAProfilePhotoMegaphone__add_photo">Shtoni foto</string>
   <!--BecomeASustainerMegaphone-->
   <string name="BecomeASustainerMegaphone__become_a_sustainer">Bëhuni një Mbështetës</string>
-  <string name="BecomeASustainerMegaphone__signal_is_powered">Signal-i bazohet nga njerëz si ju. Kontribuoni dhe merrni një stemë profili.</string>
-  <string name="BecomeASustainerMegaphone__no_thanks">Jo, faleminderit</string>
-  <string name="BecomeASustainerMegaphone__contribute">Kontribuoni</string>
+  <!--Displayed in the Become a Sustainer megaphone-->
+  <string name="BecomeASustainerMegaphone__signal_is_powered_by">Signal-i bazohet në njerëz si ju. Dhuroni dhe merrni një stemë.</string>
+  <string name="BecomeASustainerMegaphone__not_now">Jo tani</string>
+  <string name="BecomeASustainerMegaphone__donate">Dhuroni</string>
   <!--KeyboardPagerFragment-->
   <string name="KeyboardPagerFragment_emoji">Emoji</string>
   <string name="KeyboardPagerFragment_open_emoji_search">Hap kërkim emoji-sh</string>
@@ -3305,9 +3400,13 @@ spastrohet dhe krejt lënda do të fshihet.</item>
   <!--ContactSelectionListItem-->
   <string name="ContactSelectionListItem__sms">SMS</string>
   <string name="ContactSelectionListItem__dot_s">· %1$s</string>
+  <!--Displayed in the toolbar when externally sharing text to multiple recipients-->
+  <string name="ShareInterstitialActivity__share">Ndajeni Me të Tjerë</string>
   <!--DSLSettingsToolbar-->
   <string name="DSLSettingsToolbar__navigate_up">Ngjituni</string>
   <string name="MultiselectForwardFragment__forward_to">Përcillja</string>
+  <!--Displayed when sharing content via the fragment-->
+  <string name="MultiselectForwardFragment__share_with">Ndaje me</string>
   <string name="MultiselectForwardFragment__add_a_message">Shtoni një mesazh</string>
   <string name="MultiselectForwardFragment__faster_forwards">Përcjellje më të shpejta</string>
   <string name="MultiselectForwardFragment__forwarded_messages_are_now">Mesazhet e përcjellë tanimë dërgohen menjëherë.</string>
@@ -3368,6 +3467,7 @@ spastrohet dhe krejt lënda do të fshihet.</item>
   <string name="SubscribeFragment__signal_is_powered_by_people_like_you">Signal bazohet në njerëz si ju.</string>
   <string name="SubscribeFragment__support_technology_that_is_built_for_you">Përkrahni teknologjinë e ngritur për ju—jo për të dhënat tuaja—duke u bërë pjesë e bashkësisë së njerëzve që e mbajnë atë gjallë.</string>
   <string name="SubscribeFragment__support_technology_that_is_built_for_you_not">Përkrahni teknologjinë që është ngritur për ju, jo për të dhënat tuaja, duke u bërë pjesë e bashkësisë që mbështet Signal-in.</string>
+  <string name="SubscribeFragment__make_a_recurring_monthly_donation">Bëni një dhurim përsëritës mujor për Signal-in që të përkrahni teknologji të ndërtuar për ju, jo për të dhënat tuaja.</string>
   <string name="SubscribeFragment__currency">Monedhë</string>
   <string name="SubscribeFragment__more_payment_options">Më Tepër Mundësi Pagesash</string>
   <string name="SubscribeFragment__cancel_subscription">Anuloje Pajtimin</string>
@@ -3379,19 +3479,19 @@ spastrohet dhe krejt lënda do të fshihet.</item>
   <string name="SubscribeFragment__your_subscription_has_been_cancelled">Pajtimi juaj është anuluar.</string>
   <string name="SubscribeFragment__update_subscription_question">Të përditësohet pajtimi?</string>
   <string name="SubscribeFragment__update">Përditësoje</string>
-  <string name="SubscribeFragment__you_will_be_charged_the_full_amount">Do t\’ju faturohet sasia e plotë e çmimit të sotëm të pajtimit të ri. Pajtimi juaj do të rinovohet më %1$s.</string>
   <string name="SubscribeFragment__you_will_be_charged_the_full_amount_s_of">Do t\’ju faturohet sot vlera e plotë (%1$s) e çmimit të pajtimit të ri. Pajtimi juaj do të rinovohet çdo muaj.</string>
   <string name="Subscription__s_per_month">%s/muaj</string>
   <string name="Subscription__s_per_month_dot_renews_s">%1$s/muaj · Rinovohet më %2$s</string>
   <string name="Subscription__s_per_month_dot_expires_s">%1$s/muaj · Skadon më %2$s</string>
-  <string name="SubscribeLearnMoreBottomSheetDialogFragment__signal_is_a_non_profit_with_no">Signal-i është një ent jofitimprurës, pa reklamues për të apo investues, i bazuar vetëm te njerëzit që e përdorin dhe vlerësojnë. Bëni një dhurim mujor ripërsëritës dhe merrni një stemë profili për t\’u treguar të tjerëve përkrahjen tuaj.</string>
-  <string name="SubscribeLearnMoreBottomSheetDialogFragment__why_contribute">Pse të Jepet Ndihmesë?</string>
+  <!--First small text blurb on learn more sheet-->
+  <string name="SubscribeLearnMoreBottomSheetDialogFragment__signal_is_a_nonprofit_with_no">Signal-i është një ent jofitimprurës, pa reklamues për të apo investues, i bazuar vetëm te njerëzit që e përdorin dhe vlerësojnë. Bëni një dhurim mujor ripërsëritës dhe merrni një stemë profili për t\’u treguar të tjerëve përkrahjen tuaj.</string>
+  <string name="SubscribeLearnMoreBottomSheetDialogFragment__why_donate">Pse të Dhurohet?</string>
   <string name="SubscribeLearnMoreBottomSheetDialogFragment__signal_is_committed_to_developing">Signal-i është i përkushtuar zhvillimit të teknologjive të privatësisë me burim të hapët që mbrojnë shprehjen e lirë dhe bëjnë të mundur komunikim të sigurt global.</string>
-  <string name="SubscribeLearnMoreBottomSheetDialogFragment__your_contribution">Kontributi juaj i shërben kësaj kauze dhe paguan për zhvillimin dhe operacioneve të lidhura me një aplikacion të përdorur nga miliona vetë për komunikim privat. Pa reklama. Pa gjurmues. Pa shaka.</string>
+  <string name="SubscribeLearnMoreBottomSheetDialogFragment__your_donation">Dhurimi juaj i shërben kësaj kauze dhe paguan për zhvillimin dhe operacioneve të lidhura me një aplikacion të përdorur nga miliona vetë për komunikim privat. Pa reklama. Pa gjurmues. Pa shaka.</string>
   <string name="SubscribeThanksForYourSupportBottomSheetDialogFragment__thanks_for_your_support">Faleminderit për Përkrahjen tuaj!</string>
   <string name="SubscribeThanksForYourSupportBottomSheetDialogFragment__thanks_for_the_boost">Faleminderit për Fuqizimin!</string>
-  <string name="SubscribeThanksForYourSupportBottomSheetDialogFragment__youve_earned_s_badge_help_signal">Fituat stemën %s badge! Ndihmojeni Signal-in të shtojë ndërgjegjësimin, duke shfaqur në profilin tuaj këtë stemë.</string>
-  <string name="SubscribeThanksForYourSupportBottomSheetDialogFragment__youve_earned_a_boost_badge_help_signal">Fituat një stemë Boos! Ndihmojeni Signal-in të shtojë ndërgjegjësimin, duke shfaqur në profilin tuaj këtë stemë.</string>
+  <string name="SubscribeThanksForYourSupportBottomSheetDialogFragment__youve_earned_s_badge_display">Fituat stemën %s! Shfaqeni këtë stemë në profilin tuaj, që të shtohet ndërgjegjësimi mbi dhurimet për Signal-in.</string>
+  <string name="SubscribeThanksForYourSupportBottomSheetDialogFragment__youve_earned_a_boost_badge_display">Fituat një stemë Përforcimi. Shpaloseni këtë stemë në profilin tuaj, që të shtohet ndërgjegjësimi për dhurim te Signal-i.</string>
   <string name="SubscribeThanksForYourSupportBottomSheetDialogFragment__you_can_also">Mundeni edhe të</string>
   <string name="SubscribeThanksForYourSupportBottomSheetDialogFragment__become_a_montly_sustainer">bëheni një Mbështetës mujor.</string>
   <string name="SubscribeThanksForYourSupportBottomSheetDialogFragment__display_on_profile">Shfaqe në Profil</string>
@@ -3400,13 +3500,27 @@ spastrohet dhe krejt lënda do të fshihet.</item>
   <string name="ThanksForYourSupportBottomSheetFragment__when_you_have_more">Kur keni më shumë se një stemë, mund të zgjidhni cila t\’u shfaqet të tjerëve te profili juaj për ta parë.</string>
   <string name="BecomeASustainerFragment__get_badges">Merrni stema për profilin tuaj, duke përkrahur Signal-in.</string>
   <string name="BecomeASustainerFragment__signal_is_a_non_profit">Signal-i është një ent jofitimprurës pa rrjete reklamash dhe investues, i përkrahur vetëm nga njerëz si ju.</string>
-  <string name="ManageDonationsFragment__my_support">Përkrahja ime</string>
+  <!--Button label for creating a monthly donation-->
+  <string name="ManageDonationsFragment__make_a_monthly_donation">Bëni një dhurim të përmuajshëm</string>
+  <!--Heading for more area of manage subscriptions page-->
+  <string name="ManageDonationsFragment__more">Më tepër</string>
+  <!--Heading for receipts area of manage subscriptions page-->
+  <string name="ManageDonationsFragment__receipts">Fatura</string>
+  <!--Heading for my subscription area of manage subscriptions page-->
+  <string name="ManageDonationsFragment__my_subscription">Pajtimi im</string>
   <string name="ManageDonationsFragment__manage_subscription">Administroni pajtim</string>
+  <!--Label for Donation Receipts button-->
+  <string name="ManageDonationsFragment__donation_receipts">Dëftesa Dhurimesh</string>
   <string name="ManageDonationsFragment__badges">Stema</string>
   <string name="ManageDonationsFragment__subscription_faq">PBR pajtimesh</string>
   <string name="ManageDonationsFragment__error_getting_subscription">Gabim në marrje pajtimi.</string>
+  <!--Preference heading for other ways to donate-->
+  <string name="ManageDonationsFragment__other_ways_to_give">Rrugë të tjera për të dhuruar</string>
+  <!--Preference label to launch badge gifting-->
+  <string name="ManageDonationsFragment__gift_a_badge">Dhuroni një stemë</string>
   <string name="BoostFragment__give_signal_a_boost">Jepini Sinjalit Pak Fuqizim</string>
-  <string name="BoostFragment__say_thanks_and_earn">Thoni “Faleminderit” dhe fitoni një stemë Fuqizimi për %1$d ditë.</string>
+  <!--Description text in boost sheet-->
+  <string name="BoostFragment__make_a_one_time">Bëni një dhurim një here dhe fitoni një stemë Përforcimi për %1$d ditë.</string>
   <string name="Boost__enter_custom_amount">Jepni Sasi Vetjake</string>
   <string name="Boost__one_time_contribution">Kontribut një herë</string>
   <string name="MySupportPreference__add_a_signal_boost">Shtoni një fuqizim Signal-i</string>
@@ -3416,18 +3530,27 @@ spastrohet dhe krejt lënda do të fshihet.</item>
   <!--Displayed on "My Support" screen when user badge failed to be added to their account-->
   <string name="MySupportPreference__couldnt_add_badge_s">S\’u shtua dot stemë. %1$s</string>
   <string name="MySupportPreference__please_contact_support">Ju lutemi, lidhuni me ata të asistencës.</string>
-  <string name="ExpiredBadgeBottomSheetDialogFragment__your_badge_has_expired">Stema juaj ka Skaduar</string>
-  <string name="ExpiredBadgeBottomSheetDialogFragment__badge_expired">Stema ka skaduar</string>
-  <string name="ExpiredBadgeBottomSheetDialogFragment__subscription_cancelled">Pajtimi u anulua</string>
-  <string name="ExpiredBadgeBottomSheetDialogFragment__your_boost_badge_has_expired">Stema juaj Përforcim ka skaduar dhe s\’është më e dukshme për të tjerët në profilin tuaj.</string>
+  <!--Title of expiry sheet when boost badge falls off profile unexpectedly.-->
+  <string name="ExpiredBadgeBottomSheetDialogFragment__boost_badge_expired">Stema e Përforcimit Ka Skaduar</string>
+  <!--Displayed in the bottom sheet if a monthly donation badge unexpectedly falls off the user\'s profile-->
+  <string name="ExpiredBadgeBottomSheetDialogFragment__monthly_donation_cancelled">Dhurim i Përmuajshëm i Anuluar</string>
+  <!--Displayed in the bottom sheet when a boost badge expires-->
+  <string name="ExpiredBadgeBottomSheetDialogFragment__your_boost_badge_has_expired_and">Stema juaj e Përforcimit ka skaduar dhe s\’është më e dukshme për të tjerët në profilin tuaj.</string>
   <string name="ExpiredBadgeBottomSheetDialogFragment__you_can_reactivate">Stemën tua Përforcim mund ta riaktivizoni për 30 ditë të tjera përmes një kontributi një herësh.</string>
-  <string name="ExpiredBadgeBottomSheetDialogFragment__to_continue_supporting_technology">Që të vazhdoni të përkrahni teknologji që është krijuar për ju, ju lutemi, shihni mundësinë e bërjes një Mbështetës mujor.</string>
+  <!--Displayed when we do not think the user is a subscriber when their boost expires-->
+  <string name="ExpiredBadgeBottomSheetDialogFragment__you_can_keep">Mund të vazhdoni të përdorni Signal-in, por që të përkrahni teknologjinë që është ndërtuar për ju, shihni mundësinë e bërjes një përkrahës, duke bërë një dhurim të përmuajshëm.</string>
   <string name="ExpiredBadgeBottomSheetDialogFragment__become_a_sustainer">Bëhuni një Mbështetës</string>
   <string name="ExpiredBadgeBottomSheetDialogFragment__add_a_boost">Shtoni një Përforcim</string>
   <string name="ExpiredBadgeBottomSheetDialogFragment__not_now">Jo tani</string>
-  <string name="ExpiredBadgeBottomSheetDialogFragment__your_sustainer">Pajtimi juaj si Mbështetës u anulua automatikisht, ngaqë qetë jo aktiv për një kohë të gjatë. Stema juaj %1$s s\’është më e dukshme te profili juaj.</string>
+  <!--Copy displayed when badge expires after user inactivity-->
+  <string name="ExpiredBadgeBottomSheetDialogFragment__your_recurring_monthly_donation_was_automatically">Dhurimi juaj ripërsëritës u anulua automatikisht, ngaqë qetë jo aktiv për një kohë të gjatë. Stema juaj %1$s s\’është më e dukshme te profili juaj.</string>
+  <!--Copy displayed when badge expires after payment failure-->
+  <string name="ExpiredBadgeBottomSheetDialogFragment__your_recurring_monthly_donation_was_canceled">Dhurimi juaj i përmuajshëm u anulua, ngaqë s\’përpunuam dot pagesën tuaj. Stema juaj s\’është më e dukshme te profili juaj.</string>
   <string name="ExpiredBadgeBottomSheetDialogFragment__you_can">Mund të vazhdoni ta përdorni Signal-in, por që të përkrahni aplikacionin dhe të riaktivizoni stemën, rinovojeni tani.</string>
   <string name="ExpiredBadgeBottomSheetDialogFragment__renew_subscription">Rinovoni pajtimin</string>
+  <string name="CantProcessSubscriptionPaymentBottomSheetDialogFragment__cant_process_subscription_payment">S’bëhet dot kryerja e pagesës</string>
+  <string name="CantProcessSubscriptionPaymentBottomSheetDialogFragment__were_having_trouble">Po kemi probleme me marrjen e pagesës tuaj si Përkrahës Signal-i. Sigurohuni se metoda juaj e pagesës është e përditësuar. Nëse s’është, përditësojeni në Google Pay. Signal-i do të provojë sërish të bëjë kryerjen e pagesës pas pak ditësh.</string>
+  <string name="CantProcessSubscriptionPaymentBottomSheetDialogFragment__dont_show_this_again">Mos e shfaq më këtë</string>
   <string name="Subscription__please_contact_support_for_more_information">Ju lutemi, për më tepër hollësi, lidhuni më asistencën.</string>
   <string name="Subscription__contact_support">Lidhuni Me Asistencën</string>
   <string name="Subscription__earn_a_s_badge">Fitoni një stemë %1$s</string>
@@ -3440,6 +3563,14 @@ spastrohet dhe krejt lënda do të fshihet.</item>
   <string name="DonationsErrors__your_payment">Pagesa juaj s\’u përpunuar do dhe nuk ju është faturuar. Ju lutemi, riprovoni.</string>
   <string name="DonationsErrors__still_processing">Ende në përpunim</string>
   <string name="DonationsErrors__couldnt_add_badge">S\’u shtua dot stemë</string>
+  <!--Displayed when badge credential couldn\'t be verified-->
+  <string name="DonationsErrors__failed_to_validate_badge">S\’u arrit të vleftësohej stema</string>
+  <!--Displayed when badge credential couldn\'t be verified-->
+  <string name="DonationsErrors__could_not_validate">S\’u vleftësua dot përgjigja e shërbyesit. Ju lutemi, lidhuni me asistencën.</string>
+  <!--Displayed as title when some generic error happens during gift badge sending-->
+  <string name="DonationsErrors__failed_to_send_gift_badge">S\’u arrit të dërgohej një stemë dhuratë</string>
+  <!--Displayed as message when some generic error happens during gift badge sending-->
+  <string name="DonationsErrors__could_not_send_gift_badge">S\’u dërgua dot stemë dhuratë. Ju lutemi, lidhuni me asistencën.</string>
   <string name="DonationsErrors__your_badge_could_not">Stema juaj s\’u shtua dot te llogaria juaj, por mund t\’ju jetë faturuar vlera e dhurimit. Ju lutemi, lidhuni me asistencën.</string>
   <string name="DonationsErrors__your_payment_is_still">Pagesa juaj ende po përpunohet. Kjo mund të zërë ca minuta, varet nga lidhja juaj.</string>
   <string name="DonationsErrors__google_pay_unavailable">Google Pay i Pakapshëm</string>
@@ -3449,6 +3580,48 @@ spastrohet dhe krejt lënda do të fshihet.</item>
   <string name="ViewBadgeBottomSheetDialogFragment__your_device_doesn_t_support_google_pay_so_you_can_t_subscribe_to_earn_a_badge_you_can_still_support_signal_by_making_a_donation_on_our_website">Pajisja juaj nuk mbulon Google Pay, ndaj s\’mund të kontribuoni për të fituar një stemë. Mundeni ende të përkrahni Signal-in duke bërë një dhurim te sajti ynë.</string>
   <string name="NetworkFailure__network_error_check_your_connection_and_try_again">Gabim rrjeti. Ju lutemi, kontrolloni lidhjen tuaj me rrjetin dhe riprovoni.</string>
   <string name="NetworkFailure__retry">Riprovo</string>
+  <string name="DonationsErrors__recipient_verification_failed">Dështoi verifikimi i marrësit.</string>
+  <string name="DonationsErrors__target_does_not_support_gifting">Marrësi i synuar nuk mbulon dhurime.</string>
+  <!--Gift message view title-->
+  <string name="GiftMessageView__gift_badge">Dhuroni stemë</string>
+  <!--Gift message view expiry information-->
+  <plurals name="GiftMessageView__lasts_for_d_months">
+    <item quantity="one">Vlen për %1$d muaj</item>
+    <item quantity="other">Vlen për %1$d muaj</item>
+  </plurals>
+  <!--Gift badge redeem action label-->
+  <!--Gift badge view action label-->
+  <string name="GiftMessageView__view">Shihni</string>
+  <!--Gift badge redeeming action label-->
+  <!--Gift badge redeemed label-->
+  <!--Stripe decline code generic_failure-->
+  <string name="DeclineCode__try_another_payment_method_or_contact_your_bank">Provoni një metodë tjetër pagese, ose lidhuni me bankën tuaj për më tepër informacion.</string>
+  <!--Stripe decline code verify on Google Pay and try again-->
+  <string name="DeclineCode__verify_your_payment_method_is_up_to_date_in_google_pay_and_try_again">Verifikoni në Google Pay se metoda juaj e pagesës është e përditësuar dhe riprovoni.</string>
+  <!--Stripe decline code learn more action label-->
+  <string name="DeclineCode__learn_more">Mësoni më tepër</string>
+  <!--Stripe decline code contact issuer-->
+  <string name="DeclineCode__verify_your_payment_method_is_up_to_date_in_google_pay_and_try_again_if_the_problem">Verifikoni në Google Pay se metoda juaj e pagesës është e përditësuar dhe riprovoni. Nëse problemi vazhdon, lidhuni me bankën tuaj.</string>
+  <!--Stripe decline code purchase not supported-->
+  <string name="DeclineCode__your_card_does_not_support_this_type_of_purchase">Karta juaj nuk e mbulon këtë lloj blerjeje. Provoni tjetër metodë pagese.</string>
+  <!--Stripe decline code your card has expired-->
+  <string name="DeclineCode__your_card_has_expired">Karta juaj ka skaduar. Përditësoni metodën tuaj të pagesës në Google Pay dhe riprovoni.</string>
+  <!--Stripe decline code go to google pay action label-->
+  <string name="DeclineCode__go_to_google_pay">Kaloni në Google Pay</string>
+  <!--Stripe decline code incorrect card number-->
+  <string name="DeclineCode__your_card_number_is_incorrect">Numri i kartës tuaj i pasaktë. Përditësojeni në Google Pay dhe riprovoni.</string>
+  <!--Stripe decline code incorrect cvc-->
+  <string name="DeclineCode__your_cards_cvc_number_is_incorrect">Numri CVC i kartës tuaj është i pasaktë. Përditësojeni në Google Pay dhe riprovoni.</string>
+  <!--Stripe decline code insufficient funds-->
+  <string name="DeclineCode__your_card_does_not_have_sufficient_funds">Karta juaj nuk ja fonde të mjaftueshme për të plotësuar këtë pagesë. Provoni një metodë tjetër pagese.</string>
+  <!--Stripe decline code incorrect expiration month-->
+  <string name="DeclineCode__the_expiration_month">Muaji i skadimit në metodën tuaj të pagesës është i pasaktë. Përditësojeni në Google Pay dhe riprovoni.</string>
+  <!--Stripe decline code incorrect expiration year-->
+  <string name="DeclineCode__the_expiration_year">Viti i skadimit në metodën tuaj të pagesës është i pasaktë. Përditësojeni në Google Pay dhe riprovoni.</string>
+  <!--Stripe decline code issuer not available-->
+  <string name="DeclineCode__try_completing_the_payment_again">Riprovoni të plotësoni pagesën, ose lidhuni me bankën tuaj për më tepër informacion.</string>
+  <!--Stripe decline code processing error-->
+  <string name="DeclineCode__try_again">Riprovoni, ose lidhuni me bankën tuaj për më tepër informacion.</string>
   <!--Title of create notification profile screen-->
   <string name="EditNotificationProfileFragment__name_your_profile">Jepni emër për profilin tuaj</string>
   <!--Hint text for create/edit notification profile name-->
@@ -3464,7 +3637,7 @@ spastrohet dhe krejt lënda do të fshihet.</item>
   <!--Title of edit notification profile screen-->
   <string name="EditNotificationProfileFragment__edit_this_profile">Përpunoni këtë profil</string>
   <!--Error message shown when attempting to create or edit a profile name to an existing profile name-->
-  <string name="EditNotificationProfileFragment__a_profile_with_this_name_already_exists">Ka tashmë një profil me këtë emër.</string>
+  <string name="EditNotificationProfileFragment__a_profile_with_this_name_already_exists">Ka tashmë një profil me këtë emër</string>
   <!--Preset selectable name for a profile name, shown as list in edit/create screen-->
   <string name="EditNotificationProfileFragment__work">Pune</string>
   <!--Preset selectable name for a profile name, shown as list in edit/create screen-->
@@ -3558,7 +3731,7 @@ spastrohet dhe krejt lënda do të fshihet.</item>
   <!--If in create mode, call to action button text to show to use the enabled schedule and move to the next screen-->
   <string name="EditNotificationProfileSchedule__next">Pasuesi</string>
   <!--Error message shown if trying to save/use a schedule with no days selected-->
-  <string name="EditNotificationProfileSchedule__schedule_must_have_at_least_one_day">Orari duhet të ketë të paktën një ditë.</string>
+  <string name="EditNotificationProfileSchedule__schedule_must_have_at_least_one_day">Orari duhet të ketë të paktën një ditë</string>
   <!--Title for final screen shown after completing a profile creation-->
   <string name="NotificationProfileCreated__profile_created">Profili u krijua</string>
   <!--Call to action button to press to close the created screen and move to the profile details screen-->
@@ -3579,15 +3752,347 @@ spastrohet dhe krejt lënda do të fshihet.</item>
   <string name="NotificationProfileSelection__view_settings">Shihni rregullimet</string>
   <!--Descriptor text indicating how long a profile will be on when there is a time component associated with it-->
   <string name="NotificationProfileSelection__on_until_s">Aktiv deri më %1$s</string>
-  <!--Title for notification profile megaphone-->
-  <string name="NotificationProfilesMegaphone__notification_profiles">Profile njoftimesh</string>
-  <!--Description for notification profile megaphone-->
-  <string name="NotificationProfilesMegaphone__only_get_notifications_from_the_people_and_groups_you_choose">Merrni njoftime vetëm nga persona dhe grupe që zgidhni ju.</string>
-  <!--Call to action button to create a profile from megaphone-->
-  <string name="NotificationProfilesMegaphone__create_a_profile">Krijoni një profil</string>
-  <!--Button to dismiss notification profile megaphone-->
-  <string name="NotificationProfilesMegaphone__not_now">Jo tani</string>
   <!--Displayed in a toast when we fail to open the ringtone picker-->
   <string name="NotificationSettingsFragment__failed_to_open_picker">S\’u arrit të hapet zgjedhësi.</string>
+  <!--Description shown for the Signal Release Notes channel-->
+  <string name="ReleaseNotes__signal_release_notes_and_news">Shënime Hedhjeje Në Qarkullim &amp; Lajme Signal</string>
+  <!--Donation receipts activity title-->
+  <string name="DonationReceiptListFragment__all_activity">Krejt veprimtaria</string>
+  <!--Donation receipts all tab label-->
+  <string name="DonationReceiptListFragment__all">Krejt</string>
+  <!--Donation receipts recurring tab label-->
+  <string name="DonationReceiptListFragment__recurring">E ripërsëritshme</string>
+  <!--Donation receipts one-time tab label-->
+  <string name="DonationReceiptListFragment__one_time">Një herë</string>
+  <!--Donation receipts gift tab label-->
+  <string name="DonationReceiptListFragment__gift">Dhuratë</string>
+  <!--Donation receipts boost row label-->
+  <string name="DonationReceiptListFragment__boost">Përforcojeni</string>
+  <!--Donation receipts details title-->
+  <string name="DonationReceiptDetailsFragment__details">Hollësi</string>
+  <!--Donation receipts donation type heading-->
+  <string name="DonationReceiptDetailsFragment__donation_type">Lloj dhurimi</string>
+  <!--Donation receipts date paid heading-->
+  <string name="DonationReceiptDetailsFragment__date_paid">Datë pagese</string>
+  <!--Donation receipts share PNG-->
+  <!--Donation receipts list end note-->
+  <string name="DonationReceiptListFragment__if_you_have">Nëse keni riinstaluar Signal-in, dëftesat prej dhurimesh të mëparshme s’do të duken më.</string>
+  <!--Donation receipts document title-->
+  <string name="DonationReceiptDetailsFragment__donation_receipt">Dëftesë dhurimi</string>
+  <!--Donation receipts amount title-->
+  <string name="DonationReceiptDetailsFragment__amount">Sasi</string>
+  <!--Donation receipts thanks-->
+  <string name="DonationReceiptDetailsFragment__thank_you_for_supporting">Faleminderit për përkrahjen e Signal-it. Kontributi juaj ndihmon të ushqehet misioni i zhvillimit me burim të hapët i teknologjisë së privatësisë që mbron shprehjen e lirë dhe bën të mundur komunikim global për miliona vetë anembanë botës. Nëse jeni një banues në ShBA, ju lutemi, mbajeni këtë dëftesë për deklarimin e taksave. Signal Technology Foundation është një ent jofitimprurës i përjashtuar nga taksat në ShBA, sipas ndarjes 501c3 të Kodit Mbi të Ardhurat e Brendshme. ID-ja jonë Federale e Taksave është 82–4506840.</string>
+  <!--Donation receipt type-->
+  <string name="DonationReceiptDetailsFragment__s_dash_s">%1$s - %2$s</string>
+  <!--region "Stories Tab"-->
+  <!--Label for Chats tab in home app screen-->
+  <string name="ConversationListTabs__chats">Fjalosje</string>
+  <!--Label for Stories tab in home app screen-->
+  <string name="ConversationListTabs__stories">Histori</string>
+  <!--String for counts above 99 in conversation list tabs-->
+  <string name="ConversationListTabs__99p">99+</string>
+  <!--Title for "My Stories" row item in Stories landing page-->
+  <string name="StoriesLandingFragment__my_stories">Historitë e Mia</string>
+  <!--Subtitle for "My Stories" row item when user has not added stories-->
+  <string name="StoriesLandingFragment__add_a_story">Shtoni një histori</string>
+  <!--Displayed when there are no stories to display-->
+  <string name="StoriesLandingFragment__no_recent_updates_to_show_right_now_tap_plus_to_add_to_your_story">Hëpërhë s’ka dhurime për t’u shfaqur. Prekni + që të shtoni historinë tuaj.</string>
+  <!--Context menu option to hide a story-->
+  <string name="StoriesLandingItem__hide_story">Fshihe historinë</string>
+  <!--Context menu option to unhide a story-->
+  <string name="StoriesLandingItem__unhide_story">Shfshihe historinë</string>
+  <!--Context menu option to forward a story-->
+  <string name="StoriesLandingItem__forward">Përcjellje</string>
+  <!--Context menu option to share a story-->
+  <string name="StoriesLandingItem__share">Ndajeni me të tjerët…</string>
+  <!--Context menu option to go to story chat-->
+  <string name="StoriesLandingItem__go_to_chat">Kalo te fjalosja</string>
+  <!--Label when a story is pending sending-->
+  <string name="StoriesLandingItem__sending">Po dërgohet…</string>
+  <!--Label when multiple stories are pending sending-->
+  <string name="StoriesLandingItem__sending_d">Po dërgohen %1$d…</string>
+  <!--Label when a story fails to send-->
+  <string name="StoriesLandingItem__send_failed">Dërgimi dështoi</string>
+  <!--Status label when a story fails to send indicating user action to retry-->
+  <string name="StoriesLandingItem__tap_to_retry">Prekeni që të riprovohet</string>
+  <!--Title of dialog confirming decision to hide a story-->
+  <string name="StoriesLandingFragment__hide_story">Të fshihet historia?</string>
+  <!--Message of dialog confirming decision to hide a story-->
+  <string name="StoriesLandingFragment__new_story_updates">Përditësime të reja historie nga %1$s s’do të shfaqen më në krye të listës së historive.</string>
+  <!--Positive action of dialog confirming decision to hide a story-->
+  <string name="StoriesLandingFragment__hide">Fshihe</string>
+  <!--Displayed in Snackbar after story is hidden-->
+  <string name="StoriesLandingFragment__story_hidden">Histori e fshehur</string>
+  <!--Section header for hidden stories-->
+  <string name="StoriesLandingFragment__hidden_stories">Histori të fshehura</string>
+  <!--Displayed on each sent story under My Stories-->
+  <plurals name="MyStories__d_views">
+    <item quantity="one">%1$d parje</item>
+    <item quantity="other">%1$d parje</item>
+  </plurals>
+  <!--Forward story label, displayed in My Stories context menu-->
+  <string name="MyStories_forward">Përcjellje</string>
+  <!--Label for stories for a single user. Format is {given name}\'s Story-->
+  <string name="MyStories__ss_story">Historia e %1$s</string>
+  <!--Title of dialog to confirm deletion of story-->
+  <string name="MyStories__delete_story">Të fshihet historia?</string>
+  <!--Message of dialog to confirm deletion of story-->
+  <string name="MyStories__this_story_will_be_deleted">Kjo histori do të fshihet për ju dhe këdo që e ka marrë.</string>
+  <!--Displayed at bottom of story viewer when current item has views-->
+  <plurals name="StoryViewerFragment__d_views">
+    <item quantity="one">%1$d parje</item>
+    <item quantity="other">%1$d parje</item>
+  </plurals>
+  <!--Displayed at bottom of story viewer when current item has replies-->
+  <plurals name="StoryViewerFragment__d_replies">
+    <item quantity="one">%1$d përgjigje</item>
+    <item quantity="other">%1$d përgjigje</item>
+  </plurals>
+  <!--Used to join views and replies when both exist on a story item-->
+  <string name="StoryViewerFragment__s_s">%1$s %2$s</string>
+  <!--Displayed when viewing a post you sent-->
+  <string name="StoryViewerPageFragment__you">Ju</string>
+  <!--Displayed when viewing a post displayed to a group-->
+  <string name="StoryViewerPageFragment__s_to_s">%1$s për %2$s</string>
+  <!--Displayed when viewing a post from another user with no replies-->
+  <string name="StoryViewerPageFragment__reply">Përgjigju</string>
+  <!--Displayed when a story has no views-->
+  <string name="StoryViewsFragment__no_views_yet">Ende pa parje</string>
+  <!--Displayed when a story has no replies yet-->
+  <string name="StoryGroupReplyFragment__no_replies_yet">Ende pa përgjigje</string>
+  <!--Displayed for each user that reacted to a story when viewing replies-->
+  <string name="StoryGroupReactionReplyItem__reacted_to_the_story">Reagoi ndaj historisë</string>
+  <!--Label for story views tab-->
+  <string name="StoryViewsAndRepliesDialogFragment__views">Parje</string>
+  <!--Label for story replies tab-->
+  <string name="StoryViewsAndRepliesDialogFragment__replies">Përgjigje</string>
+  <!--Description of action for reaction button-->
+  <string name="StoryReplyComposer__react_to_this_story">Reagoni ndaj kësaj historie</string>
+  <!--Displayed when the user is replying privately to someone who replied to one of their stories-->
+  <string name="StoryReplyComposer__replying_privately_to_s">Përgjigje privatisht për %1$s</string>
+  <!--Context menu item to privately reply to a story response-->
+  <string name="StoryGroupReplyItem__private_reply">Përgjigje Private</string>
+  <!--Context menu item to copy a story response-->
+  <string name="StoryGroupReplyItem__copy">Kopjoje</string>
+  <!--Context menu item to delete a story response-->
+  <string name="StoryGroupReplyItem__delete">Fshiji</string>
+  <!--Story settings page title-->
+  <string name="StorySettingsFragment__story_settings">Rregullime historie</string>
+  <!--Story settings private stories heading-->
+  <string name="StorySettingsFragment__private_stories">Histori private</string>
+  <!--Note at bottom of story settings regarding who can see private stories.-->
+  <string name="StorySettingsFragment__private_stories_can_only_be_viewed">Historitë private mund të shihen vetëm nga persona që shtoni në to. Emrin e historisë mund ta shihni vetëm ju.</string>
+  <!--Option label for creating a new private story-->
+  <string name="StorySettingsFragment__new_private_story">Histori e re private</string>
+  <!--Page title for My Story options-->
+  <string name="MyStorySettingsFragment__my_story">Historia ime</string>
+  <!--Section heading for story visibility-->
+  <string name="MyStorySettingsFragment__who_can_see_this_story">Kush mund ta shohë këtë histori</string>
+  <!--Clickable option for selecting people to hide your story from-->
+  <string name="MyStorySettingsFragment__hide_story_from">Fshihe historinë nga</string>
+  <!--Summary of clickable option displaying how many people you have hidden your story from-->
+  <plurals name="MyStorySettingsFragment__d_people">
+    <item quantity="one">%1$d person</item>
+    <item quantity="other">%1$d persona</item>
+  </plurals>
+  <!--Section header for options related to replies and reactions-->
+  <string name="MyStorySettingsFragment__replies_amp_reactions">Përgjigje &amp; reagime</string>
+  <!--Switchable option for allowing replies and reactions on your stories-->
+  <string name="MyStorySettingsFragment__allow_replies_amp_reactions">Lejo përgjigje &amp; reagime</string>
+  <!--Summary for switchable option allowing replies and reactions on your story-->
+  <string name="MyStorySettingsFragment__let_people_who_can_view_your_story_react_and_reply">Lërini njerëzit që mund të shohin historinë tuaj të reagojnë dhe përgjigjen</string>
+  <!--Note about default sharing-->
+  <string name="MyStorySettingsFragment__hide_your_story_from">Fshiheni historinë tuaj për persona të caktuar. Si parazgjedhje, historia juaj ndahet me %1$s tuaj</string>
+  <!--Signal connections linked text that opens the Signal Connections sheet-->
+  <string name="MyStorySettingsFragment__signal_connections">Lidhje Signal.</string>
+  <!--Displayed at the top of the signal connections sheet. Please remember to insert strong tag as required.-->
+  <string name="SignalConnectionsBottomSheet__signal_connections_are_people"><strong>Lidhjet Signal</strong> janë persona që zgjidhni t’u besoni, ose përmes:</string>
+  <!--Signal connections sheet bullet point 1-->
+  <string name="SignalConnectionsBottomSheet__starting_a_conversation">Nisjes së një bisede</string>
+  <!--Signal connections sheet bullet point 2-->
+  <string name="SignalConnectionsBottomSheet__accepting_a_message_request">Pranimit të një ërkesë për mesazh</string>
+  <!--Signal connections sheet bullet point 3-->
+  <string name="SignalConnectionsBottomSheet__having_them_in_your_system_contacts">Pasjen e tyre te kontaktet tuaja të sistemit</string>
+  <!--Note at the bottom of the Signal connections sheet-->
+  <string name="SignalConnectionsBottomSheet__your_connections_can_see_your_name">Lidhjet tuaja mund të shohin emrin dhe foton tuaj dhe mund të shohin postime te “Historia Ime”, veç në u fshefshi.</string>
+  <!--Clickable option to add a viewer to a private story-->
+  <string name="PrivateStorySettingsFragment__add_viewer">Shtoni shikues</string>
+  <!--Clickable option to delete a custom story-->
+  <string name="PrivateStorySettingsFragment__delete_private_story">Fshi histori private</string>
+  <!--Dialog title when attempting to remove someone from a private story-->
+  <string name="PrivateStorySettingsFragment__remove_s">Të hiqet %1$s?</string>
+  <!--Dialog message when attempting to remove someone from a private story-->
+  <string name="PrivateStorySettingsFragment__this_person_will_no_longer">Ky person s’do ta shohë më historinë tuaj.</string>
+  <!--Positive action label when attempting to remove someone from a private story-->
+  <string name="PrivateStorySettingsFragment__remove">Hiqe</string>
+  <!--Dialog title when deleting a private story-->
+  <string name="PrivateStorySettingsFragment__are_you_sure">Jeni i sigurt?</string>
+  <!--Dialog message when deleting a private story-->
+  <string name="PrivateStorySettingsFragment__this_action_cannot">Ky veprim s’mund të zhbëhet.</string>
+  <!--Page title for editing a private story name-->
+  <string name="EditPrivateStoryNameFragment__edit_story_name">Përpunoni emër historie</string>
+  <!--Input field hint when editing a private story name-->
+  <string name="EditPrivateStoryNameFragment__story_name">Emër historie</string>
+  <!--Save button label when editing a private story name-->
+  <string name="EditPrivateStoryNameFragment__save">Ruaji</string>
+  <!--Displayed in text post creator before user enters text-->
+  <string name="TextStoryPostCreationFragment__tap_to_add_text">Prekeni që të shtoni tekst</string>
+  <!--Button label for changing font when creating a text post-->
+  <string name="TextStoryPostTextEntryFragment__aa">Aa</string>
+  <!--Displayed in text post creator when prompting user to enter text-->
+  <string name="TextStoryPostTextEntryFragment__add_text">Shtoni tekst</string>
+  <!--Content description for \'done\' button when adding text to a story post-->
+  <string name="TextStoryPostTextEntryFragment__done_adding_text">Përfundoi shtimi i tekstit</string>
+  <!--Text label for media selection toggle-->
+  <string name="MediaSelectionActivity__text">Tekst</string>
+  <!--Camera label for media selection toggle-->
+  <string name="MediaSelectionActivity__camera">Kamerë</string>
+  <!--Hint for entering a URL for a text post-->
+  <string name="TextStoryPostLinkEntryFragment__type_or_paste_a_url">Shtypni pse hidhni një URL</string>
+  <!--Displayed prior to the user entering a URL for a text post-->
+  <string name="TextStoryPostLinkEntryFragment__share_a_link_with_viewers_of_your_story">Ndajeni shembullin tuaj me shikuesit përmes një lidhjeje</string>
+  <!--Hint text for searching for a story text post recipient.-->
+  <string name="TextStoryPostSendFragment__search">Kërko</string>
+  <!--Title for screen allowing user to hide "My Story" entries from specific people-->
+  <string name="HideStoryFromFragment__hide_story_from">Fshiheni historinë nga…</string>
+  <!--Done button label for hide story from screen-->
+  <string name="HideStoryFromFragment__done">U bë</string>
+  <!--Dialog title for first time adding something to a story-->
+  <string name="StoryDialogs__add_to_story_q">Të shtohet te histori?</string>
+  <!--Dialog message for first time adding something to a story-->
+  <string name="StoryDialogs__adding_content">Shtimi i lëndës te historia juaj u lejon lidhjeve tuaja Signal ta shohin për 24 orë. Se cilët mund ta shohin historinë tuaj mund ta ndryshoni te Rregullimet.</string>
+  <!--First time share to story dialog: Positive action to go ahead and add to story-->
+  <string name="StoryDialogs__add_to_story">Shtoje në histori</string>
+  <!--First time share to story dialog: Neutral action to edit who can view "My Story"-->
+  <string name="StoryDialogs__edit_viewers">Përpunoni shikues</string>
+  <!--Error message shown when a failure occurs during story send-->
+  <string name="StoryDialogs__story_could_not_be_sent">S\’u dërgua dot histori. Kontrolloni lidhjen tuaj në internet dhe riprovoni. </string>
+  <!--Error message dialog button to resend a previously failed story send-->
+  <string name="StoryDialogs__send">Dërgoje</string>
+  <!--Privacy Settings toggle title for stories-->
+  <string name="PrivacySettingsFragment__share_and_view_stories">Ndajeni me të tjerë &amp; Shihni Histori</string>
+  <!--Privacy Settings toggle summary for stories-->
+  <string name="PrivacySettingsFragment__you_will_no_longer_be_able">S’do të jeni më në gjendje të ndani me të tjerë apo të shihni Histori, kur kjo mundësi të çaktivizohet.</string>
+  <!--New story viewer selection screen title-->
+  <string name="CreateStoryViewerSelectionFragment__choose_viewers">Zgjidhni shikues</string>
+  <!--New story viewer selection action button label-->
+  <string name="CreateStoryViewerSelectionFragment__next">Pasuesi</string>
+  <!--New story viewer selection screen title as recipients are selected-->
+  <plurals name="SelectViewersFragment__d_viewers">
+    <item quantity="one">%1$d shikues</item>
+    <item quantity="other">%1$d shikues</item>
+  </plurals>
+  <!--Name story screen title-->
+  <string name="CreateStoryWithViewersFragment__name_story">Emërtoni historinë</string>
+  <!--Name story screen label hint-->
+  <string name="CreateStoryWithViewersFragment__story_name_required">Emër historie (I domosdoshëm)</string>
+  <!--Name story screen viewers subheading-->
+  <string name="CreateStoryWithViewersFragment__viewers">Shikues</string>
+  <!--Name story screen create button label-->
+  <string name="CreateStoryWithViewersFragment__create">Krijoje</string>
+  <!--Name story screen error when save attempted with no label-->
+  <string name="CreateStoryWithViewersFragment__this_field_is_required">Kjo fushë është e domosdoshme.</string>
+  <!--Name story screen error when save attempted but label is duplicate-->
+  <string name="CreateStoryWithViewersFragment__there_is_already_a_story_with_this_name">Ka tashmë një histori me këtë emër.</string>
+  <!--Text for select all action when editing recipients for a story-->
+  <string name="BaseStoryRecipientSelectionFragment__select_all">Përzgjidhi krejt</string>
+  <!--Choose story type bottom sheet title-->
+  <string name="ChooseStoryTypeBottomSheet__choose_your_story_type">Zgjidhni llojin e historisë tuaj</string>
+  <!--Choose story type bottom sheet new story row title-->
+  <string name="ChooseStoryTypeBottomSheet__new_private_story">Histori e re private</string>
+  <!--Choose story type bottom sheet new story row summary-->
+  <string name="ChooseStoryTypeBottomSheet__visible_only_to">E dukshme vetëm për persona specifikë</string>
+  <!--Choose story type bottom sheet group story title-->
+  <string name="ChooseStoryTypeBottomSheet__group_story">Histori grupi</string>
+  <!--Choose story type bottom sheet group story summary-->
+  <string name="ChooseStoryTypeBottomSheet__share_to_an_existing_group">Ndajeni me një grup ekzistues</string>
+  <!--Choose groups bottom sheet title-->
+  <string name="ChooseGroupStoryBottomSheet__choose_groups">Zgjidhni grupe</string>
+  <!--Displayed when copying group story reply text to clipboard-->
+  <string name="StoryGroupReplyFragment__copied_to_clipboard">U kopjua në të papastër</string>
+  <!--Displayed in story caption when content is longer than 5 lines-->
+  <string name="StoryViewerPageFragment__see_more">… Shihni Më Tepër</string>
+  <!--Displayed in toast after sending a direct reply-->
+  <string name="StoryDirectReplyDialogFragment__reply_sent">Përgjigja u dërgua</string>
+  <!--Displayed in toast after sending a direct reaction-->
+  <string name="StoryDirectReplyDialogFragment__reaction_sent">Reagimi u dërgua</string>
+  <!--Displayed in the viewer when a story is no longer available-->
+  <string name="StorySlateView__this_story_is_no_longer_available">Kjo histori s’gjenden më.</string>
+  <!--Displayed in the viewer when the network is not available-->
+  <string name="StorySlateView__no_internet_connection">S’ka Lidhje Internet</string>
+  <!--Displayed in the viewer when network is available but content could not be downloaded-->
+  <string name="StorySlateView__couldnt_load_content">S’u Ngarkuan Dot Lëndë</string>
+  <!--Toasted when the user externally shares to a text story successfully-->
+  <string name="TextStoryPostCreationFragment__sent_story">Historia u dërgua</string>
+  <!--Toasted when the user external share to a text story fails-->
+  <string name="TextStoryPostCreationFragment__failed_to_send_story">S’u arrit të dërgohet histori</string>
+  <!--Displayed in a dialog to let the user select a given users story-->
+  <string name="StoryDialogs__view_story">Shihni historinë</string>
+  <!--Displayed in a dialog to let the user select a given users profile photo-->
+  <string name="StoryDialogs__view_profile_photo">Shihni foto profili</string>
+  <!--Title for a notification at the bottom of the chat list suggesting that the user disable censorship circumvention because the service has become reachable-->
+  <string name="TurnOffCircumventionMegaphone_turn_off_censorship_circumvention">Të çaktivizohet anashkalimi i censurimit?</string>
+  <!--Body for a notification at the bottom of the chat list suggesting that the user disable censorship circumvention because the service has become reachable-->
+  <string name="TurnOffCircumventionMegaphone_you_can_now_connect_to_the_signal_service_directly">Tani mund të lidheni te shërbimi Signal drejtpërsëdrejti, për punim më të mirë.</string>
+  <!--Label for a button to dismiss a notification at the bottom of the chat list suggesting that the user disable censorship circumvention because the service has become reachable-->
+  <string name="TurnOffCircumventionMegaphone_no_thanks">Jo, faleminderit</string>
+  <!--Label for a button in a notification at the bottom of the chat list to turn off censorship circumvention-->
+  <string name="TurnOffCircumventionMegaphone_turn_off">Çaktivizoje</string>
+  <!--Conversation Item label for when you react to someone else\'s story-->
+  <string name="ConversationItem__you_reacted_to_s_story">Reaguat ndaj historisë nga %1$s</string>
+  <!--Conversation Item label for reactions to your story-->
+  <string name="ConversationItem__reacted_to_your_story">Reagoi ndaj historisë tuaj</string>
+  <!--Conversation Item label for reactions to an unavailable story-->
+  <string name="ConversationItem__reacted_to_a_story">Reagoi te një histori</string>
+  <!--endregion-->
+  <!--Content description for expand contacts chevron-->
+  <string name="ExpandModel__view_more">Shihni më tepër</string>
+  <string name="StoriesLinkPopup__visit_link">Vizitoni lidhjen</string>
+  <!--Tagline for gift row items-->
+  <string name="GiftRowItem__send_a_gift_badge">Dërgoni një stemë dhuratë</string>
+  <!--Headline text on start fragment for gifting a badge-->
+  <string name="GiftFlowStartFragment__gift_a_badge">Dhuroni një Stemë</string>
+  <!--Description text on start fragment for gifting a badge-->
+  <string name="GiftFlowStartFragment__gift_someone_a_badge">Dhurojini dikujt një stemë, duke bërë një dhurim për Signal-ni në emër të tyre. Do të marrin një stemë për ta shfaqur në foton e tyre të profilit.</string>
+  <!--Action button label for start fragment for gifting a badge-->
+  <string name="GiftFlowStartFragment__next">Pasuesi</string>
+  <!--Title text on choose recipient page for badge gifting-->
+  <string name="GiftFlowRecipientSelectionFragment__choose_recipient">Zgjidhni marrës</string>
+  <!--Title text on confirm gift page-->
+  <string name="GiftFlowConfirmationFragment__confirm_gift">Ripohoni dhuratën</string>
+  <!--Heading text specifying who the gift will be sent to-->
+  <string name="GiftFlowConfirmationFragment__send_to">Dërgoja</string>
+  <!--Text explaining that gift will be sent to the chosen recipient-->
+  <string name="GiftFlowConfirmationFragment__your_gift_will_be_sent_in">Dhurata juaj do të dërgohet si një mesazh tek për tek me marrësin. Shtoni më poshtë mesazhin tuaj.</string>
+  <!--Text explaining that this gift is a one time donation-->
+  <string name="GiftFlowConfirmationFragment__one_time_donation">Dhurim një herë</string>
+  <!--Hint for add message input-->
+  <string name="GiftFlowConfirmationFragment__add_a_message">Shtoni një mesazh</string>
+  <!--Title for sheet shown when opening a redeemed gift-->
+  <string name="ViewReceivedGiftBottomSheet__s_sent_you_a_gift">%1$s ju dërgoi një dhuratë</string>
+  <!--Title for sheet shown when opening a sent gift-->
+  <string name="ViewSentGiftBottomSheet__thanks_for_your_support">Faleminderit për përkrahjen tuaj!</string>
+  <!--Description for sheet shown when opening a redeemed gift-->
+  <string name="ViewReceivedGiftBottomSheet__youve_received_a_gift_badge">Morët një stemë dhuratë nga %1$s! Ndihmoni Signal-in të shtojë ndërgjegjësimin, duke e shfaqur këtë stemë në profilin tuaj.</string>
+  <!--Description for sheet shown when opening a sent gift-->
+  <string name="ViewSentGiftBottomSheet__youve_gifted_a_badge">I dhuruat %1$s një stemë. Kur ta pranojë, do t’u jepet mundësia për ta shfaqur, ose për ta fshehur.</string>
+  <!--Primary action for pending gift sheet to redeem badge now-->
+  <!--Primary action for pending gift sheet to redeem badge later-->
+  <string name="ViewReceivedGiftSheet__not_now">Jo tani</string>
+  <!--Dialog text while redeeming a gift-->
+  <!--Snackbar text when user presses "not now" on redemption sheet-->
+  <!--Description text in gift thanks sheet-->
+  <string name="GiftThanksSheet__youve_gifted_a_badge_to_s">I dhuruat %1$s një stemë. Kur ta pranojë, do t’u jepet mundësia për ta shfaqur, ose për ta fshehur.</string>
+  <!--Expired gift sheet title-->
+  <string name="ExpiredGiftSheetConfiguration__your_gift_badge_has_expired">Stema juaj dhuratë ka skaduar</string>
+  <!--Expired gift sheet top description text-->
+  <string name="ExpiredGiftSheetConfiguration__your_gift_badge_has_expired_and_is">Stema juaj dhuratë ka skaduar dhe s’është më e dukshme për të tjerët te profili juaj.</string>
+  <!--Expired gift sheet bottom description text-->
+  <string name="ExpiredGiftSheetConfiguration__to_continue">Që të vazhdoni të përkrahni teknologji që është krijuar për ju, ju lutemi, shihni mundësinë e bërjes një Mbështetës mujor.</string>
+  <!--Expired gift sheet make a monthly donation button-->
+  <string name="ExpiredGiftSheetConfiguration__make_a_monthly_donation">Bëni një dhurim të përmuajshëm</string>
+  <!--Expired gift sheet not now button-->
+  <string name="ExpiredGiftSheetConfiguration__not_now">Jo tani</string>
   <!--EOF-->
 </resources>

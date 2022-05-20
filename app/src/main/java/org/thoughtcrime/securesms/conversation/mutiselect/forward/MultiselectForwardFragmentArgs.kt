@@ -1,6 +1,7 @@
 package org.thoughtcrime.securesms.conversation.mutiselect.forward
 
 import android.content.Context
+import android.net.Uri
 import androidx.annotation.StringRes
 import androidx.annotation.WorkerThread
 import org.signal.core.util.StreamUtil
@@ -15,23 +16,51 @@ import org.thoughtcrime.securesms.database.model.MmsMessageRecord
 import org.thoughtcrime.securesms.mediasend.Media
 import org.thoughtcrime.securesms.mms.PartAuthority
 import org.thoughtcrime.securesms.sharing.MultiShareArgs
-import org.whispersystems.libsignal.util.guava.Optional
+import org.thoughtcrime.securesms.util.MediaUtil
+import java.util.Optional
 import java.util.function.Consumer
 
 /**
  * Arguments for the MultiselectForwardFragment.
  *
- * @param canSendToNonPush Whether non-push recipients will be displayed
- * @param multiShareArgs   The items to forward. If this is an empty list, the fragment owner will be sent back a selected list of contacts.
- * @param title            The title to display at the top of the sheet
+ * @param canSendToNonPush       Whether non-push recipients will be displayed
+ * @param multiShareArgs         The items to forward. If this is an empty list, the fragment owner will be sent back a selected list of contacts.
+ * @param title                  The title to display at the top of the sheet
+ * @param forceDisableAddMessage Hide the add message field even if it would normally be available.
+ * @param forceSelectionOnly     Force the fragment to only select recipients, never actually performing the send.
+ * @param selectSingleRecipient  Only allow the selection of a single recipient.
  */
-class MultiselectForwardFragmentArgs(
+class MultiselectForwardFragmentArgs @JvmOverloads constructor(
   val canSendToNonPush: Boolean,
   val multiShareArgs: List<MultiShareArgs> = listOf(),
-  @StringRes val title: Int = R.string.MultiselectForwardFragment__forward_to
+  @StringRes val title: Int = R.string.MultiselectForwardFragment__forward_to,
+  val forceDisableAddMessage: Boolean = false,
+  val forceSelectionOnly: Boolean = false,
+  val selectSingleRecipient: Boolean = false
 ) {
 
   companion object {
+    @JvmStatic
+    fun create(context: Context, mediaUri: Uri, mediaType: String, consumer: Consumer<MultiselectForwardFragmentArgs>) {
+      SignalExecutors.BOUNDED.execute {
+        val mediaSize = MediaUtil.getMediaSize(context, mediaUri)
+        val isMmsSupported = Multiselect.isMmsSupported(context, mediaUri, mediaType, mediaSize)
+        val multiShareArgs = MultiShareArgs.Builder(setOf())
+          .withDataUri(mediaUri)
+          .withDataType(mediaType)
+          .build()
+
+        ThreadUtil.runOnMain {
+          consumer.accept(
+            MultiselectForwardFragmentArgs(
+              isMmsSupported,
+              listOf(multiShareArgs)
+            )
+          )
+        }
+      }
+    }
+
     @JvmStatic
     fun create(context: Context, selectedParts: Set<MultiselectPart>, consumer: Consumer<MultiselectForwardFragmentArgs>) {
       SignalExecutors.BOUNDED.execute {
@@ -72,6 +101,7 @@ class MultiselectForwardFragmentArgs(
 
         val linkPreview = mediaMessage?.linkPreviews?.firstOrNull()
         builder.withLinkPreview(linkPreview)
+        builder.asTextStory(mediaMessage?.storyType?.isTextStory ?: false)
       }
 
       if (conversationMessage.messageRecord.isMms && conversationMessage.multiselectCollection.isMediaSelected(selectedParts)) {
@@ -134,9 +164,9 @@ class MultiselectForwardFragmentArgs(
         0,
         isBorderless,
         isVideoGif,
-        Optional.absent(),
-        Optional.fromNullable(caption),
-        Optional.absent()
+        Optional.empty(),
+        Optional.ofNullable(caption),
+        Optional.empty()
       )
     }
   }

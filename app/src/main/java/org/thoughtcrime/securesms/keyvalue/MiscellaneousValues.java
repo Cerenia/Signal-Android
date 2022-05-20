@@ -1,6 +1,7 @@
 package org.thoughtcrime.securesms.keyvalue;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import java.util.Collections;
 import java.util.List;
@@ -16,6 +17,11 @@ public final class MiscellaneousValues extends SignalStoreValues {
   private static final String OLD_DEVICE_TRANSFER_LOCKED      = "misc.old_device.transfer.locked";
   private static final String HAS_EVER_HAD_AN_AVATAR          = "misc.has.ever.had.an.avatar";
   private static final String CHANGE_NUMBER_LOCK              = "misc.change_number.lock";
+  private static final String CENSORSHIP_LAST_CHECK_TIME      = "misc.censorship.last_check_time";
+  private static final String CENSORSHIP_SERVICE_REACHABLE    = "misc.censorship.service_reachable";
+  private static final String LAST_GV2_PROFILE_CHECK_TIME     = "misc.last_gv2_profile_check_time";
+  private static final String CDS_TOKEN                       = "misc.cds_token";
+  private static final String LAST_FCM_FOREGROUND_TIME        = "misc.last_fcm_foreground_time";
 
   MiscellaneousValues(@NonNull KeyValueStore store) {
     super(store);
@@ -109,5 +115,47 @@ public final class MiscellaneousValues extends SignalStoreValues {
 
   public void unlockChangeNumber() {
     putBoolean(CHANGE_NUMBER_LOCK, false);
+  }
+
+  public long getLastCensorshipServiceReachabilityCheckTime() {
+    return getLong(CENSORSHIP_LAST_CHECK_TIME, 0);
+  }
+
+  public void setLastCensorshipServiceReachabilityCheckTime(long value) {
+    putLong(CENSORSHIP_LAST_CHECK_TIME, value);
+  }
+
+  public boolean isServiceReachableWithoutCircumvention() {
+    return getBoolean(CENSORSHIP_SERVICE_REACHABLE, false);
+  }
+
+  public void setServiceReachableWithoutCircumvention(boolean value) {
+    putBoolean(CENSORSHIP_SERVICE_REACHABLE, value);
+  }
+
+  public long getLastGv2ProfileCheckTime() {
+    return getLong(LAST_GV2_PROFILE_CHECK_TIME, 0);
+  }
+
+  public void setLastGv2ProfileCheckTime(long value) {
+    putLong(LAST_GV2_PROFILE_CHECK_TIME, value);
+  }
+
+  public @Nullable byte[] getCdsToken() {
+    return getBlob(CDS_TOKEN, null);
+  }
+
+  public void setCdsToken(@Nullable byte[] token) {
+    getStore().beginWrite()
+              .putBlob(CDS_TOKEN, token)
+              .commit();
+  }
+
+  public long getLastFcmForegroundServiceTime() {
+    return getLong(LAST_FCM_FOREGROUND_TIME, 0);
+  }
+
+  public void setLastFcmForegroundServiceTime(long time) {
+    putLong(LAST_FCM_FOREGROUND_TIME, time);
   }
 }

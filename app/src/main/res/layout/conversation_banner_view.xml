@@ -59,9 +59,10 @@
 
     <org.thoughtcrime.securesms.components.emoji.EmojiTextView
         android:id="@+id/message_request_title"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
+        android:drawablePadding="4dp"
         android:gravity="center"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"

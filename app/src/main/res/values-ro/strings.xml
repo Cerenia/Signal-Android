@@ -91,6 +91,10 @@
   <string name="BlockUnblockDialog_group_members_will_be_able_to_add_you">Membrii grupului te vor putea adăuga din nou la acest grup.</string>
   <string name="BlockUnblockDialog_you_will_be_able_to_call_and_message_each_other">Vei putea trimite mesaje și vă veți putea apela reciproc, iar numele și fotografia ta va fi împărtășită cu ei.</string>
   <string name="BlockUnblockDialog_blocked_people_wont_be_able_to_call_you_or_send_you_messages">Persoanele blocate nu vor putea să te sune sau să îți trimită mesaje.</string>
+  <!--Message shown on block dialog when blocking the Signal release notes recipient-->
+  <string name="BlockUnblockDialog_block_getting_signal_updates_and_news">Blochează știrile și informările Signal.</string>
+  <!--Message shown on unblock dialog when unblocking the Signal release notes recipient-->
+  <string name="BlockUnblockDialog_resume_getting_signal_updates_and_news">Primește din nou informări și știri Signal.</string>
   <string name="BlockUnblockDialog_unblock_s">Deblochezi %1$s?</string>
   <string name="BlockUnblockDialog_block">Blochează</string>
   <string name="BlockUnblockDialog_block_and_leave">Blochează și părăsește</string>
@@ -119,6 +123,15 @@
   <string name="CameraContacts_cant_find_who_youre_looking_for">Nu poți găsi pe cine cauți?</string>
   <string name="CameraContacts_invite_a_contact_to_join_signal">Invită un contact să se alăture pe Signal</string>
   <string name="CameraContacts__menu_search">Caută</string>
+  <!--Censorship Circumvention Megaphone-->
+  <!--Title for an alert that shows at the bottom of the chat list letting people know that circumvention is no longer needed-->
+  <string name="CensorshipCircumventionMegaphone_turn_off_censorship_circumvention">Dezactivezi ocolirea cenzurii?</string>
+  <!--Body for an alert that shows at the bottom of the chat list letting people know that circumvention is no longer needed-->
+  <string name="CensorshipCircumventionMegaphone_you_can_now_connect_to_the_signal_service">Acum te poți conecta la serviciul Signal direct, pentru o experiență mai bună.</string>
+  <!--Action to prompt the user to disable circumvention since it is no longer needed-->
+  <string name="CensorshipCircumventionMegaphone_turn_off">Dezactivare</string>
+  <!--Action to prompt the user to dismiss the alert at the bottom of the chat list-->
+  <string name="CensorshipCircumventionMegaphone_no_thanks">Nu, mulțumesc</string>
   <!--ClearProfileActivity-->
   <string name="ClearProfileActivity_remove">Elimină</string>
   <string name="ClearProfileActivity_remove_profile_photo">Elimini poza de profil?</string>
@@ -149,6 +162,10 @@
   <string name="ContactsCursorLoader_groups">Grupuri</string>
   <string name="ContactsCursorLoader_phone_number_search">Căutare număr de telefon</string>
   <string name="ContactsCursorLoader_username_search">Căutare nume de utilizator</string>
+  <!--Label for my stories when selecting who to send media to-->
+  <string name="ContactsCursorLoader_my_stories">Poveștile mele</string>
+  <!--Action for creating a new story-->
+  <string name="ContactsCursorLoader_new_story">Poveste nouă</string>
   <!--ContactsDatabase-->
   <string name="ContactsDatabase_message_s">Mesaj %s</string>
   <string name="ContactsDatabase_signal_call_s">Apel Signal %s</string>
@@ -290,7 +307,7 @@
   <string name="ConversationFragment_quoted_message_not_found">Mesajul original nu a fost găsit</string>
   <string name="ConversationFragment_quoted_message_no_longer_available">Mesajul original nu mai este disponibil</string>
   <string name="ConversationFragment_failed_to_open_message">Mesajul nu a putut fi deschis</string>
-  <string name="ConversationFragment_you_can_swipe_to_the_right_reply">Poți sări la dreapta pe orice mesaj pentru a răspunde rapid</string>
+  <string name="ConversationFragment_you_can_swipe_to_the_right_reply">Poți glisa la dreapta pe orice mesaj pentru a răspunde rapid</string>
   <string name="ConversationFragment_you_can_swipe_to_the_left_reply">Poți glisa la stânga pe orice mesaj pentru a răspunde rapid</string>
   <string name="ConversationFragment_outgoing_view_once_media_files_are_automatically_removed">Fișierele trimise de tip media vizibile o singură dată sunt eliminate automat după ce sunt trimise</string>
   <string name="ConversationFragment_you_already_viewed_this_message">Ai văzut deja acest mesaj</string>
@@ -306,6 +323,16 @@
   <string name="ConversationFragment_your_safety_number_with_s_changed_likey_because_they_reinstalled_signal">Numărul tău de siguranță pentru %s s-a schimbat, probabil pentru că au reinstalat Signal sau au schimbat dispozitivele. Atinge Verificare pentru a confirma noul număr de siguranță. Acest lucru este opțional.</string>
   <!--Message shown to indicate which notification profile is on/active-->
   <string name="ConversationFragment__s_on">%1$s activ</string>
+  <!--Dialog title for block group link join requests-->
+  <string name="ConversationFragment__block_request">Blochez cererea?</string>
+  <!--Dialog message for block group link join requests-->
+  <string name="ConversationFragment__s_will_not_be_able_to_join_or_request_to_join_this_group_via_the_group_link">%1$s nu se va mai putea alătura grupului folosind linkul acestuia. Dar vei putea în continuare să-i adaugi manual.</string>
+  <!--Dialog confirm block request button-->
+  <string name="ConversationFragment__block_request_button">Blochează cererea</string>
+  <!--Dialog cancel block request button-->
+  <string name="ConversationFragment__cancel">Anulare</string>
+  <!--Message shown after successfully blocking join requests for a user-->
+  <string name="ConversationFragment__blocked">Blocat</string>
   <plurals name="ConversationListFragment_delete_selected_conversations">
     <item quantity="one">Șterg conversația selectată?</item>
     <item quantity="few">Șterg conversațiile selectate?</item>
@@ -397,7 +424,6 @@
   <!--ConversationTypingView-->
   <string name="ConversationTypingView__plus_d">+%1$d</string>
   <!--CreateGroupActivity-->
-  <string name="CreateGroupActivity_some_contacts_cannot_be_in_legacy_groups">Anumite contacte nu pot exista în grupurile vechi.</string>
   <string name="CreateGroupActivity__select_members">Selectează membrii</string>
   <!--CreateProfileActivity-->
   <string name="CreateProfileActivity__profile">Profil</string>
@@ -418,6 +444,12 @@
   <string name="RestoreBackupFragment__to_continue_using_backups_please_choose_a_folder">Pentru a continua să utilizezi backup-uri, te rugăm să alegi un director. Noile backup-uri vor fi salvate în această locație.</string>
   <string name="RestoreBackupFragment__choose_folder">Alege directorul</string>
   <string name="RestoreBackupFragment__not_now">Nu acum</string>
+  <!--Couldn\'t find the selected backup-->
+  <string name="RestoreBackupFragment__backup_not_found">Backup-ul  nu a fost găsit.</string>
+  <!--Couldn\'t read the selected backup-->
+  <string name="RestoreBackupFragment__backup_could_not_be_read">Backup-ul nu a putut fi citit.</string>
+  <!--Backup has an unsupported file extension-->
+  <string name="RestoreBackupFragment__backup_has_a_bad_extension">Backup-ul are o extensie greșită.</string>
   <!--BackupsPreferenceFragment-->
   <string name="BackupsPreferenceFragment__chat_backups">Backup-uri pt. conversații</string>
   <string name="BackupsPreferenceFragment__backups_are_encrypted_with_a_passphrase">Backup-urile sunt criptate cu o parolă și sunt stocate pe dispozitivul tău.</string>
@@ -425,7 +457,7 @@
   <string name="BackupsPreferenceFragment__last_backup">Ultimul backup: %1$s</string>
   <string name="BackupsPreferenceFragment__backup_folder">Director backup</string>
   <string name="BackupsPreferenceFragment__verify_backup_passphrase">Verificare parolă backup</string>
-  <string name="BackupsPreferenceFragment__test_your_backup_passphrase">Testează-ți parola de backup și asigură-te că se potrivește</string>
+  <string name="BackupsPreferenceFragment__test_your_backup_passphrase">Testează parola de backup și asigură-te că se potrivește</string>
   <string name="BackupsPreferenceFragment__turn_on">Activare</string>
   <string name="BackupsPreferenceFragment__turn_off">Dezactivare</string>
   <string name="BackupsPreferenceFragment__to_restore_a_backup">Pentru a restabili un backup, instalează o copie nouă Signal. Deschide aplicația și atinge \"Restabilire backup\", apoi selectează un fișier de backup. %1$s</string>
@@ -469,9 +501,6 @@
   <string name="DeviceListItem_today">Azi</string>
   <!--DocumentView-->
   <string name="DocumentView_unnamed_file">Fișier fără nume</string>
-  <!--GroupCallingMegaphone-->
-  <!-- Removed by excludeNonTranslatables <string name="GroupCallingMegaphone__introducing_group_calls">Îți prezentăm apelurile de grup</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="GroupCallingMegaphone__open_a_new_group_to_start">Deschide un grup nou pentru a începe un apel gratuit de grup criptat</string> -->
   <!--DozeReminder-->
   <string name="DozeReminder_optimize_for_missing_play_services">Optimizează pentru lipsa serviciilor Play</string>
   <string name="DozeReminder_this_device_does_not_support_play_services_tap_to_disable_system_battery">Acest dispozitiv nu suportă serviciile Play. Apasă pentru a dezactiva optimizarea de sistem a bateriei care împiedică Signal să preia mesaje cât timp este inactiv.</string>
@@ -485,10 +514,6 @@
     <item quantity="other">%d de solicitări de membru în așteptare.</item>
   </plurals>
   <string name="PendingGroupJoinRequestsReminder_view">Vizualizare</string>
-  <!--ShareActivity-->
-  <string name="ShareActivity_share_with">Distribuie cu</string>
-  <string name="ShareActivity_multiple_attachments_are_only_supported">Atașamentele multiple sunt acceptate doar pentru imagini și videoclipuri</string>
-  <string name="ShareActivity_you_do_not_have_permission_to_send_to_this_group">Nu ai permisiunea de a trimite acestui grup</string>
   <!--GcmRefreshJob-->
   <string name="GcmRefreshJob_Permanent_Signal_communication_failure">Eroare permanentă de comunicare cu Signal!</string>
   <string name="GcmRefreshJob_Signal_was_unable_to_register_with_Google_Play_Services">Signal nu s-a putut înregistra la Google Play Services. Mesajele și apelurile Signal au fost dezactivate, te rugăm încearcă să te înregistrezi din nou din meniul Setări &gt; Avansat.</string>
@@ -559,9 +584,9 @@
   </plurals>
   <!--GroupsV1MigrationSuggestionsReminder-->
   <plurals name="GroupsV1MigrationSuggestionsReminder_members_couldnt_be_added_to_the_new_group">
-    <item quantity="one">%1$d membru nu a putut fi adăugat noului grup. Dorești să-l adaugi acum?</item>
-    <item quantity="few">%1$d membri nu au putut fi adăugați noului grup. Dorești să-i adaugi acum?</item>
-    <item quantity="other">%1$d de membri nu au putut fi adăugați noului grup. Dorești să-i adaugi acum?</item>
+    <item quantity="one">%1$d membru nu a putut fi adăugat noului grup. Vrei să-l adaugi acum?</item>
+    <item quantity="few">%1$d membri nu au putut fi adăugați noului grup. Vrei să-i adaugi acum?</item>
+    <item quantity="other">%1$d de membri nu au putut fi adăugați noului grup. Vrei să-i adaugi acum?</item>
   </plurals>
   <plurals name="GroupsV1MigrationSuggestionsReminder_add_members">
     <item quantity="one">Adaugă membru</item>
@@ -602,10 +627,6 @@
   <string name="LeaveGroupDialog_choose_new_admin">Alege un nou administrator</string>
   <string name="LeaveGroupDialog_before_you_leave_you_must_choose_at_least_one_new_admin_for_this_group">Înainte de a pleca, trebuie să alegi cel puțin un nou administrator pentru acest grup.</string>
   <string name="LeaveGroupDialog_choose_admin">Alege un administrator</string>
-  <!--LinkPreviewsMegaphone-->
-  <!-- Removed by excludeNonTranslatables <string name="LinkPreviewsMegaphone_disable">Dezactivează</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="LinkPreviewsMegaphone_preview_any_link">Previzualizează orice link</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="LinkPreviewsMegaphone_you_can_now_retrieve_link_previews_directly_from_any_website">Acum poți prelua previzualizările linkurilor direct de pe orice site web pentru mesajele pe care le trimiți.</string> -->
   <!--LinkPreviewView-->
   <string name="LinkPreviewView_no_link_preview_available">Previzualizarea linkului nu este disponibilă</string>
   <string name="LinkPreviewView_this_group_link_is_not_active">Acest link de grup nu este activ</string>
@@ -670,29 +691,6 @@
   <string name="AddGroupDetailsFragment__remove">Elimină</string>
   <string name="AddGroupDetailsFragment__sms_contact">Contact SMS</string>
   <string name="AddGroupDetailsFragment__remove_s_from_this_group">Elimină pe %1$s din acest grup?</string>
-  <plurals name="AddGroupDetailsFragment__d_members_do_not_support_new_groups">
-    <item quantity="one">%d membru nu suportă Noile Grupuri, astfel acest grup va fi un Grup Vechi.</item>
-    <item quantity="few">%d membri nu suportă Noile Grupuri, astfel acest grup va fi un Grup Vechi.</item>
-    <item quantity="other">%d de membri nu suportă Noile Grupuri, astfel acest grup va fi un Grup Vechi.</item>
-  </plurals>
-  <plurals name="AddGroupDetailsFragment__d_members_do_not_support_new_groups_so_this_group_cannot_be_created">
-    <item quantity="one">%d membru nu acceptă grupurile noi, prin urmare acest grup nu poate fi creat.</item>
-    <item quantity="few">%d membri nu acceptă grupurile noi, prin urmare acest grup nu poate fi creat.</item>
-    <item quantity="other">%d de membri nu acceptă grupurile noi, prin urmare acest grup nu poate fi creat.</item>
-  </plurals>
-  <!--NonGv2MemberDialog-->
-  <string name="NonGv2MemberDialog_single_users_are_non_gv2_capable">Un Grup Vechi va fi creat deoarece “%1$s” folosește o versiune veche de Signal. Poți crea un Grup de tip Nou cu ei după ce își actualizează Signal, sau îi elimini înainte de a crea grupul.</string>
-  <plurals name="NonGv2MemberDialog_d_users_are_non_gv2_capable">
-    <item quantity="one">Un Grup Vechi ca fi creat deoarece %1$d membru folosește o versiune veche de Signal. Poți crea un Grup de tip Nou cu ei după ce își actualizează Signal, sau îl elimini înainte de a crea grupul.</item>
-    <item quantity="few">Un Grup Vechi ca fi creat deoarece %1$d membri folosesc o versiune veche de Signal. Poți crea un Grup de tip Nou cu ei după ce își actualizează Signal, sau îi elimini înainte de a crea grupul.</item>
-    <item quantity="other">Un Grup Vechi va fi creat deoarece %1$d de membri folosesc o versiune veche de Signal. Poți crea un Grup de tip Nou cu ei după ce își actualizează Signal, sau îi elimini înainte de a crea grupul.</item>
-  </plurals>
-  <string name="NonGv2MemberDialog_single_users_are_non_gv2_capable_forced_migration">Acest grup nu poate fi creat pentru că „%1$s” utilizează o versiune veche a aplicației Signal. Trebuie să-i elimini înainte de a crea grupul.</string>
-  <plurals name="NonGv2MemberDialog_d_users_are_non_gv2_capable_forced_migration">
-    <item quantity="one">Acest grup nu poate fi creat pentru că %1$d membru utilizează o versiune veche a aplicației Signal. Trebuie să-l elimini înainte de a crea grupul.</item>
-    <item quantity="few">Acest grup nu poate fi creat pentru că %1$d membri utilizează o versiune veche a aplicației Signal. Trebuie să-i elimini înainte de a crea grupul.</item>
-    <item quantity="other">Acest grup nu poate fi creat pentru că %1$d de membri utilizează o versiune veche a aplicației Signal. Trebuie să-i elimini înainte de a crea grupul.</item>
-  </plurals>
   <!--ManageGroupActivity-->
   <string name="ManageGroupActivity_member_requests_and_invites">Solicitări și invitații ale membrilor</string>
   <string name="ManageGroupActivity_add_members">Adăugare membri</string>
@@ -805,7 +803,16 @@
   <string name="GroupJoinBottomSheetDialogFragment_unable_to_join_group_please_try_again_later">Alăturarea la grup nu a reușit. Te rugăm să încerci din nou mai târziu</string>
   <string name="GroupJoinBottomSheetDialogFragment_encountered_a_network_error">A apărut o eroare de rețea.</string>
   <string name="GroupJoinBottomSheetDialogFragment_this_group_link_is_not_active">Acest link de grup nu este activ</string>
-  <string name="GroupJoinBottomSheetDialogFragment_unable_to_get_group_information_please_try_again_later">Nu s-au putut obține informații despre grup, încearcă din nou mai târziu</string>
+  <!--Title shown when there was an known issue getting group information from a group link-->
+  <string name="GroupJoinBottomSheetDialogFragment_cant_join_group">Nu se poate realiza alăturarea la grup.</string>
+  <!--Message shown when you try to get information for a group via link but an admin has removed you-->
+  <string name="GroupJoinBottomSheetDialogFragment_you_cant_join_this_group_via_the_group_link_because_an_admin_removed_you">Nu te poți alătura acestui grup prin linkul grupului deoarece un administrator te-a eliminat.</string>
+  <!--Message shown when you try to get information for a group via link but the link is no longer valid-->
+  <string name="GroupJoinBottomSheetDialogFragment_this_group_link_is_no_longer_valid">Acest link de grup nu mai este valid.</string>
+  <!--Title shown when there was an unknown issue getting group information from a group link-->
+  <string name="GroupJoinBottomSheetDialogFragment_link_error">Eroare de link</string>
+  <!--Message shown when you try to get information for a group via link but an unknown issue occurred-->
+  <string name="GroupJoinBottomSheetDialogFragment_joining_via_this_link_failed_try_joining_again_later">Alăturarea cu acest link a eșuat. Încearcă din nou mai târziu.</string>
   <string name="GroupJoinBottomSheetDialogFragment_direct_join">Dorești să te alături acestui grup și să îți împărtășești numele și fotografia cu membrii săi?</string>
   <string name="GroupJoinBottomSheetDialogFragment_admin_approval_needed">Un administrator al acestui grup trebuie să îți aprobe solicitarea înainte de a te putea alătura grupului. Când soliciți să te înscrii, numele și fotografia ta vor fi distribuite membrilor săi.</string>
   <plurals name="GroupJoinBottomSheetDialogFragment_group_dot_d_members">
@@ -831,6 +838,8 @@
   <!--GV2 Request confirmation dialog-->
   <string name="RequestConfirmationDialog_add_s_to_the_group">Adaugi pe „%1$s” la grup?</string>
   <string name="RequestConfirmationDialog_deny_request_from_s">Respingi cererea de la „%1$s”?</string>
+  <!--Confirm dialog message shown when deny a group link join request and group link is enabled.-->
+  <string name="RequestConfirmationDialog_deny_request_from_s_they_will_not_be_able_to_request">Refuzi cererea de la ”%1$s”? Nu vor mai putea cere din nou să se alăture, folosind linkul grupului.</string>
   <string name="RequestConfirmationDialog_add">Adaugă</string>
   <string name="RequestConfirmationDialog_deny">Refuză</string>
   <!--ImageEditorHud-->
@@ -858,7 +867,7 @@
   <string name="InviteActivity_no_app_to_share_to">Se pare că nu ai aplicații cu care să poți distribui.</string>
   <!--LearnMoreTextView-->
   <string name="LearnMoreTextView_learn_more">Află mai multe</string>
-  <string name="SpanUtil__read_more">Citiți mai multe</string>
+  <string name="SpanUtil__read_more">Citește mai mult</string>
   <!--LongMessageActivity-->
   <string name="LongMessageActivity_unable_to_find_message">Mesajul nu a putut fi găsit</string>
   <string name="LongMessageActivity_message_from_s">Mesaj de la %1$s</string>
@@ -919,10 +928,8 @@
   <string name="MediaOverviewActivity_sent_by_s">Trimis de %1$s</string>
   <string name="MediaOverviewActivity_sent_by_you">Trimis de tine</string>
   <string name="MediaOverviewActivity_sent_by_s_to_s">Trimis de %1$s către %2$s</string>
-  <string name="MediaOverviewActivity_sent_by_you_to_s">Trimis de time către %1$s</string>
+  <string name="MediaOverviewActivity_sent_by_you_to_s">Trimis de tine către %1$s</string>
   <!--Megaphones-->
-  <!-- Removed by excludeNonTranslatables <string name="Megaphones_introducing_reactions">Îți prezentăm \'Reacții\'</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="Megaphones_tap_and_hold_any_message_to_quicky_share_how_you_feel">Atinge lung orice mesaj pentru a distribui rapid cum te simți.</string> -->
   <string name="Megaphones_remind_me_later">Amintește-mi mai târziu</string>
   <string name="Megaphones_verify_your_signal_pin">Verifică PIN-ul tău Signal.</string>
   <string name="Megaphones_well_occasionally_ask_you_to_verify_your_pin">Ocazional îți vom solicita să îți confirmi codul PIN pentru a-l reține mai ușor.</string>
@@ -1087,7 +1094,7 @@
   <string name="MessageRecord_s_changed_the_group_name_to_s">%1$s a schimbat numele grupului în \"%2$s\".</string>
   <string name="MessageRecord_the_group_name_has_changed_to_s">Numele grupului a fost schimbat în \"%1$s\".</string>
   <!--GV2 description change-->
-  <string name="MessageRecord_you_changed_the_group_description">Aii schimbat descrierea grupului.</string>
+  <string name="MessageRecord_you_changed_the_group_description">Ai schimbat descrierea grupului.</string>
   <string name="MessageRecord_s_changed_the_group_description">%1$s a schimbat descrierea grupului.</string>
   <string name="MessageRecord_the_group_description_has_changed">Descrierea grupului s-a schimbat.</string>
   <!--GV2 avatar change-->
@@ -1135,6 +1142,12 @@
   <!--GV2 group link requests-->
   <string name="MessageRecord_you_sent_a_request_to_join_the_group">Ai trimis o cerere de alăturare la grup.</string>
   <string name="MessageRecord_s_requested_to_join_via_the_group_link">%1$s a solicitat să se alăture prin linkul grupului.</string>
+  <!--Update message shown when someone requests to join via group link and cancels the request back to back-->
+  <plurals name="MessageRecord_s_requested_and_cancelled_their_request_to_join_via_the_group_link">
+    <item quantity="one">%1$s a solicitat și apoi a anulat solicitarea sa de alăturare folosind linkul grupului.</item>
+    <item quantity="few">%1$s a solicitat și apoi a anulat %2$d solicitări de alăturare folosind linkul grupului.</item>
+    <item quantity="other">%1$s a solicitat și apoi a anulat %2$d de solicitări de alăturare folosind linkul grupului.</item>
+  </plurals>
   <!--GV2 group link approvals-->
   <string name="MessageRecord_s_approved_your_request_to_join_the_group">%1$s a aprobat solicitarea ta de a te alătura grupului.</string>
   <string name="MessageRecord_s_approved_a_request_to_join_the_group_from_s">%1$s a aprobat o cerere de alăturare la grup de la %2$s.</string>
@@ -1154,7 +1167,11 @@
   <string name="MessageRecord_you_marked_your_safety_number_with_s_unverified">Ai marcat numărul tău de siguranță cu %s ca și neverificat</string>
   <string name="MessageRecord_you_marked_your_safety_number_with_s_unverified_from_another_device">Ai marcat numărul tău de siguranță cu %s ca și neverificat de pe alt dispozitiv</string>
   <string name="MessageRecord_a_message_from_s_couldnt_be_delivered">Un mesaj de la %s nu a putut fi livrat</string>
-  <string name="MessageRecord_s_changed_their_number_to_a_new_number">%1$s și-a schimbat numărul de telefon cu unul nou.</string>
+  <string name="MessageRecord_s_changed_their_phone_number">%1$s și-a schimbat numărul de telefon.</string>
+  <!--Update item message shown in the release channel when someone is already a sustainer so we ask them if they want to boost.-->
+  <string name="MessageRecord_like_this_new_feature_say_thanks_with_a_boost">Îți place această nouă funcție? Spune mulțumesc cu un Boost.</string>
+  <!--Update item message shown in the release channel when someone is not a sustainer so we ask them to consider becoming one-->
+  <string name="MessageRecord_signal_is_powered_by_people_like_you_become_a_sustainer_today">Signal este susținut de oameni ca tine. Devino și tu un susținător astăzi.</string>
   <!--Group Calling update messages-->
   <string name="MessageRecord_s_started_a_group_call_s">%1$s a început un apel de grup · %2$s</string>
   <string name="MessageRecord_s_is_in_the_group_call_s">%1$s este în apelul de grup · %2$s</string>
@@ -1185,6 +1202,7 @@
   <string name="MessageRequestBottomView_unblock">Deblochează</string>
   <string name="MessageRequestBottomView_do_you_want_to_let_s_message_you_they_wont_know_youve_seen_their_messages_until_you_accept">Permiți lui %1$s să îți trimită mesaje și îți împărtășești numele și fotografia cu ei? Nu vor ști că le-ai văzut mesajul până nu accepți.</string>
   <string name="MessageRequestBottomView_do_you_want_to_let_s_message_you_wont_receive_any_messages_until_you_unblock_them">Permiți lui %1$s să îți trimită mesaje și îți împărtășești numele și fotografia cu ei? Nu vei primi niciun mesaj până când nu îi deblochezi.</string>
+  <string name="MessageRequestBottomView_get_updates_and_news_from_s_you_wont_receive_any_updates_until_you_unblock_them">Vrei să primești știri și actualizări de la %1$s? Nu vei primi nicio actualizare până când nu deblochezi.</string>
   <string name="MessageRequestBottomView_continue_your_conversation_with_this_group_and_share_your_name_and_photo">Continui conversația ta cu acest grup și îți împărtășești numele și fotografia cu membrii săi?</string>
   <string name="MessageRequestBottomView_upgrade_this_group_to_activate_new_features">Actualizează acest grup pentru a activa funcții noi precum @mențiuni și administratori. Membrii care nu și-au partajat numele sau fotografia în acest grup vor fi invitați să se înscrie.</string>
   <string name="MessageRequestBottomView_this_legacy_group_can_no_longer_be_used">Acest grup vechi nu mai poate fi utilizat deoarece este prea mare. Dimensiunea maximă a grupului este de %1$d.</string>
@@ -1201,10 +1219,17 @@
     <item quantity="few">%1$d membri</item>
     <item quantity="other">%1$d de membri</item>
   </plurals>
+  <!--Describes the number of members in a group. The string MessageRequestProfileView_invited is nested in the parentheses.-->
   <plurals name="MessageRequestProfileView_members_and_invited">
-    <item quantity="one">%1$d membru (+%2$d invitați)</item>
-    <item quantity="few">%1$d membri (+%2$d invitați)</item>
-    <item quantity="other">%1$d membri (+%2$d invitați)</item>
+    <item quantity="one">%1$d membru (%2$s)</item>
+    <item quantity="few">%1$d membri (%2$s)</item>
+    <item quantity="other">%1$d de membri (%2$s)</item>
+  </plurals>
+  <!--Describes the number of people invited to a group. Nested inside of the string MessageRequestProfileView_members_and_invited-->
+  <plurals name="MessageRequestProfileView_invited">
+    <item quantity="one">+%1$d invitat</item>
+    <item quantity="few">+%1$d invitați</item>
+    <item quantity="other">%1$d de invitați</item>
   </plurals>
   <plurals name="MessageRequestProfileView_member_of_d_additional_groups">
     <item quantity="one">%d grup adițional</item>
@@ -1216,7 +1241,7 @@
   <string name="PassphraseChangeActivity_incorrect_old_passphrase_exclamation">Parola veche este incorectă!</string>
   <string name="PassphraseChangeActivity_enter_new_passphrase_exclamation">Introdu parola nouă!</string>
   <!--DeviceProvisioningActivity-->
-  <string name="DeviceProvisioningActivity_link_this_device">Asociez acest dispozitiv?</string>
+  <string name="DeviceProvisioningActivity_link_this_device">Asociezi acest dispozitiv?</string>
   <string name="DeviceProvisioningActivity_continue">CONTINUĂ</string>
   <string name="DeviceProvisioningActivity_content_intro">Va putea</string>
   <string name="DeviceProvisioningActivity_content_bullets">
@@ -1300,6 +1325,8 @@
   <string name="RecaptchaRequiredBottomSheetFragment_after_verifying_you_can_continue_messaging">După verificare, poți continua să trimiți mesaje. Toate mesajele aflate în pauză vor fi trimise automat.</string>
   <!--Recipient-->
   <string name="Recipient_you">Tu</string>
+  <!--Name of recipient representing user\'s \'My Story\'-->
+  <string name="Recipient_my_story">Povestea mea</string>
   <!--RecipientPreferencesActivity-->
   <string name="RecipientPreferenceActivity_block">Blochează</string>
   <string name="RecipientPreferenceActivity_unblock">Deblochează</string>
@@ -1315,12 +1342,19 @@
   <string name="RedPhone_number_not_registered">Numărul nu este înregistrat!</string>
   <string name="RedPhone_the_number_you_dialed_does_not_support_secure_voice">Numărul format nu suportă apeluri securizate!</string>
   <string name="RedPhone_got_it">Am înțeles</string>
+  <!--Valentine\'s Day Megaphone-->
+  <!--Title text for the Valentine\'s Day donation megaphone. The placeholder will always be a heart emoji. Needs to be a placeholder for Android reasons.-->
+  <string name="ValentinesDayMegaphone_happy_heart_day">Un 💜 Fericit</string>
+  <!--Body text for the Valentine\'s Day donation megaphone.-->
+  <string name="ValentinesDayMegaphone_show_your_affection">Arată-ți afecțiunea devenind un susținător Signal.</string>
   <!--WebRtcCallActivity-->
   <string name="WebRtcCallActivity__tap_here_to_turn_on_your_video">Atinge aici pentru a porni camera ta</string>
   <string name="WebRtcCallActivity__to_call_s_signal_needs_access_to_your_camera">Pentru a apela pe %1$s, Signal are nevoie de acces la camera ta</string>
   <string name="WebRtcCallActivity__signal_s">Signal %1$s</string>
   <string name="WebRtcCallActivity__calling">Apel în curs…</string>
   <string name="WebRtcCallActivity__group_is_too_large_to_ring_the_participants">Grupul este prea mare pentru a apela participanții.</string>
+  <!--Call status shown when an active call was disconnected (e.g., network hiccup) and is trying to reconnect-->
+  <string name="WebRtcCallActivity__reconnecting">Se reconectează…</string>
   <!--WebRtcCallView-->
   <string name="WebRtcCallView__signal_call">Apel Signal</string>
   <string name="WebRtcCallView__signal_video_call">Apel Video Signal</string>
@@ -1375,7 +1409,8 @@
   <string name="WebRtcCallView__flip">Comută</string>
   <string name="WebRtcCallView__speaker">Difuzor</string>
   <string name="WebRtcCallView__camera">Cameră foto</string>
-  <string name="WebRtcCallView__mute">Silențios</string>
+  <string name="WebRtcCallView__unmute">Microfon</string>
+  <string name="WebRtcCallView__mute">Mut</string>
   <string name="WebRtcCallView__ring">Sună</string>
   <string name="WebRtcCallView__end_call">Închide</string>
   <!--CallParticipantsListDialog-->
@@ -1422,7 +1457,7 @@ furnizat (%s) este invalid.</string>
   <string name="RegistrationActivity_google_play_services_is_updating_or_unavailable">Serviciile Google Play se actualizează sau sunt temporar indisponibile. Te rugăm încearcă din nou.</string>
   <string name="RegistrationActivity_terms_and_privacy">Termeni &amp; Politica de confidențialitate</string>
   <string name="RegistrationActivity_signal_needs_access_to_your_contacts_and_media_in_order_to_connect_with_friends">Signal are nevoie de permisiunea pentru contacte și media să te ajute să iei legătura cu prietenii și să trimiți mesaje. Contactele tale sunt încărcate utilizând descoperirea privată a contactelor de la Signal, ceea ce înseamnă că sunt criptate integral și nu sunt niciodată vizibile pentru serviciul Signal.</string>
-  <string name="RegistrationActivity_signal_needs_access_to_your_contacts_in_order_to_connect_with_friends">Signal are nevoie de permisiunea pentru contacte să te ajute să iei legătura cu prietenii.  Contactele tale sunt încărcate utilizând descoperirea privată a contactelor de la Signal, ceea ce înseamnă că sunt criptate integral și nu sunt niciodată vizibile pentru serviciul Signal.</string>
+  <string name="RegistrationActivity_signal_needs_access_to_your_contacts_in_order_to_connect_with_friends">Signal are nevoie de permisiunea pentru contacte să te ajute să iei legătura cu prietenii. Contactele tale sunt încărcate utilizând descoperirea privată a contactelor de la Signal, ceea ce înseamnă că sunt criptate integral și nu sunt niciodată vizibile pentru serviciul Signal.</string>
   <string name="RegistrationActivity_rate_limited_to_service">Ai făcut prea multe încercări de înregistrare a acestui număr. Te rugăm să încerci din nou mai târziu.</string>
   <string name="RegistrationActivity_unable_to_connect_to_service">Nu s-a putut realiza conexiunea la serviciu. Te rugăm verifică conexiunea la rețea și încearcă din nou.</string>
   <string name="RegistrationActivity_non_standard_number_format">Număr cu format non-standard</string>
@@ -1434,7 +1469,7 @@ furnizat (%s) este invalid.</string>
     <item quantity="few">Ești acum la %d pași de a trimite un jurnal de depanare.</item>
     <item quantity="other">Ești acum la %d pași de a trimite un jurnal de depanare.</item>
   </plurals>
-  <string name="RegistrationActivity_we_need_to_verify_that_youre_human">Trebuie să verificăm că ești om.</string>
+  <string name="RegistrationActivity_we_need_to_verify_that_youre_human">Trebuie să verificăm dacă ești om.</string>
   <string name="RegistrationActivity_next">Următorul</string>
   <string name="RegistrationActivity_continue">Continuare</string>
   <string name="RegistrationActivity_take_privacy_with_you_be_yourself_in_every_message">Ia-ți intimitatea cu tine.\nFii tu însuți în fiecare mesaj.</string>
@@ -1475,12 +1510,12 @@ furnizat (%s) este invalid.</string>
   <!--SignalBottomActionBar-->
   <string name="SignalBottomActionBar_more">Mai multe</string>
   <!--SignalPinReminders-->
-  <string name="SignalPinReminders_well_remind_you_again_later">Îți vom reaminti mai târziu.</string>
-  <string name="SignalPinReminders_well_remind_you_again_tomorrow">Îți vom reaminti mâine.</string>
-  <string name="SignalPinReminders_well_remind_you_again_in_a_few_days">Îți vom reaminti în câteva zile.</string>
-  <string name="SignalPinReminders_well_remind_you_again_in_a_week">Îți vom reaminti într-o săptămână.</string>
-  <string name="SignalPinReminders_well_remind_you_again_in_a_couple_weeks">Îți vom reaminti în câteva săptămâni.</string>
-  <string name="SignalPinReminders_well_remind_you_again_in_a_month">Îți vom reaminti într-o lună.</string>
+  <string name="SignalPinReminders_well_remind_you_again_later">PIN-ul a fost verificat cu succes. Îți vom reaminti din nou mai târziu.</string>
+  <string name="SignalPinReminders_well_remind_you_again_tomorrow">PIN-ul a fost verificat cu succes. Îți vom reaminti din nou mâine.</string>
+  <string name="SignalPinReminders_well_remind_you_again_in_a_few_days">PIN-ul a fost verificat cu succes. Îți vom reaminti din nou în câteva zile.</string>
+  <string name="SignalPinReminders_well_remind_you_again_in_a_week">PIN-ul a fost verificat cu succes. Îți vom reaminti din nou peste o săptămână.</string>
+  <string name="SignalPinReminders_well_remind_you_again_in_a_couple_weeks">PIN-ul a fost verificat cu succes. Îți vom reaminti din nou peste câteva săptămâni.</string>
+  <string name="SignalPinReminders_well_remind_you_again_in_a_month">PIN-ul a fost verificat cu succes. Îți vom reaminti din nou peste o lună.</string>
   <!--Slide-->
   <string name="Slide_image">Imagine</string>
   <string name="Slide_sticker">Autocolant</string>
@@ -1630,6 +1665,10 @@ Am primit mesajul conform căruia schimbul de chei a avut loc pentru o versiune 
   <string name="MediaPreviewActivity_media_delete_confirmation_title">Șterg mesajul?</string>
   <string name="MediaPreviewActivity_media_delete_confirmation_message">Această acțiune va șterge permanent mesajul.</string>
   <string name="MediaPreviewActivity_s_to_s">%1$s la %2$s</string>
+  <!--All media preview title when viewing media send by you to another recipient (allows changing of \'You\' based on context)-->
+  <string name="MediaPreviewActivity_you_to_s">Tu către %1$s</string>
+  <!--All media preview title when viewing media sent by another recipient to you (allows changing of \'You\' based on context)-->
+  <string name="MediaPreviewActivity_s_to_you">%1$s către tine</string>
   <string name="MediaPreviewActivity_media_no_longer_available">Media nu mai este disponibilă.</string>
   <string name="MediaPreviewActivity_cant_find_an_app_able_to_share_this_media">Nu pot găsi o aplicație pentru a distribui acest tip media.</string>
   <!--MessageNotifier-->
@@ -1676,6 +1715,10 @@ Am primit mesajul conform căruia schimbul de chei a avut loc pentru o versiune 
   <string name="NotificationChannel_voice_notes">Notițe vocale</string>
   <string name="NotificationChannel_contact_joined_signal">Un contact s-a alăturat pe Signal</string>
   <string name="NotificationChannels__no_activity_available_to_open_notification_channel_settings">Nu există activitate disponibilă pentru a deschide setările canalului de notificare.</string>
+  <!--Notification channel name for showing persistent background connection on devices without push notifications-->
+  <string name="NotificationChannel_background_connection">Conexiune de fundal</string>
+  <!--Notification channel name for showing call status information (like connection, ongoing, etc.) Not ringing.-->
+  <string name="NotificationChannel_call_status">Stare apel</string>
   <!--ProfileEditNameFragment-->
   <!--QuickResponseService-->
   <string name="QuickResponseService_quick_response_unavailable_when_Signal_is_locked">Răspunsul rapid nu este disponibil cât timp Signal este blocat!</string>
@@ -1767,6 +1810,12 @@ Am primit mesajul conform căruia schimbul de chei a avut loc pentru o versiune 
     <item quantity="few">%1$d membri</item>
     <item quantity="other">%1$d de membri</item>
   </plurals>
+  <!--Displays number of viewers for a story-->
+  <plurals name="contact_selection_list_item__number_of_viewers">
+    <item quantity="one">%1$d spectator</item>
+    <item quantity="few">%1$d spectatori</item>
+    <item quantity="other">%1$d de spectatori</item>
+  </plurals>
   <!--conversation_activity-->
   <string name="conversation_activity__type_message_push">Mesaj Signal</string>
   <string name="conversation_activity__type_message_sms_insecure">SMS nesecurizat</string>
@@ -1804,10 +1853,16 @@ Am primit mesajul conform căruia schimbul de chei a avut loc pentru o versiune 
   <string name="ConversationUpdateItem_invite_friends">Invită prieteni</string>
   <string name="ConversationUpdateItem_enable_call_notifications">Activare notificări pentru apeluri</string>
   <string name="ConversationUpdateItem_update_contact">Actualizează contactul</string>
+  <!--Update item button text to show to block a recipient from requesting to join via group link-->
+  <string name="ConversationUpdateItem_block_request">Blochează cererea</string>
   <string name="ConversationUpdateItem_no_groups_in_common_review_requests_carefully">Niciun grup în comun. Examinează cu atenție solicitările.</string>
   <string name="ConversationUpdateItem_no_contacts_in_this_group_review_requests_carefully">Nu există contacte în acest grup. Examinează cu atenție solicitările.</string>
   <string name="ConversationUpdateItem_view">Vizualizare</string>
   <string name="ConversationUpdateItem_the_disappearing_message_time_will_be_set_to_s_when_you_message_them">Timpul de dispariție a mesajului va fi setat la %1$s în momentul în care trimiți un mesaj.</string>
+  <!--Update item button text to show to boost a feature-->
+  <string name="ConversationUpdateItem_signal_boost">Signal Boost</string>
+  <!--Update item button text to show to become a sustainer in the release notes channel-->
+  <string name="ConversationUpdateItem_become_a_sustainer">Fii un Susținător</string>
   <!--audio_view-->
   <string name="audio_view__play_pause_accessibility_description">Redare … Pauză</string>
   <string name="audio_view__download_accessibility_description">Descarcă</string>
@@ -1820,6 +1875,12 @@ Am primit mesajul conform căruia schimbul de chei a avut loc pentru o versiune 
   <string name="QuoteView_sticker">Autocolant</string>
   <string name="QuoteView_you">Tu</string>
   <string name="QuoteView_original_missing">Mesajul original nu a fost găsit</string>
+  <!--Author formatting for group stories-->
+  <string name="QuoteView_s_story">%1$s · Poveste</string>
+  <!--Label indicating that a quote is for a reply to a story you created-->
+  <string name="QuoteView_your_story">Tu · Poveste</string>
+  <!--Label indicating that the story being replied to no longer exists-->
+  <string name="QuoteView_no_longer_available">Nu mai este disponibilă</string>
   <!--conversation_fragment-->
   <string name="conversation_fragment__scroll_to_the_bottom_content_description">Derulează până jos</string>
   <!--BubbleOptOutTooltip-->
@@ -1930,6 +1991,10 @@ Am primit mesajul conform căruia schimbul de chei a avut loc pentru o versiune 
   <!--message_recipients_list_item-->
   <string name="message_recipients_list_item__view">VIZUALIZARE</string>
   <string name="message_recipients_list_item__resend">RETRIMITE</string>
+  <!--Displayed in a toast when user long presses an item in MyStories-->
+  <string name="MyStoriesFragment__copied_sent_timestamp_to_clipboard">Timpul a fost copiat în clipboard.</string>
+  <!--Displayed when there are no outgoing stories-->
+  <string name="MyStoriesFragment__updates_to_your_story_will_show_up_here">Actualizări ale poveștii tale vor apărea aici.</string>
   <!--GroupUtil-->
   <plurals name="GroupUtil_joined_the_group">
     <item quantity="one">%1$s s-a alăturat grupului.</item>
@@ -2008,6 +2073,7 @@ Am primit mesajul conform căruia schimbul de chei a avut loc pentru o versiune 
   <string name="message_details_recipient_header__read_by">Citit de</string>
   <string name="message_details_recipient_header__not_sent">Nu a fost trimis</string>
   <string name="message_details_recipient_header__viewed">Vizualizat de</string>
+  <string name="message_details_recipient_header__skipped">Omis</string>
   <!--message_Details_recipient-->
   <string name="message_details_recipient__failed_to_send">Expediere eșuată</string>
   <string name="message_details_recipient__new_safety_number">Număr de siguranță nou</string>
@@ -2148,9 +2214,8 @@ Am primit mesajul conform căruia schimbul de chei a avut loc pentru o versiune 
   <string name="preferences__help">Ajutor</string>
   <string name="preferences__advanced">Avansat</string>
   <string name="preferences__donate_to_signal">Donați pentru Signal</string>
-  <string name="preferences__subscription">Abonament</string>
-  <string name="preferences__become_a_signal_sustainer">Fii un Susținător Signal</string>
-  <string name="preferences__signal_boost">Signal Boost</string>
+  <!--Preference label for making one-time donations to Signal-->
+  <string name="preferences__one_time_donation">Donație unică</string>
   <string name="preferences__privacy">Confidențialitate</string>
   <string name="preferences__mms_user_agent">MMS User Agent</string>
   <string name="preferences__advanced_mms_access_point_names">Setări MMS manuale</string>
@@ -2248,6 +2313,19 @@ Am primit mesajul conform căruia schimbul de chei a avut loc pentru o versiune 
   <string name="preferences_chats__message_text_size">Mărimea textului</string>
   <string name="preferences_events__contact_joined_signal">Un contact s-a alăturat pe Signal</string>
   <string name="preferences_notifications__priority">Prioritate</string>
+  <!--Heading for the \'censorship circumvention\' section of privacy preferences-->
+  <string name="preferences_communication__category_censorship_circumvention">Ocolire cenzură</string>
+  <!--Title of the \'censorship circumvention\' toggle switch-->
+  <string name="preferences_communication__censorship_circumvention">Ocolire cenzură</string>
+  <string name="preferences_communication__censorship_circumvention_if_enabled_signal_will_attempt_to_circumvent_censorship">Dacă este activată, Signal va încerca să ocolească cenzura. Nu activa această funcționalitate doar dacă ești într-o locație unde Signal este cenzurat.</string>
+  <!--Summary text for \'censorship circumvention\' toggle. Indicates that we automatically enabled it because we believe you\'re in a censored country-->
+  <string name="preferences_communication__censorship_circumvention_has_been_activated_based_on_your_accounts_phone_number">Ocolirea cenzurii a fost activată pe baza numărului tău de telefon.</string>
+  <!--Summary text for \'censorship circumvention\' toggle. Indicates that you disabled it even though we believe you\'re in a censored country-->
+  <string name="preferences_communication__censorship_circumvention_you_have_manually_disabled">Ai dezactivat manual ocolirea cenzurii.</string>
+  <!--Summary text for \'censorship circumvention\' toggle. Indicates that you cannot use it because you\'re already connected to the Signal service-->
+  <string name="preferences_communication__censorship_circumvention_is_not_necessary_you_are_already_connected">Ocolirea cenzurii nu este necesară; ești deja conectat la serviciul Signal.</string>
+  <!--Summary text for \'censorship circumvention\' toggle. Indicates that you cannot use it because you\'re not connected to the internet-->
+  <string name="preferences_communication__censorship_circumvention_can_only_be_activated_when_connected_to_the_internet">Ocolirea cenzurii poate fi activată numai atunci când ești conectat la internet.</string>
   <string name="preferences_communication__category_sealed_sender">Expeditor ascuns</string>
   <string name="preferences_communication__sealed_sender_display_indicators">Afișează indicatoare</string>
   <string name="preferences_communication__sealed_sender_display_indicators_description">Afișează un icon de status când selectezi \"Detalii mesaj\" pentru mesaje ce au fost trimise folosind funcția expeditor ascuns.</string>
@@ -2417,18 +2495,34 @@ Am primit mesajul conform căruia schimbul de chei a avut loc pentru o versiune 
   <string name="conversation_callable_secure__menu_call">Apel Signal</string>
   <string name="conversation_callable_secure__menu_video">Apel video Signal</string>
   <!--conversation_context-->
-  <string name="conversation_context__menu_message_details">Detalii mesaj</string>
-  <string name="conversation_context__menu_copy_text">Copiază textul</string>
-  <string name="conversation_context__menu_delete_message">Șterge mesajul</string>
-  <string name="conversation_context__menu_forward_message">Redirecționează mesajul</string>
-  <string name="conversation_context__menu_resend_message">Retrimite mesajul</string>
-  <string name="conversation_context__menu_reply_to_message">Răspunde la mesaj</string>
-  <!--conversation_context_reacction-->
-  <string name="conversation_context__reaction_multi_select">Selectează mai multe</string>
+  <!--Heading which shows how many messages are currently selected-->
+  <plurals name="conversation_context__s_selected">
+    <item quantity="one">%d selectat</item>
+    <item quantity="few">%d selectate</item>
+    <item quantity="other">%d selectate</item>
+  </plurals>
   <!--conversation_context_image-->
-  <string name="conversation_context_image__save_attachment">Salvează atașamentul</string>
+  <!--Button to save a message attachment (image, file etc.)-->
+  <string name="conversation_context_image__save_attachment">Salvează</string>
   <!--conversation_expiring_off-->
   <string name="conversation_expiring_off__disappearing_messages">Dispariție mesaje</string>
+  <!--conversation_selection-->
+  <!--Button to view detailed information for a message-->
+  <string name="conversation_selection__menu_message_details">Informații</string>
+  <!--Button to copy a message\'s text to the clipboard-->
+  <string name="conversation_selection__menu_copy">Copiere</string>
+  <!--Button to delete a message-->
+  <string name="conversation_selection__menu_delete">Șterge</string>
+  <!--Button to forward a message to another person or group chat-->
+  <string name="conversation_selection__menu_forward">Redirecționează</string>
+  <!--Button to reply to a message-->
+  <string name="conversation_selection__menu_reply">Răspunde</string>
+  <!--Button to save a message attachment (image, file etc.)-->
+  <string name="conversation_selection__menu_save">Salvează</string>
+  <!--Button to retry sending a message-->
+  <string name="conversation_selection__menu_resend_message">Re-trimite</string>
+  <!--Button to select a message and enter selection mode-->
+  <string name="conversation_selection__menu_multi_select">Selectează</string>
   <!--conversation_expiring_on-->
   <!--conversation_insecure-->
   <string name="conversation_insecure__invite">Invită</string>
@@ -2619,16 +2713,6 @@ Am primit mesajul conform căruia schimbul de chei a avut loc pentru o versiune 
   <string name="KbsMegaphone__create_a_pin">Creează un PIN</string>
   <string name="KbsMegaphone__pins_keep_information_thats_stored_with_signal_encrytped">PIN-urile păstrează informațiile stocate în Signal criptate.</string>
   <string name="KbsMegaphone__create_pin">Creează PIN</string>
-  <!--Research Megaphone-->
-  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphone_tell_signal_what_you_think">Spune-ne ce părere ai</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphone_to_make_signal_the_best_messaging_app_on_the_planet">Pentru a putea să facem din Signal cea mai bună aplicație de mesagerie de pe planetă, ne-ar plăcea să-ți auzim părerea. </string> -->
-  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphone_learn_more">Află mai multe</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphone_dismiss">Revocare</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphoneDialog_signal_research">Cercetare Signal</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphoneDialog_we_believe_in_privacy"><![CDATA[<p><b>Credem în confidențialitate.</b></p><p>Signal nu te urmărește și nu îți colectează informațiile. Pentru a îmbunătăți aplicația pentru toată lumea, ne bazăm pe opiniile utilizatorilor noștri, <b>și ne-ar plăcea să o auzim pe a ta</b></p><p>Derulăm un sondaj pentru a înțelege mai bine cum folosești Signal. Studiul nostru nu colectează informații care te-ar putea identifica. Dacă ești interesat în a împărtăși păreri suplimentare cu noi, vei avea opțiunea să ne furnizezi informații de contact.</p><p>Dacă ai câteva minute la dispoziție și păreri de oferit, ne-ar plăcea să aflăm de la tine.</p>]]></string> -->
-  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphoneDialog_take_the_survey">Completează studiul</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphoneDialog_no_thanks">Nu, mulțumesc</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphoneDialog_the_survey_is_hosted_by_alchemer_at_the_secure_domain">Acest studiu este găzduit de Alchemer pe domeniul securizat surveys.signalusers.org</string> -->
   <!--transport_selection_list_item-->
   <string name="transport_selection_list_item__transport_icon">Pictogramă transport</string>
   <string name="ConversationListFragment_loading">Se încarcă…</string>
@@ -2798,7 +2882,7 @@ Am primit mesajul conform căruia schimbul de chei a avut loc pentru o versiune 
   <string name="NewDeviceTransfer__cannot_transfer_from_a_newer_version_of_signal">Nu se poate transfera dintr-o versiune mai nouă de Signal</string>
   <!--DeviceTransferFragment-->
   <string name="DeviceTransfer__transferring_data">Se transmit datele</string>
-  <string name="DeviceTransfer__keep_both_devices_near_each_other">Ține ambele dispozitive unul lângă altul. Nu opri dispozitivele și menține Signal deschis. Transferurile sunt criptate integral.</string>
+  <string name="DeviceTransfer__keep_both_devices_near_each_other">Ține ambele dispozitive unul lângă celălalt. Nu opri dispozitivele și menține Signal deschis. Transferul este criptat integral.</string>
   <string name="DeviceTransfer__d_messages_so_far">%1$d mesaje până acum…</string>
   <!--Filled in with total percentage of messages transferred-->
   <string name="DeviceTransfer__s_of_messages_so_far">%1$s%% din mesaje până acum…</string>
@@ -2825,7 +2909,7 @@ Am primit mesajul conform căruia schimbul de chei a avut loc pentru o versiune 
   <string name="OldDeviceTransferComplete__your_signal_data_has_Been_transferred_to_your_new_device">Datele tale Signal au fost transferate pe noul dispozitiv. Pentru a finaliza procesul de transfer, trebuie să continui înregistrarea pe noul dispozitiv.</string>
   <string name="OldDeviceTransferComplete__close">Închide</string>
   <!--NewDeviceTransferComplete-->
-  <string name="NewDeviceTransferComplete__transfer_successful">Transferul a fost făcut cu succes</string>
+  <string name="NewDeviceTransferComplete__transfer_successful">Transferul a reușit</string>
   <string name="NewDeviceTransferComplete__transfer_complete">Transfer finalizat</string>
   <string name="NewDeviceTransferComplete__to_complete_the_transfer_process_you_must_continue_registration">Pentru a finaliza procesul de transfer, trebuie să continui înregistrarea.</string>
   <string name="NewDeviceTransferComplete__continue_registration">Continuă înregistrarea</string>
@@ -2866,6 +2950,8 @@ Am primit mesajul conform căruia schimbul de chei a avut loc pentru o versiune 
   <string name="RecipientBottomSheet_remove_s_as_group_admin">Elimini pe %1$s ca administrator de grup?</string>
   <string name="RecipientBottomSheet_s_will_be_able_to_edit_group">\"%1$s\" va putea edita acest grup și membrii acestuia.</string>
   <string name="RecipientBottomSheet_remove_s_from_the_group">Elimini pe %1$s din grup?</string>
+  <!--Dialog message shown when removing someone from a group with group link being active to indicate they will not be able to rejoin-->
+  <string name="RecipientBottomSheet_remove_s_from_the_group_they_will_not_be_able_to_rejoin">Elimini pe %1$s din grup? Nu se vor mai putea alătura din nou folosind linkul grupului.</string>
   <string name="RecipientBottomSheet_remove">Elimină</string>
   <string name="RecipientBottomSheet_copied_to_clipboard">S-a copiat în clipboard</string>
   <string name="GroupRecipientListItem_admin">Administrator</string>
@@ -2957,6 +3043,8 @@ Am primit mesajul conform căruia schimbul de chei a avut loc pentru o versiune 
   <string name="DeleteAccountFragment__leaving_groups">Se părăsesc grupurile…</string>
   <!--Title of progress dialog shown when a user deletes their account and the process has left all groups-->
   <string name="DeleteAccountFragment__deleting_account">Se șterge contul…</string>
+  <!--Message of progress dialog shown when a user deletes their account and the process is canceling their subscription-->
+  <string name="DeleteAccountFragment__canceling_your_subscription">Se anulează abonamentul…</string>
   <!--Message of progress dialog shown when a user deletes their account and the process is leaving groups-->
   <string name="DeleteAccountFragment__depending_on_the_number_of_groups">În funcție de numărul de grupuri în care te afli, acest lucru poate dura câteva minute</string>
   <!--Message of progress dialog shown when a user deletes their account and the process has left all groups-->
@@ -2982,8 +3070,6 @@ Am primit mesajul conform căruia schimbul de chei a avut loc pentru o versiune 
   <!--MultiShareDialogs-->
   <string name="MultiShareDialogs__failed_to_send_to_some_users">Trimiterea către unii utilizatori nu a reușit</string>
   <string name="MultiShareDialogs__you_can_only_share_with_up_to">Poți distribui până la %1$d conversații</string>
-  <!--ShareInterstitialActivity-->
-  <string name="ShareInterstitialActivity__forward_message">Redirecționează mesajul</string>
   <!--ChatWallpaperActivity-->
   <string name="ChatWallpaperActivity__chat_wallpaper">Fundal conversații</string>
   <!--ChatWallpaperFragment-->
@@ -3007,7 +3093,7 @@ Am primit mesajul conform căruia schimbul de chei a avut loc pentru o versiune 
   <string name="ChatWallpaperFragment__reset_wallpaper">Resetare imagine de fundal</string>
   <string name="ChatWallpaperFragment__reset_wallpaper_question">Resetezi imaginea de fundal?</string>
   <!--ChatWallpaperSelectionFragment-->
-  <string name="ChatWallpaperSelectionFragment__choose_from_photos">Selecție din galerie</string>
+  <string name="ChatWallpaperSelectionFragment__choose_from_photos">Alege din galerie</string>
   <string name="ChatWallpaperSelectionFragment__presets">Presetări</string>
   <!--ChatWallpaperPreviewActivity-->
   <string name="ChatWallpaperPreviewActivity__preview">Previzualizare</string>
@@ -3119,6 +3205,7 @@ Am primit mesajul conform căruia schimbul de chei a avut loc pentru o versiune 
   <string name="QualitySelectorBottomSheetDialog__photo_quality">Calitate fotografie</string>
   <!--AppSettingsFragment-->
   <string name="AppSettingsFragment__invite_your_friends">Invită-ți prietenii</string>
+  <string name="AppSettingsFragment__copied_subscriber_id_to_clipboard">ID-ul abonatului a fost copiat în clipboard</string>
   <!--AccountSettingsFragment-->
   <string name="AccountSettingsFragment__account">Cont</string>
   <string name="AccountSettingsFragment__youll_be_asked_less_frequently">Vei fi întrebat mai rar în timp</string>
@@ -3127,7 +3214,10 @@ Am primit mesajul conform căruia schimbul de chei a avut loc pentru o versiune 
   <!--ChangeNumberFragment-->
   <string name="ChangeNumberFragment__use_this_to_change_your_current_phone_number_to_a_new_phone_number">Utilizează acest meniu pentru a-ți schimba actualul număr de telefon cu un număr nou. Nu poți anula această modificare.\n\nÎnainte de a continua asigură-te că noul număr de telefon poate primi SMS-uri sau apeluri.</string>
   <string name="ChangeNumberFragment__continue">Continuare</string>
-  <string name="ChangeNumber__your_phone_number_has_been_changed">Numărul tău de telefon a fost schimbat.</string>
+  <!--Message shown on dialog after your number has been changed successfully.-->
+  <string name="ChangeNumber__your_phone_number_has_changed_to_s">Numărul tău de telefon a fost schimbat în %1$s</string>
+  <!--Confirmation button to dismiss number changed dialog-->
+  <string name="ChangeNumber__okay">Okay</string>
   <!--ChangeNumberEnterPhoneNumberFragment-->
   <string name="ChangeNumberEnterPhoneNumberFragment__change_number">Schimbă Numărul</string>
   <string name="ChangeNumberEnterPhoneNumberFragment__your_old_number">Vechiul număr</string>
@@ -3145,7 +3235,7 @@ Am primit mesajul conform căruia schimbul de chei a avut loc pentru o versiune 
   <string name="ChangeNumberVerifyFragment__captcha_required">Captcha este necesară</string>
   <!--ChangeNumberConfirmFragment-->
   <string name="ChangeNumberConfirmFragment__change_number">Schimbă Numărul</string>
-  <string name="ChangeNumberConfirmFragment__you_are_about_to_change_your_phone_number_from_s_to_s">Urmează să îți schimbi numărul de telefon din %1$s în %2$s.\n\nÎnainte de a continua, te rugăm să te asiguri că numărul de mai jos este corect.</string>
+  <string name="ChangeNumberConfirmFragment__you_are_about_to_change_your_phone_number_from_s_to_s">Urmează să îți schimbi numărul de telefon din %1$s în %2$s.\n\nÎnainte de a continua, te rugăm să verifici dacă numărul de mai jos este corect.</string>
   <string name="ChangeNumberConfirmFragment__edit_number">Editează număr</string>
   <!--ChangeNumberRegistrationLockFragment-->
   <string name="ChangeNumberRegistrationLockFragment__signal_change_number_need_help_with_pin_for_android_v2_pin">Schimbare Număr Signal - Am nevoie de asistență pentru PIN Android (v2 PIN)</string>
@@ -3156,12 +3246,19 @@ Am primit mesajul conform căruia schimbul de chei a avut loc pentru o versiune 
   <string name="ChangeNumberPinDiffersFragment__update_pin">Actualizează PIN</string>
   <string name="ChangeNumberPinDiffersFragment__keep_old_pin_question">Păstrezi vechiul PIN?</string>
   <!--ChangeNumberLockActivity-->
+  <!--Info message shown to user if something crashed the app during the change number attempt and we were unable to confirm the change so we force them into this screen to check before letting them use the app-->
   <string name="ChangeNumberLockActivity__it_looks_like_you_tried_to_change_your_number_but_we_were_unable_to_determine_if_it_was_successful_rechecking_now">Se pare că ai încercat să-ți schimbi numărul de telefon dar nu am putut determina dacă a reușit.\n\nVerificăm din nou acum…</string>
+  <!--Dialog title shown if we were able to confirm your change number status (meaning we now know what the server thinks our number is) after a crash during the regular flow-->
   <string name="ChangeNumberLockActivity__change_status_confirmed">Schimbare confirmată</string>
+  <!--Dialog message shown if we were able to confirm your change number status (meaning we now know what the server thinks our number is) after a crash during the regular flow-->
   <string name="ChangeNumberLockActivity__your_number_has_been_confirmed_as_s">Numărul tău a fost confirmat ca fiind %1$s. Dacă acesta nu este numărul tău te rugăm să reiei procesul de schimbare a numărului.</string>
+  <!--Dialog title shown if we were not able to confirm your phone number with the server and thus cannot let leave the change flow yet after a crash during the regular flow-->
   <string name="ChangeNumberLockActivity__change_status_unconfirmed">Schimbare neconfirmată</string>
+  <!--Dialog message shown when we can\'t verify the phone number on the server, only shown if there was a network error communicating with the server after a crash during the regular flow-->
   <string name="ChangeNumberLockActivity__we_could_not_determine_the_status_of_your_change_number_request">Nu am putut determina starea cererii tale de schimbare a numărului de telefon.\n\n(Eroare: %1$s)</string>
+  <!--Dialog button to retry confirming the number on the server-->
   <string name="ChangeNumberLockActivity__retry">Încearcă din nou</string>
+  <!--Dialog button shown to leave the app when in the unconfirmed change status after a crash in the regular flow-->
   <string name="ChangeNumberLockActivity__leave">Părăsește</string>
   <string name="ChangeNumberLockActivity__submit_debug_log">Trimite jurnalul de depanare</string>
   <!--ChatsSettingsFragment-->
@@ -3281,9 +3378,10 @@ Am primit mesajul conform căruia schimbul de chei a avut loc pentru o versiune 
   <string name="AddAProfilePhotoMegaphone__add_photo">Adăugare poză</string>
   <!--BecomeASustainerMegaphone-->
   <string name="BecomeASustainerMegaphone__become_a_sustainer">Fii un Susținător</string>
-  <string name="BecomeASustainerMegaphone__signal_is_powered">Signal este susținut de oameni ca tine. Contribuie și primești o insignă de profil.</string>
-  <string name="BecomeASustainerMegaphone__no_thanks">Nu, mulțumesc</string>
-  <string name="BecomeASustainerMegaphone__contribute">Contribuie</string>
+  <!--Displayed in the Become a Sustainer megaphone-->
+  <string name="BecomeASustainerMegaphone__signal_is_powered_by">Signal este susținut de oameni ca tine. Donează și primești o insignă.</string>
+  <string name="BecomeASustainerMegaphone__not_now">Nu acum</string>
+  <string name="BecomeASustainerMegaphone__donate">Donați</string>
   <!--KeyboardPagerFragment-->
   <string name="KeyboardPagerFragment_emoji">Emoji</string>
   <string name="KeyboardPagerFragment_open_emoji_search">Deschide căutarea emoji</string>
@@ -3392,9 +3490,13 @@ Am primit mesajul conform căruia schimbul de chei a avut loc pentru o versiune 
   <!--ContactSelectionListItem-->
   <string name="ContactSelectionListItem__sms">SMS</string>
   <string name="ContactSelectionListItem__dot_s">· %1$s</string>
+  <!--Displayed in the toolbar when externally sharing text to multiple recipients-->
+  <string name="ShareInterstitialActivity__share">Distribuie</string>
   <!--DSLSettingsToolbar-->
   <string name="DSLSettingsToolbar__navigate_up">Navighează în sus</string>
   <string name="MultiselectForwardFragment__forward_to">Redirecționează către</string>
+  <!--Displayed when sharing content via the fragment-->
+  <string name="MultiselectForwardFragment__share_with">Distribuie cu</string>
   <string name="MultiselectForwardFragment__add_a_message">Adaugă un mesaj</string>
   <string name="MultiselectForwardFragment__faster_forwards">Redirecționări mai rapide</string>
   <string name="MultiselectForwardFragment__forwarded_messages_are_now">Mesajele redirecționate sunt acum trimise imediat.</string>
@@ -3459,6 +3561,7 @@ Am primit mesajul conform căruia schimbul de chei a avut loc pentru o versiune 
   <string name="SubscribeFragment__signal_is_powered_by_people_like_you">Signal este susținut de oameni ca tine.</string>
   <string name="SubscribeFragment__support_technology_that_is_built_for_you">Sprijină tehnologia construită pentru tine—nu pentru datele tale— alăturându-te comunității de oameni care o susțin.</string>
   <string name="SubscribeFragment__support_technology_that_is_built_for_you_not">Sprijină tehnologia construită pentru tine și nu pentru datele tale, alăturându-te comunității susținătorilor Signal.</string>
+  <string name="SubscribeFragment__make_a_recurring_monthly_donation">Fă o donație lunară recurentă către Signal pentru a sprijini tehnologia creată pentru tine, nu pentru datele tale.</string>
   <string name="SubscribeFragment__currency">Monedă</string>
   <string name="SubscribeFragment__more_payment_options">Mai multe opțiuni de plată</string>
   <string name="SubscribeFragment__cancel_subscription">Anulare abonament</string>
@@ -3470,19 +3573,19 @@ Am primit mesajul conform căruia schimbul de chei a avut loc pentru o versiune 
   <string name="SubscribeFragment__your_subscription_has_been_cancelled">Abonamentul tău a fost anulat.</string>
   <string name="SubscribeFragment__update_subscription_question">Actualizezi abonamentul?</string>
   <string name="SubscribeFragment__update">Actualizează</string>
-  <string name="SubscribeFragment__you_will_be_charged_the_full_amount">Vei fi taxat cu prețul integral al noului abonament astăzi. Abonamentul tău se va reînnoi %1$s.</string>
   <string name="SubscribeFragment__you_will_be_charged_the_full_amount_s_of">Vei fi taxat astăzi cu prețul integral al noului abonament (%1$s). Abonamentul tău se va reînnoi lunar.</string>
   <string name="Subscription__s_per_month">%s/lună</string>
   <string name="Subscription__s_per_month_dot_renews_s">%1$s/lună · Se reînnoiește %2$s</string>
   <string name="Subscription__s_per_month_dot_expires_s">%1$s/lună · Expiră %2$s</string>
-  <string name="SubscribeLearnMoreBottomSheetDialogFragment__signal_is_a_non_profit_with_no">Signal este o organizație non-profit, fără agenți de publicitate sau investitori, susținută doar de oamenii care o folosesc și o apreciază. Fă o contribuție lunară recurentă și primești o insignă de profil pentru a-ți împărtăși sprijinul.</string>
-  <string name="SubscribeLearnMoreBottomSheetDialogFragment__why_contribute">De ce să contribui?</string>
+  <!--First small text blurb on learn more sheet-->
+  <string name="SubscribeLearnMoreBottomSheetDialogFragment__signal_is_a_nonprofit_with_no">Signal este o organizație non-profit, fără agenți de publicitate sau investitori, susținută doar de oamenii care o folosesc și o apreciază. Fă o donație lunară recurentă și primești o insignă de profil pentru a-ți împărtăși sprijinul.</string>
+  <string name="SubscribeLearnMoreBottomSheetDialogFragment__why_donate">De ce să donezi?</string>
   <string name="SubscribeLearnMoreBottomSheetDialogFragment__signal_is_committed_to_developing">Signal este dedicat dezvoltării de tehnologii open source pentru confidențialitate care protejează libertatea de exprimare și permit o comunicare globală sigură</string>
-  <string name="SubscribeLearnMoreBottomSheetDialogFragment__your_contribution">Contribuția ta susține această cauză și plătește pentru dezvoltarea și funcționarea unei aplicații folosite de milioane de oameni pentru comunicații private. Fără reclame. Fără elemente de urmărire. Pe bune.</string>
+  <string name="SubscribeLearnMoreBottomSheetDialogFragment__your_donation">Donația ta susține această cauză și plătește pentru dezvoltarea și funcționarea unei aplicații folosite de milioane de oameni pentru comunicații private. Fără reclame. Fără elemente de urmărire. Pe bune.</string>
   <string name="SubscribeThanksForYourSupportBottomSheetDialogFragment__thanks_for_your_support">Îți mulțumim pentru sprijin!</string>
   <string name="SubscribeThanksForYourSupportBottomSheetDialogFragment__thanks_for_the_boost">Îți mulțumim pentru Boost!</string>
-  <string name="SubscribeThanksForYourSupportBottomSheetDialogFragment__youve_earned_s_badge_help_signal">Ai obținut insigna %s! Ajută Signal să crească gradul de conștientizare prin afișarea acestei insigne pe profilul tău.</string>
-  <string name="SubscribeThanksForYourSupportBottomSheetDialogFragment__youve_earned_a_boost_badge_help_signal">Ai obținut o insigna Boost! Ajută Signal să crească gradul de conștientizare prin afișarea acestei insigne pe profilul tău.</string>
+  <string name="SubscribeThanksForYourSupportBottomSheetDialogFragment__youve_earned_s_badge_display">Ai dobândit %s insignă Boost! Afișează această insignă pe profilul tău pentru a crește gradul de conștientizare pentru donarea către Signal.</string>
+  <string name="SubscribeThanksForYourSupportBottomSheetDialogFragment__youve_earned_a_boost_badge_display">Ai dobândit o insignă Boost! Afișează această insignă pe profilul tău pentru a crește gradul de conștientizare pentru donarea către Signal.</string>
   <string name="SubscribeThanksForYourSupportBottomSheetDialogFragment__you_can_also">Poți de asemenea </string>
   <string name="SubscribeThanksForYourSupportBottomSheetDialogFragment__become_a_montly_sustainer">fii un Susținător lunar.</string>
   <string name="SubscribeThanksForYourSupportBottomSheetDialogFragment__display_on_profile">Afișează la profil</string>
@@ -3491,13 +3594,27 @@ Am primit mesajul conform căruia schimbul de chei a avut loc pentru o versiune 
   <string name="ThanksForYourSupportBottomSheetFragment__when_you_have_more">Atunci când ai mai mult de o insignă, poți alege una pe care să o afișezi pentru ca ceilalți să o vadă pe profilul tău.</string>
   <string name="BecomeASustainerFragment__get_badges">Poți obține insigne pentru profilul tău susținând Signal.</string>
   <string name="BecomeASustainerFragment__signal_is_a_non_profit">Signal este o organizație non-profit, fără agenți de publicitate sau investitori, susținută doar de oameni ca tine.</string>
-  <string name="ManageDonationsFragment__my_support">Sprijinul meu</string>
+  <!--Button label for creating a monthly donation-->
+  <string name="ManageDonationsFragment__make_a_monthly_donation">Fă o donație lunară</string>
+  <!--Heading for more area of manage subscriptions page-->
+  <string name="ManageDonationsFragment__more">Mai multe</string>
+  <!--Heading for receipts area of manage subscriptions page-->
+  <string name="ManageDonationsFragment__receipts">Bonuri fiscale</string>
+  <!--Heading for my subscription area of manage subscriptions page-->
+  <string name="ManageDonationsFragment__my_subscription">Abonamentul meu</string>
   <string name="ManageDonationsFragment__manage_subscription">Gestionare abonament</string>
+  <!--Label for Donation Receipts button-->
+  <string name="ManageDonationsFragment__donation_receipts">Chitanțe donații</string>
   <string name="ManageDonationsFragment__badges">Insigne</string>
   <string name="ManageDonationsFragment__subscription_faq">FAQ Abonament</string>
   <string name="ManageDonationsFragment__error_getting_subscription">Eroare la obținerea abonamentului.</string>
+  <!--Preference heading for other ways to donate-->
+  <string name="ManageDonationsFragment__other_ways_to_give">Alte modalități de a dona</string>
+  <!--Preference label to launch badge gifting-->
+  <string name="ManageDonationsFragment__gift_a_badge">Oferă cadou o insignă</string>
   <string name="BoostFragment__give_signal_a_boost">Dă un Boost la Signal</string>
-  <string name="BoostFragment__say_thanks_and_earn">Spune \"Mulțumesc!\" și obține insigna Boost pentru %1$d de zile.</string>
+  <!--Description text in boost sheet-->
+  <string name="BoostFragment__make_a_one_time">Fă o donație unică și obține o insignă Boost pentru %1$d de zile.</string>
   <string name="Boost__enter_custom_amount">Introdu o sumă specifică</string>
   <string name="Boost__one_time_contribution">Contribuție unică</string>
   <string name="MySupportPreference__add_a_signal_boost">Adaugă un Boost la Signal</string>
@@ -3507,18 +3624,27 @@ Am primit mesajul conform căruia schimbul de chei a avut loc pentru o versiune 
   <!--Displayed on "My Support" screen when user badge failed to be added to their account-->
   <string name="MySupportPreference__couldnt_add_badge_s">Nu s-a putut adăuga insigna. %1$s</string>
   <string name="MySupportPreference__please_contact_support">Te rugăm contactează asistența.</string>
-  <string name="ExpiredBadgeBottomSheetDialogFragment__your_badge_has_expired">Insigna ta a expirat</string>
-  <string name="ExpiredBadgeBottomSheetDialogFragment__badge_expired">Insigna a expirat</string>
-  <string name="ExpiredBadgeBottomSheetDialogFragment__subscription_cancelled">Abonament anulat</string>
-  <string name="ExpiredBadgeBottomSheetDialogFragment__your_boost_badge_has_expired">Insigna ta Boost a expirat și nu mai este vizibilă pentru alții, pe profilul tău.</string>
+  <!--Title of expiry sheet when boost badge falls off profile unexpectedly.-->
+  <string name="ExpiredBadgeBottomSheetDialogFragment__boost_badge_expired">Insigna Boost a expirat</string>
+  <!--Displayed in the bottom sheet if a monthly donation badge unexpectedly falls off the user\'s profile-->
+  <string name="ExpiredBadgeBottomSheetDialogFragment__monthly_donation_cancelled">Donație lunară anulată</string>
+  <!--Displayed in the bottom sheet when a boost badge expires-->
+  <string name="ExpiredBadgeBottomSheetDialogFragment__your_boost_badge_has_expired_and">Insigna ta Boost a expirat și nu mai este vizibilă pe profilul tău.</string>
   <string name="ExpiredBadgeBottomSheetDialogFragment__you_can_reactivate">Iți poți reactiva insigna Boost pentru încă 30 de zile cu o contribuție unică.</string>
-  <string name="ExpiredBadgeBottomSheetDialogFragment__to_continue_supporting_technology">Pentru a continua să sprijini tehnologie construită pentru tine, te rugăm să iei în considerare posibilitatea de a devenii un Susținător lunar.</string>
+  <!--Displayed when we do not think the user is a subscriber when their boost expires-->
+  <string name="ExpiredBadgeBottomSheetDialogFragment__you_can_keep">Poți continua să utilizezi Signal, dar pentru a susține tehnologia creată pentru tine, ia în considerare să devii un susținător făcând o donație lunară.</string>
   <string name="ExpiredBadgeBottomSheetDialogFragment__become_a_sustainer">Fii un Susținător</string>
   <string name="ExpiredBadgeBottomSheetDialogFragment__add_a_boost">Adaugă un Boost</string>
   <string name="ExpiredBadgeBottomSheetDialogFragment__not_now">Nu acum</string>
-  <string name="ExpiredBadgeBottomSheetDialogFragment__your_sustainer">Abonamentul tău de Susținător a fost anulat automat deoarece ai fost inactiv pentru o perioadă prea lungă de timp. Insigna ta %1$s nu mai este vizibilă pe profilul tău.</string>
-  <string name="ExpiredBadgeBottomSheetDialogFragment__you_can">Poți folosi în continuare Signal dar pentru a sprijini aplicația și pentru ați reactiva insigna, reînnoiește acum.</string>
+  <!--Copy displayed when badge expires after user inactivity-->
+  <string name="ExpiredBadgeBottomSheetDialogFragment__your_recurring_monthly_donation_was_automatically">Donația ta lunară recurentă a fost anulată automat deoarece ai fost inactiv pentru o perioadă lungă de timp. Insigna ta %1$s nu va mai fi vizibilă pe profilul tău.</string>
+  <!--Copy displayed when badge expires after payment failure-->
+  <string name="ExpiredBadgeBottomSheetDialogFragment__your_recurring_monthly_donation_was_canceled">Donația ta lunară recurentă a fost anulată deoarece nu am putut procesa plata. Insigna ta nu va mai fi vizibilă pe profilul tău.</string>
+  <string name="ExpiredBadgeBottomSheetDialogFragment__you_can">Poți folosi în continuare Signal dar pentru a sprijini aplicația și pentru a-ți reactiva insigna, reînnoiește acum.</string>
   <string name="ExpiredBadgeBottomSheetDialogFragment__renew_subscription">Reînnoiește abonamentul</string>
+  <string name="CantProcessSubscriptionPaymentBottomSheetDialogFragment__cant_process_subscription_payment">Nu s-a putut procesa plata abonamentului</string>
+  <string name="CantProcessSubscriptionPaymentBottomSheetDialogFragment__were_having_trouble">Avem probleme la colectarea plății de Susținător Signal. Asigură-te că metoda ta de plată este actualizată. Dacă nu, actualizeaz-o în Google Pay. Signal va încerca să proceseze din nou plata în câteva zile.</string>
+  <string name="CantProcessSubscriptionPaymentBottomSheetDialogFragment__dont_show_this_again">Nu mai afișa acest mesaj</string>
   <string name="Subscription__please_contact_support_for_more_information">Te rugăm să contactezi suportul pentru mai multe informații.</string>
   <string name="Subscription__contact_support">Contactează suportul</string>
   <string name="Subscription__earn_a_s_badge">Obține o insignă %1$s</string>
@@ -3531,15 +3657,69 @@ Am primit mesajul conform căruia schimbul de chei a avut loc pentru o versiune 
   <string name="DonationsErrors__your_payment">Plata ta nu a putut fi procesată și nu ai fost taxat. Te rugăm să încerci din nou.</string>
   <string name="DonationsErrors__still_processing">În curs de procesare</string>
   <string name="DonationsErrors__couldnt_add_badge">Nu s-a putut adăuga insigna</string>
+  <!--Displayed when badge credential couldn\'t be verified-->
+  <string name="DonationsErrors__failed_to_validate_badge">Validarea insignei a eșuat</string>
+  <!--Displayed when badge credential couldn\'t be verified-->
+  <string name="DonationsErrors__could_not_validate">Nu s-a putut valida răspunsul serverului. Te rugăm să contactezi asistența.</string>
+  <!--Displayed as title when some generic error happens during gift badge sending-->
+  <string name="DonationsErrors__failed_to_send_gift_badge">Trimiterea insignei cadou a eșuat</string>
+  <!--Displayed as message when some generic error happens during gift badge sending-->
+  <string name="DonationsErrors__could_not_send_gift_badge">Nu s-a putut trimite insigna cadou. Te rugăm să contactezi asistența.</string>
   <string name="DonationsErrors__your_badge_could_not">Insigna nu a putut fi adăugată în cont, dar este posibil să fi fost taxat. Te rugăm să contactezi asistența.</string>
   <string name="DonationsErrors__your_payment_is_still">Plata ta este încă în procesare. Ceea ce poate dura câteva minute în funcție de conexiunea ta.</string>
   <string name="DonationsErrors__google_pay_unavailable">Google Pay nu este disponibil</string>
   <string name="DonationsErrors__you_have_to_set_up_google_pay_to_donate_in_app">Trebuie să configurezi Google Pay pentru a face donații în aplicație.</string>
-  <string name="DonationsErrors__failed_to_cancel_subscription">Nu s-a reușit anularea abonamentul</string>
+  <string name="DonationsErrors__failed_to_cancel_subscription">Anularea abonamentul a eșuat</string>
   <string name="DonationsErrors__subscription_cancellation_requires_an_internet_connection">Anularea abonamentului necesită o conexiune la internet.</string>
   <string name="ViewBadgeBottomSheetDialogFragment__your_device_doesn_t_support_google_pay_so_you_can_t_subscribe_to_earn_a_badge_you_can_still_support_signal_by_making_a_donation_on_our_website">Dispozitivul tău nu acceptă Google Pay, așa că nu te poți abona pentru a obține o insignă. Poți totuși să sprijini Signal făcând o donație pe site-ul nostru.</string>
   <string name="NetworkFailure__network_error_check_your_connection_and_try_again">Eroare de rețea. Verifică-ți conexiunea și încearcă din nou.</string>
   <string name="NetworkFailure__retry">Încearcă din nou</string>
+  <string name="DonationsErrors__recipient_verification_failed">Verificarea destinatarului a eșuat.</string>
+  <string name="DonationsErrors__target_does_not_support_gifting">Destinatarul nu poate primi cadouri.</string>
+  <!--Gift message view title-->
+  <string name="GiftMessageView__gift_badge">Insignă cadou</string>
+  <!--Gift message view expiry information-->
+  <plurals name="GiftMessageView__lasts_for_d_months">
+    <item quantity="one">Valabilă %1$d lună</item>
+    <item quantity="few">Valabilă %1$d luni</item>
+    <item quantity="other">Valabilă %1$d de luni</item>
+  </plurals>
+  <!--Gift badge redeem action label-->
+  <string name="GiftMessageView__redeem">Revendică</string>
+  <!--Gift badge view action label-->
+  <string name="GiftMessageView__view">Vizualizare</string>
+  <!--Gift badge redeeming action label-->
+  <string name="GiftMessageView__redeeming">Se revendică…</string>
+  <!--Gift badge redeemed label-->
+  <string name="GiftMessageView__redeemed">Revendicat</string>
+  <!--Stripe decline code generic_failure-->
+  <string name="DeclineCode__try_another_payment_method_or_contact_your_bank">Încearcă o altă metodă de plată sau ia legătura cu banca ta pentru mai multe informații.</string>
+  <!--Stripe decline code verify on Google Pay and try again-->
+  <string name="DeclineCode__verify_your_payment_method_is_up_to_date_in_google_pay_and_try_again">Verifică dacă metoda de plată este actualizată în Google Pay și încearcă din nou.</string>
+  <!--Stripe decline code learn more action label-->
+  <string name="DeclineCode__learn_more">Află mai multe</string>
+  <!--Stripe decline code contact issuer-->
+  <string name="DeclineCode__verify_your_payment_method_is_up_to_date_in_google_pay_and_try_again_if_the_problem">Verifică dacă metoda de plată este actualizată în Google Pay și încearcă din nou. Dacă problema persistă, contactează-ți banca.</string>
+  <!--Stripe decline code purchase not supported-->
+  <string name="DeclineCode__your_card_does_not_support_this_type_of_purchase">Cardul tău nu suportă acest tip de achiziție. Încearcă altă metodă de plată.</string>
+  <!--Stripe decline code your card has expired-->
+  <string name="DeclineCode__your_card_has_expired">Cardul tău a expirat. Actualizează-ți metoda de plată în Google Pay și încearcă din nou.</string>
+  <!--Stripe decline code go to google pay action label-->
+  <string name="DeclineCode__go_to_google_pay">Deschide Google Pay</string>
+  <!--Stripe decline code incorrect card number-->
+  <string name="DeclineCode__your_card_number_is_incorrect">Numărul tău de card este incorect. Actualizează-l în Google Pay și încearcă din nou.</string>
+  <!--Stripe decline code incorrect cvc-->
+  <string name="DeclineCode__your_cards_cvc_number_is_incorrect">Numărul CVC al cardului este incorect. Actualizează-l în Google Pay și încearcă din nou.</string>
+  <!--Stripe decline code insufficient funds-->
+  <string name="DeclineCode__your_card_does_not_have_sufficient_funds">Cardul tău nu are suficiente fonduri pentru a finaliza această achiziție. Încearcă o altă metodă de plată.</string>
+  <!--Stripe decline code incorrect expiration month-->
+  <string name="DeclineCode__the_expiration_month">Luna de expirare a metodei de plată este incorectă. Actualizeaz-o în Google Pay și încearcă din nou.</string>
+  <!--Stripe decline code incorrect expiration year-->
+  <string name="DeclineCode__the_expiration_year">Anul de expirare a metodei de plată este incorect. Actualizează-l în Google Pay și încearcă din nou.</string>
+  <!--Stripe decline code issuer not available-->
+  <string name="DeclineCode__try_completing_the_payment_again">Încearcă să finalizezi din nou plata sau ia legătura cu banca ta pentru mai multe informații.</string>
+  <!--Stripe decline code processing error-->
+  <string name="DeclineCode__try_again">Încearcă din nou sau contactează-ți banca pentru mai multe informații.</string>
   <!--Title of create notification profile screen-->
   <string name="EditNotificationProfileFragment__name_your_profile">Denumește profilul</string>
   <!--Hint text for create/edit notification profile name-->
@@ -3670,15 +3850,356 @@ Am primit mesajul conform căruia schimbul de chei a avut loc pentru o versiune 
   <string name="NotificationProfileSelection__view_settings">Afișează setările</string>
   <!--Descriptor text indicating how long a profile will be on when there is a time component associated with it-->
   <string name="NotificationProfileSelection__on_until_s">Activ până la %1$s</string>
-  <!--Title for notification profile megaphone-->
-  <string name="NotificationProfilesMegaphone__notification_profiles">Profiluri de notificare</string>
-  <!--Description for notification profile megaphone-->
-  <string name="NotificationProfilesMegaphone__only_get_notifications_from_the_people_and_groups_you_choose">Primește notificări numai de la persoanele și grupurile alese.</string>
-  <!--Call to action button to create a profile from megaphone-->
-  <string name="NotificationProfilesMegaphone__create_a_profile">Creează un profil</string>
-  <!--Button to dismiss notification profile megaphone-->
-  <string name="NotificationProfilesMegaphone__not_now">Nu acum</string>
   <!--Displayed in a toast when we fail to open the ringtone picker-->
   <string name="NotificationSettingsFragment__failed_to_open_picker">Nu s-a putut deschide selectorul.</string>
+  <!--Description shown for the Signal Release Notes channel-->
+  <string name="ReleaseNotes__signal_release_notes_and_news">Informații despre versiune &amp; știri Signal</string>
+  <!--Donation receipts activity title-->
+  <string name="DonationReceiptListFragment__all_activity">Toată activitatea</string>
+  <!--Donation receipts all tab label-->
+  <string name="DonationReceiptListFragment__all">Toate</string>
+  <!--Donation receipts recurring tab label-->
+  <string name="DonationReceiptListFragment__recurring">Recurente</string>
+  <!--Donation receipts one-time tab label-->
+  <string name="DonationReceiptListFragment__one_time">O dată</string>
+  <!--Donation receipts gift tab label-->
+  <string name="DonationReceiptListFragment__gift">Cadou</string>
+  <!--Donation receipts boost row label-->
+  <string name="DonationReceiptListFragment__boost">Boost</string>
+  <!--Donation receipts details title-->
+  <string name="DonationReceiptDetailsFragment__details">Detalii</string>
+  <!--Donation receipts donation type heading-->
+  <string name="DonationReceiptDetailsFragment__donation_type">Tip donație</string>
+  <!--Donation receipts date paid heading-->
+  <string name="DonationReceiptDetailsFragment__date_paid">Data plății</string>
+  <!--Donation receipts share PNG-->
+  <string name="DonationReceiptDetailsFragment__share_receipt">Partajează chitanța</string>
+  <!--Donation receipts list end note-->
+  <string name="DonationReceiptListFragment__if_you_have">Dacă ai reinstalat Signal, bonurile fiscale ale donațiilor precedente nu vor mai fi disponibile.</string>
+  <!--Donation receipts document title-->
+  <string name="DonationReceiptDetailsFragment__donation_receipt">Chitanță donație</string>
+  <!--Donation receipts amount title-->
+  <string name="DonationReceiptDetailsFragment__amount">Suma</string>
+  <!--Donation receipts thanks-->
+  <string name="DonationReceiptDetailsFragment__thank_you_for_supporting">Mulțumim pentru că susții Signal. Contribuția ta ajută la dezvoltarea tehnologiilor open source pentru confidențialitate care protejează libertatea de exprimare și facilitează o comunicare globală sigură pentru milioane de oameni din întreaga lume. Dacă ești rezident al Statelor Unite, te rugăm să păstrezi acest bon pentru dosarul tău fiscal. Signal Technology Foundation este o organizație non-profit scutită de impozit în Statele Unite, conform secțiunii 501c3 din Codul fiscal intern. Numărul nostru de identificare fiscală este 82-4506840.</string>
+  <!--Donation receipt type-->
+  <string name="DonationReceiptDetailsFragment__s_dash_s">%1$s - %2$s</string>
+  <!--region "Stories Tab"-->
+  <!--Label for Chats tab in home app screen-->
+  <string name="ConversationListTabs__chats">Conversații</string>
+  <!--Label for Stories tab in home app screen-->
+  <string name="ConversationListTabs__stories">Povești</string>
+  <!--String for counts above 99 in conversation list tabs-->
+  <string name="ConversationListTabs__99p">99+</string>
+  <!--Title for "My Stories" row item in Stories landing page-->
+  <string name="StoriesLandingFragment__my_stories">Poveștile mele</string>
+  <!--Subtitle for "My Stories" row item when user has not added stories-->
+  <string name="StoriesLandingFragment__add_a_story">Adaugă o poveste</string>
+  <!--Displayed when there are no stories to display-->
+  <string name="StoriesLandingFragment__no_recent_updates_to_show_right_now_tap_plus_to_add_to_your_story">Nu există actualizări recente de afișat acum. Atinge + pentru a adăuga la povestea ta.</string>
+  <!--Context menu option to hide a story-->
+  <string name="StoriesLandingItem__hide_story">Ascunde povestea</string>
+  <!--Context menu option to unhide a story-->
+  <string name="StoriesLandingItem__unhide_story">Afișează povestea</string>
+  <!--Context menu option to forward a story-->
+  <string name="StoriesLandingItem__forward">Redirecționează</string>
+  <!--Context menu option to share a story-->
+  <string name="StoriesLandingItem__share">Distribuie…</string>
+  <!--Context menu option to go to story chat-->
+  <string name="StoriesLandingItem__go_to_chat">Arată conversația</string>
+  <!--Label when a story is pending sending-->
+  <string name="StoriesLandingItem__sending">Se trimite…</string>
+  <!--Label when multiple stories are pending sending-->
+  <string name="StoriesLandingItem__sending_d">Se trimite %1$d…</string>
+  <!--Label when a story fails to send-->
+  <string name="StoriesLandingItem__send_failed">Trimitere eșuată</string>
+  <!--Status label when a story fails to send indicating user action to retry-->
+  <string name="StoriesLandingItem__tap_to_retry">Atinge pentru a încerca din nou</string>
+  <!--Title of dialog confirming decision to hide a story-->
+  <string name="StoriesLandingFragment__hide_story">Ascunzi povestea?</string>
+  <!--Message of dialog confirming decision to hide a story-->
+  <string name="StoriesLandingFragment__new_story_updates">Actualizări despre povești noi de la %1$s nu vor mai fi afișate la începutul listei.</string>
+  <!--Positive action of dialog confirming decision to hide a story-->
+  <string name="StoriesLandingFragment__hide">Ascunde</string>
+  <!--Displayed in Snackbar after story is hidden-->
+  <string name="StoriesLandingFragment__story_hidden">Poveste ascunsă</string>
+  <!--Section header for hidden stories-->
+  <string name="StoriesLandingFragment__hidden_stories">Povești ascunse</string>
+  <!--Displayed on each sent story under My Stories-->
+  <plurals name="MyStories__d_views">
+    <item quantity="one">%1$d vizualizare</item>
+    <item quantity="few">%1$d vizualizări</item>
+    <item quantity="other">%1$d vizualizări</item>
+  </plurals>
+  <!--Forward story label, displayed in My Stories context menu-->
+  <string name="MyStories_forward">Redirecționează</string>
+  <!--Label for stories for a single user. Format is {given name}\'s Story-->
+  <string name="MyStories__ss_story">Povestea lui %1$s</string>
+  <!--Title of dialog to confirm deletion of story-->
+  <string name="MyStories__delete_story">Ștergi povestea?</string>
+  <!--Message of dialog to confirm deletion of story-->
+  <string name="MyStories__this_story_will_be_deleted">Această poveste va fi ștearsă pentru tine și toți cei care au primit-o.</string>
+  <!--Displayed at bottom of story viewer when current item has views-->
+  <plurals name="StoryViewerFragment__d_views">
+    <item quantity="one">%1$d vizualizare</item>
+    <item quantity="few">%1$d vizualizări</item>
+    <item quantity="other">%1$d vizualizări</item>
+  </plurals>
+  <!--Displayed at bottom of story viewer when current item has replies-->
+  <plurals name="StoryViewerFragment__d_replies">
+    <item quantity="one">%1$d răspuns</item>
+    <item quantity="few">%1$d răspunsuri</item>
+    <item quantity="other">%1$d răspunsuri</item>
+  </plurals>
+  <!--Used to join views and replies when both exist on a story item-->
+  <string name="StoryViewerFragment__s_s">%1$s %2$s</string>
+  <!--Displayed when viewing a post you sent-->
+  <string name="StoryViewerPageFragment__you">Tu</string>
+  <!--Displayed when viewing a post displayed to a group-->
+  <string name="StoryViewerPageFragment__s_to_s">%1$s la %2$s</string>
+  <!--Displayed when viewing a post from another user with no replies-->
+  <string name="StoryViewerPageFragment__reply">Răspunde</string>
+  <!--Displayed when a story has no views-->
+  <string name="StoryViewsFragment__no_views_yet">Nicio vizualizare încă</string>
+  <!--Displayed when a story has no replies yet-->
+  <string name="StoryGroupReplyFragment__no_replies_yet">Niciun răspuns încă</string>
+  <!--Displayed for each user that reacted to a story when viewing replies-->
+  <string name="StoryGroupReactionReplyItem__reacted_to_the_story">Ai reacționat la poveste</string>
+  <!--Label for story views tab-->
+  <string name="StoryViewsAndRepliesDialogFragment__views">Vizualizări</string>
+  <!--Label for story replies tab-->
+  <string name="StoryViewsAndRepliesDialogFragment__replies">Răspunsuri</string>
+  <!--Description of action for reaction button-->
+  <string name="StoryReplyComposer__react_to_this_story">Reacționează la această poveste</string>
+  <!--Displayed when the user is replying privately to someone who replied to one of their stories-->
+  <string name="StoryReplyComposer__replying_privately_to_s">Răspuns privat către %1$s</string>
+  <!--Context menu item to privately reply to a story response-->
+  <string name="StoryGroupReplyItem__private_reply">Răspuns privat</string>
+  <!--Context menu item to copy a story response-->
+  <string name="StoryGroupReplyItem__copy">Copiere</string>
+  <!--Context menu item to delete a story response-->
+  <string name="StoryGroupReplyItem__delete">Șterge</string>
+  <!--Story settings page title-->
+  <string name="StorySettingsFragment__story_settings">Setări poveste</string>
+  <!--Story settings private stories heading-->
+  <string name="StorySettingsFragment__private_stories">Povești private</string>
+  <!--Note at bottom of story settings regarding who can see private stories.-->
+  <string name="StorySettingsFragment__private_stories_can_only_be_viewed">Poveștile private pot fi văzute doar de persoanele pe care le-ai adăugat acestora. Numai tu poți vedea numele poveștii.</string>
+  <!--Option label for creating a new private story-->
+  <string name="StorySettingsFragment__new_private_story">Poveste privată nouă</string>
+  <!--Page title for My Story options-->
+  <string name="MyStorySettingsFragment__my_story">Povestea mea</string>
+  <!--Section heading for story visibility-->
+  <string name="MyStorySettingsFragment__who_can_see_this_story">Cine poate vedea această poveste</string>
+  <!--Clickable option for selecting people to hide your story from-->
+  <string name="MyStorySettingsFragment__hide_story_from">Ascunde povestea de</string>
+  <!--Summary of clickable option displaying how many people you have hidden your story from-->
+  <plurals name="MyStorySettingsFragment__d_people">
+    <item quantity="one">%1$d persoană</item>
+    <item quantity="few">%1$d persoane</item>
+    <item quantity="other">%1$d persoane</item>
+  </plurals>
+  <!--Section header for options related to replies and reactions-->
+  <string name="MyStorySettingsFragment__replies_amp_reactions">Răspunsuri &amp; reacții</string>
+  <!--Switchable option for allowing replies and reactions on your stories-->
+  <string name="MyStorySettingsFragment__allow_replies_amp_reactions">Permite răspunsuri &amp; reacții</string>
+  <!--Summary for switchable option allowing replies and reactions on your story-->
+  <string name="MyStorySettingsFragment__let_people_who_can_view_your_story_react_and_reply">Permite oamenilor care îți pot vedea povestea să reacționeze și să răspundă</string>
+  <!--Note about default sharing-->
+  <string name="MyStorySettingsFragment__hide_your_story_from">Ascunde-ți povestea de anumite persoane. În mod implicit povestea ta este distribuită %1$s</string>
+  <!--Signal connections linked text that opens the Signal Connections sheet-->
+  <string name="MyStorySettingsFragment__signal_connections">Conexiuni Signal.</string>
+  <!--Displayed at the top of the signal connections sheet. Please remember to insert strong tag as required.-->
+  <string name="SignalConnectionsBottomSheet__signal_connections_are_people"><strong>Conexiunile Signal</strong> sunt oameni în care ai ales să ai încredere, fie de către:</string>
+  <!--Signal connections sheet bullet point 1-->
+  <string name="SignalConnectionsBottomSheet__starting_a_conversation">Începi o conversație</string>
+  <!--Signal connections sheet bullet point 2-->
+  <string name="SignalConnectionsBottomSheet__accepting_a_message_request">Acceptă o solicitare de mesaj</string>
+  <!--Signal connections sheet bullet point 3-->
+  <string name="SignalConnectionsBottomSheet__having_them_in_your_system_contacts">Să îi ai în contactele tale de sistem</string>
+  <!--Note at the bottom of the Signal connections sheet-->
+  <string name="SignalConnectionsBottomSheet__your_connections_can_see_your_name">Conexiunile tale îți pot vedea numele, fotografia și pot vedea postările în \"Povestea mea\" dacă nu le ascundeți.</string>
+  <!--Clickable option to add a viewer to a private story-->
+  <string name="PrivateStorySettingsFragment__add_viewer">Adaugă spectator</string>
+  <!--Clickable option to delete a custom story-->
+  <string name="PrivateStorySettingsFragment__delete_private_story">Șterge povestea privată</string>
+  <!--Dialog title when attempting to remove someone from a private story-->
+  <string name="PrivateStorySettingsFragment__remove_s">Elimin pe %1$s?</string>
+  <!--Dialog message when attempting to remove someone from a private story-->
+  <string name="PrivateStorySettingsFragment__this_person_will_no_longer">Această persoană nu va mai vedea povestea ta.</string>
+  <!--Positive action label when attempting to remove someone from a private story-->
+  <string name="PrivateStorySettingsFragment__remove">Elimină</string>
+  <!--Dialog title when deleting a private story-->
+  <string name="PrivateStorySettingsFragment__are_you_sure">Ești sigur?</string>
+  <!--Dialog message when deleting a private story-->
+  <string name="PrivateStorySettingsFragment__this_action_cannot">Această acțiune este ireversibilă.</string>
+  <!--Page title for editing a private story name-->
+  <string name="EditPrivateStoryNameFragment__edit_story_name">Modifică numele poveștii</string>
+  <!--Input field hint when editing a private story name-->
+  <string name="EditPrivateStoryNameFragment__story_name">Numele poveștii</string>
+  <!--Save button label when editing a private story name-->
+  <string name="EditPrivateStoryNameFragment__save">Salvează</string>
+  <!--Displayed in text post creator before user enters text-->
+  <string name="TextStoryPostCreationFragment__tap_to_add_text">Atinge pentru a adăuga text</string>
+  <!--Button label for changing font when creating a text post-->
+  <string name="TextStoryPostTextEntryFragment__aa">Aa</string>
+  <!--Displayed in text post creator when prompting user to enter text-->
+  <string name="TextStoryPostTextEntryFragment__add_text">Adăugare text</string>
+  <!--Content description for \'done\' button when adding text to a story post-->
+  <string name="TextStoryPostTextEntryFragment__done_adding_text">Am terminat de adăugat text</string>
+  <!--Text label for media selection toggle-->
+  <string name="MediaSelectionActivity__text">Text</string>
+  <!--Camera label for media selection toggle-->
+  <string name="MediaSelectionActivity__camera">Cameră foto</string>
+  <!--Hint for entering a URL for a text post-->
+  <string name="TextStoryPostLinkEntryFragment__type_or_paste_a_url">Tastează sau lipește un URL</string>
+  <!--Displayed prior to the user entering a URL for a text post-->
+  <string name="TextStoryPostLinkEntryFragment__share_a_link_with_viewers_of_your_story">Distribuie un link cu spectatorii poveștii tale</string>
+  <!--Hint text for searching for a story text post recipient.-->
+  <string name="TextStoryPostSendFragment__search">Caută</string>
+  <!--Title for screen allowing user to hide "My Story" entries from specific people-->
+  <string name="HideStoryFromFragment__hide_story_from">Ascunde povestea de …</string>
+  <!--Done button label for hide story from screen-->
+  <string name="HideStoryFromFragment__done">Gata</string>
+  <!--Dialog title for first time adding something to a story-->
+  <string name="StoryDialogs__add_to_story_q">Adaugi la poveste?</string>
+  <!--Dialog message for first time adding something to a story-->
+  <string name="StoryDialogs__adding_content">Dacă adaugi conținut la povestea ta, conexiunile tale Signal vor putea să-l vizualizeze timp de 24 de ore. Poți modifica cine poate vedea povestea ta din meniul Setări.</string>
+  <!--First time share to story dialog: Positive action to go ahead and add to story-->
+  <string name="StoryDialogs__add_to_story">Adaugă la poveste</string>
+  <!--First time share to story dialog: Neutral action to edit who can view "My Story"-->
+  <string name="StoryDialogs__edit_viewers">Editare spectatori</string>
+  <!--Error message shown when a failure occurs during story send-->
+  <string name="StoryDialogs__story_could_not_be_sent">Povestea nu a putut fi trimisă. Verifică-ți conexiunea și încearcă din nou.</string>
+  <!--Error message dialog button to resend a previously failed story send-->
+  <string name="StoryDialogs__send">Trimite</string>
+  <!--Privacy Settings toggle title for stories-->
+  <string name="PrivacySettingsFragment__share_and_view_stories">Distribuie &amp; vezi povești</string>
+  <!--Privacy Settings toggle summary for stories-->
+  <string name="PrivacySettingsFragment__you_will_no_longer_be_able">Nu vei mai putea să distribui sau să vezi Povești atunci când această opțiune este dezactivată.</string>
+  <!--New story viewer selection screen title-->
+  <string name="CreateStoryViewerSelectionFragment__choose_viewers">Alege spectatorii</string>
+  <!--New story viewer selection action button label-->
+  <string name="CreateStoryViewerSelectionFragment__next">Următorul</string>
+  <!--New story viewer selection screen title as recipients are selected-->
+  <plurals name="SelectViewersFragment__d_viewers">
+    <item quantity="one">%1$d spectator</item>
+    <item quantity="few">%1$d spectatori</item>
+    <item quantity="other">%1$d spectatori</item>
+  </plurals>
+  <!--Name story screen title-->
+  <string name="CreateStoryWithViewersFragment__name_story">Numește povestea</string>
+  <!--Name story screen label hint-->
+  <string name="CreateStoryWithViewersFragment__story_name_required">Numele poveștii (obligatoriu)</string>
+  <!--Name story screen viewers subheading-->
+  <string name="CreateStoryWithViewersFragment__viewers">Spectatori</string>
+  <!--Name story screen create button label-->
+  <string name="CreateStoryWithViewersFragment__create">Creează</string>
+  <!--Name story screen error when save attempted with no label-->
+  <string name="CreateStoryWithViewersFragment__this_field_is_required">Acest câmp este obligatoriu.</string>
+  <!--Name story screen error when save attempted but label is duplicate-->
+  <string name="CreateStoryWithViewersFragment__there_is_already_a_story_with_this_name">Există deja o poveste cu acest nume.</string>
+  <!--Text for select all action when editing recipients for a story-->
+  <string name="BaseStoryRecipientSelectionFragment__select_all">Selectează tot</string>
+  <!--Choose story type bottom sheet title-->
+  <string name="ChooseStoryTypeBottomSheet__choose_your_story_type">Alege tipul de poveste</string>
+  <!--Choose story type bottom sheet new story row title-->
+  <string name="ChooseStoryTypeBottomSheet__new_private_story">Poveste privată nouă</string>
+  <!--Choose story type bottom sheet new story row summary-->
+  <string name="ChooseStoryTypeBottomSheet__visible_only_to">Vizibil doar la persoane specifice</string>
+  <!--Choose story type bottom sheet group story title-->
+  <string name="ChooseStoryTypeBottomSheet__group_story">Poveste de grup</string>
+  <!--Choose story type bottom sheet group story summary-->
+  <string name="ChooseStoryTypeBottomSheet__share_to_an_existing_group">Distribuie la un grup existent</string>
+  <!--Choose groups bottom sheet title-->
+  <string name="ChooseGroupStoryBottomSheet__choose_groups">Alege grupurile</string>
+  <!--Displayed when copying group story reply text to clipboard-->
+  <string name="StoryGroupReplyFragment__copied_to_clipboard">S-a copiat în clipboard</string>
+  <!--Displayed in story caption when content is longer than 5 lines-->
+  <string name="StoryViewerPageFragment__see_more">… Află mai multe</string>
+  <!--Displayed in toast after sending a direct reply-->
+  <string name="StoryDirectReplyDialogFragment__reply_sent">Răspunsul a fost trimis</string>
+  <!--Displayed in toast after sending a direct reaction-->
+  <string name="StoryDirectReplyDialogFragment__reaction_sent">Reacția a fost trimisă</string>
+  <!--Displayed in the viewer when a story is no longer available-->
+  <string name="StorySlateView__this_story_is_no_longer_available">Acestă poveste nu mai este disponibilă.</string>
+  <!--Displayed in the viewer when the network is not available-->
+  <string name="StorySlateView__no_internet_connection">Lipsește Conexiunea cu Internetul</string>
+  <!--Displayed in the viewer when network is available but content could not be downloaded-->
+  <string name="StorySlateView__couldnt_load_content">Conținutul nu a putut fi încărcat</string>
+  <!--Toasted when the user externally shares to a text story successfully-->
+  <string name="TextStoryPostCreationFragment__sent_story">Poveste trimisă</string>
+  <!--Toasted when the user external share to a text story fails-->
+  <string name="TextStoryPostCreationFragment__failed_to_send_story">Trimiterea poveștii a eșuat.</string>
+  <!--Displayed in a dialog to let the user select a given users story-->
+  <string name="StoryDialogs__view_story">Arată povestea</string>
+  <!--Displayed in a dialog to let the user select a given users profile photo-->
+  <string name="StoryDialogs__view_profile_photo">Arată poza de profil</string>
+  <!--Title for a notification at the bottom of the chat list suggesting that the user disable censorship circumvention because the service has become reachable-->
+  <string name="TurnOffCircumventionMegaphone_turn_off_censorship_circumvention">Dezactivezi ocolirea cenzurii?</string>
+  <!--Body for a notification at the bottom of the chat list suggesting that the user disable censorship circumvention because the service has become reachable-->
+  <string name="TurnOffCircumventionMegaphone_you_can_now_connect_to_the_signal_service_directly">Acum te poți conecta la serviciul Signal direct, pentru o experiență mai bună.</string>
+  <!--Label for a button to dismiss a notification at the bottom of the chat list suggesting that the user disable censorship circumvention because the service has become reachable-->
+  <string name="TurnOffCircumventionMegaphone_no_thanks">Nu, mulțumesc</string>
+  <!--Label for a button in a notification at the bottom of the chat list to turn off censorship circumvention-->
+  <string name="TurnOffCircumventionMegaphone_turn_off">Dezactivare</string>
+  <!--Conversation Item label for when you react to someone else\'s story-->
+  <string name="ConversationItem__you_reacted_to_s_story">Ai reacționat la povestea lui %1$s</string>
+  <!--Conversation Item label for reactions to your story-->
+  <string name="ConversationItem__reacted_to_your_story">A reacționat la povestea ta</string>
+  <!--Conversation Item label for reactions to an unavailable story-->
+  <string name="ConversationItem__reacted_to_a_story">Ai reacționat la poveste</string>
+  <!--endregion-->
+  <!--Content description for expand contacts chevron-->
+  <string name="ExpandModel__view_more">Vezi mai multe</string>
+  <string name="StoriesLinkPopup__visit_link">Vezi linkul</string>
+  <!--Tagline for gift row items-->
+  <string name="GiftRowItem__send_a_gift_badge">Trimite o insignă cadou</string>
+  <!--Headline text on start fragment for gifting a badge-->
+  <string name="GiftFlowStartFragment__gift_a_badge">Oferă cadou o insignă</string>
+  <!--Description text on start fragment for gifting a badge-->
+  <string name="GiftFlowStartFragment__gift_someone_a_badge">Oferă cuiva o insignă cadou făcând o donație către Signal în numele acestora. Vor primi o insignă pe care o pot afișa pe poza de profil.</string>
+  <!--Action button label for start fragment for gifting a badge-->
+  <string name="GiftFlowStartFragment__next">Următorul</string>
+  <!--Title text on choose recipient page for badge gifting-->
+  <string name="GiftFlowRecipientSelectionFragment__choose_recipient">Alege destinatarul</string>
+  <!--Title text on confirm gift page-->
+  <string name="GiftFlowConfirmationFragment__confirm_gift">Confirmare cadou</string>
+  <!--Heading text specifying who the gift will be sent to-->
+  <string name="GiftFlowConfirmationFragment__send_to">Trimite către</string>
+  <!--Text explaining that gift will be sent to the chosen recipient-->
+  <string name="GiftFlowConfirmationFragment__your_gift_will_be_sent_in">Cadoul tău va fi trimis destinatarului printr-un mesaj direct. Adaugă propriul mesaj mai jos.</string>
+  <!--Text explaining that this gift is a one time donation-->
+  <string name="GiftFlowConfirmationFragment__one_time_donation">Donație unică</string>
+  <!--Hint for add message input-->
+  <string name="GiftFlowConfirmationFragment__add_a_message">Adaugă un mesaj</string>
+  <!--Title for sheet shown when opening a redeemed gift-->
+  <string name="ViewReceivedGiftBottomSheet__s_sent_you_a_gift">%1$s ți-a trimis un cadou</string>
+  <!--Title for sheet shown when opening a sent gift-->
+  <string name="ViewSentGiftBottomSheet__thanks_for_your_support">Îți mulțumim pentru sprijin!</string>
+  <!--Description for sheet shown when opening a redeemed gift-->
+  <string name="ViewReceivedGiftBottomSheet__youve_received_a_gift_badge">Ai primit o insignă cadou de la %1$s! Ajută Signal să crească în popularitate prin afișarea acestei insigne pe profilul tău.</string>
+  <!--Description for sheet shown when opening a sent gift-->
+  <string name="ViewSentGiftBottomSheet__youve_gifted_a_badge">Ai dat cadou o insignă lui %1$s. Când vor accepta, vor avea opțiunea de a afișa sau ascunde insigna.</string>
+  <!--Primary action for pending gift sheet to redeem badge now-->
+  <string name="ViewReceivedGiftSheet__redeem">Revendică</string>
+  <!--Primary action for pending gift sheet to redeem badge later-->
+  <string name="ViewReceivedGiftSheet__not_now">Nu acum</string>
+  <!--Dialog text while redeeming a gift-->
+  <string name="ViewReceivedGiftSheet__redeeming_gift">Revendicare cadou…</string>
+  <!--Snackbar text when user presses "not now" on redemption sheet-->
+  <string name="ConversationFragment__you_can_redeem_your_badge_later">Îți poți revendica insigna mai târziu.</string>
+  <!--Description text in gift thanks sheet-->
+  <string name="GiftThanksSheet__youve_gifted_a_badge_to_s">Ai dat cadou o insignă lui %1$s. Când vor accepta, vor avea opțiunea de a afișa sau ascunde insigna.</string>
+  <!--Expired gift sheet title-->
+  <string name="ExpiredGiftSheetConfiguration__your_gift_badge_has_expired">Insigna ta cadou a expirat</string>
+  <!--Expired gift sheet top description text-->
+  <string name="ExpiredGiftSheetConfiguration__your_gift_badge_has_expired_and_is">Insigna ta cadou a expirat, și nu mai este vizibilă pe profilul tău pentru ceilalți.</string>
+  <!--Expired gift sheet bottom description text-->
+  <string name="ExpiredGiftSheetConfiguration__to_continue">Pentru a continua să sprijini tehnologie construită pentru tine, te rugăm să iei în considerare posibilitatea de a devenii un Susținător lunar.</string>
+  <!--Expired gift sheet make a monthly donation button-->
+  <string name="ExpiredGiftSheetConfiguration__make_a_monthly_donation">Fă o donație lunară</string>
+  <!--Expired gift sheet not now button-->
+  <string name="ExpiredGiftSheetConfiguration__not_now">Nu acum</string>
   <!--EOF-->
 </resources>

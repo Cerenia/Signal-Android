@@ -5,6 +5,7 @@ import android.app.Application;
 
 import androidx.annotation.NonNull;
 
+import org.signal.core.util.ListUtil;
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.crypto.UnidentifiedAccessUtil;
 import org.thoughtcrime.securesms.database.MessageDatabase.MarkedMessageInfo;
@@ -96,7 +97,7 @@ public class SendViewedReceiptJob extends BaseJob {
    */
   public static void enqueue(long threadId, @NonNull RecipientId recipientId, List<MarkedMessageInfo> markedMessageInfos) {
     JobManager                    jobManager      = ApplicationDependencies.getJobManager();
-    List<List<MarkedMessageInfo>> messageIdChunks = Util.chunk(markedMessageInfos, MAX_TIMESTAMPS);
+    List<List<MarkedMessageInfo>> messageIdChunks = ListUtil.chunk(markedMessageInfos, MAX_TIMESTAMPS);
 
     if (messageIdChunks.size() > 1) {
       Log.w(TAG, "Large receipt count! Had to break into multiple chunks. Total count: " + markedMessageInfos.size());
@@ -149,6 +150,11 @@ public class SendViewedReceiptJob extends BaseJob {
     }
 
     Recipient recipient = Recipient.resolved(recipientId);
+
+    if (recipient.isSelf()) {
+      Log.i(TAG, "Not sending view receipt to self.");
+      return;
+    }
 
     if (recipient.isBlocked()) {
       Log.w(TAG, "Refusing to send receipts to blocked recipient");

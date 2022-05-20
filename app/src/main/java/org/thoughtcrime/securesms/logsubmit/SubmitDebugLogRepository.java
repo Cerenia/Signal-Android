@@ -5,7 +5,6 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Build;
 import android.os.ParcelFileDescriptor;
-import android.os.SystemClock;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -18,27 +17,23 @@ import org.json.JSONObject;
 import org.signal.core.util.StreamUtil;
 import org.signal.core.util.concurrent.SignalExecutors;
 import org.signal.core.util.logging.Log;
+import org.signal.core.util.logging.Scrubber;
 import org.signal.core.util.tracing.Tracer;
 import org.thoughtcrime.securesms.database.LogDatabase;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
-import org.thoughtcrime.securesms.logsubmit.util.Scrubber;
 import org.thoughtcrime.securesms.net.StandardUserAgentInterceptor;
 import org.thoughtcrime.securesms.providers.BlobProvider;
 import org.thoughtcrime.securesms.push.SignalServiceNetworkAccess;
-import org.thoughtcrime.securesms.util.ByteUnit;
 import org.thoughtcrime.securesms.util.FeatureFlags;
 import org.thoughtcrime.securesms.util.Stopwatch;
-import org.thoughtcrime.securesms.util.Util;
-import org.whispersystems.libsignal.util.guava.Optional;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPOutputStream;
 
@@ -88,7 +83,7 @@ public class SubmitDebugLogRepository {
     add(new LogSectionPermissions());
     add(new LogSectionTrace());
     add(new LogSectionThreads());
-    add(new LogSectionBlockedThreads());
+    add(new LogSectionThreadDump());
     if (FeatureFlags.internalUser()) {
       add(new LogSectionSenderKey());
     }
@@ -136,7 +131,7 @@ public class SubmitDebugLogRepository {
         traceUrl = uploadContent("application/octet-stream", RequestBody.create(MediaType.get("application/octet-stream"), trace));
       } catch (IOException e) {
         Log.w(TAG, "Error during trace upload.", e);
-        return Optional.absent();
+        return Optional.empty();
       }
     }
 
@@ -174,7 +169,7 @@ public class SubmitDebugLogRepository {
         }
       } catch (IllegalStateException e) {
         Log.e(TAG, "Failed to read row!", e);
-        return Optional.absent();
+        return Optional.empty();
       }
 
       StreamUtil.close(gzipOutput);
@@ -206,7 +201,7 @@ public class SubmitDebugLogRepository {
       return Optional.of(logUrl);
     } catch (IOException e) {
       Log.w(TAG, "Error during log upload.", e);
-      return Optional.absent();
+      return Optional.empty();
     }
   }
 

@@ -13,7 +13,6 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.DialogFragment;
 
 import org.thoughtcrime.securesms.R;
-import org.thoughtcrime.securesms.util.ThemeUtil;
 
 /**
  * Base dialog fragment for rendering as a full screen dialog with animation
@@ -35,7 +34,11 @@ public abstract class FullScreenDialogFragment extends DialogFragment {
     View view = inflater.inflate(R.layout.full_screen_dialog_fragment, container, false);
     inflater.inflate(getDialogLayoutResource(), view.findViewById(R.id.full_screen_dialog_content), true);
     toolbar = view.findViewById(R.id.full_screen_dialog_toolbar);
-    toolbar.setTitle(getTitle());
+
+    if (getTitle() != -1) {
+      toolbar.setTitle(getTitle());
+    }
+
     toolbar.setNavigationOnClickListener(v -> onNavigateUp());
     return view;
   }

@@ -5,10 +5,12 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Transformations;
 import androidx.lifecycle.ViewModel;
 
 import org.thoughtcrime.securesms.profiles.ProfileName;
 import org.thoughtcrime.securesms.util.SingleLiveEvent;
+import org.signal.core.util.StringUtil;
 
 public final class EditProfileNameViewModel extends ViewModel {
 
@@ -22,8 +24,8 @@ public final class EditProfileNameViewModel extends ViewModel {
     this.events     = new SingleLiveEvent<>();
   }
 
-  void onGivenNameLengthChanged(int length) {
-    if (length <= 0) {
+  void onGivenNameChanged(@NonNull String text) {
+    if (StringUtil.isVisuallyEmpty(text)) {
       saveState.setValue(SaveState.DISABLED);
     } else {
       saveState.setValue(SaveState.IDLE);
@@ -31,7 +33,7 @@ public final class EditProfileNameViewModel extends ViewModel {
   }
 
   @NonNull LiveData<SaveState> getSaveState() {
-    return saveState;
+    return Transformations.distinctUntilChanged(saveState);
   }
 
   @NonNull LiveData<Event> getEvents() {

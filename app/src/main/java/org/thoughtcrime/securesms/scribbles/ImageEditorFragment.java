@@ -29,13 +29,12 @@ import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
+import org.signal.core.util.FontUtil;
 import org.signal.core.util.concurrent.SignalExecutors;
 import org.signal.core.util.logging.Log;
-import org.thoughtcrime.securesms.R;
-import org.thoughtcrime.securesms.animation.ResizeAnimation;
-import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.signal.imageeditor.core.Bounds;
 import org.signal.imageeditor.core.ColorableRenderer;
+import org.signal.imageeditor.core.HiddenEditText;
 import org.signal.imageeditor.core.ImageEditorView;
 import org.signal.imageeditor.core.Renderer;
 import org.signal.imageeditor.core.SelectableRenderer;
@@ -44,6 +43,12 @@ import org.signal.imageeditor.core.model.EditorModel;
 import org.signal.imageeditor.core.renderers.BezierDrawingRenderer;
 import org.signal.imageeditor.core.renderers.FaceBlurRenderer;
 import org.signal.imageeditor.core.renderers.MultiLineTextRenderer;
+import org.signal.libsignal.protocol.util.Pair;
+import org.thoughtcrime.securesms.R;
+import org.thoughtcrime.securesms.animation.ResizeAnimation;
+import org.thoughtcrime.securesms.components.emoji.EmojiUtil;
+import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
+import org.thoughtcrime.securesms.fonts.FontTypefaceProvider;
 import org.thoughtcrime.securesms.keyvalue.SignalStore;
 import org.thoughtcrime.securesms.mediasend.MediaSendPageFragment;
 import org.thoughtcrime.securesms.mediasend.v2.MediaAnimations;
@@ -59,9 +64,8 @@ import org.thoughtcrime.securesms.util.StorageUtil;
 import org.thoughtcrime.securesms.util.TextSecurePreferences;
 import org.thoughtcrime.securesms.util.ThrottledDebouncer;
 import org.thoughtcrime.securesms.util.ViewUtil;
-import org.thoughtcrime.securesms.util.concurrent.SimpleTask;
+import org.signal.core.util.concurrent.SimpleTask;
 import org.thoughtcrime.securesms.util.views.SimpleProgressDialog;
-import org.whispersystems.libsignal.util.Pair;
 
 import java.io.ByteArrayOutputStream;
 import java.util.Collections;
@@ -76,6 +80,8 @@ public final class ImageEditorFragment extends Fragment implements ImageEditorHu
 {
 
   private static final String TAG = Log.tag(ImageEditorFragment.class);
+
+  public static final boolean CAN_RENDER_EMOJI = FontUtil.canRenderEmojiAtFontSize(1024);
 
   private static final float PORTRAIT_ASPECT_RATIO  = 9 / 16f;
 
@@ -217,6 +223,11 @@ public final class ImageEditorFragment extends Fragment implements ImageEditorHu
 
     imageEditorHud  = view.findViewById(R.id.scribble_hud);
     imageEditorView = view.findViewById(R.id.image_editor_view);
+
+    imageEditorView.setTypefaceProvider(new FontTypefaceProvider());
+    if (!CAN_RENDER_EMOJI) {
+      imageEditorView.addTextInputFilter(new RemoveEmojiTextFilter());
+    }
 
     int width = getResources().getDisplayMetrics().widthPixels;
     int height = (int) ((16 / 9f) * width);
@@ -552,7 +563,7 @@ public final class ImageEditorFragment extends Fragment implements ImageEditorHu
           FaceDetector detector = new AndroidFaceDetector();
 
           Point  size   = model.getOutputSizeMaxWidth(1000);
-          Bitmap render = model.render(ApplicationDependencies.getApplication(), size);
+          Bitmap render = model.render(ApplicationDependencies.getApplication(), size, new FontTypefaceProvider());
           try {
             return new FaceDetectionResult(detector.detect(render), new Point(render.getWidth(), render.getHeight()), inverseCropPosition);
           } finally {
@@ -766,7 +777,7 @@ public final class ImageEditorFragment extends Fragment implements ImageEditorHu
   @WorkerThread
   public @NonNull Uri renderToSingleUseBlob() {
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    Bitmap                image        = imageEditorView.getModel().render(requireContext());
+    Bitmap                image        = imageEditorView.getModel().render(requireContext(), new FontTypefaceProvider());
 
     image.compress(Bitmap.CompressFormat.JPEG, 80, outputStream);
     image.recycle();

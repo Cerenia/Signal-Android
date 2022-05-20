@@ -10,10 +10,10 @@ import androidx.annotation.Nullable;
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.groups.GroupId;
 import org.thoughtcrime.securesms.recipients.RecipientId;
-import org.whispersystems.libsignal.util.guava.Optional;
 import org.whispersystems.signalservice.api.push.SignalServiceAddress;
 
 import java.util.List;
+import java.util.Optional;
 
 public class IncomingTextMessage implements Parcelable {
 
@@ -91,7 +91,7 @@ public class IncomingTextMessage implements Parcelable {
     this.subscriptionId          = -1;
     this.expiresInMillis         = expiresInMillis;
     this.unidentified            = unidentified;
-    this.groupId                 = groupId.orNull();
+    this.groupId                 = groupId.orElse(null);
     this.serverGuid              = serverGuid;
   }
 
@@ -156,26 +156,6 @@ public class IncomingTextMessage implements Parcelable {
     this.expiresInMillis         = fragments.get(0).getExpiresIn();
     this.unidentified            = fragments.get(0).isUnidentified();
     this.serverGuid              = fragments.get(0).getServerGuid();
-  }
-
-  protected IncomingTextMessage(@NonNull RecipientId sender, @Nullable GroupId groupId)
-  {
-    this.message                 = "";
-    this.sender                  = sender;
-    this.senderDeviceId          = SignalServiceAddress.DEFAULT_DEVICE_ID;
-    this.protocol                = 31338;
-    this.serviceCenterAddress    = "Outgoing";
-    this.replyPathPresent        = true;
-    this.pseudoSubject           = "";
-    this.sentTimestampMillis     = System.currentTimeMillis();
-    this.serverTimestampMillis   = sentTimestampMillis;
-    this.receivedTimestampMillis = sentTimestampMillis;
-    this.groupId                 = groupId;
-    this.push                    = true;
-    this.subscriptionId          = -1;
-    this.expiresInMillis         = 0;
-    this.unidentified            = false;
-    this.serverGuid              = null;
   }
 
   public int getSubscriptionId() {

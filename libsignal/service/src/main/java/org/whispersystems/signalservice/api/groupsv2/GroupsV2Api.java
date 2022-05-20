@@ -2,6 +2,14 @@ package org.whispersystems.signalservice.api.groupsv2;
 
 import com.google.protobuf.ByteString;
 
+import org.signal.libsignal.zkgroup.InvalidInputException;
+import org.signal.libsignal.zkgroup.VerificationFailedException;
+import org.signal.libsignal.zkgroup.auth.AuthCredential;
+import org.signal.libsignal.zkgroup.auth.AuthCredentialPresentation;
+import org.signal.libsignal.zkgroup.auth.AuthCredentialResponse;
+import org.signal.libsignal.zkgroup.auth.ClientZkAuthOperations;
+import org.signal.libsignal.zkgroup.groups.ClientZkGroupCipher;
+import org.signal.libsignal.zkgroup.groups.GroupSecretParams;
 import org.signal.storageservice.protos.groups.AvatarUploadAttributes;
 import org.signal.storageservice.protos.groups.Group;
 import org.signal.storageservice.protos.groups.GroupAttributeBlob;
@@ -12,16 +20,7 @@ import org.signal.storageservice.protos.groups.GroupJoinInfo;
 import org.signal.storageservice.protos.groups.local.DecryptedGroup;
 import org.signal.storageservice.protos.groups.local.DecryptedGroupChange;
 import org.signal.storageservice.protos.groups.local.DecryptedGroupJoinInfo;
-import org.signal.zkgroup.InvalidInputException;
-import org.signal.zkgroup.VerificationFailedException;
-import org.signal.zkgroup.auth.AuthCredential;
-import org.signal.zkgroup.auth.AuthCredentialPresentation;
-import org.signal.zkgroup.auth.AuthCredentialResponse;
-import org.signal.zkgroup.auth.ClientZkAuthOperations;
-import org.signal.zkgroup.groups.ClientZkGroupCipher;
-import org.signal.zkgroup.groups.GroupSecretParams;
-import org.whispersystems.libsignal.util.guava.Optional;
-import org.whispersystems.signalservice.api.push.ACI;
+import org.whispersystems.signalservice.api.push.ServiceId;
 import org.whispersystems.signalservice.internal.push.PushServiceSocket;
 import org.whispersystems.signalservice.internal.push.exceptions.ForbiddenException;
 
@@ -29,11 +28,10 @@ import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.UUID;
+import java.util.Optional;
 
-public final class GroupsV2Api {
+public class GroupsV2Api {
 
   private final PushServiceSocket  socket;
   private final GroupsV2Operations groupsOperations;
@@ -46,16 +44,16 @@ public final class GroupsV2Api {
   /**
    * Provides 7 days of credentials, which you should cache.
    */
-  public HashMap<Integer, AuthCredentialResponse> getCredentials(int today)
+  public HashMap<Integer, AuthCredentialResponse> getCredentials(int today, boolean isAci)
       throws IOException
   {
-    return parseCredentialResponse(socket.retrieveGroupsV2Credentials(today));
+    return parseCredentialResponse(socket.retrieveGroupsV2Credentials(today, isAci));
   }
 
   /**
    * Create an auth token from a credential response.
    */
-  public GroupsV2AuthorizationString getGroupsV2AuthorizationString(ACI self,
+  public GroupsV2AuthorizationString getGroupsV2AuthorizationString(ServiceId self,
                                                                     int today,
                                                                     GroupSecretParams groupSecretParams,
                                                                     AuthCredentialResponse authCredentialResponse)
@@ -85,6 +83,16 @@ public final class GroupsV2Api {
     socket.putNewGroupsV2Group(group, authorization);
   }
 
+  public PartialDecryptedGroup getPartialDecryptedGroup(GroupSecretParams groupSecretParams,
+                                                        GroupsV2AuthorizationString authorization)
+      throws IOException, InvalidGroupStateException, VerificationFailedException
+  {
+    Group group = socket.getGroupsV2Group(authorization);
+
+    return groupsOperations.forGroup(groupSecretParams)
+                           .partialDecryptGroup(group);
+  }
+
   public DecryptedGroup getGroup(GroupSecretParams groupSecretParams,
                                  GroupsV2AuthorizationString authorization)
       throws IOException, InvalidGroupStateException, VerificationFailedException
@@ -95,55 +103,19 @@ public final class GroupsV2Api {
                            .decryptGroup(group);
   }
 
-  public List<DecryptedGroupHistoryEntry> getGroupHistory(GroupSecretParams groupSecretParams,
-                                                          int fromRevision,
-                                                          GroupsV2AuthorizationString authorization)
-      throws IOException, InvalidGroupStateException, VerificationFailedException
-  {
-    List<GroupChanges.GroupChangeState> changesList = new LinkedList<>();
-    PushServiceSocket.GroupHistory      group;
-
-    do {
-      group = socket.getGroupsV2GroupHistory(fromRevision, authorization);
-
-      changesList.addAll(group.getGroupChanges().getGroupChangesList());
-
-      if (group.hasMore()) {
-        fromRevision = group.getNextPageStartGroupRevision();
-      }
-    } while (group.hasMore());
-
-    ArrayList<DecryptedGroupHistoryEntry> result          = new ArrayList<>(changesList.size());
-    GroupsV2Operations.GroupOperations    groupOperations = groupsOperations.forGroup(groupSecretParams);
-
-    for (GroupChanges.GroupChangeState change : changesList) {
-      Optional<DecryptedGroup>       decryptedGroup  = change.hasGroupState () ? Optional.of(groupOperations.decryptGroup(change.getGroupState())) : Optional.absent();
-      Optional<DecryptedGroupChange> decryptedChange = change.hasGroupChange() ? groupOperations.decryptChange(change.getGroupChange(), false)     : Optional.absent();
-
-      result.add(new DecryptedGroupHistoryEntry(decryptedGroup, decryptedChange));
-    }
-
-    return result;
-  }
-
   public GroupHistoryPage getGroupHistoryPage(GroupSecretParams groupSecretParams,
-                                          int fromRevision,
-                                          GroupsV2AuthorizationString authorization)
+                                              int fromRevision,
+                                              GroupsV2AuthorizationString authorization,
+                                              boolean includeFirstState)
       throws IOException, InvalidGroupStateException, VerificationFailedException
   {
-    List<GroupChanges.GroupChangeState> changesList = new LinkedList<>();
-    PushServiceSocket.GroupHistory      group;
+    PushServiceSocket.GroupHistory     group           = socket.getGroupsV2GroupHistory(fromRevision, authorization, GroupsV2Operations.HIGHEST_KNOWN_EPOCH, includeFirstState);
+    List<DecryptedGroupHistoryEntry>   result          = new ArrayList<>(group.getGroupChanges().getGroupChangesList().size());
+    GroupsV2Operations.GroupOperations groupOperations = groupsOperations.forGroup(groupSecretParams);
 
-    group = socket.getGroupsV2GroupHistory(fromRevision, authorization);
-
-    changesList.addAll(group.getGroupChanges().getGroupChangesList());
-
-    ArrayList<DecryptedGroupHistoryEntry> result          = new ArrayList<>(changesList.size());
-    GroupsV2Operations.GroupOperations    groupOperations = groupsOperations.forGroup(groupSecretParams);
-
-    for (GroupChanges.GroupChangeState change : changesList) {
-      Optional<DecryptedGroup>       decryptedGroup  = change.hasGroupState () ? Optional.of(groupOperations.decryptGroup(change.getGroupState())) : Optional.absent();
-      Optional<DecryptedGroupChange> decryptedChange = change.hasGroupChange() ? groupOperations.decryptChange(change.getGroupChange(), false)     : Optional.absent();
+    for (GroupChanges.GroupChangeState change : group.getGroupChanges().getGroupChangesList()) {
+      Optional<DecryptedGroup>       decryptedGroup  = change.hasGroupState() ? Optional.of(groupOperations.decryptGroup(change.getGroupState())) : Optional.empty();
+      Optional<DecryptedGroupChange> decryptedChange = change.hasGroupChange() ? groupOperations.decryptChange(change.getGroupChange(), false) : Optional.empty();
 
       result.add(new DecryptedGroupHistoryEntry(decryptedGroup, decryptedChange));
     }
@@ -162,7 +134,7 @@ public final class GroupsV2Api {
 
       return groupOperations.decryptGroupJoinInfo(joinInfo);
     } catch (ForbiddenException e) {
-      throw new GroupLinkNotActiveException();
+      throw new GroupLinkNotActiveException(null, e.getReason());
     }
   }
 

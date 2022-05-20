@@ -92,9 +92,19 @@ public class ApplicationMigrations {
     static final int DB_REACTIONS_MIGRATION        = 48;
     //static final int CHANGE_NUMBER_CAPABILITY_3  = 49;
     static final int PNI                           = 50;
+    static final int FIX_DEPRECATION               = 51; // Only used to trigger clearing the 'client deprecated' flag
+    static final int JUMBOMOJI_DOWNLOAD            = 52;
+    static final int FIX_EMOJI_QUALITY             = 53;
+    static final int CHANGE_NUMBER_CAPABILITY_4    = 54;
+    static final int KBS_MIGRATION                 = 55;
+    static final int PNI_IDENTITY                  = 56;
+    static final int PNI_IDENTITY_2                = 57;
+    static final int PNI_IDENTITY_3                = 58;
+    static final int STORY_DISTRIBUTION_LIST_SYNC  = 59;
+    static final int EMOJI_VERSION_7               = 60;
   }
 
-  public static final int CURRENT_VERSION = 50;
+  public static final int CURRENT_VERSION = 60;
 
   /**
    * This *must* be called after the {@link JobManager} has been instantiated, but *before* the call
@@ -398,6 +408,42 @@ public class ApplicationMigrations {
 
     if (lastSeenVersion < Version.PNI) {
       jobs.put(Version.PNI, new PniMigrationJob());
+    }
+
+    if (lastSeenVersion < Version.JUMBOMOJI_DOWNLOAD) {
+      jobs.put(Version.JUMBOMOJI_DOWNLOAD, new EmojiDownloadMigrationJob());
+    }
+
+    if (lastSeenVersion < Version.FIX_EMOJI_QUALITY) {
+      jobs.put(Version.FIX_EMOJI_QUALITY, new EmojiDownloadMigrationJob());
+    }
+
+    if (lastSeenVersion < Version.CHANGE_NUMBER_CAPABILITY_4) {
+      jobs.put(Version.CHANGE_NUMBER_CAPABILITY_4,new AttributesMigrationJob());
+    }
+
+    if (lastSeenVersion < Version.KBS_MIGRATION) {
+      jobs.put(Version.KBS_MIGRATION, new KbsEnclaveMigrationJob());
+    }
+
+    if (lastSeenVersion < Version.PNI_IDENTITY) {
+      jobs.put(Version.PNI_IDENTITY, new PniAccountInitializationMigrationJob());
+    }
+
+    if (lastSeenVersion < Version.PNI_IDENTITY_2) {
+      jobs.put(Version.PNI_IDENTITY_2, new PniAccountInitializationMigrationJob());
+    }
+
+    if (lastSeenVersion < Version.PNI_IDENTITY_3) {
+      jobs.put(Version.PNI_IDENTITY_3, new PniAccountInitializationMigrationJob());
+    }
+
+    if (lastSeenVersion < Version.STORY_DISTRIBUTION_LIST_SYNC) {
+      jobs.put(Version.STORY_DISTRIBUTION_LIST_SYNC, new StorageServiceMigrationJob());
+    }
+
+    if (lastSeenVersion < Version.EMOJI_VERSION_7) {
+      jobs.put(Version.EMOJI_VERSION_7, new EmojiDownloadMigrationJob());
     }
 
     return jobs;

@@ -8,12 +8,14 @@ data class ManageDonationsState(
   val featuredBadge: Badge? = null,
   val transactionState: TransactionState = TransactionState.Init,
   val availableSubscriptions: List<Subscription> = emptyList(),
+  val hasReceipts: Boolean = false,
   private val subscriptionRedemptionState: SubscriptionRedemptionState = SubscriptionRedemptionState.NONE
 ) {
 
   fun getRedemptionState(): SubscriptionRedemptionState {
     return when (transactionState) {
       TransactionState.Init -> subscriptionRedemptionState
+      TransactionState.NetworkFailure -> subscriptionRedemptionState
       TransactionState.InTransaction -> SubscriptionRedemptionState.IN_PROGRESS
       is TransactionState.NotInTransaction -> getStateFromActiveSubscription(transactionState.activeSubscription) ?: subscriptionRedemptionState
     }
@@ -29,6 +31,7 @@ data class ManageDonationsState(
 
   sealed class TransactionState {
     object Init : TransactionState()
+    object NetworkFailure : TransactionState()
     object InTransaction : TransactionState()
     class NotInTransaction(val activeSubscription: ActiveSubscription) : TransactionState()
   }

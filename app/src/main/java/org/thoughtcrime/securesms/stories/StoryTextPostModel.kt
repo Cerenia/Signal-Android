@@ -1,0 +1,135 @@
+package org.thoughtcrime.securesms.stories
+
+import android.graphics.Bitmap
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.Drawable
+import android.os.Parcel
+import android.os.Parcelable
+import android.view.View
+import androidx.core.graphics.scale
+import androidx.core.view.drawToBitmap
+import com.bumptech.glide.load.Key
+import com.bumptech.glide.load.Options
+import com.bumptech.glide.load.ResourceDecoder
+import com.bumptech.glide.load.engine.Resource
+import com.bumptech.glide.load.resource.SimpleResource
+import org.thoughtcrime.securesms.conversation.colors.ChatColors
+import org.thoughtcrime.securesms.database.SignalDatabase
+import org.thoughtcrime.securesms.database.model.MessageRecord
+import org.thoughtcrime.securesms.database.model.MmsMessageRecord
+import org.thoughtcrime.securesms.database.model.databaseprotos.StoryTextPost
+import org.thoughtcrime.securesms.dependencies.ApplicationDependencies
+import org.thoughtcrime.securesms.fonts.TextFont
+import org.thoughtcrime.securesms.fonts.TextToScript
+import org.thoughtcrime.securesms.fonts.TypefaceCache
+import org.thoughtcrime.securesms.recipients.Recipient
+import org.thoughtcrime.securesms.recipients.RecipientId
+import org.thoughtcrime.securesms.util.Base64
+import org.thoughtcrime.securesms.util.ParcelUtil
+import java.io.IOException
+import java.security.MessageDigest
+
+/**
+ * Glide model to render a StoryTextPost as a bitmap
+ */
+data class StoryTextPostModel(
+  private val storyTextPost: StoryTextPost,
+  private val storySentAtMillis: Long,
+  private val storyAuthor: RecipientId
+) : Key, Parcelable {
+
+  override fun updateDiskCacheKey(messageDigest: MessageDigest) {
+    messageDigest.update(storyTextPost.toByteArray())
+    messageDigest.update(storySentAtMillis.toString().toByteArray())
+    messageDigest.update(storyAuthor.serialize().toByteArray())
+  }
+
+  val text: String = storyTextPost.body
+
+  fun getPlaceholder(): Drawable {
+    return if (storyTextPost.hasBackground()) {
+      ChatColors.forChatColor(ChatColors.Id.NotSet, storyTextPost.background).chatBubbleMask
+    } else {
+      ColorDrawable(Color.TRANSPARENT)
+    }
+  }
+
+  override fun writeToParcel(parcel: Parcel, flags: Int) {
+    ParcelUtil.writeByteArray(parcel, storyTextPost.toByteArray())
+    parcel.writeLong(storySentAtMillis)
+    parcel.writeParcelable(storyAuthor, flags)
+  }
+
+  override fun describeContents(): Int {
+    return 0
+  }
+
+  companion object CREATOR : Parcelable.Creator<StoryTextPostModel> {
+    override fun createFromParcel(parcel: Parcel): StoryTextPostModel {
+      val storyTextPostArray = ParcelUtil.readByteArray(parcel)
+
+      return StoryTextPostModel(
+        StoryTextPost.parseFrom(storyTextPostArray),
+        parcel.readLong(),
+        parcel.readParcelable(RecipientId::class.java.classLoader)!!
+      )
+    }
+
+    override fun newArray(size: Int): Array<StoryTextPostModel?> {
+      return arrayOfNulls(size)
+    }
+
+    fun parseFrom(messageRecord: MessageRecord): StoryTextPostModel {
+      return parseFrom(
+        messageRecord.body,
+        messageRecord.timestamp,
+        if (messageRecord.isOutgoing) Recipient.self().id else messageRecord.individualRecipient.id
+      )
+    }
+
+    @JvmStatic
+    @Throws(IOException::class)
+    fun parseFrom(body: String, storySentAtMillis: Long, storyAuthor: RecipientId): StoryTextPostModel {
+      return StoryTextPostModel(
+        storyTextPost = StoryTextPost.parseFrom(Base64.decode(body)),
+        storySentAtMillis = storySentAtMillis,
+        storyAuthor = storyAuthor
+      )
+    }
+  }
+
+  class Decoder : ResourceDecoder<StoryTextPostModel, Bitmap> {
+
+    companion object {
+      private const val RENDER_HW_AR = 16f / 9f
+    }
+
+    override fun handles(source: StoryTextPostModel, options: Options): Boolean = true
+
+    override fun decode(source: StoryTextPostModel, width: Int, height: Int, options: Options): Resource<Bitmap> {
+      val message = SignalDatabase.mmsSms.getMessageFor(source.storySentAtMillis, source.storyAuthor)
+      val view = StoryTextPostView(ApplicationDependencies.getApplication())
+      val typeface = TypefaceCache.get(
+        ApplicationDependencies.getApplication(),
+        TextFont.fromStyle(source.storyTextPost.style),
+        TextToScript.guessScript(source.storyTextPost.body)
+      ).blockingGet()
+
+      val displayWidth: Int = ApplicationDependencies.getApplication().resources.displayMetrics.widthPixels
+      val arHeight: Int = (RENDER_HW_AR * displayWidth).toInt()
+
+      view.setTypeface(typeface)
+      view.bindFromStoryTextPost(source.storyTextPost)
+      view.bindLinkPreview((message as? MmsMessageRecord)?.linkPreviews?.firstOrNull())
+
+      view.invalidate()
+      view.measure(View.MeasureSpec.makeMeasureSpec(displayWidth, View.MeasureSpec.EXACTLY), View.MeasureSpec.makeMeasureSpec(arHeight, View.MeasureSpec.EXACTLY))
+      view.layout(0, 0, view.measuredWidth, view.measuredHeight)
+
+      val bitmap = view.drawToBitmap().scale(width, height)
+
+      return SimpleResource(bitmap)
+    }
+  }
+}

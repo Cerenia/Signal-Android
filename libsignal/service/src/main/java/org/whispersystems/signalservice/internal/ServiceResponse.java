@@ -1,25 +1,27 @@
 package org.whispersystems.signalservice.internal;
 
-import org.whispersystems.libsignal.util.guava.Optional;
-import org.whispersystems.libsignal.util.guava.Preconditions;
+
+
 import org.whispersystems.signalservice.api.push.exceptions.NonSuccessfulResponseCodeException;
 import org.whispersystems.signalservice.api.push.exceptions.PushNetworkException;
+import org.whispersystems.signalservice.api.util.Preconditions;
 import org.whispersystems.signalservice.internal.websocket.WebsocketResponse;
 
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 import io.reactivex.rxjava3.core.Single;
 
 /**
- * Encapsulates a parsed APi response regardless of where it came from (WebSocket or REST). Not only
+ * Encapsulates a parsed API response regardless of where it came from (WebSocket or REST). Not only
  * includes the success result but also any application errors encountered (404s, parsing, etc.) or
  * execution errors encountered (IOException, etc.).
  */
 public final class ServiceResponse<Result> {
 
-  private final int                 status;
-  private final Optional<String>    body;
-  private final Optional<Result>    result;
+  private final int              status;
+  private final Optional<String> body;
+  private final Optional<Result> result;
   private final Optional<Throwable> applicationError;
   private final Optional<Throwable> executionError;
 
@@ -44,10 +46,10 @@ public final class ServiceResponse<Result> {
     }
 
     this.status           = status;
-    this.body             = Optional.fromNullable(body);
-    this.result           = Optional.fromNullable(result);
-    this.applicationError = Optional.fromNullable(applicationError);
-    this.executionError   = Optional.fromNullable(executionError);
+    this.body             = Optional.ofNullable(body);
+    this.result           = Optional.ofNullable(result);
+    this.applicationError = Optional.ofNullable(applicationError);
+    this.executionError   = Optional.ofNullable(executionError);
   }
 
   public int getStatus() {
@@ -116,8 +118,8 @@ public final class ServiceResponse<Result> {
 
   public static <T, I> ServiceResponse<T> coerceError(ServiceResponse<I> response) {
     if (response.applicationError.isPresent()) {
-      return ServiceResponse.forApplicationError(response.applicationError.get(), response.status, response.body.orNull());
+      return ServiceResponse.forApplicationError(response.applicationError.get(), response.status, response.body.orElse(null));
     }
-    return ServiceResponse.forExecutionError(response.executionError.orNull());
+    return ServiceResponse.forExecutionError(response.executionError.orElse(null));
   }
 }

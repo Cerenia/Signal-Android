@@ -1,9 +1,12 @@
 package org.thoughtcrime.securesms.components
 
 import android.app.Dialog
+import android.graphics.Color
 import android.os.Bundle
+import android.view.ContextThemeWrapper
 import android.view.View
-import androidx.core.content.ContextCompat
+import androidx.annotation.ColorInt
+import androidx.annotation.StyleRes
 import androidx.core.view.ViewCompat
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -12,6 +15,7 @@ import com.google.android.material.shape.CornerFamily
 import com.google.android.material.shape.MaterialShapeDrawable
 import com.google.android.material.shape.ShapeAppearanceModel
 import org.thoughtcrime.securesms.R
+import org.thoughtcrime.securesms.util.ThemeUtil
 import org.thoughtcrime.securesms.util.ViewUtil
 
 /**
@@ -21,9 +25,15 @@ abstract class FixedRoundedCornerBottomSheetDialogFragment : BottomSheetDialogFr
 
   protected open val peekHeightPercentage: Float = 0.5f
 
+  @StyleRes
+  protected open val themeResId: Int = R.style.Widget_Signal_FixedRoundedCorners
+
+  @ColorInt
+  protected var backgroundColor: Int = Color.TRANSPARENT
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    setStyle(STYLE_NORMAL, R.style.Widget_Signal_FixedRoundedCorners)
+    setStyle(STYLE_NORMAL, themeResId)
   }
 
   override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -38,7 +48,9 @@ abstract class FixedRoundedCornerBottomSheetDialogFragment : BottomSheetDialogFr
 
     val dialogBackground = MaterialShapeDrawable(shapeAppearanceModel)
 
-    dialogBackground.setTint(ContextCompat.getColor(requireContext(), R.color.signal_background_dialog))
+    val bottomSheetStyle = ThemeUtil.getThemedResourceId(ContextThemeWrapper(requireContext(), themeResId), R.attr.bottomSheetStyle)
+    backgroundColor = ThemeUtil.getThemedColor(ContextThemeWrapper(requireContext(), bottomSheetStyle), R.attr.backgroundTint)
+    dialogBackground.setTint(backgroundColor)
 
     dialog.behavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
       override fun onStateChanged(bottomSheet: View, newState: Int) {

@@ -11,8 +11,10 @@ import org.thoughtcrime.securesms.database.model.databaseprotos.BadgeList
 import org.thoughtcrime.securesms.payments.currency.CurrencyUtil
 import org.thoughtcrime.securesms.subscription.LevelUpdateOperation
 import org.thoughtcrime.securesms.subscription.Subscriber
+import org.whispersystems.signalservice.api.subscriptions.ActiveSubscription
 import org.whispersystems.signalservice.api.subscriptions.IdempotencyKey
 import org.whispersystems.signalservice.api.subscriptions.SubscriberId
+import org.whispersystems.signalservice.internal.util.JsonUtil
 import java.util.Currency
 import java.util.Locale
 import java.util.concurrent.TimeUnit
@@ -23,33 +25,43 @@ internal class DonationsValues internal constructor(store: KeyValueStore) : Sign
     private val TAG = Log.tag(DonationsValues::class.java)
 
     private const val KEY_SUBSCRIPTION_CURRENCY_CODE = "donation.currency.code"
-    private const val KEY_CURRENCY_CODE_BOOST = "donation.currency.code.boost"
+    private const val KEY_CURRENCY_CODE_ONE_TIME = "donation.currency.code.boost"
     private const val KEY_SUBSCRIBER_ID_PREFIX = "donation.subscriber.id."
     private const val KEY_LAST_KEEP_ALIVE_LAUNCH = "donation.last.successful.ping"
     private const val KEY_LAST_END_OF_PERIOD_SECONDS = "donation.last.end.of.period"
     private const val EXPIRED_BADGE = "donation.expired.badge"
+    private const val EXPIRED_GIFT_BADGE = "donation.expired.gift.badge"
     private const val USER_MANUALLY_CANCELLED = "donation.user.manually.cancelled"
     private const val KEY_LEVEL_OPERATION_PREFIX = "donation.level.operation."
     private const val KEY_LEVEL_HISTORY = "donation.level.history"
     private const val DISPLAY_BADGES_ON_PROFILE = "donation.display.badges.on.profile"
     private const val SUBSCRIPTION_REDEMPTION_FAILED = "donation.subscription.redemption.failed"
     private const val SHOULD_CANCEL_SUBSCRIPTION_BEFORE_NEXT_SUBSCRIBE_ATTEMPT = "donation.should.cancel.subscription.before.next.subscribe.attempt"
+    private const val SUBSCRIPTION_CANCELATION_CHARGE_FAILURE = "donation.subscription.cancelation.charge.failure"
+    private const val SUBSCRIPTION_CANCELATION_REASON = "donation.subscription.cancelation.reason"
+    private const val SUBSCRIPTION_CANCELATION_TIMESTAMP = "donation.subscription.cancelation.timestamp"
+    private const val SUBSCRIPTION_CANCELATION_WATERMARK = "donation.subscription.cancelation.watermark"
+    private const val SHOW_CANT_PROCESS_DIALOG = "show.cant.process.dialog"
   }
 
   override fun onFirstEverAppLaunch() = Unit
 
   override fun getKeysToIncludeInBackup(): MutableList<String> = mutableListOf(
-    KEY_CURRENCY_CODE_BOOST,
+    KEY_CURRENCY_CODE_ONE_TIME,
     KEY_LAST_KEEP_ALIVE_LAUNCH,
     KEY_LAST_END_OF_PERIOD_SECONDS,
-    SHOULD_CANCEL_SUBSCRIPTION_BEFORE_NEXT_SUBSCRIBE_ATTEMPT
+    SHOULD_CANCEL_SUBSCRIPTION_BEFORE_NEXT_SUBSCRIBE_ATTEMPT,
+    SUBSCRIPTION_CANCELATION_REASON,
+    SUBSCRIPTION_CANCELATION_TIMESTAMP,
+    SUBSCRIPTION_CANCELATION_WATERMARK,
+    SHOW_CANT_PROCESS_DIALOG
   )
 
   private val subscriptionCurrencyPublisher: Subject<Currency> by lazy { BehaviorSubject.createDefault(getSubscriptionCurrency()) }
   val observableSubscriptionCurrency: Observable<Currency> by lazy { subscriptionCurrencyPublisher }
 
-  private val boostCurrencyPublisher: Subject<Currency> by lazy { BehaviorSubject.createDefault(getBoostCurrency()) }
-  val observableBoostCurrency: Observable<Currency> by lazy { boostCurrencyPublisher }
+  private val oneTimeCurrencyPublisher: Subject<Currency> by lazy { BehaviorSubject.createDefault(getOneTimeCurrency()) }
+  val observableOneTimeCurrency: Observable<Currency> by lazy { oneTimeCurrencyPublisher }
 
   fun getSubscriptionCurrency(): Currency {
     val currencyCode = getString(KEY_SUBSCRIPTION_CURRENCY_CODE, null)
@@ -76,20 +88,20 @@ internal class DonationsValues internal constructor(store: KeyValueStore) : Sign
     }
   }
 
-  fun getBoostCurrency(): Currency {
-    val boostCurrencyCode = getString(KEY_CURRENCY_CODE_BOOST, null)
-    return if (boostCurrencyCode == null) {
+  fun getOneTimeCurrency(): Currency {
+    val oneTimeCurrency = getString(KEY_CURRENCY_CODE_ONE_TIME, null)
+    return if (oneTimeCurrency == null) {
       val currency = getSubscriptionCurrency()
-      setBoostCurrency(currency)
+      setOneTimeCurrency(currency)
       currency
     } else {
-      Currency.getInstance(boostCurrencyCode)
+      Currency.getInstance(oneTimeCurrency)
     }
   }
 
-  fun setBoostCurrency(currency: Currency) {
-    putString(KEY_CURRENCY_CODE_BOOST, currency.currencyCode)
-    boostCurrencyPublisher.onNext(currency)
+  fun setOneTimeCurrency(currency: Currency) {
+    putString(KEY_CURRENCY_CODE_ONE_TIME, currency.currencyCode)
+    oneTimeCurrencyPublisher.onNext(currency)
   }
 
   fun getSubscriber(currency: Currency): Subscriber? {
@@ -112,6 +124,7 @@ internal class DonationsValues internal constructor(store: KeyValueStore) : Sign
   }
 
   fun setSubscriber(subscriber: Subscriber) {
+    Log.i(TAG, "Setting subscriber for currency ${subscriber.currencyCode}", Exception(), true)
     val currencyCode = subscriber.currencyCode
     store.beginWrite()
       .putBlob("$KEY_SUBSCRIBER_ID_PREFIX$currencyCode", subscriber.subscriberId.bytes)
@@ -163,6 +176,20 @@ internal class DonationsValues internal constructor(store: KeyValueStore) : Sign
 
   fun getExpiredBadge(): Badge? {
     val badgeBytes = getBlob(EXPIRED_BADGE, null) ?: return null
+
+    return Badges.fromDatabaseBadge(BadgeList.Badge.parseFrom(badgeBytes))
+  }
+
+  fun setExpiredGiftBadge(badge: Badge?) {
+    if (badge != null) {
+      putBlob(EXPIRED_GIFT_BADGE, Badges.toDatabaseBadge(badge).toByteArray())
+    } else {
+      remove(EXPIRED_GIFT_BADGE)
+    }
+  }
+
+  fun getExpiredGiftBadge(): Badge? {
+    val badgeBytes = getBlob(EXPIRED_GIFT_BADGE, null) ?: return null
 
     return Badges.fromDatabaseBadge(BadgeList.Badge.parseFrom(badgeBytes))
   }
@@ -223,6 +250,30 @@ internal class DonationsValues internal constructor(store: KeyValueStore) : Sign
   fun clearSubscriptionRedemptionFailed() {
     putBoolean(SUBSCRIPTION_REDEMPTION_FAILED, false)
   }
+
+  fun setUnexpectedSubscriptionCancelationChargeFailure(chargeFailure: ActiveSubscription.ChargeFailure?) {
+    if (chargeFailure == null) {
+      remove(SUBSCRIPTION_CANCELATION_CHARGE_FAILURE)
+    } else {
+      putString(SUBSCRIPTION_CANCELATION_CHARGE_FAILURE, JsonUtil.toJson(chargeFailure))
+    }
+  }
+
+  fun getUnexpectedSubscriptionCancelationChargeFailure(): ActiveSubscription.ChargeFailure? {
+    val json = getString(SUBSCRIPTION_CANCELATION_CHARGE_FAILURE, null)
+    return if (json.isNullOrEmpty()) {
+      null
+    } else {
+      JsonUtil.fromJson(json, ActiveSubscription.ChargeFailure::class.java)
+    }
+  }
+
+  var unexpectedSubscriptionCancelationReason: String? by stringValue(SUBSCRIPTION_CANCELATION_REASON, null)
+  var unexpectedSubscriptionCancelationTimestamp: Long by longValue(SUBSCRIPTION_CANCELATION_TIMESTAMP, 0L)
+  var unexpectedSubscriptionCancelationWatermark: Long by longValue(SUBSCRIPTION_CANCELATION_WATERMARK, 0L)
+
+  @get:JvmName("showCantProcessDialog")
+  var showCantProcessDialog: Boolean by booleanValue(SHOW_CANT_PROCESS_DIALOG, true)
 
   /**
    * Denotes that the previous attempt to subscribe failed in some way. Either an

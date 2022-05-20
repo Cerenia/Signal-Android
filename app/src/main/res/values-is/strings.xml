@@ -14,7 +14,7 @@
   <!--ApplicationPreferencesActivity-->
   <string name="ApplicationPreferencesActivity_currently_s">Núna: %s</string>
   <string name="ApplicationPreferenceActivity_you_havent_set_a_passphrase_yet">Þú hefur ekki valið lykilorð!</string>
-  <string name="ApplicationPreferencesActivity_disable_passphrase">Gera lykilsetningu (passphrase) óvirka?</string>
+  <string name="ApplicationPreferencesActivity_disable_passphrase">Gera lykilorð óvirkt?</string>
   <string name="ApplicationPreferencesActivity_this_will_permanently_unlock_signal_and_message_notifications">Þessi aðgerð mun varanlega aflæsa Signal og tilkynningar frá Signal.</string>
   <string name="ApplicationPreferencesActivity_disable">Gera óvirkt</string>
   <string name="ApplicationPreferencesActivity_unregistering">Verið er að afskrá þig</string>
@@ -90,6 +90,10 @@
   <string name="BlockUnblockDialog_group_members_will_be_able_to_add_you">Hópmeðlimir geta bætt þér í þennan hóp aftur.</string>
   <string name="BlockUnblockDialog_you_will_be_able_to_call_and_message_each_other">Þið munuð geta sent hverju/m/ri öðru skilaboð og hringt, og nafn og mynd þín mun vera deild með þessum aðila.</string>
   <string name="BlockUnblockDialog_blocked_people_wont_be_able_to_call_you_or_send_you_messages">Útilokaðir einstaklingar munu ekki geta hringt í þig eða sent þér skilaboð.</string>
+  <!--Message shown on block dialog when blocking the Signal release notes recipient-->
+  <string name="BlockUnblockDialog_block_getting_signal_updates_and_news">Loka á uppfærslur og fréttir frá Signal</string>
+  <!--Message shown on unblock dialog when unblocking the Signal release notes recipient-->
+  <string name="BlockUnblockDialog_resume_getting_signal_updates_and_news">Halda áfram að fá uppfærslur og fréttir frá Signal</string>
   <string name="BlockUnblockDialog_unblock_s">Opna á %1$s?</string>
   <string name="BlockUnblockDialog_block">Loka á</string>
   <string name="BlockUnblockDialog_block_and_leave">Útiloka og yfirgefa</string>
@@ -118,6 +122,15 @@
   <string name="CameraContacts_cant_find_who_youre_looking_for">Finnurðu ekki það sem þú leitar að?</string>
   <string name="CameraContacts_invite_a_contact_to_join_signal">Bjóddu tengilið að koma á Signal</string>
   <string name="CameraContacts__menu_search">Leita</string>
+  <!--Censorship Circumvention Megaphone-->
+  <!--Title for an alert that shows at the bottom of the chat list letting people know that circumvention is no longer needed-->
+  <string name="CensorshipCircumventionMegaphone_turn_off_censorship_circumvention">Slökkva á leiðum framhjá ritskoðun?</string>
+  <!--Body for an alert that shows at the bottom of the chat list letting people know that circumvention is no longer needed-->
+  <string name="CensorshipCircumventionMegaphone_you_can_now_connect_to_the_signal_service">Núna er hægt að tengjast Signal-þjónustum beint.</string>
+  <!--Action to prompt the user to disable circumvention since it is no longer needed-->
+  <string name="CensorshipCircumventionMegaphone_turn_off">Slökkva</string>
+  <!--Action to prompt the user to dismiss the alert at the bottom of the chat list-->
+  <string name="CensorshipCircumventionMegaphone_no_thanks">Nei, takk</string>
   <!--ClearProfileActivity-->
   <string name="ClearProfileActivity_remove">Fjarlægja</string>
   <string name="ClearProfileActivity_remove_profile_photo">Fjarlægja auðkennismynd?</string>
@@ -148,6 +161,10 @@
   <string name="ContactsCursorLoader_groups">Hópar</string>
   <string name="ContactsCursorLoader_phone_number_search">Leita að símanúmeri</string>
   <string name="ContactsCursorLoader_username_search">Leita að notandanafni</string>
+  <!--Label for my stories when selecting who to send media to-->
+  <string name="ContactsCursorLoader_my_stories">Sögurnar mínar</string>
+  <!--Action for creating a new story-->
+  <string name="ContactsCursorLoader_new_story">Ný saga</string>
   <!--ContactsDatabase-->
   <string name="ContactsDatabase_message_s">Skilaboð til %s</string>
   <string name="ContactsDatabase_signal_call_s">Hringja með Signal í %s </string>
@@ -299,6 +316,16 @@
   <string name="ConversationFragment_your_safety_number_with_s_changed_likey_because_they_reinstalled_signal">Öryggisnúmer þitt með %s hefur breyst, líklega vegna þess að viðkomandi hefur sett Signal upp aftur eða hefur skipt um tæki. Ýttu á \'Sannreyna\' til að sannreyna nýja öryggisnúmerið. Þetta er valkvætt.</string>
   <!--Message shown to indicate which notification profile is on/active-->
   <string name="ConversationFragment__s_on">%1$s virkt</string>
+  <!--Dialog title for block group link join requests-->
+  <string name="ConversationFragment__block_request">Loka á beiðni?</string>
+  <!--Dialog message for block group link join requests-->
+  <string name="ConversationFragment__s_will_not_be_able_to_join_or_request_to_join_this_group_via_the_group_link">%1$s mun ekki geta beðið um eða gengið í þennan hóp með hóptenglinum. Eftir sem áður er hægt að bæta viðkomandi inn handvirkt.</string>
+  <!--Dialog confirm block request button-->
+  <string name="ConversationFragment__block_request_button">Loka á beiðni</string>
+  <!--Dialog cancel block request button-->
+  <string name="ConversationFragment__cancel">Hætta við</string>
+  <!--Message shown after successfully blocking join requests for a user-->
+  <string name="ConversationFragment__blocked">Bannaðir</string>
   <plurals name="ConversationListFragment_delete_selected_conversations">
     <item quantity="one">Eyða völdu samtali?</item>
     <item quantity="other">Eyða völdum samtölum?</item>
@@ -376,7 +403,6 @@
   <!--ConversationTypingView-->
   <string name="ConversationTypingView__plus_d">+%1$d</string>
   <!--CreateGroupActivity-->
-  <string name="CreateGroupActivity_some_contacts_cannot_be_in_legacy_groups">Sumir tengiliðir geta ekki verið í eldri gerð hópa.</string>
   <string name="CreateGroupActivity__select_members">Veldu meðlimi</string>
   <!--CreateProfileActivity-->
   <string name="CreateProfileActivity__profile">Notandasnið</string>
@@ -397,14 +423,20 @@
   <string name="RestoreBackupFragment__to_continue_using_backups_please_choose_a_folder">Til að halda áfram að nota öryggisafrit, skaltu velja möppu. Ný öryggisafrit verða vistuð á þennan stað.</string>
   <string name="RestoreBackupFragment__choose_folder">Veldu möppu</string>
   <string name="RestoreBackupFragment__not_now">Ekki núna</string>
+  <!--Couldn\'t find the selected backup-->
+  <string name="RestoreBackupFragment__backup_not_found">Öryggisafrit fannst ekki.</string>
+  <!--Couldn\'t read the selected backup-->
+  <string name="RestoreBackupFragment__backup_could_not_be_read">Ekki tókst að lesa öryggisafrit.</string>
+  <!--Backup has an unsupported file extension-->
+  <string name="RestoreBackupFragment__backup_has_a_bad_extension">Öryggisafrit er með ranga skráarendingu.</string>
   <!--BackupsPreferenceFragment-->
   <string name="BackupsPreferenceFragment__chat_backups">Öryggisafrit af spjalli</string>
-  <string name="BackupsPreferenceFragment__backups_are_encrypted_with_a_passphrase">Öryggisafrit eru dulrituð með aðgangskóða og geymd á tækinu þínu.</string>
+  <string name="BackupsPreferenceFragment__backups_are_encrypted_with_a_passphrase">Öryggisafrit eru dulrituð með lykilorði og geymd á tækinu þínu.</string>
   <string name="BackupsPreferenceFragment__create_backup">Útbúa öryggisafrit</string>
   <string name="BackupsPreferenceFragment__last_backup">Síðasta öryggisafrit: %1$s</string>
   <string name="BackupsPreferenceFragment__backup_folder">Mappa fyrir öryggisafrit</string>
   <string name="BackupsPreferenceFragment__verify_backup_passphrase">Sannreyna lykilorð öryggisafritsins</string>
-  <string name="BackupsPreferenceFragment__test_your_backup_passphrase">Prófaðu aðgangskóða öryggisafritsins til að staðfesta að hann sé réttur</string>
+  <string name="BackupsPreferenceFragment__test_your_backup_passphrase">Prófaðu lykilorð öryggisafritsins til að staðfesta að það sé rétt</string>
   <string name="BackupsPreferenceFragment__turn_on">Kveikja</string>
   <string name="BackupsPreferenceFragment__turn_off">Slökkva</string>
   <string name="BackupsPreferenceFragment__to_restore_a_backup">Til að endurheimta öryggisafrit, skaltu setja upp nýtt tilvik af Signal. Opnaðu forritið og ýttu á \"Endurheimta öryggisafrit\", síðan skaltu finna skrá með öryggisafriti. %1$s</string>
@@ -448,9 +480,6 @@
   <string name="DeviceListItem_today">Í dag</string>
   <!--DocumentView-->
   <string name="DocumentView_unnamed_file">Nafnlaus skrá</string>
-  <!--GroupCallingMegaphone-->
-  <!-- Removed by excludeNonTranslatables <string name="GroupCallingMegaphone__introducing_group_calls">Kynning á hópsímtölum</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="GroupCallingMegaphone__open_a_new_group_to_start">Opnaðu nýjan hóp til að byrja ókeypis dulritað hópsímtal</string> -->
   <!--DozeReminder-->
   <string name="DozeReminder_optimize_for_missing_play_services">Besta kerfið fyrir Play-þjónustur sem vantar</string>
   <string name="DozeReminder_this_device_does_not_support_play_services_tap_to_disable_system_battery">Þetta tæki styður ekki Play-þjónustur. Ýttu til að gera óvirkar rafhlöðustillingar sem koma í veg fyrir að Signal geti náð í skilaboð þótt það sé í dvala.</string>
@@ -463,10 +492,6 @@
     <item quantity="other">%d beiðnir um þátttöku í bið.</item>
   </plurals>
   <string name="PendingGroupJoinRequestsReminder_view">Skoða</string>
-  <!--ShareActivity-->
-  <string name="ShareActivity_share_with">Deila með</string>
-  <string name="ShareActivity_multiple_attachments_are_only_supported">Að hengja við mörg viðhengi í einu er aðeins stutt fyrir myndir og myndskeið</string>
-  <string name="ShareActivity_you_do_not_have_permission_to_send_to_this_group">Þú hefur ekki heimild til að senda á þennan hóp</string>
   <!--GcmRefreshJob-->
   <string name="GcmRefreshJob_Permanent_Signal_communication_failure">Viðvarandi bilun í Signal-samskiptum!</string>
   <string name="GcmRefreshJob_Signal_was_unable_to_register_with_Google_Play_Services">Signal náði ekki að skrá sig inn á Google Play þjónustur. Skilaboð og hringingar úr Signal hafa verið gerð óvirk, prófaðu að endurskrá í Stillingar &gt; Ítarlegt.</string>
@@ -568,10 +593,6 @@
   <string name="LeaveGroupDialog_choose_new_admin">Velja nýjan stjórnanda</string>
   <string name="LeaveGroupDialog_before_you_leave_you_must_choose_at_least_one_new_admin_for_this_group">Áður en þú ferð þarftu að velja a.m.k. einn stjórnanda fyrir þennan hóp.</string>
   <string name="LeaveGroupDialog_choose_admin">Velja stjórnanda</string>
-  <!--LinkPreviewsMegaphone-->
-  <!-- Removed by excludeNonTranslatables <string name="LinkPreviewsMegaphone_disable">Gera óvirkt</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="LinkPreviewsMegaphone_preview_any_link">Forskoða hvaða tengil sem er</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="LinkPreviewsMegaphone_you_can_now_retrieve_link_previews_directly_from_any_website">Nú geturðu náð í forskoðanir tengla beint frá vefsvæðum í skilaboðum sem þú sendir.</string> -->
   <!--LinkPreviewView-->
   <string name="LinkPreviewView_no_link_preview_available">Engin forskoðun tiltæk fyrir tengil</string>
   <string name="LinkPreviewView_this_group_link_is_not_active">Þessi hóptengill er ekki virkur</string>
@@ -632,25 +653,6 @@
   <string name="AddGroupDetailsFragment__remove">Fjarlægja</string>
   <string name="AddGroupDetailsFragment__sms_contact">SMS-tengiliður</string>
   <string name="AddGroupDetailsFragment__remove_s_from_this_group">Fjarlægja %1$s úr hópnum?</string>
-  <plurals name="AddGroupDetailsFragment__d_members_do_not_support_new_groups">
-    <item quantity="one">%d meðlimur er ekki með stuðning við nýju gerðina af hópum, þannig að þessi hópur verður af eldri gerðinni.</item>
-    <item quantity="other">%d meðlimir eru ekki með stuðning við nýju gerðina af hópum, þannig að þessi hópur verður af eldri gerðinni.</item>
-  </plurals>
-  <plurals name="AddGroupDetailsFragment__d_members_do_not_support_new_groups_so_this_group_cannot_be_created">
-    <item quantity="one">%d meðlimur er ekki með stuðning við nýju gerðina af hópum, þannig að þessi hópur verður ekki útbúinn.</item>
-    <item quantity="other">%d meðlimir eru ekki með stuðning við nýju gerðina af hópum, þannig að þessi hópur verður ekki útbúinn.</item>
-  </plurals>
-  <!--NonGv2MemberDialog-->
-  <string name="NonGv2MemberDialog_single_users_are_non_gv2_capable">Búinn verður til hópur af eldri gerðinni þar sem \"%1$s\" er að nota gamla útgáfu af Signal. Þú getur búið til hóp af nýju gerðinni með viðkomandi eftir að hann hefur uppfært Signal, eða að fjarlægja hann áður en hópurinn er útbúinn.</string>
-  <plurals name="NonGv2MemberDialog_d_users_are_non_gv2_capable">
-    <item quantity="one">Búinn verður til hópur af eldri gerðinni þar sem %1$d meðlimur er að nota gamla útgáfu af Signal. Þú getur búið til hóp af nýju gerðinni með viðkomandi eftir að hann hefur uppfært Signal, eða að fjarlægja hann áður en hópurinn er útbúinn.</item>
-    <item quantity="other">Búinn verður til hópur af eldri gerðinni þar sem %1$d meðlimir eru að nota gamla útgáfu af Signal. Þú getur búið til hóp af nýju gerðinni með viðkomandi eftir að þeir hafa uppfært Signal, eða að fjarlægja þessa meðlimi áður en hópurinn er útbúinn.</item>
-  </plurals>
-  <string name="NonGv2MemberDialog_single_users_are_non_gv2_capable_forced_migration">Ekki er hægt að búa til þennan hóp þar sem \"%1$s\" er að nota gamla útgáfu af Signal. Þú verður að fjarlægja hann áður en hópurinn er útbúinn.</string>
-  <plurals name="NonGv2MemberDialog_d_users_are_non_gv2_capable_forced_migration">
-    <item quantity="one">Ekki er hægt að búa til þennan hóp þar sem %1$d meðlimur eru að nota gamla útgáfu af Signal. Þú þarft að fjarlægja þennan meðlim áður en hópurinn er útbúinn.</item>
-    <item quantity="other">Ekki er hægt að búa til þennan hóp þar sem %1$d meðlimir eru að nota gamla útgáfu af Signal. Þú þarft að fjarlægja þessa meðlimi áður en hópurinn er útbúinn.</item>
-  </plurals>
   <!--ManageGroupActivity-->
   <string name="ManageGroupActivity_member_requests_and_invites">Beiðnir um þátttöku og boð</string>
   <string name="ManageGroupActivity_add_members">Bæta við meðlimum</string>
@@ -759,7 +761,16 @@
   <string name="GroupJoinBottomSheetDialogFragment_unable_to_join_group_please_try_again_later">Gast ekki gengið í hópinn. Prófaðu aftur síðar</string>
   <string name="GroupJoinBottomSheetDialogFragment_encountered_a_network_error">Rakst á villu í netkerfi.</string>
   <string name="GroupJoinBottomSheetDialogFragment_this_group_link_is_not_active">Þessi hóptengill er ekki virkur</string>
-  <string name="GroupJoinBottomSheetDialogFragment_unable_to_get_group_information_please_try_again_later">Get ekki náð í upplýsingar um hóp, prófaðu aftur síðar</string>
+  <!--Title shown when there was an known issue getting group information from a group link-->
+  <string name="GroupJoinBottomSheetDialogFragment_cant_join_group">Get ekki gengið í hóp</string>
+  <!--Message shown when you try to get information for a group via link but an admin has removed you-->
+  <string name="GroupJoinBottomSheetDialogFragment_you_cant_join_this_group_via_the_group_link_because_an_admin_removed_you">Þú getur ekki gengið í þennan hóp með hóptenglinum þar sem stjórnandi hefur fjarlægt þig.</string>
+  <!--Message shown when you try to get information for a group via link but the link is no longer valid-->
+  <string name="GroupJoinBottomSheetDialogFragment_this_group_link_is_no_longer_valid">Þessi hóptengill er ekki lengur gildur.</string>
+  <!--Title shown when there was an unknown issue getting group information from a group link-->
+  <string name="GroupJoinBottomSheetDialogFragment_link_error">Villa í tengli</string>
+  <!--Message shown when you try to get information for a group via link but an unknown issue occurred-->
+  <string name="GroupJoinBottomSheetDialogFragment_joining_via_this_link_failed_try_joining_again_later">Þátttaka með þessum tengli mistókst. Prófaðu að ganga í hópinn síðar.</string>
   <string name="GroupJoinBottomSheetDialogFragment_direct_join">Viltu ganga í þennan hóp og deila nafninu þínu og mynd með meðlimum hans?</string>
   <string name="GroupJoinBottomSheetDialogFragment_admin_approval_needed">Stjórnandi í hópnum verður að samþykkja beiðnina þína áður en þú getur gengið í hópinn. Ef hún er samþykkt, verður nafninu þínu og mynd deilt með meðlimum hópsins.</string>
   <plurals name="GroupJoinBottomSheetDialogFragment_group_dot_d_members">
@@ -784,6 +795,8 @@
   <!--GV2 Request confirmation dialog-->
   <string name="RequestConfirmationDialog_add_s_to_the_group">Bæta \"%1$s\" við þennan hóp?</string>
   <string name="RequestConfirmationDialog_deny_request_from_s">Hafna beiðni frá “%1$s”?</string>
+  <!--Confirm dialog message shown when deny a group link join request and group link is enabled.-->
+  <string name="RequestConfirmationDialog_deny_request_from_s_they_will_not_be_able_to_request">Hafna beiðni frá “%1$s”? Viðkomandi munu ekki geta gengið aftur í hópinn með hóptenglinum.</string>
   <string name="RequestConfirmationDialog_add">Bæta við</string>
   <string name="RequestConfirmationDialog_deny">Neita</string>
   <!--ImageEditorHud-->
@@ -868,8 +881,6 @@
   <string name="MediaOverviewActivity_sent_by_s_to_s">Sent af %1$s til %2$s</string>
   <string name="MediaOverviewActivity_sent_by_you_to_s">Sent af þér til %1$s</string>
   <!--Megaphones-->
-  <!-- Removed by excludeNonTranslatables <string name="Megaphones_introducing_reactions">Kynning á viðbrögðum</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="Megaphones_tap_and_hold_any_message_to_quicky_share_how_you_feel">Ýttu og haltu niðri til að deila í skyndi hvernig þér líður.</string> -->
   <string name="Megaphones_remind_me_later">Áminna mig síðar</string>
   <string name="Megaphones_verify_your_signal_pin">Staðfestu PIN-númer Signal</string>
   <string name="Megaphones_well_occasionally_ask_you_to_verify_your_pin">Til að auðvelda þér að muna PIN-númerið munum við biðja þig öðru hvoru um að staðfesta það.</string>
@@ -1074,6 +1085,11 @@
   <!--GV2 group link requests-->
   <string name="MessageRecord_you_sent_a_request_to_join_the_group">Þú sendir beiðni um að ganga í hópinn.</string>
   <string name="MessageRecord_s_requested_to_join_via_the_group_link">%1$s bað um að fá að ganga í hópinn með hóptenglinum.</string>
+  <!--Update message shown when someone requests to join via group link and cancels the request back to back-->
+  <plurals name="MessageRecord_s_requested_and_cancelled_their_request_to_join_via_the_group_link">
+    <item quantity="one">%1$s sendi inn beiðni og hætti við  beiðnina sína um að fá að ganga í hópinn með hóptenglinum.</item>
+    <item quantity="other">%1$s sendi inn beiðni og hætti við %2$d beiðnir um að fá að ganga í hópinn með hóptenglinum.</item>
+  </plurals>
   <!--GV2 group link approvals-->
   <string name="MessageRecord_s_approved_your_request_to_join_the_group">%1$s samþykkti beiðni þína um að ganga í hópinn.</string>
   <string name="MessageRecord_s_approved_a_request_to_join_the_group_from_s">%1$s samþykkti beiðni frá %2$s um að ganga í hópinn.</string>
@@ -1093,7 +1109,11 @@
   <string name="MessageRecord_you_marked_your_safety_number_with_s_unverified">Þú merktir öryggisnúmer þitt með %s sem ekki sannreynt</string>
   <string name="MessageRecord_you_marked_your_safety_number_with_s_unverified_from_another_device">Þú merktir öryggisnúmer þitt með %s sem ekki sannreynt á öðru tæki</string>
   <string name="MessageRecord_a_message_from_s_couldnt_be_delivered">Skilaboð frá %s var ekki hægt að afhenda</string>
-  <string name="MessageRecord_s_changed_their_number_to_a_new_number">%1$s skipti yfir í nýtt símanúmer.</string>
+  <string name="MessageRecord_s_changed_their_phone_number">%1$s skipti um símanúmer.</string>
+  <!--Update item message shown in the release channel when someone is already a sustainer so we ask them if they want to boost.-->
+  <string name="MessageRecord_like_this_new_feature_say_thanks_with_a_boost">Líkar þér við þennan eiginleika? Þakkaðu fyrir þig með hvatningu.</string>
+  <!--Update item message shown in the release channel when someone is not a sustainer so we ask them to consider becoming one-->
+  <string name="MessageRecord_signal_is_powered_by_people_like_you_become_a_sustainer_today">Signal er keyrt áfram af fólki eins og þér. Sýndu stuðning þinn í verki!</string>
   <!--Group Calling update messages-->
   <string name="MessageRecord_s_started_a_group_call_s">%1$s hóf hópsímtal · %2$s</string>
   <string name="MessageRecord_s_is_in_the_group_call_s">%1$s er í hópsímtalinu · %2$s</string>
@@ -1122,6 +1142,7 @@
   <string name="MessageRequestBottomView_unblock">Opna á</string>
   <string name="MessageRequestBottomView_do_you_want_to_let_s_message_you_they_wont_know_youve_seen_their_messages_until_you_accept">Viltu leyfa %1$s að senda þér skilaboð og deila nafninu þínu og mynd með honum? Hann mun ekki vita hvort þú hafir séð skilaboðin hans fyrr en þú samþykkir þetta.</string>
   <string name="MessageRequestBottomView_do_you_want_to_let_s_message_you_wont_receive_any_messages_until_you_unblock_them">Viltu leyfa %1$s að senda þér skilaboð og deila nafninu þínu og mynd með viðkomandi notanda? Hann mun ekki vita hvort þú hafir séð skilaboðin hans fyrr en þú opnar á hann.</string>
+  <string name="MessageRequestBottomView_get_updates_and_news_from_s_you_wont_receive_any_updates_until_you_unblock_them">Fá uppfærslur og fréttir frá %1$s? Þú færð engar uppfærslur fyrr en þú aflæsir þeim.</string>
   <string name="MessageRequestBottomView_continue_your_conversation_with_this_group_and_share_your_name_and_photo">Viltu halda áfram samtalinu við þennan hóp og deila nafninu þínu og mynd með meðlimum hans?</string>
   <string name="MessageRequestBottomView_upgrade_this_group_to_activate_new_features">Uppfærðu þennan hóp til að virkja nýja eiginleika á borð við @mentions og hópstjóra. Meðlimir sem ekki hafa deilt nafninu sínu eða mynd í hópnum fá boð um að taka þátt.</string>
   <string name="MessageRequestBottomView_this_legacy_group_can_no_longer_be_used">Þennan hóp af eldri gerð er ekki hægt að nota því hann er of stór. Hámarksstærð hópa er %1$d.</string>
@@ -1137,9 +1158,15 @@
     <item quantity="one">%1$d meðlimur</item>
     <item quantity="other">%1$d meðlimir</item>
   </plurals>
+  <!--Describes the number of members in a group. The string MessageRequestProfileView_invited is nested in the parentheses.-->
   <plurals name="MessageRequestProfileView_members_and_invited">
-    <item quantity="one">%1$d meðlimur (+%2$d boðið)</item>
-    <item quantity="other">%1$d meðlimir (+%2$d boðið)</item>
+    <item quantity="one">%1$d meðlimur (%2$s)</item>
+    <item quantity="other">%1$d meðlimir (%2$s)</item>
+  </plurals>
+  <!--Describes the number of people invited to a group. Nested inside of the string MessageRequestProfileView_members_and_invited-->
+  <plurals name="MessageRequestProfileView_invited">
+    <item quantity="one">Fleiri en %1$d boðið</item>
+    <item quantity="other">Fleiri en %1$d boðið</item>
   </plurals>
   <plurals name="MessageRequestProfileView_member_of_d_additional_groups">
     <item quantity="one">%d hópur í viðbót</item>
@@ -1177,7 +1204,7 @@
     <item quantity="other">Þessi útgáfa Signal rennur út eftir %d daga. Uppfærðu í nýjustu útgáfuna.</item>
   </plurals>
   <!--PassphrasePromptActivity-->
-  <string name="PassphrasePromptActivity_enter_passphrase">Settu inn lykilsetningu (passphrase)</string>
+  <string name="PassphrasePromptActivity_enter_passphrase">Settu inn lykilorð</string>
   <string name="PassphrasePromptActivity_watermark_content_description">Signal-táknmynd</string>
   <string name="PassphrasePromptActivity_ok_button_content_description">Senda inn lykilorð</string>
   <string name="PassphrasePromptActivity_invalid_passphrase_exclamation">Ógilt lykilorð!</string>
@@ -1232,6 +1259,8 @@
   <string name="RecaptchaRequiredBottomSheetFragment_after_verifying_you_can_continue_messaging">Eftir sannvottun geturðu haldið áfram samskiptum. Öll skilaboð sem bíða verða þá sjálfkrafa send.</string>
   <!--Recipient-->
   <string name="Recipient_you">Þú</string>
+  <!--Name of recipient representing user\'s \'My Story\'-->
+  <string name="Recipient_my_story">Sagan mín</string>
   <!--RecipientPreferencesActivity-->
   <string name="RecipientPreferenceActivity_block">Loka á</string>
   <string name="RecipientPreferenceActivity_unblock">Opna á</string>
@@ -1247,12 +1276,19 @@
   <string name="RedPhone_number_not_registered">Númer er ekki skráð!</string>
   <string name="RedPhone_the_number_you_dialed_does_not_support_secure_voice">Númerið sem þú hringdir í styður ekki öruggt tal!</string>
   <string name="RedPhone_got_it">Náði því</string>
+  <!--Valentine\'s Day Megaphone-->
+  <!--Title text for the Valentine\'s Day donation megaphone. The placeholder will always be a heart emoji. Needs to be a placeholder for Android reasons.-->
+  <string name="ValentinesDayMegaphone_happy_heart_day">Gleðilegan 💜 daginn!</string>
+  <!--Body text for the Valentine\'s Day donation megaphone.-->
+  <string name="ValentinesDayMegaphone_show_your_affection">Sýndu áhuga þinn með því að gerast stuðningsaðili Signal.</string>
   <!--WebRtcCallActivity-->
   <string name="WebRtcCallActivity__tap_here_to_turn_on_your_video">Ýta hér til að virkja myndmerkið þitt</string>
   <string name="WebRtcCallActivity__to_call_s_signal_needs_access_to_your_camera">Svo hægt sé að hringja í %1$s, þarf Signal að fá aðgang að myndavélinni þinni.</string>
   <string name="WebRtcCallActivity__signal_s">Signal %1$s</string>
   <string name="WebRtcCallActivity__calling">Hringi…</string>
   <string name="WebRtcCallActivity__group_is_too_large_to_ring_the_participants">Hópurinn er of stór til að hægt sé að hringja í þátttakendurna.</string>
+  <!--Call status shown when an active call was disconnected (e.g., network hiccup) and is trying to reconnect-->
+  <string name="WebRtcCallActivity__reconnecting">Endurtengist….</string>
   <!--WebRtcCallView-->
   <string name="WebRtcCallView__signal_call">Signal-símtal</string>
   <string name="WebRtcCallView__signal_video_call">Signal-myndsímtal</string>
@@ -1302,6 +1338,7 @@
   <string name="WebRtcCallView__flip">Fletta</string>
   <string name="WebRtcCallView__speaker">Hátalari</string>
   <string name="WebRtcCallView__camera">Myndavél</string>
+  <string name="WebRtcCallView__unmute">Ekki þagga</string>
   <string name="WebRtcCallView__mute">Hljóð af</string>
   <string name="WebRtcCallView__ring">Hringja</string>
   <string name="WebRtcCallView__end_call">Ljúka símtali</string>
@@ -1403,12 +1440,12 @@
   <!--SignalBottomActionBar-->
   <string name="SignalBottomActionBar_more">Meira</string>
   <!--SignalPinReminders-->
-  <string name="SignalPinReminders_well_remind_you_again_later">Við munum minna þig á aftur síðar.</string>
-  <string name="SignalPinReminders_well_remind_you_again_tomorrow">Við munum minna þig á aftur á morgun.</string>
-  <string name="SignalPinReminders_well_remind_you_again_in_a_few_days">Við munum minna þig á aftur eftir nokkra daga.</string>
-  <string name="SignalPinReminders_well_remind_you_again_in_a_week">Við munum minna þig á aftur eftir viku.</string>
-  <string name="SignalPinReminders_well_remind_you_again_in_a_couple_weeks">Við munum minna þig á aftur eftir tvær vikur.</string>
-  <string name="SignalPinReminders_well_remind_you_again_in_a_month">Við munum minna þig á aftur eftir mánuð.</string>
+  <string name="SignalPinReminders_well_remind_you_again_later">Tókst að sannreyna PIN-númer. Við munum áminna þig aftur síðar.</string>
+  <string name="SignalPinReminders_well_remind_you_again_tomorrow">Tókst að sannreyna PIN-númer. Við munum áminna þig aftur á morgun.</string>
+  <string name="SignalPinReminders_well_remind_you_again_in_a_few_days">Tókst að sannreyna PIN-númer. Við munum áminna þig aftur eftir nokkra daga.</string>
+  <string name="SignalPinReminders_well_remind_you_again_in_a_week">Tókst að sannreyna PIN-númer. Við munum áminna þig aftur eftir viku.</string>
+  <string name="SignalPinReminders_well_remind_you_again_in_a_couple_weeks">Tókst að sannreyna PIN-númer. Við munum áminna þig aftur eftir nokkrar vikur.</string>
+  <string name="SignalPinReminders_well_remind_you_again_in_a_month">Tókst að sannreyna PIN-númer. Við munum áminna þig aftur eftir mánuð.</string>
   <!--Slide-->
   <string name="Slide_image">Mynd</string>
   <string name="Slide_sticker">Límmerki</string>
@@ -1557,6 +1594,10 @@
   <string name="MediaPreviewActivity_media_delete_confirmation_title">Eyða skilaboðum?</string>
   <string name="MediaPreviewActivity_media_delete_confirmation_message">Þetta mun endanlega eyða þessum skilaboðum.</string>
   <string name="MediaPreviewActivity_s_to_s">%1$s til %2$s</string>
+  <!--All media preview title when viewing media send by you to another recipient (allows changing of \'You\' based on context)-->
+  <string name="MediaPreviewActivity_you_to_s">Þú til %1$s</string>
+  <!--All media preview title when viewing media sent by another recipient to you (allows changing of \'You\' based on context)-->
+  <string name="MediaPreviewActivity_s_to_you">%1$s til þín</string>
   <string name="MediaPreviewActivity_media_no_longer_available">Margmiðlunarefni er ekki lengur til staðar.</string>
   <string name="MediaPreviewActivity_cant_find_an_app_able_to_share_this_media">Finn ekki smáforrit til að deila þessu efni.</string>
   <!--MessageNotifier-->
@@ -1603,6 +1644,10 @@
   <string name="NotificationChannel_voice_notes">Tal-minnispunktar</string>
   <string name="NotificationChannel_contact_joined_signal">Tengiliður skráði sig á Signal</string>
   <string name="NotificationChannels__no_activity_available_to_open_notification_channel_settings">Engin virkni tiltæk til að opna stillingar á tilkynningarásum.</string>
+  <!--Notification channel name for showing persistent background connection on devices without push notifications-->
+  <string name="NotificationChannel_background_connection">Bakgrunnstenging</string>
+  <!--Notification channel name for showing call status information (like connection, ongoing, etc.) Not ringing.-->
+  <string name="NotificationChannel_call_status">Staða samtals</string>
   <!--ProfileEditNameFragment-->
   <!--QuickResponseService-->
   <string name="QuickResponseService_quick_response_unavailable_when_Signal_is_locked">Flýtisvar ekki tiltækt á meðan Signal er læst!</string>
@@ -1691,6 +1736,11 @@
     <item quantity="one">%1$d meðlimur</item>
     <item quantity="other">%1$d meðlimir</item>
   </plurals>
+  <!--Displays number of viewers for a story-->
+  <plurals name="contact_selection_list_item__number_of_viewers">
+    <item quantity="one">%1$d lesandi</item>
+    <item quantity="other">%1$d lesendur</item>
+  </plurals>
   <!--conversation_activity-->
   <string name="conversation_activity__type_message_push">Signal-skilaboð</string>
   <string name="conversation_activity__type_message_sms_insecure">Óöruggt SMS</string>
@@ -1728,10 +1778,16 @@
   <string name="ConversationUpdateItem_invite_friends">Bjóða vinum aðgang</string>
   <string name="ConversationUpdateItem_enable_call_notifications">Virkja tilkynningar um hringingar</string>
   <string name="ConversationUpdateItem_update_contact">Uppfæra tengilið</string>
+  <!--Update item button text to show to block a recipient from requesting to join via group link-->
+  <string name="ConversationUpdateItem_block_request">Loka á beiðni</string>
   <string name="ConversationUpdateItem_no_groups_in_common_review_requests_carefully">Engir sameiginlegir hópar. Yfirfarðu beiðnir vandlega.</string>
   <string name="ConversationUpdateItem_no_contacts_in_this_group_review_requests_carefully">Engir tengiliðir í þessum hópi. Yfirfarðu beiðnir vandlega.</string>
   <string name="ConversationUpdateItem_view">Skoða</string>
   <string name="ConversationUpdateItem_the_disappearing_message_time_will_be_set_to_s_when_you_message_them">Niðurtalning sjálfeyðandi skilaboða er tímastillt á %1$s þegar þú sendir viðkomandi aðila skilaboð.</string>
+  <!--Update item button text to show to boost a feature-->
+  <string name="ConversationUpdateItem_signal_boost">Signal-hvatning</string>
+  <!--Update item button text to show to become a sustainer in the release notes channel-->
+  <string name="ConversationUpdateItem_become_a_sustainer">Gerstu stuðningsaðili</string>
   <!--audio_view-->
   <string name="audio_view__play_pause_accessibility_description">Spila … bíða</string>
   <string name="audio_view__download_accessibility_description">Sækja</string>
@@ -1744,6 +1800,12 @@
   <string name="QuoteView_sticker">Límmerki</string>
   <string name="QuoteView_you">Þú</string>
   <string name="QuoteView_original_missing">Upprunaleg skilaboð finnast ekki</string>
+  <!--Author formatting for group stories-->
+  <string name="QuoteView_s_story">%1$s · Saga</string>
+  <!--Label indicating that a quote is for a reply to a story you created-->
+  <string name="QuoteView_your_story">Þú · Saga</string>
+  <!--Label indicating that the story being replied to no longer exists-->
+  <string name="QuoteView_no_longer_available">Ekki lengur tiltækt</string>
   <!--conversation_fragment-->
   <string name="conversation_fragment__scroll_to_the_bottom_content_description">Skruna neðst</string>
   <!--BubbleOptOutTooltip-->
@@ -1848,6 +1910,10 @@
   <!--message_recipients_list_item-->
   <string name="message_recipients_list_item__view">Skoða</string>
   <string name="message_recipients_list_item__resend">ENDURSENDA</string>
+  <!--Displayed in a toast when user long presses an item in MyStories-->
+  <string name="MyStoriesFragment__copied_sent_timestamp_to_clipboard">Afritaði tímamerki sendingar á klippispjald.</string>
+  <!--Displayed when there are no outgoing stories-->
+  <string name="MyStoriesFragment__updates_to_your_story_will_show_up_here">Uppfærslur á sögunni þinni munu birtast hér.</string>
   <!--GroupUtil-->
   <plurals name="GroupUtil_joined_the_group">
     <item quantity="one">%1$s gekk í hópinn</item>
@@ -1857,7 +1923,7 @@
   <!--prompt_passphrase_activity-->
   <string name="prompt_passphrase_activity__unlock">Aflæsa</string>
   <!--prompt_mms_activity-->
-  <string name="prompt_mms_activity__signal_requires_mms_settings_to_deliver_media_and_group_messages">Signal þarfnast stilliga fyrir MMS til að geta afhent margmiðlunarefni og hópskilaboð í gegnum farsímakerfi þjónustuaðilans þíns. Tækið þitt veitir ekki þessar upplýsingar, sem kemur fyrir þegar um tæki læst við tiltekinn þjónustuaðila og aðrar skilyrtar uppsetningar er að ræða.</string>
+  <string name="prompt_mms_activity__signal_requires_mms_settings_to_deliver_media_and_group_messages">Signal þarfnast stillinga fyrir MMS til að geta afhent margmiðlunarefni og hópskilaboð í gegnum farsímakerfi þjónustuaðilans þíns. Tækið þitt veitir ekki þessar upplýsingar, sem kemur fyrir þegar um tæki læst við tiltekinn þjónustuaðila og aðrar skilyrtar uppsetningar er að ræða.</string>
   <string name="prompt_mms_activity__to_send_media_and_group_messages_tap_ok">Til að senda margmiðlunarefni og hópskilaboð, skaltu ýta á \'Í lagi\' og ljúka við umbeðnar stillingar. MMS-stillingarnar fyrir símaþjónustuna þína er venjulega hægt að finna með því að leita að \'nafn símaþjónustufyrirtækis APN\'. Þú þarft aðeins að gera þetta einu sinni.</string>
   <!--BadDecryptLearnMoreDialog-->
   <string name="BadDecryptLearnMoreDialog_delivery_issue">Vandamál með afhendingu</string>
@@ -1925,6 +1991,7 @@
   <string name="message_details_recipient_header__read_by">Lesið af</string>
   <string name="message_details_recipient_header__not_sent">Ekki sent</string>
   <string name="message_details_recipient_header__viewed">Skoðað af</string>
+  <string name="message_details_recipient_header__skipped">Sleppt</string>
   <!--message_Details_recipient-->
   <string name="message_details_recipient__failed_to_send">Mistókst að senda</string>
   <string name="message_details_recipient__new_safety_number">Nýtt öryggisnúmer</string>
@@ -2064,9 +2131,8 @@
   <string name="preferences__help">Hjálp</string>
   <string name="preferences__advanced">Meira</string>
   <string name="preferences__donate_to_signal">Gefa til Signal</string>
-  <string name="preferences__subscription">Áskrift</string>
-  <string name="preferences__become_a_signal_sustainer">Gerstu stuðningsaðili Signal</string>
-  <string name="preferences__signal_boost">Signal-hvatning</string>
+  <!--Preference label for making one-time donations to Signal-->
+  <string name="preferences__one_time_donation">Eins-skiptis styrkur</string>
   <string name="preferences__privacy">Gagnaleynd</string>
   <string name="preferences__mms_user_agent">MMS-kennistrengur</string>
   <string name="preferences__advanced_mms_access_point_names">Handvirkar MMS-stillingar</string>
@@ -2164,6 +2230,19 @@
   <string name="preferences_chats__message_text_size">Leturstærð skilaboða</string>
   <string name="preferences_events__contact_joined_signal">Tengiliður skráði sig á Signal</string>
   <string name="preferences_notifications__priority">Forgangur</string>
+  <!--Heading for the \'censorship circumvention\' section of privacy preferences-->
+  <string name="preferences_communication__category_censorship_circumvention">Leiðir framhjá ritskoðun</string>
+  <!--Title of the \'censorship circumvention\' toggle switch-->
+  <string name="preferences_communication__censorship_circumvention">Leiðir framhjá ritskoðun</string>
+  <string name="preferences_communication__censorship_circumvention_if_enabled_signal_will_attempt_to_circumvent_censorship">Ef þetta er virkt, mun Signal reyna að fara framhjá ritskoðun. Ekki virkja þetta nema þú sért á slóðum þar sem ritskoðun Signal fer fram.</string>
+  <!--Summary text for \'censorship circumvention\' toggle. Indicates that we automatically enabled it because we believe you\'re in a censored country-->
+  <string name="preferences_communication__censorship_circumvention_has_been_activated_based_on_your_accounts_phone_number">Leið framhjá ritskoðun var virkjuð út frá símanúmerinu sem tengt er notandaaðgangnum þínum.</string>
+  <!--Summary text for \'censorship circumvention\' toggle. Indicates that you disabled it even though we believe you\'re in a censored country-->
+  <string name="preferences_communication__censorship_circumvention_you_have_manually_disabled">Þú hefur handvirkt gert leiðir framhjá ritskoðun óvirkar.</string>
+  <!--Summary text for \'censorship circumvention\' toggle. Indicates that you cannot use it because you\'re already connected to the Signal service-->
+  <string name="preferences_communication__censorship_circumvention_is_not_necessary_you_are_already_connected">Það þarf engar leiðir framhjá ritskoðun; þú ert þegar með tengingu við Signal-þjónustu.</string>
+  <!--Summary text for \'censorship circumvention\' toggle. Indicates that you cannot use it because you\'re not connected to the internet-->
+  <string name="preferences_communication__censorship_circumvention_can_only_be_activated_when_connected_to_the_internet">Hjáleiðir vegna ritskoðunar er aðeins hægt að virkja þegar tengt er við internetið.</string>
   <string name="preferences_communication__category_sealed_sender">Innsiglaður sendandi</string>
   <string name="preferences_communication__sealed_sender_display_indicators">Skjámerki</string>
   <string name="preferences_communication__sealed_sender_display_indicators_description">Birta stöðutákn þegar þú velur \"Nánar um skilaboð\" á skilaboðum sem borist hafa frá innsigluðum notanda (sealed sender).</string>
@@ -2333,18 +2412,33 @@
   <string name="conversation_callable_secure__menu_call">Signal-símtal</string>
   <string name="conversation_callable_secure__menu_video">Signal-myndsímtal</string>
   <!--conversation_context-->
-  <string name="conversation_context__menu_message_details">Nánar um skilaboð</string>
-  <string name="conversation_context__menu_copy_text">Afrita texta</string>
-  <string name="conversation_context__menu_delete_message">Eyða skilaboðum</string>
-  <string name="conversation_context__menu_forward_message">Áframsenda skeyti</string>
-  <string name="conversation_context__menu_resend_message">Endursenda skilaboð</string>
-  <string name="conversation_context__menu_reply_to_message">Svara skilaboðum</string>
-  <!--conversation_context_reacction-->
-  <string name="conversation_context__reaction_multi_select">Velja mörg</string>
+  <!--Heading which shows how many messages are currently selected-->
+  <plurals name="conversation_context__s_selected">
+    <item quantity="one">%d valin</item>
+    <item quantity="other">%d valin</item>
+  </plurals>
   <!--conversation_context_image-->
-  <string name="conversation_context_image__save_attachment">Vista viðhengi</string>
+  <!--Button to save a message attachment (image, file etc.)-->
+  <string name="conversation_context_image__save_attachment">Vista</string>
   <!--conversation_expiring_off-->
   <string name="conversation_expiring_off__disappearing_messages">Sjálfeyðandi skilaboð</string>
+  <!--conversation_selection-->
+  <!--Button to view detailed information for a message-->
+  <string name="conversation_selection__menu_message_details">Upplýsingar</string>
+  <!--Button to copy a message\'s text to the clipboard-->
+  <string name="conversation_selection__menu_copy">Afrita</string>
+  <!--Button to delete a message-->
+  <string name="conversation_selection__menu_delete">Eyða</string>
+  <!--Button to forward a message to another person or group chat-->
+  <string name="conversation_selection__menu_forward">Áfram</string>
+  <!--Button to reply to a message-->
+  <string name="conversation_selection__menu_reply">Svara</string>
+  <!--Button to save a message attachment (image, file etc.)-->
+  <string name="conversation_selection__menu_save">Vista</string>
+  <!--Button to retry sending a message-->
+  <string name="conversation_selection__menu_resend_message">Endursenda</string>
+  <!--Button to select a message and enter selection mode-->
+  <string name="conversation_selection__menu_multi_select">Velja</string>
   <!--conversation_expiring_on-->
   <!--conversation_insecure-->
   <string name="conversation_insecure__invite">Bjóða</string>
@@ -2531,16 +2625,6 @@ PIN-númerið þitt. Ef þú manst ekki PIN-númerið, geturðu endursannvottað
   <string name="KbsMegaphone__create_a_pin">Útbúðu PIN-númer</string>
   <string name="KbsMegaphone__pins_keep_information_thats_stored_with_signal_encrytped">PIN-númer halda upplýsingum geymdum í Signal dulrituðum.</string>
   <string name="KbsMegaphone__create_pin">Útbúðu PIN-númer</string>
-  <!--Research Megaphone-->
-  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphone_tell_signal_what_you_think">Segðu Signal hvað þér finnst</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphone_to_make_signal_the_best_messaging_app_on_the_planet">Til að gera Signal að besta samskiptaforritinu á plánetunni, þiggjum við með þökkum að þú gefir okkur umsögn.</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphone_learn_more">Kanna nánar</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphone_dismiss">Hafna</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphoneDialog_signal_research">Könnun á Signal</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphoneDialog_we_believe_in_privacy"><![CDATA[<p><b>Við trúum á verndun persónulegra gagna.</b></p><p>Signal fylgist ekki með þér eða safnar neinum gögnum. Til að bæta Signal fyrir alla reiðum við okkur á umsagnir notendanna <b>og við myndum gjarnan vilja heyra frá þér.</b></p><p>Við erum með könnun í gangi til að reyna að skilja hvernig þú notar Signal. Könnunin safnar engum persónugreinanlegum gögnum. Ef þú ert til í að deila með okkur ýmsum viðbótarupplýsingum, geturðu líka gefið okkur upplýsingar um hvernig hægt sé að ná í þig.</p><p>Ef þú hefur nokkrar mínútur aflögu og ert til í að gefa okkur umsögn, væri gaman að sjá eitthvað frá þér.</p>]]></string> -->
-  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphoneDialog_take_the_survey">Taka þátt í könnun</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphoneDialog_no_thanks">Nei, takk</string> -->
-  <!-- Removed by excludeNonTranslatables <string name="ResearchMegaphoneDialog_the_survey_is_hosted_by_alchemer_at_the_secure_domain">Könnunin er hýst hjá Alchemer á örugga léninu surveys.signalusers.org</string> -->
   <!--transport_selection_list_item-->
   <string name="transport_selection_list_item__transport_icon">Tákn fyrir flutning</string>
   <string name="ConversationListFragment_loading">Hleð inn…</string>
@@ -2554,10 +2638,10 @@ PIN-númerið þitt. Ef þú manst ekki PIN-númerið, geturðu endursannvottað
   <string name="PushDecryptJob_new_locked_message">Ný læst skilaboð</string>
   <string name="PushDecryptJob_unlock_to_view_pending_messages">Aflæsa til að skoða skilaboð í bið</string>
   <string name="enter_backup_passphrase_dialog__backup_passphrase">Lykilorð öryggisafritunar</string>
-  <string name="backup_enable_dialog__backups_will_be_saved_to_external_storage_and_encrypted_with_the_passphrase_below_you_must_have_this_passphrase_in_order_to_restore_a_backup">Öryggisafrit verða vistuð yfir á ytri gagnageymslu og dulrituð með aðgangskóðanum hér fyrir neðan. Þú verður að hafa þennan aðgangskóða til að endurheimta öryggisafrit.</string>
-  <string name="backup_enable_dialog__you_must_have_this_passphrase">Þú verður að hafa þennan aðgangskóða til að endurheimta öryggisafrit.</string>
+  <string name="backup_enable_dialog__backups_will_be_saved_to_external_storage_and_encrypted_with_the_passphrase_below_you_must_have_this_passphrase_in_order_to_restore_a_backup">Öryggisafrit verða vistuð yfir á ytri gagnageymslu og dulrituð með lykilorðinu hér fyrir neðan. Þú verður að hafa þetta lykilorð til að endurheimta öryggisafrit.</string>
+  <string name="backup_enable_dialog__you_must_have_this_passphrase">Þú verður að hafa þetta lykilorð til að endurheimta öryggisafrit.</string>
   <string name="backup_enable_dialog__folder">Mappa</string>
-  <string name="backup_enable_dialog__i_have_written_down_this_passphrase">Ég hef skrifað niður þennan aðgangskóða. Án hans mun ég ekki getað endurheimt öryggisafrit.</string>
+  <string name="backup_enable_dialog__i_have_written_down_this_passphrase">Ég hef skrifað niður þetta lykilorð. Án þess mun ég ekki geta endurheimt öryggisafrit.</string>
   <string name="registration_activity__restore_backup">Endurheimta úr öryggisafriti</string>
   <string name="registration_activity__transfer_or_restore_account">Yfirfæra eða endurheimta aðgang</string>
   <string name="registration_activity__transfer_account">Flytja aðgang</string>
@@ -2586,9 +2670,9 @@ PIN-númerið þitt. Ef þú manst ekki PIN-númerið, geturðu endursannvottað
   <string name="BackupDialog_choose_folder">Veldu möppu</string>
   <string name="BackupDialog_copied_to_clipboard">Afritað á klippispjald</string>
   <string name="BackupDialog_no_file_picker_available">Ekkert skráaval tiltækt.</string>
-  <string name="BackupDialog_enter_backup_passphrase_to_verify">Settu inn aðgangskóða öryggisafritsins til að staðfesta</string>
+  <string name="BackupDialog_enter_backup_passphrase_to_verify">Settu inn lykilorð öryggisafritsins til að staðfesta</string>
   <string name="BackupDialog_verify">Sannreyna</string>
-  <string name="BackupDialog_you_successfully_entered_your_backup_passphrase">Þér tókst að setja inn aðgangskóða öryggisafritsins</string>
+  <string name="BackupDialog_you_successfully_entered_your_backup_passphrase">Þér tókst að setja inn lykilorð öryggisafritsins</string>
   <string name="BackupDialog_passphrase_was_not_correct">Lykilorðið var ekki rétt</string>
   <string name="LocalBackupJob_creating_signal_backup">Útbý öryggisafrit af Signal…</string>
   <string name="LocalBackupJobApi29_backup_failed">Öryggisafritun mistókst</string>
@@ -2654,7 +2738,7 @@ PIN-númerið þitt. Ef þú manst ekki PIN-númerið, geturðu endursannvottað
   <string name="NewDeviceTransferInstructions__first_bullet">1.</string>
   <string name="NewDeviceTransferInstructions__tap_on_your_profile_photo_in_the_top_left_to_open_settings">Ýttu á auðkennismyndina þína efst til vinstri til að opna stillingar</string>
   <string name="NewDeviceTransferInstructions__second_bullet">2.</string>
-  <string name="NewDeviceTransferInstructions__tap_on_account">Ýttu á \"Notandaaðgangur\"</string>
+  <string name="NewDeviceTransferInstructions__tap_on_account">Ýttu á \'Notandaaðgangur\'</string>
   <string name="NewDeviceTransferInstructions__third_bullet">3.</string>
   <string name="NewDeviceTransferInstructions__tap_transfer_account_and_then_continue_on_both_devices">Ýttu á \"Yfirfæra aðgang\" og svo á \"Halda áfram\" á báðum tækjunum</string>
   <!--NewDeviceTransferSetupFragment-->
@@ -2778,6 +2862,8 @@ PIN-númerið þitt. Ef þú manst ekki PIN-númerið, geturðu endursannvottað
   <string name="RecipientBottomSheet_remove_s_as_group_admin">Taka stjórnunarréttindi af %1$s? </string>
   <string name="RecipientBottomSheet_s_will_be_able_to_edit_group">\"%1$s\" verður mögulegt að breyta þessum hópi og meðlimum hans.</string>
   <string name="RecipientBottomSheet_remove_s_from_the_group">Fjarlægja %1$s úr hópnum?</string>
+  <!--Dialog message shown when removing someone from a group with group link being active to indicate they will not be able to rejoin-->
+  <string name="RecipientBottomSheet_remove_s_from_the_group_they_will_not_be_able_to_rejoin">Fjarlægja %1$s úr hópnum? Viðkomandi munu ekki geta gengið aftur í hópinn með hóptenglinum.</string>
   <string name="RecipientBottomSheet_remove">Fjarlægja</string>
   <string name="RecipientBottomSheet_copied_to_clipboard">Afritað á klippispjald</string>
   <string name="GroupRecipientListItem_admin">Stjórnandi</string>
@@ -2867,6 +2953,8 @@ PIN-númerið þitt. Ef þú manst ekki PIN-númerið, geturðu endursannvottað
   <string name="DeleteAccountFragment__leaving_groups">Yfirgef hópa…</string>
   <!--Title of progress dialog shown when a user deletes their account and the process has left all groups-->
   <string name="DeleteAccountFragment__deleting_account">Eyði notandaaðgangi…</string>
+  <!--Message of progress dialog shown when a user deletes their account and the process is canceling their subscription-->
+  <string name="DeleteAccountFragment__canceling_your_subscription">Segi upp upp áskriftinni þinni…</string>
   <!--Message of progress dialog shown when a user deletes their account and the process is leaving groups-->
   <string name="DeleteAccountFragment__depending_on_the_number_of_groups">Það fer eftir fjölda hópa sem þú ert í hve langan tíma þetta getur tekið.</string>
   <!--Message of progress dialog shown when a user deletes their account and the process has left all groups-->
@@ -2891,8 +2979,6 @@ PIN-númerið þitt. Ef þú manst ekki PIN-númerið, geturðu endursannvottað
   <!--MultiShareDialogs-->
   <string name="MultiShareDialogs__failed_to_send_to_some_users">Mistókst að senda til sumra notenda</string>
   <string name="MultiShareDialogs__you_can_only_share_with_up_to">Aðeins hægt að deila allt að %1$d spjöllum</string>
-  <!--ShareInterstitialActivity-->
-  <string name="ShareInterstitialActivity__forward_message">Áframsenda skilaboð</string>
   <!--ChatWallpaperActivity-->
   <string name="ChatWallpaperActivity__chat_wallpaper">Bakgrunnsmynd spjalls</string>
   <!--ChatWallpaperFragment-->
@@ -3028,6 +3114,7 @@ PIN-númerið þitt. Ef þú manst ekki PIN-númerið, geturðu endursannvottað
   <string name="QualitySelectorBottomSheetDialog__photo_quality">Gæði ljósmynda</string>
   <!--AppSettingsFragment-->
   <string name="AppSettingsFragment__invite_your_friends">Bjóddu vinum þínum</string>
+  <string name="AppSettingsFragment__copied_subscriber_id_to_clipboard">Afritaði auðkenni áskrifanda á klippispjald</string>
   <!--AccountSettingsFragment-->
   <string name="AccountSettingsFragment__account">Notandaaðgangur</string>
   <string name="AccountSettingsFragment__youll_be_asked_less_frequently">Spurt verður sjaldnar eftir því sem tímar líða</string>
@@ -3036,7 +3123,10 @@ PIN-númerið þitt. Ef þú manst ekki PIN-númerið, geturðu endursannvottað
   <!--ChangeNumberFragment-->
   <string name="ChangeNumberFragment__use_this_to_change_your_current_phone_number_to_a_new_phone_number">Notaðu þetta til að breyta fyrirliggjandi símanúmeri yfir í nýtt símanúmer. Þú getur ekki afturkallað þessa breytingu.\n\nÁður en þú heldur áfram skaltu ganga úr skugga um að nýja símanúmerið geti tekið við SMS-skilaboðum eða hringingum.</string>
   <string name="ChangeNumberFragment__continue">Áfram</string>
-  <string name="ChangeNumber__your_phone_number_has_been_changed">Símanúmerið þitt hefur breyst.</string>
+  <!--Message shown on dialog after your number has been changed successfully.-->
+  <string name="ChangeNumber__your_phone_number_has_changed_to_s">Símanúmerinu þínu hefur verið breytt í %1$s</string>
+  <!--Confirmation button to dismiss number changed dialog-->
+  <string name="ChangeNumber__okay">Í lagi</string>
   <!--ChangeNumberEnterPhoneNumberFragment-->
   <string name="ChangeNumberEnterPhoneNumberFragment__change_number">Skipta um símanúmer</string>
   <string name="ChangeNumberEnterPhoneNumberFragment__your_old_number">Gamla símanúmerið þitt</string>
@@ -3065,12 +3155,19 @@ PIN-númerið þitt. Ef þú manst ekki PIN-númerið, geturðu endursannvottað
   <string name="ChangeNumberPinDiffersFragment__update_pin">Uppfæra PIN-númer</string>
   <string name="ChangeNumberPinDiffersFragment__keep_old_pin_question">Halda gamla PIN-númerinu?</string>
   <!--ChangeNumberLockActivity-->
+  <!--Info message shown to user if something crashed the app during the change number attempt and we were unable to confirm the change so we force them into this screen to check before letting them use the app-->
   <string name="ChangeNumberLockActivity__it_looks_like_you_tried_to_change_your_number_but_we_were_unable_to_determine_if_it_was_successful_rechecking_now">Það lítur út eins og þú hafir reynt að skipta um símanúmer en við náðum ekki að ganga úr skugga um að það hafi tekist.\n\nAthugum aftur núna…</string>
+  <!--Dialog title shown if we were able to confirm your change number status (meaning we now know what the server thinks our number is) after a crash during the regular flow-->
   <string name="ChangeNumberLockActivity__change_status_confirmed">Breytt staða staðfest</string>
+  <!--Dialog message shown if we were able to confirm your change number status (meaning we now know what the server thinks our number is) after a crash during the regular flow-->
   <string name="ChangeNumberLockActivity__your_number_has_been_confirmed_as_s">Símanúmerið þitt hefur verið staðfest sem %1$s. Ef þetta er ekki nýja símanúmerið þitt, skaltu fara aftur í gegnum ferlið til að skipta um símanúmer.</string>
+  <!--Dialog title shown if we were not able to confirm your phone number with the server and thus cannot let leave the change flow yet after a crash during the regular flow-->
   <string name="ChangeNumberLockActivity__change_status_unconfirmed">Breytt staða ekki staðfest</string>
+  <!--Dialog message shown when we can\'t verify the phone number on the server, only shown if there was a network error communicating with the server after a crash during the regular flow-->
   <string name="ChangeNumberLockActivity__we_could_not_determine_the_status_of_your_change_number_request">Við gátum ekki ákvarðað stöðu á beiðni þinni um símnúmeraskipti.\n\n(Villa: %1$s)</string>
+  <!--Dialog button to retry confirming the number on the server-->
   <string name="ChangeNumberLockActivity__retry">Reyna aftur</string>
+  <!--Dialog button shown to leave the app when in the unconfirmed change status after a crash in the regular flow-->
   <string name="ChangeNumberLockActivity__leave">Fara</string>
   <string name="ChangeNumberLockActivity__submit_debug_log">Senda inn villumeldingaskrá</string>
   <!--ChatsSettingsFragment-->
@@ -3188,9 +3285,10 @@ PIN-númerið þitt. Ef þú manst ekki PIN-númerið, geturðu endursannvottað
   <string name="AddAProfilePhotoMegaphone__add_photo">Bæta við ljósmynd</string>
   <!--BecomeASustainerMegaphone-->
   <string name="BecomeASustainerMegaphone__become_a_sustainer">Gerstu stuðningsaðili</string>
-  <string name="BecomeASustainerMegaphone__signal_is_powered">Signal er drifið áfram af fólki eins og þér. Sýndu stuðning og fáðu merki á auðkennið þitt.</string>
-  <string name="BecomeASustainerMegaphone__no_thanks">Nei, takk</string>
-  <string name="BecomeASustainerMegaphone__contribute">Framlag</string>
+  <!--Displayed in the Become a Sustainer megaphone-->
+  <string name="BecomeASustainerMegaphone__signal_is_powered_by">Signal er keyrt áfram af fólki eins og þér. Sýndu stuðning þinn í verki og fáðu merki.</string>
+  <string name="BecomeASustainerMegaphone__not_now">Ekki núna</string>
+  <string name="BecomeASustainerMegaphone__donate">Styrkja</string>
   <!--KeyboardPagerFragment-->
   <string name="KeyboardPagerFragment_emoji">Tjáningartákn</string>
   <string name="KeyboardPagerFragment_open_emoji_search">Opna leit að emoji-táknum</string>
@@ -3299,9 +3397,13 @@ PIN-númerið þitt. Ef þú manst ekki PIN-númerið, geturðu endursannvottað
   <!--ContactSelectionListItem-->
   <string name="ContactSelectionListItem__sms">SMS</string>
   <string name="ContactSelectionListItem__dot_s">· %1$s</string>
+  <!--Displayed in the toolbar when externally sharing text to multiple recipients-->
+  <string name="ShareInterstitialActivity__share">Deila</string>
   <!--DSLSettingsToolbar-->
   <string name="DSLSettingsToolbar__navigate_up">Fara upp</string>
   <string name="MultiselectForwardFragment__forward_to">Áframsenda til</string>
+  <!--Displayed when sharing content via the fragment-->
+  <string name="MultiselectForwardFragment__share_with">Deila með</string>
   <string name="MultiselectForwardFragment__add_a_message">Bæta við skilaboðum</string>
   <string name="MultiselectForwardFragment__faster_forwards">Hraðar áframsent</string>
   <string name="MultiselectForwardFragment__forwarded_messages_are_now">Áframsend skilaboð eru núna send samstundis.</string>
@@ -3350,57 +3452,73 @@ PIN-númerið þitt. Ef þú manst ekki PIN-númerið, geturðu endursannvottað
   <string name="CameraFragment__failed_to_open_camera">Mistókst að opna myndavél</string>
   <string name="BadgesOverviewFragment__my_badges">Merkin mín</string>
   <string name="BadgesOverviewFragment__featured_badge">Áberandi merki</string>
-  <string name="BadgesOverviewFragment__display_badges_on_profile">Birta merki á persónusniði</string>
-  <string name="BadgesOverviewFragment__failed_to_update_profile">Mistókst að uppfæra persónusnið</string>
+  <string name="BadgesOverviewFragment__display_badges_on_profile">Birta merki á notandasniði</string>
+  <string name="BadgesOverviewFragment__failed_to_update_profile">Mistókst að uppfæra notandasnið</string>
   <string name="BadgeSelectionFragment__select_badges">Veldu merki</string>
   <string name="SelectFeaturedBadgeFragment__preview">Forskoða</string>
   <string name="SelectFeaturedBadgeFragment__select_a_badge">Veldu merki</string>
   <string name="SelectFeaturedBadgeFragment__you_must_select_a_badge">Þú þarft að velja merki</string>
-  <string name="SelectFeaturedBadgeFragment__failed_to_update_profile">Mistókst að uppfæra persónusnið</string>
+  <string name="SelectFeaturedBadgeFragment__failed_to_update_profile">Mistókst að uppfæra notandasnið</string>
   <string name="ViewBadgeBottomSheetDialogFragment__become_a_sustainer">Gerstu stuðningsaðili</string>
   <string name="ImageView__badge">Merki</string>
   <string name="SubscribeFragment__signal_is_powered_by_people_like_you">Signal er drifið áfram af fólki eins og þér.</string>
   <string name="SubscribeFragment__support_technology_that_is_built_for_you">Styddu við tækni sem er hönnuð fyrir þig - ekki til að grafast fyrir um hegðun þína - með því að ganga til liðs við fólkið sem stendur að hugbúnaðnum.</string>
   <string name="SubscribeFragment__support_technology_that_is_built_for_you_not">Styddu við tækni sem er hönnuð fyrir þig, ekki til að grafast fyrir um hegðun þína, með því að ganga til liðs við fólkið sem stendur að Signal.</string>
+  <string name="SubscribeFragment__make_a_recurring_monthly_donation">Styrktu Signal með mánaðarlegum enduteknum greiðslum og styddu þannig við tækni sem er hönnuð fyrir þig - ekki til að grafast fyrir um 
+hegðun þína.</string>
   <string name="SubscribeFragment__currency">Gjaldmiðill</string>
   <string name="SubscribeFragment__more_payment_options">Fleiri greiðslumátar</string>
   <string name="SubscribeFragment__cancel_subscription">Segja upp áskrift</string>
   <string name="SubscribeFragment__confirm_cancellation">Staðfesta uppsögn?</string>
-  <string name="SubscribeFragment__you_wont_be_charged_again">Þú færð ekki rukkun oftar. Merkið verður fjarlægt úr persónusniðinu þínu eftir að greiðslutímabilinu lýkur.</string>
+  <string name="SubscribeFragment__you_wont_be_charged_again">Þú færð ekki rukkun oftar. Merkið verður fjarlægt úr notandasniðinu þínu eftir að greiðslutímabilinu lýkur.</string>
   <string name="SubscribeFragment__not_now">Ekki núna</string>
   <string name="SubscribeFragment__confirm">Staðfesta</string>
   <string name="SubscribeFragment__update_subscription">Uppfæra áskrift</string>
   <string name="SubscribeFragment__your_subscription_has_been_cancelled">Áskriftinni þinni hefur verið sagt upp</string>
   <string name="SubscribeFragment__update_subscription_question">Uppfæra áskrift?</string>
   <string name="SubscribeFragment__update">Uppfæra</string>
-  <string name="SubscribeFragment__you_will_be_charged_the_full_amount">Þú þarft að greiða fullt verð nýju áskriftarinnar í dag. Áskriftin þín verður endurnýjuð %1$s.</string>
   <string name="SubscribeFragment__you_will_be_charged_the_full_amount_s_of">Þú þarft að greiða fullt verð (%1$s) nýju áskriftarinnar í dag Áskriftin þín verður endurnýjuð mánaðarlega.</string>
   <string name="Subscription__s_per_month">%s/mánuði</string>
   <string name="Subscription__s_per_month_dot_renews_s">%1$s/mánuði · Endurnýjast %2$s</string>
   <string name="Subscription__s_per_month_dot_expires_s">%1$s/mánuði · Rennur út %2$s</string>
-  <string name="SubscribeLearnMoreBottomSheetDialogFragment__signal_is_a_non_profit_with_no">Signal er samtök án hagnaðarmarkmiða, auglýsenda eða fjárfesta, einungis drifið áfram af fólkinu sem notar það og meta gildi þess. Styrktu verkefnið um mánaðarlega upphæð og fáðu merki á auðkennismyndina þina til að sýna stuðning þinn.</string>
-  <string name="SubscribeLearnMoreBottomSheetDialogFragment__why_contribute">Af hverju styrkja?</string>
+  <!--First small text blurb on learn more sheet-->
+  <string name="SubscribeLearnMoreBottomSheetDialogFragment__signal_is_a_nonprofit_with_no">Signal er samtök án hagnaðarmarkmiða, auglýsenda eða fjárfesta, einungis drifið áfram af fólkinu sem notar það og meta gildi þess. Styrktu verkefnið mánaðarlega og fáðu merki á auðkennismyndina þina til að sýna stuðning þinn.</string>
+  <string name="SubscribeLearnMoreBottomSheetDialogFragment__why_donate">Af hverju styrkja?</string>
   <string name="SubscribeLearnMoreBottomSheetDialogFragment__signal_is_committed_to_developing">Signal hefur að markmiði að þróa opna og frjálsa tækni til verndar einkalífinu og sem styður frjálsa tjáningu ásamt þvú að styðja við hnattræn samskipti.</string>
-  <string name="SubscribeLearnMoreBottomSheetDialogFragment__your_contribution">Framlag þitt styður við þessi markmið og greiðir fyrir þróun og rekstur hugbúnaðar sem nýtist milljónum manna við einkasamskipti. Engar auglýsingar. Engar njósnir. Ekki að grínast.</string>
+  <string name="SubscribeLearnMoreBottomSheetDialogFragment__your_donation">Framlag þitt styður við þessi markmið og greiðir fyrir þróun og rekstur hugbúnaðar sem nýtist milljónum manna við einkasamskipti. Engar auglýsingar. Engar njósnir. Ekki að grínast.</string>
   <string name="SubscribeThanksForYourSupportBottomSheetDialogFragment__thanks_for_your_support">Þakka þér fyrir stuðninginn!</string>
   <string name="SubscribeThanksForYourSupportBottomSheetDialogFragment__thanks_for_the_boost">Þakka þér fyrir hvatninguna!</string>
-  <string name="SubscribeThanksForYourSupportBottomSheetDialogFragment__youve_earned_s_badge_help_signal">Þú vannst þér inn %s merki! Hjálpaðu Signal að byggja upp samstöðu með því að birta þetta merki á auðkennismyndinni þinni.</string>
-  <string name="SubscribeThanksForYourSupportBottomSheetDialogFragment__youve_earned_a_boost_badge_help_signal">Þú vannst þér inn hvatningarmerki! Hjálpaðu Signal að byggja upp samstöðu með því að birta þetta merki á auðkennismyndinni þinni.</string>
+  <string name="SubscribeThanksForYourSupportBottomSheetDialogFragment__youve_earned_s_badge_display">Þú hefur unnið þér inn %s-merki! Birtu þetta merki á auðkenninu þínu til að stuðla að meðvitundu um að það sé hægt að styrkja Signal.</string>
+  <string name="SubscribeThanksForYourSupportBottomSheetDialogFragment__youve_earned_a_boost_badge_display">Þú hefur unnið þér inn hvatningar-merki! Birtu þetta merki á auðkenninu þínu til að stuðla að meðvitundu um að það sé hægt að styrkja Signal.</string>
   <string name="SubscribeThanksForYourSupportBottomSheetDialogFragment__you_can_also">Þú getur líka</string>
   <string name="SubscribeThanksForYourSupportBottomSheetDialogFragment__become_a_montly_sustainer">orðið stuðningsaðili Signal mánaðarlega</string>
-  <string name="SubscribeThanksForYourSupportBottomSheetDialogFragment__display_on_profile">Birta á persónusniði</string>
+  <string name="SubscribeThanksForYourSupportBottomSheetDialogFragment__display_on_profile">Birta á notandasniði</string>
   <string name="SubscribeThanksForYourSupportBottomSheetDialogFragment__make_featured_badge">Gera merki áberandi</string>
   <string name="SubscribeThanksForYourSupportBottomSheetDialogFragment__done">Lokið</string>
   <string name="ThanksForYourSupportBottomSheetFragment__when_you_have_more">Þegar þú átt fleiri en eitt merki, geturðu valið eitt þeirra sem aðrir sjá á auðkennismyndinni þinni.</string>
   <string name="BecomeASustainerFragment__get_badges">Fáðu merki á notandaauðkennið þitt með því að styrkja Signal.</string>
   <string name="BecomeASustainerFragment__signal_is_a_non_profit">Signal er samtök án hagnaðarsjónarmiða, auglýsenda eða fjárfesta og er drifið áfram af fólki eins og þér.</string>
-  <string name="ManageDonationsFragment__my_support">Stuðningur minn</string>
+  <!--Button label for creating a monthly donation-->
+  <string name="ManageDonationsFragment__make_a_monthly_donation">Veita mánaðarlegan styrk</string>
+  <!--Heading for more area of manage subscriptions page-->
+  <string name="ManageDonationsFragment__more">Meira</string>
+  <!--Heading for receipts area of manage subscriptions page-->
+  <string name="ManageDonationsFragment__receipts">Kvittanir</string>
+  <!--Heading for my subscription area of manage subscriptions page-->
+  <string name="ManageDonationsFragment__my_subscription">Áskriftin mín</string>
   <string name="ManageDonationsFragment__manage_subscription">Sýsla með áskrift</string>
+  <!--Label for Donation Receipts button-->
+  <string name="ManageDonationsFragment__donation_receipts">Kvittanir vegna styrkja</string>
   <string name="ManageDonationsFragment__badges">Merki</string>
   <string name="ManageDonationsFragment__subscription_faq">Spurningar varðandi áskrift</string>
   <string name="ManageDonationsFragment__error_getting_subscription">Villa við að ná í áskrift</string>
+  <!--Preference heading for other ways to donate-->
+  <string name="ManageDonationsFragment__other_ways_to_give">Aðrar leiðir til að styrkja</string>
+  <!--Preference label to launch badge gifting-->
+  <string name="ManageDonationsFragment__gift_a_badge">Gefðu gjafamerki</string>
   <string name="BoostFragment__give_signal_a_boost">Gefðu Signal hvatningu</string>
-  <string name="BoostFragment__say_thanks_and_earn">Segðu \"Bestu þakkir!\" og vinndu þér inn hvatningarmerki í %1$d daga.</string>
+  <!--Description text in boost sheet-->
+  <string name="BoostFragment__make_a_one_time">Styrktu einu sinni og vinndu þér inn hvatningarmerki í %1$d daga.</string>
   <string name="Boost__enter_custom_amount">Settu inn sérsniðna upphæð</string>
   <string name="Boost__one_time_contribution">Eins-skiptis styrkur</string>
   <string name="MySupportPreference__add_a_signal_boost">Bæta við Signal-hvatningu</string>
@@ -3410,18 +3528,27 @@ PIN-númerið þitt. Ef þú manst ekki PIN-númerið, geturðu endursannvottað
   <!--Displayed on "My Support" screen when user badge failed to be added to their account-->
   <string name="MySupportPreference__couldnt_add_badge_s">Gat ekki bætt við merki. %1$s</string>
   <string name="MySupportPreference__please_contact_support">Hafðu samband við aðstoðarteymið.</string>
-  <string name="ExpiredBadgeBottomSheetDialogFragment__your_badge_has_expired">Merkið þitt er útrunnið</string>
-  <string name="ExpiredBadgeBottomSheetDialogFragment__badge_expired">Merki útrunnið</string>
-  <string name="ExpiredBadgeBottomSheetDialogFragment__subscription_cancelled">Áskrift sagt upp</string>
-  <string name="ExpiredBadgeBottomSheetDialogFragment__your_boost_badge_has_expired">Hvatningarmerkið þitt er útrunnið og því ekki lengur sýnilegt öðrum á auðkenninu þínu.</string>
+  <!--Title of expiry sheet when boost badge falls off profile unexpectedly.-->
+  <string name="ExpiredBadgeBottomSheetDialogFragment__boost_badge_expired">Hvatningarmerki útrunnið</string>
+  <!--Displayed in the bottom sheet if a monthly donation badge unexpectedly falls off the user\'s profile-->
+  <string name="ExpiredBadgeBottomSheetDialogFragment__monthly_donation_cancelled">Hætt við mánaðarlegan styrk</string>
+  <!--Displayed in the bottom sheet when a boost badge expires-->
+  <string name="ExpiredBadgeBottomSheetDialogFragment__your_boost_badge_has_expired_and">Hvatningarmerkið þitt er útrunnið og því ekki lengur sýnilegt á auðkenninu þínu.</string>
   <string name="ExpiredBadgeBottomSheetDialogFragment__you_can_reactivate">Þú getur endurvirkjað hvatningarmerkið þitt í 30 daga til viðbótar með eins-skiptis framlagi.</string>
-  <string name="ExpiredBadgeBottomSheetDialogFragment__to_continue_supporting_technology">Til að halda áfram að styðja við tækni sem er hönnuð fyrir þig, skaltu íhuga að gerast mánaðarlegur stuðningsaðili.</string>
+  <!--Displayed when we do not think the user is a subscriber when their boost expires-->
+  <string name="ExpiredBadgeBottomSheetDialogFragment__you_can_keep">Þú getur haldið áfram að nota Signal, en til að styðja við verkefnið í þína þágu, ættirðu að íhuga að gerast mánaðarlegur stuðningsaðili.</string>
   <string name="ExpiredBadgeBottomSheetDialogFragment__become_a_sustainer">Gerstu stuðningsaðili</string>
   <string name="ExpiredBadgeBottomSheetDialogFragment__add_a_boost">Bæta við hvatningu</string>
   <string name="ExpiredBadgeBottomSheetDialogFragment__not_now">Ekki núna</string>
-  <string name="ExpiredBadgeBottomSheetDialogFragment__your_sustainer">Stuðningsaðilaáskriftin þín var sjálfvirkt felld niður því þú hefur verið óvirk/ur of lengi. %1$s merkið þitt er ekki lengur sýnilegt á auðkennismyndinni þinni.</string>
+  <!--Copy displayed when badge expires after user inactivity-->
+  <string name="ExpiredBadgeBottomSheetDialogFragment__your_recurring_monthly_donation_was_automatically">Endurtekinn mánaðarlegur styrkur þinn var sjálfvirkt felldur niður því þú hefur verið óvirk/ur of lengi. %1$s merkið þitt er ekki lengur sýnilegt á auðkennismyndinni þinni.</string>
+  <!--Copy displayed when badge expires after payment failure-->
+  <string name="ExpiredBadgeBottomSheetDialogFragment__your_recurring_monthly_donation_was_canceled">Endurtekinn mánaðarlegur styrkur þinn var felldur niður því við gátum ekki unnið úr greiðslunni þinni. Skjaldmerkið þitt er ekki lengur sýnilegt á auðkennismyndinni þinni.</string>
   <string name="ExpiredBadgeBottomSheetDialogFragment__you_can">Þú getur haldið áfram að nota Signal, en til að styðja við hugbúnaðinn og endurvirkja merkið þitt ættirðu að endurnýja núna.</string>
   <string name="ExpiredBadgeBottomSheetDialogFragment__renew_subscription">Endurnýja áskrift</string>
+  <string name="CantProcessSubscriptionPaymentBottomSheetDialogFragment__cant_process_subscription_payment">Get ekki meðhöndlað greiðslu vegna áskriftar</string>
+  <string name="CantProcessSubscriptionPaymentBottomSheetDialogFragment__were_having_trouble">Við eigum í vandræðum með að gjaldfæra greiðsluna þína fyrir Signal Sustainer stuðningsaðild. Gakktu úr skugga um að greiðslumátinn þinn sé uppfærður. Ef ekki, skaltu uppfæra hann í Google Pay. Signal mun reyna aftur innan örfárra daga að gjaldfæra greiðsluna þína.</string>
+  <string name="CantProcessSubscriptionPaymentBottomSheetDialogFragment__dont_show_this_again">Ekki sýna þetta aftur</string>
   <string name="Subscription__please_contact_support_for_more_information">Hafðu samband við aðstoðarteymið til að fá nánari upplýsingar.</string>
   <string name="Subscription__contact_support">Hafa samband við hjálparteymi</string>
   <string name="Subscription__earn_a_s_badge">Fáðu %1$s merki</string>
@@ -3434,6 +3561,14 @@ PIN-númerið þitt. Ef þú manst ekki PIN-númerið, geturðu endursannvottað
   <string name="DonationsErrors__your_payment">Ekki var hægt að meðhöndla greiðsluna þína og þú hefur því ekki greitt kröfuna. Endilega reyndu aftur.</string>
   <string name="DonationsErrors__still_processing">Enn í vinnslu</string>
   <string name="DonationsErrors__couldnt_add_badge">Gat ekki bætt við merki</string>
+  <!--Displayed when badge credential couldn\'t be verified-->
+  <string name="DonationsErrors__failed_to_validate_badge">Mistókst að fullgilda merki</string>
+  <!--Displayed when badge credential couldn\'t be verified-->
+  <string name="DonationsErrors__could_not_validate">Mistókst að fullgilda svar frá netþjóni. Hafðu samband við aðstoðarteymið.</string>
+  <!--Displayed as title when some generic error happens during gift badge sending-->
+  <string name="DonationsErrors__failed_to_send_gift_badge">Mistókst að senda gjafamerki</string>
+  <!--Displayed as message when some generic error happens during gift badge sending-->
+  <string name="DonationsErrors__could_not_send_gift_badge">Mistókst að senda gjafamerki. Hafðu samband við aðstoðarteymið.</string>
   <string name="DonationsErrors__your_badge_could_not">Ekki var hægt að bæta merkinu við aðganginn þinn, en mögulega hefur þú samt fengið rukkun. Hafðu samband við aðstoðarteymið.</string>
   <string name="DonationsErrors__your_payment_is_still">Greiðslan þín er ennþá í vinnslu. Þetta getur tekið nokkrar mínútur, eftir ástandi tengingarinnar þinnar.</string>
   <string name="DonationsErrors__google_pay_unavailable">Google Pay ekki aðgengilegt</string>
@@ -3443,10 +3578,55 @@ PIN-númerið þitt. Ef þú manst ekki PIN-númerið, geturðu endursannvottað
   <string name="ViewBadgeBottomSheetDialogFragment__your_device_doesn_t_support_google_pay_so_you_can_t_subscribe_to_earn_a_badge_you_can_still_support_signal_by_making_a_donation_on_our_website">Tækið þitt styður ekki Google Pay, þannig að þú getur ekki orðið áskrifandi og unnið þér inn merki. Þú getur samt stutt Signal með styrk í gegnum vefsvæðið okkar.</string>
   <string name="NetworkFailure__network_error_check_your_connection_and_try_again">Villa í netkerfi. Athugaðu nettenginguna þína og prófaðu svo aftur.</string>
   <string name="NetworkFailure__retry">Reyna aftur</string>
+  <string name="DonationsErrors__recipient_verification_failed">Staðfesting viðtakanda mistókst.</string>
+  <string name="DonationsErrors__target_does_not_support_gifting">Kerfi viðtakanda styður ekki gjafir.</string>
+  <!--Gift message view title-->
+  <string name="GiftMessageView__gift_badge">Gjafamerki</string>
+  <!--Gift message view expiry information-->
+  <plurals name="GiftMessageView__lasts_for_d_months">
+    <item quantity="one">Endist í %1$d mánuð</item>
+    <item quantity="other">Endist í %1$d mánuði</item>
+  </plurals>
+  <!--Gift badge redeem action label-->
+  <string name="GiftMessageView__redeem">Leysa út</string>
+  <!--Gift badge view action label-->
+  <string name="GiftMessageView__view">Skoða</string>
+  <!--Gift badge redeeming action label-->
+  <string name="GiftMessageView__redeeming">Leysi út…</string>
+  <!--Gift badge redeemed label-->
+  <string name="GiftMessageView__redeemed">Búið að leysa út</string>
+  <!--Stripe decline code generic_failure-->
+  <string name="DeclineCode__try_another_payment_method_or_contact_your_bank">Reyndu annan greiðslumáta eða hafðu samband við bankann þinn til að fá frekari upplýsingar.</string>
+  <!--Stripe decline code verify on Google Pay and try again-->
+  <string name="DeclineCode__verify_your_payment_method_is_up_to_date_in_google_pay_and_try_again">Yfirfarðu hvort greiðslumátinn þinn sé uppfærður í Google Pay og reyndu svo aftur.</string>
+  <!--Stripe decline code learn more action label-->
+  <string name="DeclineCode__learn_more">Kanna nánar</string>
+  <!--Stripe decline code contact issuer-->
+  <string name="DeclineCode__verify_your_payment_method_is_up_to_date_in_google_pay_and_try_again_if_the_problem">Yfirfarðu hvort greiðslumátinn þinn sé uppfærður í Google Pay og reyndu svo aftur. Ef vandamálið er viðvarandi, ættirðu að hafa samband við bankann þinn.</string>
+  <!--Stripe decline code purchase not supported-->
+  <string name="DeclineCode__your_card_does_not_support_this_type_of_purchase">Greiðslukortið þitt styður ekki þessa tegund innkaupa. Prófaðu annan greiðslumáta.</string>
+  <!--Stripe decline code your card has expired-->
+  <string name="DeclineCode__your_card_has_expired">Kortið þitt er útrunnið. Uppfærðu greiðslumátann þinn í Google Pay og reyndu svo aftur.</string>
+  <!--Stripe decline code go to google pay action label-->
+  <string name="DeclineCode__go_to_google_pay">Fara í Google Pay</string>
+  <!--Stripe decline code incorrect card number-->
+  <string name="DeclineCode__your_card_number_is_incorrect">Kortanúmerið þitt er rangt. Uppfærðu það í Google Pay og reyndu svo aftur.</string>
+  <!--Stripe decline code incorrect cvc-->
+  <string name="DeclineCode__your_cards_cvc_number_is_incorrect">CVC-númer kortsins þíns er rangt. Uppfærðu það í Google Pay og reyndu svo aftur.</string>
+  <!--Stripe decline code insufficient funds-->
+  <string name="DeclineCode__your_card_does_not_have_sufficient_funds">Greiðslukortið þitt er ekki með nægilega inneign til að ljúka þessum innkaupum. Prófaðu annan greiðslumáta.</string>
+  <!--Stripe decline code incorrect expiration month-->
+  <string name="DeclineCode__the_expiration_month">Mánuður gildistíma kortsins í greiðslumátanum þínum er rangt. Uppfærðu þetta í Google Pay og reyndu svo aftur.</string>
+  <!--Stripe decline code incorrect expiration year-->
+  <string name="DeclineCode__the_expiration_year">Ártal gildistíma kortsins í greiðslumátanum þínum er rangt. Uppfærðu þetta í Google Pay og reyndu svo aftur.</string>
+  <!--Stripe decline code issuer not available-->
+  <string name="DeclineCode__try_completing_the_payment_again">Reyndu aftur að ljúka greiðsluferlinu eða hafðu samband við bankann þinn til að fá frekari upplýsingar.</string>
+  <!--Stripe decline code processing error-->
+  <string name="DeclineCode__try_again">Reyndu aftur eða hafðu samband við bankann þinn til að fá frekari upplýsingar.</string>
   <!--Title of create notification profile screen-->
   <string name="EditNotificationProfileFragment__name_your_profile">Gefðu tilkynningasniðinu nafn</string>
   <!--Hint text for create/edit notification profile name-->
-  <string name="EditNotificationProfileFragment__profile_name">Heiti notandasniðs</string>
+  <string name="EditNotificationProfileFragment__profile_name">Heiti tilkynningasniðs</string>
   <!--Name has a max length, this shows how many characters are used out of the max-->
   <string name="EditNotificationProfileFragment__count">%1$d/%2$d</string>
   <!--Call to action button to continue to the next step-->
@@ -3573,15 +3753,351 @@ PIN-númerið þitt. Ef þú manst ekki PIN-númerið, geturðu endursannvottað
   <string name="NotificationProfileSelection__view_settings">Skoða stillingar</string>
   <!--Descriptor text indicating how long a profile will be on when there is a time component associated with it-->
   <string name="NotificationProfileSelection__on_until_s">Eða til %1$s</string>
-  <!--Title for notification profile megaphone-->
-  <string name="NotificationProfilesMegaphone__notification_profiles">Snið tilkynninga</string>
-  <!--Description for notification profile megaphone-->
-  <string name="NotificationProfilesMegaphone__only_get_notifications_from_the_people_and_groups_you_choose">Fáðu aðeins tilkynningar frá fólki og hópum sem þú kýst.</string>
-  <!--Call to action button to create a profile from megaphone-->
-  <string name="NotificationProfilesMegaphone__create_a_profile">Útbúa tilkynningasnið</string>
-  <!--Button to dismiss notification profile megaphone-->
-  <string name="NotificationProfilesMegaphone__not_now">Ekki núna</string>
   <!--Displayed in a toast when we fail to open the ringtone picker-->
   <string name="NotificationSettingsFragment__failed_to_open_picker">Mistókst að opna veljara.</string>
+  <!--Description shown for the Signal Release Notes channel-->
+  <string name="ReleaseNotes__signal_release_notes_and_news">Útgáfuupplýsingar og fréttir frá Signal</string>
+  <!--Donation receipts activity title-->
+  <string name="DonationReceiptListFragment__all_activity">Öll virkni</string>
+  <!--Donation receipts all tab label-->
+  <string name="DonationReceiptListFragment__all">Allt</string>
+  <!--Donation receipts recurring tab label-->
+  <string name="DonationReceiptListFragment__recurring">Endurtekið</string>
+  <!--Donation receipts one-time tab label-->
+  <string name="DonationReceiptListFragment__one_time">Eins-skiptis</string>
+  <!--Donation receipts gift tab label-->
+  <string name="DonationReceiptListFragment__gift">Gjöf</string>
+  <!--Donation receipts boost row label-->
+  <string name="DonationReceiptListFragment__boost">Hvatning</string>
+  <!--Donation receipts details title-->
+  <string name="DonationReceiptDetailsFragment__details">Nánar</string>
+  <!--Donation receipts donation type heading-->
+  <string name="DonationReceiptDetailsFragment__donation_type">Tegund styrks</string>
+  <!--Donation receipts date paid heading-->
+  <string name="DonationReceiptDetailsFragment__date_paid">Greiðsludagsetning</string>
+  <!--Donation receipts share PNG-->
+  <string name="DonationReceiptDetailsFragment__share_receipt">Deila kvittun</string>
+  <!--Donation receipts list end note-->
+  <string name="DonationReceiptListFragment__if_you_have">Ef þú hefur sett Signal upp aftur, verða kvittanir fyrir fyrri styrkjum ekki tiltækar.</string>
+  <!--Donation receipts document title-->
+  <string name="DonationReceiptDetailsFragment__donation_receipt">Kvittun vegna styrks</string>
+  <!--Donation receipts amount title-->
+  <string name="DonationReceiptDetailsFragment__amount">Upphæð</string>
+  <!--Donation receipts thanks-->
+  <string name="DonationReceiptDetailsFragment__thank_you_for_supporting">Takk fyrir stuðninginn við Signal. Framlag þitt hjálpar okkur að standa við markmið okkar við að þróa opna og frjálsa tækni til verndunar einkaupplýsinga sem styður við tjáningarfrelsi og tryggir örygg samskipti fyrir milljónir manna víðsvegar um heiminn. Ef þú býrð í Bandaríkjum Norður-Ameríku, geturðu haldið upp á þessa kvittun fyrir skattframtalið þitt. Signal Technology Foundation eru skattfrjáls bandarísk samtök án hagnaðarmarkmiða sem falla undir grein 501c3 í Internal Revenue Code reglugerðinni. Federal Tax ID auðkennið okkar er 82–4506840.</string>
+  <!--Donation receipt type-->
+  <string name="DonationReceiptDetailsFragment__s_dash_s">%1$s - %2$s</string>
+  <!--region "Stories Tab"-->
+  <!--Label for Chats tab in home app screen-->
+  <string name="ConversationListTabs__chats">Spjall</string>
+  <!--Label for Stories tab in home app screen-->
+  <string name="ConversationListTabs__stories">Sögur</string>
+  <!--String for counts above 99 in conversation list tabs-->
+  <string name="ConversationListTabs__99p">99+</string>
+  <!--Title for "My Stories" row item in Stories landing page-->
+  <string name="StoriesLandingFragment__my_stories">Sögurnar mínar</string>
+  <!--Subtitle for "My Stories" row item when user has not added stories-->
+  <string name="StoriesLandingFragment__add_a_story">Bæta við sögu</string>
+  <!--Displayed when there are no stories to display-->
+  <string name="StoriesLandingFragment__no_recent_updates_to_show_right_now_tap_plus_to_add_to_your_story">Engar nýlegar uppfærslur sem hægt er að sýna í augnablikinu. Ýttu á + til að bæta við söguna þína.</string>
+  <!--Context menu option to hide a story-->
+  <string name="StoriesLandingItem__hide_story">Fela sögu</string>
+  <!--Context menu option to unhide a story-->
+  <string name="StoriesLandingItem__unhide_story">Hætta að fela sögu</string>
+  <!--Context menu option to forward a story-->
+  <string name="StoriesLandingItem__forward">Áfram</string>
+  <!--Context menu option to share a story-->
+  <string name="StoriesLandingItem__share">Deila…</string>
+  <!--Context menu option to go to story chat-->
+  <string name="StoriesLandingItem__go_to_chat">Fara í spjall</string>
+  <!--Label when a story is pending sending-->
+  <string name="StoriesLandingItem__sending">Sendi…</string>
+  <!--Label when multiple stories are pending sending-->
+  <string name="StoriesLandingItem__sending_d">Sendi %1$d…</string>
+  <!--Label when a story fails to send-->
+  <string name="StoriesLandingItem__send_failed">Sending mistókst</string>
+  <!--Status label when a story fails to send indicating user action to retry-->
+  <string name="StoriesLandingItem__tap_to_retry">Ýttu til að reyna aftur</string>
+  <!--Title of dialog confirming decision to hide a story-->
+  <string name="StoriesLandingFragment__hide_story">Fela sögu?</string>
+  <!--Message of dialog confirming decision to hide a story-->
+  <string name="StoriesLandingFragment__new_story_updates">Fela sögu? Nýjar uppfærslur á sögu frá %1$s munu ekki birtast framar efst í sögulistanum.</string>
+  <!--Positive action of dialog confirming decision to hide a story-->
+  <string name="StoriesLandingFragment__hide">Fela</string>
+  <!--Displayed in Snackbar after story is hidden-->
+  <string name="StoriesLandingFragment__story_hidden">Saga falin</string>
+  <!--Section header for hidden stories-->
+  <string name="StoriesLandingFragment__hidden_stories">Faldar sögur</string>
+  <!--Displayed on each sent story under My Stories-->
+  <plurals name="MyStories__d_views">
+    <item quantity="one">%1$d innlit</item>
+    <item quantity="other">%1$d innlit</item>
+  </plurals>
+  <!--Forward story label, displayed in My Stories context menu-->
+  <string name="MyStories_forward">Áfram</string>
+  <!--Label for stories for a single user. Format is {given name}\'s Story-->
+  <string name="MyStories__ss_story">Saga frá %1$s</string>
+  <!--Title of dialog to confirm deletion of story-->
+  <string name="MyStories__delete_story">Eyða sögu?</string>
+  <!--Message of dialog to confirm deletion of story-->
+  <string name="MyStories__this_story_will_be_deleted">Þessari sögu verður eytt hjá þér og öllum sem hafa fengið hana.</string>
+  <!--Displayed at bottom of story viewer when current item has views-->
+  <plurals name="StoryViewerFragment__d_views">
+    <item quantity="one">%1$d innlit</item>
+    <item quantity="other">%1$d innlit</item>
+  </plurals>
+  <!--Displayed at bottom of story viewer when current item has replies-->
+  <plurals name="StoryViewerFragment__d_replies">
+    <item quantity="one">%1$d svar</item>
+    <item quantity="other">%1$d svör</item>
+  </plurals>
+  <!--Used to join views and replies when both exist on a story item-->
+  <string name="StoryViewerFragment__s_s">%1$s %2$s</string>
+  <!--Displayed when viewing a post you sent-->
+  <string name="StoryViewerPageFragment__you">Þú</string>
+  <!--Displayed when viewing a post displayed to a group-->
+  <string name="StoryViewerPageFragment__s_to_s">%1$s til %2$s</string>
+  <!--Displayed when viewing a post from another user with no replies-->
+  <string name="StoryViewerPageFragment__reply">Svara</string>
+  <!--Displayed when a story has no views-->
+  <string name="StoryViewsFragment__no_views_yet">Ennþá engin innlit</string>
+  <!--Displayed when a story has no replies yet-->
+  <string name="StoryGroupReplyFragment__no_replies_yet">Ennþá engin svör</string>
+  <!--Displayed for each user that reacted to a story when viewing replies-->
+  <string name="StoryGroupReactionReplyItem__reacted_to_the_story">Brást við sögunni</string>
+  <!--Label for story views tab-->
+  <string name="StoryViewsAndRepliesDialogFragment__views">Skoðað</string>
+  <!--Label for story replies tab-->
+  <string name="StoryViewsAndRepliesDialogFragment__replies">Svör</string>
+  <!--Description of action for reaction button-->
+  <string name="StoryReplyComposer__react_to_this_story">Bregðast við þessari sögu</string>
+  <!--Displayed when the user is replying privately to someone who replied to one of their stories-->
+  <string name="StoryReplyComposer__replying_privately_to_s">Svara einslega til %1$s</string>
+  <!--Context menu item to privately reply to a story response-->
+  <string name="StoryGroupReplyItem__private_reply">Svara einslega</string>
+  <!--Context menu item to copy a story response-->
+  <string name="StoryGroupReplyItem__copy">Afrita</string>
+  <!--Context menu item to delete a story response-->
+  <string name="StoryGroupReplyItem__delete">Eyða</string>
+  <!--Story settings page title-->
+  <string name="StorySettingsFragment__story_settings">Stillingar sögu</string>
+  <!--Story settings private stories heading-->
+  <string name="StorySettingsFragment__private_stories">Einkasögur</string>
+  <!--Note at bottom of story settings regarding who can see private stories.-->
+  <string name="StorySettingsFragment__private_stories_can_only_be_viewed">Einkasögur geta aðeins skoðað þeir sem þú bætir við þær. Aðeins þú getur séð heiti sögunnar.</string>
+  <!--Option label for creating a new private story-->
+  <string name="StorySettingsFragment__new_private_story">Ný einkasaga</string>
+  <!--Page title for My Story options-->
+  <string name="MyStorySettingsFragment__my_story">Sagan mín</string>
+  <!--Section heading for story visibility-->
+  <string name="MyStorySettingsFragment__who_can_see_this_story">Hver getur séð þessa sögu</string>
+  <!--Clickable option for selecting people to hide your story from-->
+  <string name="MyStorySettingsFragment__hide_story_from">Fela sögu fyrir</string>
+  <!--Summary of clickable option displaying how many people you have hidden your story from-->
+  <plurals name="MyStorySettingsFragment__d_people">
+    <item quantity="one">%1$d aðila</item>
+    <item quantity="other">%1$d aðilum</item>
+  </plurals>
+  <!--Section header for options related to replies and reactions-->
+  <string name="MyStorySettingsFragment__replies_amp_reactions">Svör og viðbrögð</string>
+  <!--Switchable option for allowing replies and reactions on your stories-->
+  <string name="MyStorySettingsFragment__allow_replies_amp_reactions">Leyfa svör og viðbrögð</string>
+  <!--Summary for switchable option allowing replies and reactions on your story-->
+  <string name="MyStorySettingsFragment__let_people_who_can_view_your_story_react_and_reply">Leyfa fólki sem getur séð söguna þína að bregðast við og svara</string>
+  <!--Note about default sharing-->
+  <string name="MyStorySettingsFragment__hide_your_story_from">Feldu söguna þína fyrir tilteknum eintaklingum. Sjálfgefið er sögunni þinni deilt með öllum þínum %1$s</string>
+  <!--Signal connections linked text that opens the Signal Connections sheet-->
+  <string name="MyStorySettingsFragment__signal_connections">Signal-tengingum.</string>
+  <!--Displayed at the top of the signal connections sheet. Please remember to insert strong tag as required.-->
+  <string name="SignalConnectionsBottomSheet__signal_connections_are_people"><strong>Signal-tengingar</strong> eru fólkið sem þú hefur ákveðið að treysta, með því að:</string>
+  <!--Signal connections sheet bullet point 1-->
+  <string name="SignalConnectionsBottomSheet__starting_a_conversation">Hefja samtal</string>
+  <!--Signal connections sheet bullet point 2-->
+  <string name="SignalConnectionsBottomSheet__accepting_a_message_request">Samþykkja beiðnir um skilaboð</string>
+  <!--Signal connections sheet bullet point 3-->
+  <string name="SignalConnectionsBottomSheet__having_them_in_your_system_contacts">Hafa viðkomandi í tengiliðaskrá kerfisins</string>
+  <!--Note at the bottom of the Signal connections sheet-->
+  <string name="SignalConnectionsBottomSheet__your_connections_can_see_your_name">Tengiliðirnir þínir geta séð nafn þitt og mynd og geta séð færslur í \"Sagan mín\" nema þú felir þær fyrir viðkomandi.</string>
+  <!--Clickable option to add a viewer to a private story-->
+  <string name="PrivateStorySettingsFragment__add_viewer">Bæta við lesanda</string>
+  <!--Clickable option to delete a custom story-->
+  <string name="PrivateStorySettingsFragment__delete_private_story">Eyða einkasögu</string>
+  <!--Dialog title when attempting to remove someone from a private story-->
+  <string name="PrivateStorySettingsFragment__remove_s">Fjarlægja %1$s?</string>
+  <!--Dialog message when attempting to remove someone from a private story-->
+  <string name="PrivateStorySettingsFragment__this_person_will_no_longer">Þessi einstaklingur mun ekki lengur sjá söguna þína.</string>
+  <!--Positive action label when attempting to remove someone from a private story-->
+  <string name="PrivateStorySettingsFragment__remove">Fjarlægja</string>
+  <!--Dialog title when deleting a private story-->
+  <string name="PrivateStorySettingsFragment__are_you_sure">Ertu viss?</string>
+  <!--Dialog message when deleting a private story-->
+  <string name="PrivateStorySettingsFragment__this_action_cannot">Þessa aðgerð er ekki hægt að afturkalla.</string>
+  <!--Page title for editing a private story name-->
+  <string name="EditPrivateStoryNameFragment__edit_story_name">Breyta titli sögu</string>
+  <!--Input field hint when editing a private story name-->
+  <string name="EditPrivateStoryNameFragment__story_name">Titill sögu</string>
+  <!--Save button label when editing a private story name-->
+  <string name="EditPrivateStoryNameFragment__save">Vista</string>
+  <!--Displayed in text post creator before user enters text-->
+  <string name="TextStoryPostCreationFragment__tap_to_add_text">Ýttu til að bæta við texta</string>
+  <!--Button label for changing font when creating a text post-->
+  <string name="TextStoryPostTextEntryFragment__aa">Aa</string>
+  <!--Displayed in text post creator when prompting user to enter text-->
+  <string name="TextStoryPostTextEntryFragment__add_text">Bæta við texta</string>
+  <!--Content description for \'done\' button when adding text to a story post-->
+  <string name="TextStoryPostTextEntryFragment__done_adding_text">Búið að bæta við texta</string>
+  <!--Text label for media selection toggle-->
+  <string name="MediaSelectionActivity__text">Texti</string>
+  <!--Camera label for media selection toggle-->
+  <string name="MediaSelectionActivity__camera">Myndavél</string>
+  <!--Hint for entering a URL for a text post-->
+  <string name="TextStoryPostLinkEntryFragment__type_or_paste_a_url">Skrifaðu eða límdu vefslóð</string>
+  <!--Displayed prior to the user entering a URL for a text post-->
+  <string name="TextStoryPostLinkEntryFragment__share_a_link_with_viewers_of_your_story">Deildu tengli með lesendum sögunnar þinnar</string>
+  <!--Hint text for searching for a story text post recipient.-->
+  <string name="TextStoryPostSendFragment__search">Leita</string>
+  <!--Title for screen allowing user to hide "My Story" entries from specific people-->
+  <string name="HideStoryFromFragment__hide_story_from">Fela sögu fyrir…</string>
+  <!--Done button label for hide story from screen-->
+  <string name="HideStoryFromFragment__done">Lokið</string>
+  <!--Dialog title for first time adding something to a story-->
+  <string name="StoryDialogs__add_to_story_q">Bæta í sögu?</string>
+  <!--Dialog message for first time adding something to a story-->
+  <string name="StoryDialogs__adding_content">Þegar efni er bætt í söguna þína geta Signal-tengingarnar þínar skoðað það í 24 tíma. Þú getur breytt því í stillingunum hverjir geta séð söguna þína.</string>
+  <!--First time share to story dialog: Positive action to go ahead and add to story-->
+  <string name="StoryDialogs__add_to_story">Bæta í sögu</string>
+  <!--First time share to story dialog: Neutral action to edit who can view "My Story"-->
+  <string name="StoryDialogs__edit_viewers">Breyta lesendum</string>
+  <!--Error message shown when a failure occurs during story send-->
+  <string name="StoryDialogs__story_could_not_be_sent">Ekki var hægt að senda sögu. Athugaðu netsambandið þitt og prófaðu aftur.</string>
+  <!--Error message dialog button to resend a previously failed story send-->
+  <string name="StoryDialogs__send">Senda</string>
+  <!--Privacy Settings toggle title for stories-->
+  <string name="PrivacySettingsFragment__share_and_view_stories">Deila og skoða sögur</string>
+  <!--Privacy Settings toggle summary for stories-->
+  <string name="PrivacySettingsFragment__you_will_no_longer_be_able">Þú munt ekki lengur geta deilt eða skoðað sögur ef slökkt er á þessum valkosti.</string>
+  <!--New story viewer selection screen title-->
+  <string name="CreateStoryViewerSelectionFragment__choose_viewers">Veldu lesendur</string>
+  <!--New story viewer selection action button label-->
+  <string name="CreateStoryViewerSelectionFragment__next">Næsta</string>
+  <!--New story viewer selection screen title as recipients are selected-->
+  <plurals name="SelectViewersFragment__d_viewers">
+    <item quantity="one">%1$d lesandi</item>
+    <item quantity="other">%1$d lesendur</item>
+  </plurals>
+  <!--Name story screen title-->
+  <string name="CreateStoryWithViewersFragment__name_story">Gefðu sögunni titil</string>
+  <!--Name story screen label hint-->
+  <string name="CreateStoryWithViewersFragment__story_name_required">Titill sögu (nauðsynlegt)</string>
+  <!--Name story screen viewers subheading-->
+  <string name="CreateStoryWithViewersFragment__viewers">Lesendur</string>
+  <!--Name story screen create button label-->
+  <string name="CreateStoryWithViewersFragment__create">Búa til</string>
+  <!--Name story screen error when save attempted with no label-->
+  <string name="CreateStoryWithViewersFragment__this_field_is_required">Fylla þarf út þennan reit.</string>
+  <!--Name story screen error when save attempted but label is duplicate-->
+  <string name="CreateStoryWithViewersFragment__there_is_already_a_story_with_this_name">Þegar er til saga með þessum titli.</string>
+  <!--Text for select all action when editing recipients for a story-->
+  <string name="BaseStoryRecipientSelectionFragment__select_all">Velja allt</string>
+  <!--Choose story type bottom sheet title-->
+  <string name="ChooseStoryTypeBottomSheet__choose_your_story_type">Veldu gerð sögunnar þinnar</string>
+  <!--Choose story type bottom sheet new story row title-->
+  <string name="ChooseStoryTypeBottomSheet__new_private_story">Ný einkasaga</string>
+  <!--Choose story type bottom sheet new story row summary-->
+  <string name="ChooseStoryTypeBottomSheet__visible_only_to">Eingöngu sýnileg tilteknum einstaklingum</string>
+  <!--Choose story type bottom sheet group story title-->
+  <string name="ChooseStoryTypeBottomSheet__group_story">Hópsaga</string>
+  <!--Choose story type bottom sheet group story summary-->
+  <string name="ChooseStoryTypeBottomSheet__share_to_an_existing_group">Deila til fyrirliggjandi hóps</string>
+  <!--Choose groups bottom sheet title-->
+  <string name="ChooseGroupStoryBottomSheet__choose_groups">Veldu hópa</string>
+  <!--Displayed when copying group story reply text to clipboard-->
+  <string name="StoryGroupReplyFragment__copied_to_clipboard">Afritað á klippispjald</string>
+  <!--Displayed in story caption when content is longer than 5 lines-->
+  <string name="StoryViewerPageFragment__see_more">… sjá meira</string>
+  <!--Displayed in toast after sending a direct reply-->
+  <string name="StoryDirectReplyDialogFragment__reply_sent">Svar sent</string>
+  <!--Displayed in toast after sending a direct reaction-->
+  <string name="StoryDirectReplyDialogFragment__reaction_sent">Viðbrögð send</string>
+  <!--Displayed in the viewer when a story is no longer available-->
+  <string name="StorySlateView__this_story_is_no_longer_available">Þessi saga er ekki lengur tiltæk.</string>
+  <!--Displayed in the viewer when the network is not available-->
+  <string name="StorySlateView__no_internet_connection">Engin internettenging</string>
+  <!--Displayed in the viewer when network is available but content could not be downloaded-->
+  <string name="StorySlateView__couldnt_load_content">Gat ekki hlaðið inn efni</string>
+  <!--Toasted when the user externally shares to a text story successfully-->
+  <string name="TextStoryPostCreationFragment__sent_story">Sendi sögu</string>
+  <!--Toasted when the user external share to a text story fails-->
+  <string name="TextStoryPostCreationFragment__failed_to_send_story">Mistókst að senda sögu</string>
+  <!--Displayed in a dialog to let the user select a given users story-->
+  <string name="StoryDialogs__view_story">Skoða sögu</string>
+  <!--Displayed in a dialog to let the user select a given users profile photo-->
+  <string name="StoryDialogs__view_profile_photo">Skoða auðkennismynd</string>
+  <!--Title for a notification at the bottom of the chat list suggesting that the user disable censorship circumvention because the service has become reachable-->
+  <string name="TurnOffCircumventionMegaphone_turn_off_censorship_circumvention">Slökkva á leiðum framhjá ritskoðun?</string>
+  <!--Body for a notification at the bottom of the chat list suggesting that the user disable censorship circumvention because the service has become reachable-->
+  <string name="TurnOffCircumventionMegaphone_you_can_now_connect_to_the_signal_service_directly">Núna er hægt að tengjast Signal-þjónustum beint.</string>
+  <!--Label for a button to dismiss a notification at the bottom of the chat list suggesting that the user disable censorship circumvention because the service has become reachable-->
+  <string name="TurnOffCircumventionMegaphone_no_thanks">Nei, takk</string>
+  <!--Label for a button in a notification at the bottom of the chat list to turn off censorship circumvention-->
+  <string name="TurnOffCircumventionMegaphone_turn_off">Slökkva</string>
+  <!--Conversation Item label for when you react to someone else\'s story-->
+  <string name="ConversationItem__you_reacted_to_s_story">Þú brást við sögu frá %1$s</string>
+  <!--Conversation Item label for reactions to your story-->
+  <string name="ConversationItem__reacted_to_your_story">Brást við sögunni þinni</string>
+  <!--Conversation Item label for reactions to an unavailable story-->
+  <string name="ConversationItem__reacted_to_a_story">Brást við sögu</string>
+  <!--endregion-->
+  <!--Content description for expand contacts chevron-->
+  <string name="ExpandModel__view_more">Sjá meira</string>
+  <string name="StoriesLinkPopup__visit_link">Skoða tengil</string>
+  <!--Tagline for gift row items-->
+  <string name="GiftRowItem__send_a_gift_badge">Senda gjafamerki</string>
+  <!--Headline text on start fragment for gifting a badge-->
+  <string name="GiftFlowStartFragment__gift_a_badge">Gefðu gjafamerki</string>
+  <!--Description text on start fragment for gifting a badge-->
+  <string name="GiftFlowStartFragment__gift_someone_a_badge">Gefðu einhverjum merki með því að styrkja Signal í þeirra nafni. Viðkomandi fær þá gjafamerki til að birta á auðkennismyndinni sinni.</string>
+  <!--Action button label for start fragment for gifting a badge-->
+  <string name="GiftFlowStartFragment__next">Næsta</string>
+  <!--Title text on choose recipient page for badge gifting-->
+  <string name="GiftFlowRecipientSelectionFragment__choose_recipient">Veldu viðtakanda</string>
+  <!--Title text on confirm gift page-->
+  <string name="GiftFlowConfirmationFragment__confirm_gift">Staðfestu gjöfina</string>
+  <!--Heading text specifying who the gift will be sent to-->
+  <string name="GiftFlowConfirmationFragment__send_to">Senda til</string>
+  <!--Text explaining that gift will be sent to the chosen recipient-->
+  <string name="GiftFlowConfirmationFragment__your_gift_will_be_sent_in">Gjöfin þín verður send í maður-á-mann skilaboðum til viðtakandans. Bættu við þínum eigin skilaboðum hér fyrir neðan.</string>
+  <!--Text explaining that this gift is a one time donation-->
+  <string name="GiftFlowConfirmationFragment__one_time_donation">Eins-skiptis styrkur</string>
+  <!--Hint for add message input-->
+  <string name="GiftFlowConfirmationFragment__add_a_message">Bæta við skilaboðum</string>
+  <!--Title for sheet shown when opening a redeemed gift-->
+  <string name="ViewReceivedGiftBottomSheet__s_sent_you_a_gift">%1$s sendi þér gjöf</string>
+  <!--Title for sheet shown when opening a sent gift-->
+  <string name="ViewSentGiftBottomSheet__thanks_for_your_support">Þakka þér fyrir stuðninginn!</string>
+  <!--Description for sheet shown when opening a redeemed gift-->
+  <string name="ViewReceivedGiftBottomSheet__youve_received_a_gift_badge">Þú fékkst gjafarmerki frá %1$s! Hjálpaðu Signal að byggja upp samstöðu með því að birta þetta merki á auðkennismyndinni þinni.</string>
+  <!--Description for sheet shown when opening a sent gift-->
+  <string name="ViewSentGiftBottomSheet__youve_gifted_a_badge">Þú hefur gefið %1$s merki. Þegar viðkomandi samþykkir, gefst honum kostur á að birta eða fela merkið sitt.</string>
+  <!--Primary action for pending gift sheet to redeem badge now-->
+  <string name="ViewReceivedGiftSheet__redeem">Leysa út</string>
+  <!--Primary action for pending gift sheet to redeem badge later-->
+  <string name="ViewReceivedGiftSheet__not_now">Ekki núna</string>
+  <!--Dialog text while redeeming a gift-->
+  <string name="ViewReceivedGiftSheet__redeeming_gift">Leysi út gjöf…</string>
+  <!--Snackbar text when user presses "not now" on redemption sheet-->
+  <string name="ConversationFragment__you_can_redeem_your_badge_later">Þú getur leyst út gjafamerkið þitt síðar.</string>
+  <!--Description text in gift thanks sheet-->
+  <string name="GiftThanksSheet__youve_gifted_a_badge_to_s">Þú hefur gefið %1$s merki. Þegar viðkomandi samþykkir, gefst honum kostur á að birta eða fela merkið sitt.</string>
+  <!--Expired gift sheet title-->
+  <string name="ExpiredGiftSheetConfiguration__your_gift_badge_has_expired">Gjafamerkið þitt er útrunnið</string>
+  <!--Expired gift sheet top description text-->
+  <string name="ExpiredGiftSheetConfiguration__your_gift_badge_has_expired_and_is">Gjafamerkið þitt er útrunnið og því ekki lengur sýnilegt öðrum á auðkenninu þínu.</string>
+  <!--Expired gift sheet bottom description text-->
+  <string name="ExpiredGiftSheetConfiguration__to_continue">Til að halda áfram að styðja við tækni sem er hönnuð fyrir þig, skaltu íhuga að gerast mánaðarlegur stuðningsaðili.</string>
+  <!--Expired gift sheet make a monthly donation button-->
+  <string name="ExpiredGiftSheetConfiguration__make_a_monthly_donation">Veita mánaðarlegan styrk</string>
+  <!--Expired gift sheet not now button-->
+  <string name="ExpiredGiftSheetConfiguration__not_now">Ekki núna</string>
   <!--EOF-->
 </resources>

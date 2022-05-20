@@ -6,26 +6,26 @@ import androidx.annotation.NonNull;
 import androidx.annotation.WorkerThread;
 
 import org.signal.core.util.logging.Log;
-import org.signal.zkgroup.profiles.ProfileKey;
-import org.signal.zkgroup.profiles.ProfileKeyCredential;
+import org.signal.libsignal.zkgroup.profiles.ProfileKey;
+import org.signal.libsignal.zkgroup.profiles.ProfileKeyCredential;
 import org.thoughtcrime.securesms.crypto.ProfileKeyUtil;
 import org.thoughtcrime.securesms.database.RecipientDatabase;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
-import org.whispersystems.libsignal.util.guava.Optional;
 import org.whispersystems.signalservice.api.SignalServiceAccountManager;
 import org.whispersystems.signalservice.api.groupsv2.GroupCandidate;
-import org.whispersystems.signalservice.api.push.ACI;
+import org.whispersystems.signalservice.api.push.ServiceId;
 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Set;
 
-public final class GroupCandidateHelper {
+public class GroupCandidateHelper {
   private final SignalServiceAccountManager signalServiceAccountManager;
   private final RecipientDatabase           recipientDatabase;
 
@@ -47,13 +47,13 @@ public final class GroupCandidateHelper {
   {
     final Recipient recipient = Recipient.resolved(recipientId);
 
-    ACI aci = recipient.getAci().orNull();
-    if (aci == null) {
+    ServiceId serviceId = recipient.getServiceId().orElse(null);
+    if (serviceId == null) {
       throw new AssertionError("Non UUID members should have need detected by now");
     }
 
-    Optional<ProfileKeyCredential> profileKeyCredential = Optional.fromNullable(recipient.getProfileKeyCredential());
-    GroupCandidate                 candidate            = new GroupCandidate(aci.uuid(), profileKeyCredential);
+    Optional<ProfileKeyCredential> profileKeyCredential = Optional.ofNullable(recipient.getProfileKeyCredential());
+    GroupCandidate                 candidate            = new GroupCandidate(serviceId.uuid(), profileKeyCredential);
 
     if (!candidate.hasProfileKeyCredential()) {
       ProfileKey profileKey = ProfileKeyUtil.profileKeyOrNull(recipient.getProfileKey());
@@ -61,7 +61,7 @@ public final class GroupCandidateHelper {
       if (profileKey != null) {
         Log.i(TAG, String.format("No profile key credential on recipient %s, fetching", recipient.getId()));
 
-        Optional<ProfileKeyCredential> profileKeyCredentialOptional = signalServiceAccountManager.resolveProfileKeyCredential(aci, profileKey, Locale.getDefault());
+        Optional<ProfileKeyCredential> profileKeyCredentialOptional = signalServiceAccountManager.resolveProfileKeyCredential(serviceId, profileKey, Locale.getDefault());
 
         if (profileKeyCredentialOptional.isPresent()) {
           boolean updatedProfileKey = recipientDatabase.setProfileKeyCredential(recipient.getId(), profileKey, profileKeyCredentialOptional.get());

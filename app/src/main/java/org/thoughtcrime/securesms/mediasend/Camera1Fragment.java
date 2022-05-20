@@ -2,7 +2,7 @@ package org.thoughtcrime.securesms.mediasend;
 
 import android.animation.Animator;
 import android.annotation.SuppressLint;
-import android.content.Context;
+import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
@@ -43,12 +43,15 @@ import org.thoughtcrime.securesms.mediasend.v2.MediaAnimations;
 import org.thoughtcrime.securesms.mediasend.v2.MediaCountIndicatorButton;
 import org.thoughtcrime.securesms.mms.DecryptableStreamUriLoader.DecryptableUri;
 import org.thoughtcrime.securesms.mms.GlideApp;
+import org.thoughtcrime.securesms.stories.Stories;
+import org.thoughtcrime.securesms.stories.viewer.page.StoryDisplay;
+import org.thoughtcrime.securesms.util.FeatureFlags;
 import org.thoughtcrime.securesms.util.ServiceUtil;
 import org.thoughtcrime.securesms.util.Stopwatch;
 import org.thoughtcrime.securesms.util.TextSecurePreferences;
-import org.whispersystems.libsignal.util.guava.Optional;
 
 import java.io.ByteArrayOutputStream;
+import java.util.Optional;
 
 /**
  * Camera capture implemented with the legacy camera API's. Should only be used if sdk < 21.
@@ -159,6 +162,7 @@ public class Camera1Fragment extends LoggingFragment implements CameraFragment,
     });
 
     orderEnforcer.run(Stage.CAMERA_PROPERTIES_AVAILABLE, this::updatePreviewScale);
+    requireActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
   }
 
   @Override
@@ -276,6 +280,20 @@ public class Camera1Fragment extends LoggingFragment implements CameraFragment,
 
     View galleryButton = requireView().findViewById(R.id.camera_gallery_button);
     View countButton   = requireView().findViewById(R.id.camera_review_button);
+    View toggleSpacer  = requireView().findViewById(R.id.toggle_spacer);
+
+    if (toggleSpacer != null) {
+      if (Stories.isFeatureEnabled() && FeatureFlags.storiesTextPosts()) {
+        StoryDisplay storyDisplay = StoryDisplay.Companion.getStoryDisplay(getResources().getDisplayMetrics().widthPixels, getResources().getDisplayMetrics().heightPixels);
+        if (storyDisplay == StoryDisplay.SMALL) {
+          toggleSpacer.setVisibility(View.VISIBLE);
+        } else {
+          toggleSpacer.setVisibility(View.GONE);
+        }
+      } else {
+        toggleSpacer.setVisibility(View.GONE);
+      }
+    }
 
     captureButton.setOnClickListener(v -> {
       captureButton.setEnabled(false);

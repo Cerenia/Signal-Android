@@ -22,10 +22,11 @@ import org.signal.libsignal.metadata.ProtocolLegacyMessageException;
 import org.signal.libsignal.metadata.ProtocolNoSessionException;
 import org.signal.libsignal.metadata.ProtocolUntrustedIdentityException;
 import org.signal.libsignal.metadata.SelfSendException;
+import org.signal.libsignal.protocol.message.CiphertextMessage;
+import org.signal.libsignal.protocol.message.DecryptionErrorMessage;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.crypto.ReentrantSessionLock;
 import org.thoughtcrime.securesms.crypto.UnidentifiedAccessUtil;
-import org.thoughtcrime.securesms.crypto.storage.SignalProtocolStoreImpl;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.groups.BadGroupIdException;
@@ -34,6 +35,7 @@ import org.thoughtcrime.securesms.jobmanager.Job;
 import org.thoughtcrime.securesms.jobs.AutomaticSessionResetJob;
 import org.thoughtcrime.securesms.jobs.RefreshPreKeysJob;
 import org.thoughtcrime.securesms.jobs.SendRetryReceiptJob;
+import org.thoughtcrime.securesms.keyvalue.SignalStore;
 import org.thoughtcrime.securesms.logsubmit.SubmitDebugLogActivity;
 import org.thoughtcrime.securesms.messages.MessageContentProcessor.ExceptionMetadata;
 import org.thoughtcrime.securesms.messages.MessageContentProcessor.MessageState;
@@ -42,22 +44,20 @@ import org.thoughtcrime.securesms.notifications.NotificationIds;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.util.FeatureFlags;
 import org.thoughtcrime.securesms.util.GroupUtil;
-import org.thoughtcrime.securesms.util.TextSecurePreferences;
-import org.whispersystems.libsignal.protocol.CiphertextMessage;
-import org.whispersystems.libsignal.protocol.DecryptionErrorMessage;
-import org.whispersystems.libsignal.state.SignalProtocolStore;
-import org.whispersystems.libsignal.util.guava.Optional;
 import org.whispersystems.signalservice.api.InvalidMessageStructureException;
+import org.whispersystems.signalservice.api.SignalServiceAccountDataStore;
 import org.whispersystems.signalservice.api.crypto.ContentHint;
 import org.whispersystems.signalservice.api.crypto.SignalServiceCipher;
 import org.whispersystems.signalservice.api.messages.SignalServiceContent;
 import org.whispersystems.signalservice.api.messages.SignalServiceEnvelope;
+import org.whispersystems.signalservice.api.push.ServiceId;
 import org.whispersystems.signalservice.api.push.SignalServiceAddress;
 import org.whispersystems.signalservice.internal.push.SignalServiceProtos;
 import org.whispersystems.signalservice.internal.push.UnsupportedDataMessageException;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Handles taking an encrypted {@link SignalServiceEnvelope} and turning it into a plaintext model.
@@ -77,10 +77,28 @@ public final class MessageDecryptionUtil {
    * caller.
    */
   public static @NonNull DecryptionResult decrypt(@NonNull Context context, @NonNull SignalServiceEnvelope envelope) {
-    SignalProtocolStore  axolotlStore = new SignalProtocolStoreImpl(context);
-    SignalServiceAddress localAddress = new SignalServiceAddress(Recipient.self().requireAci(), Recipient.self().requireE164());
-    SignalServiceCipher  cipher       = new SignalServiceCipher(localAddress, axolotlStore, ReentrantSessionLock.INSTANCE, UnidentifiedAccessUtil.getCertificateValidator());
-    List<Job>            jobs         = new LinkedList<>();
+    ServiceId aci = SignalStore.account().requireAci();
+    ServiceId pni = SignalStore.account().requirePni();
+
+    ServiceId destination;
+    if (!FeatureFlags.usePnpCds()) {
+      destination = aci;
+    } else if (envelope.hasDestinationUuid()) {
+      destination = ServiceId.parseOrThrow(envelope.getDestinationUuid());
+    } else {
+      Log.w(TAG, "No destinationUuid set! Defaulting to ACI.");
+      destination = aci;
+    }
+
+    if (!destination.equals(aci) && !destination.equals(pni)) {
+      Log.w(TAG, "Destination of " + destination + " does not match our ACI (" + aci + ") or PNI (" + pni + ")! Defaulting to ACI.");
+      destination = aci;
+    }
+
+    SignalServiceAccountDataStore protocolStore = ApplicationDependencies.getProtocolStore().get(destination);
+    SignalServiceAddress          localAddress  = new SignalServiceAddress(SignalStore.account().requireAci(), SignalStore.account().getE164());
+    SignalServiceCipher           cipher        = new SignalServiceCipher(localAddress, SignalStore.account().getDeviceId(), protocolStore, ReentrantSessionLock.INSTANCE, UnidentifiedAccessUtil.getCertificateValidator());
+    List<Job>                     jobs          = new LinkedList<>();
 
     if (envelope.isPreKeySignalMessage()) {
       jobs.add(new RefreshPreKeysJob());
@@ -131,7 +149,7 @@ public final class MessageDecryptionUtil {
     ContentHint       contentHint       = ContentHint.fromType(protocolException.getContentHint());
     int               senderDevice      = protocolException.getSenderDevice();
     long              receivedTimestamp = System.currentTimeMillis();
-    Optional<GroupId> groupId           = Optional.absent();
+    Optional<GroupId> groupId           = Optional.empty();
 
     if (protocolException.getGroupId().isPresent()) {
       try {
