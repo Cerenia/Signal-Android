@@ -89,14 +89,13 @@ public final class FeatureFlags {
   private static final String CDSH                              = "android.cdsh";
   private static final String STORIES                           = "android.stories.2";
   private static final String STORIES_TEXT_FUNCTIONS            = "android.stories.text.functions";
-  private static final String STORIES_TEXT_POSTS                = "android.stories.text.posts.2";
   private static final String HARDWARE_AEC_BLOCKLIST_MODELS     = "android.calling.hardwareAecBlockList";
   private static final String SOFTWARE_AEC_BLOCKLIST_MODELS     = "android.calling.softwareAecBlockList";
   private static final String USE_HARDWARE_AEC_IF_OLD           = "android.calling.useHardwareAecIfOlderThanApi29";
   private static final String USE_AEC3                          = "android.calling.useAec3";
   private static final String PAYMENTS_COUNTRY_BLOCKLIST        = "android.payments.blocklist";
   private static final String PNP_CDS                           = "android.pnp.cds";
-  private static final String USE_FCM_FOREGROUND_SERVICE        = "android.useFcmForegroundService.2";
+  private static final String USE_FCM_FOREGROUND_SERVICE        = "android.useFcmForegroundService.3";
   private static final String STORIES_AUTO_DOWNLOAD_MAXIMUM     = "android.stories.autoDownloadMaximum";
   private static final String GIFT_BADGES                       = "android.giftBadges";
 
@@ -141,7 +140,6 @@ public final class FeatureFlags {
       DONOR_BADGES_DISPLAY,
       STORIES,
       STORIES_TEXT_FUNCTIONS,
-      STORIES_TEXT_POSTS,
       HARDWARE_AEC_BLOCKLIST_MODELS,
       SOFTWARE_AEC_BLOCKLIST_MODELS,
       USE_HARDWARE_AEC_IF_OLD,
@@ -462,15 +460,6 @@ public final class FeatureFlags {
    */
   public static boolean storiesTextFunctions() {
     return getBoolean(STORIES_TEXT_FUNCTIONS, false);
-  }
-
-  /**
-   * Whether the user supports sending Story text posts
-   *
-   * NOTE: This feature is still under ongoing development, do not enable.
-   */
-  public static boolean storiesTextPosts() {
-    return getBoolean(STORIES_TEXT_POSTS, false);
   }
 
   /**

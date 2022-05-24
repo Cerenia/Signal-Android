@@ -24,6 +24,7 @@ import org.whispersystems.signalservice.internal.EmptyResponse;
 import org.whispersystems.signalservice.internal.ServiceResponse;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -174,11 +175,7 @@ public class DonationReceiptRedemptionJob extends BaseJob {
       MessageDatabase.MarkedMessageInfo markedMessageInfo = SignalDatabase.mms().setIncomingMessageViewed(giftMessageId);
       if (markedMessageInfo != null) {
         Log.d(TAG, "Marked gift message viewed for " + giftMessageId);
-        ApplicationDependencies.getJobManager()
-                               .add(new SendViewedReceiptJob(markedMessageInfo.getThreadId(),
-                                                             markedMessageInfo.getSyncMessageId().getRecipientId(),
-                                                             markedMessageInfo.getSyncMessageId().getTimetamp(),
-                                                             markedMessageInfo.getMessageId()));
+        MultiDeviceViewedUpdateJob.enqueue(Collections.singletonList(markedMessageInfo.getSyncMessageId()));
       }
     }
   }

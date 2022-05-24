@@ -403,6 +403,7 @@
 
     <activity
         android:name=".stories.viewer.StoryViewerActivity"
+        android:screenOrientation="portrait"
         android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize"
         android:theme="@style/TextSecure.DarkNoActionBar.StoryViewer"
         android:windowSoftInputMode="stateAlwaysHidden|adjustNothing" />
@@ -540,6 +541,7 @@
 
     <activity android:name=".blocked.BlockedUsersActivity"
               android:theme="@style/TextSecure.LightTheme"
+              android:windowSoftInputMode="stateHidden"
               android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize"/>
 
     <activity android:name=".scribbles.ImageEditorStickerSelectActivity"
@@ -704,7 +706,9 @@
 
     <service android:name=".service.GenericForegroundService"/>
 
-    <service android:name=".gcm.FcmFetchService" />
+    <service android:name=".gcm.FcmFetchBackgroundService" />
+
+    <service android:name=".gcm.FcmFetchForegroundService" />
 
     <service android:name=".gcm.FcmReceiveService">
         <intent-filter>

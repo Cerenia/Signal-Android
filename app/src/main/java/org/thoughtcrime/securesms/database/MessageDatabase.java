@@ -21,6 +21,7 @@ import org.thoughtcrime.securesms.database.documents.IdentityKeyMismatchSet;
 import org.thoughtcrime.securesms.database.documents.NetworkFailure;
 import org.thoughtcrime.securesms.database.model.MessageId;
 import org.thoughtcrime.securesms.database.model.MessageRecord;
+import org.thoughtcrime.securesms.database.model.ParentStoryId;
 import org.thoughtcrime.securesms.database.model.SmsMessageRecord;
 import org.thoughtcrime.securesms.database.model.StoryResult;
 import org.thoughtcrime.securesms.database.model.StoryViewState;
@@ -188,6 +189,7 @@ public abstract class MessageDatabase extends Database implements MmsSmsColumns 
   public abstract boolean isStory(long messageId);
   public abstract @NonNull Reader getOutgoingStoriesTo(@NonNull RecipientId recipientId);
   public abstract @NonNull Reader getAllOutgoingStories(boolean reverse);
+  public abstract @NonNull Reader getAllOutgoingStoriesAt(long sentTimestamp);
   public abstract @NonNull List<StoryResult> getOrderedStoryRecipientsAndIds();
   public abstract @NonNull Reader getAllStoriesFor(@NonNull RecipientId recipientId);
   public abstract @NonNull MessageId getStoryId(@NonNull RecipientId authorId, long sentTimestamp) throws NoSuchMessageException;
@@ -199,6 +201,8 @@ public abstract class MessageDatabase extends Database implements MmsSmsColumns 
   public abstract @Nullable Long getOldestStorySendTimestamp();
   public abstract int deleteStoriesOlderThan(long timestamp);
   public abstract @NonNull MessageDatabase.Reader getUnreadStories(@NonNull RecipientId recipientId, int limit);
+  public abstract @Nullable ParentStoryId.GroupReply getParentStoryIdForGroupReply(long messageId);
+  public abstract void deleteGroupStoryReplies(long parentStoryId);
 
   public abstract @NonNull StoryViewState getStoryViewState(@NonNull RecipientId recipientId);
   public abstract void updateViewedStories(@NonNull Set<SyncMessageId> syncMessageIds);
