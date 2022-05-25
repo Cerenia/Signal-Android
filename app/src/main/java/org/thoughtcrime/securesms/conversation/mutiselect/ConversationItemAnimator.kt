@@ -119,7 +119,6 @@ class ConversationItemAnimator(
   override fun runPendingAnimations() {
     Log.d(TAG, "Starting ${pendingSlideAnimations.size} animations.")
     runPendingSlideAnimations()
-    runPendingSlideOutAnimation()
   }
 
   private fun runPendingSlideAnimations() {
