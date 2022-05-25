@@ -67,16 +67,11 @@ import org.thoughtcrime.securesms.util.IdentityUtil;
 import org.thoughtcrime.securesms.util.Util;
 import org.thoughtcrime.securesms.util.ViewUtil;
 import org.signal.core.util.concurrent.SimpleTask;
-import org.thoughtcrime.securesms.util.concurrent.SimpleTask;
-import org.whispersystems.libsignal.IdentityKey;
-import org.whispersystems.libsignal.fingerprint.Fingerprint;
-import org.whispersystems.libsignal.fingerprint.FingerprintVersionMismatchException;
-import org.whispersystems.libsignal.fingerprint.NumericFingerprintGenerator;
-import org.whispersystems.libsignal.util.guava.Optional;
 import org.whispersystems.signalservice.api.SignalSessionLock;
 
 import java.nio.charset.Charset;
 import java.util.Locale;
+import java.util.Optional;
 
 /**
  * Fragment to display a user's identity key.
@@ -548,7 +543,7 @@ public class VerifyDisplayFragment extends Fragment implements ViewTreeObserver.
   private void updateVerifyButtonLogic() {
     final RecipientId recipientId = recipient.getId();
     // Check the current verification status
-    Optional<IdentityRecord> record = ApplicationDependencies.getIdentityStore().getIdentityRecord(recipientId);
+    Optional<IdentityRecord> record = SignalDatabase.identities().getVerifiedStatus(recipientId);
     if (record.isPresent()) { // TODO: When would this not be present??
       IdentityDatabase.VerifiedStatus previousStatus = record.get().getVerifiedStatus();
       Log.i(TAG, "Saving identity: " + recipientId);
@@ -579,6 +574,7 @@ public class VerifyDisplayFragment extends Fragment implements ViewTreeObserver.
 
   /**
    * Runs in its own thread.
+   *
    * @param status The new verification status
    */
   private void updateContactsVerifiedStatus(IdentityDatabase.VerifiedStatus status) {
