@@ -1068,7 +1068,7 @@ public class ConversationParentFragment extends Fragment
         AttachmentManager.selectPayment(this, recipient.get());
         break;
       case TRUSTED_INTRODUCTION:
-        Optional<IdentityRecord> recipientRecord = ApplicationDependencies.getIdentityStore().getIdentityRecord(recipient.getId());
+        Optional<IdentityRecord> recipientRecord = ApplicationDependencies.getProtocolStore().aci().identities().getIdentityRecord(recipient.getId());
         CanNotIntroduceDialog.ConversationType conversationType;
         if (!isSecureText){
           conversationType = CanNotIntroduceDialog.ConversationType.SMS;
@@ -1081,7 +1081,7 @@ public class ConversationParentFragment extends Fragment
           conversationType = CanNotIntroduceDialog.ConversationType.SINGLE_SECURE_TEXT;
         } else {
           // TI allowed
-          AttachmentManager.selectTI(this, recipient.getId(), TRUSTED_INTRODUCTION);
+          AttachmentManager.selectTI(this, recipient.getId());
           return;
         }
         // For any unsupported TI, show the dialogue

@@ -476,10 +476,10 @@ public class AttachmentManager {
         .show();
   }
 
-  public static void selectTI(@NonNull Activity activity, @NonNull RecipientId recipientId, int requestCode){
+  public static void selectTI(@NonNull Fragment fragment, @NonNull RecipientId recipientId){
     // Start contact picker activity
-    Intent intent = PickContactsForTrustedIntroductionActivity.createIntent(activity, recipientId);
-    activity.startActivityForResult(intent, requestCode);
+    Intent intent = PickContactsForTrustedIntroductionActivity.createIntent(fragment.requireContext(), recipientId);
+    fragment.startActivity(intent);
   }
 
   private @Nullable Uri getSlideUri() {
