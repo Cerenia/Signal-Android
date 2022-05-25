@@ -302,6 +302,16 @@ public class IdentityDatabase extends Database {
     databaseHelper.getSignalWritableDatabase().delete(IdentityDatabase.TABLE_NAME, IdentityDatabase.ADDRESS + " = ?", SqlUtil.buildArgs(addressName));
   }
 
+  /**
+   * Publicly exposes verified status by recipient id.
+   * @param id: id of the recipient
+   * @return The VerifiedStatus of the recipient or Unverified if the recipient is not in the database.
+   */
+  public VerifiedStatus getVerifiedStatus(RecipientId id){
+    Optional<IdentityRecord> ir = getIdentityRecord(Recipient.resolved(id).requireServiceId().toString());
+    return ir.map(IdentityRecord::getVerifiedStatus).orElse(VerifiedStatus.UNVERIFIED); // fail closed
+  }
+
   private Optional<IdentityRecord> getIdentityRecord(@NonNull String addressName) {
     SQLiteDatabase database = databaseHelper.getSignalReadableDatabase();
     String         query    = ADDRESS + " = ?";

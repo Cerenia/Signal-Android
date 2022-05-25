@@ -21,6 +21,7 @@ import com.annimon.stream.Stream;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.avatar.view.AvatarView;
 import org.thoughtcrime.securesms.badges.BadgeImageView;
+import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.database.model.StoryViewState;
 import org.thoughtcrime.securesms.badges.models.Badge;
 import org.thoughtcrime.securesms.components.AvatarImageView;
@@ -34,7 +35,6 @@ import org.thoughtcrime.securesms.util.ContextUtil;
 import org.thoughtcrime.securesms.util.DrawableUtil;
 import org.thoughtcrime.securesms.util.ExpirationUtil;
 import org.thoughtcrime.securesms.util.ViewUtil;
-import org.whispersystems.libsignal.util.guava.Optional;
 
 public class ConversationTitleView extends RelativeLayout {
 
@@ -217,8 +217,10 @@ public class ConversationTitleView extends RelativeLayout {
   private void setIndividualRecipientTitle(@NonNull Recipient recipient) {
     final String displayName = recipient.getDisplayNameOrUsername(getContext());
     this.title.setText(displayName);
-    Optional<IdentityRecord> identityRecord = ApplicationDependencies.getIdentityStore().getIdentityRecord(recipient.getId());
-    IdentityDatabase.VerifiedStatus verifiedStatus = identityRecord.isPresent() ? identityRecord.get().getVerifiedStatus() : IdentityDatabase.VerifiedStatus.DEFAULT;
+    IdentityDatabase.VerifiedStatus verifiedStatus = SignalDatabase.identities().getVerifiedStatus(recipient.getId());
+    //IdentityRecord ide = SignalDatabase.identities().getIdentityRecord(recipient.getId().toString());
+    //Optional<IdentityRecord> identityRecord = ApplicationDependencies.getIdentityStore().getIdentityRecord(recipient.getId());
+    //IdentityDatabase.VerifiedStatus verifiedStatus = identityRecord.isPresent() ? identityRecord.get().getVerifiedStatus() : IdentityDatabase.VerifiedStatus.DEFAULT;
     switch (verifiedStatus){
       case MANUALLY_VERIFIED:
         this.subtitle.setText(R.string.ConversationTitleView_manually_verified);
