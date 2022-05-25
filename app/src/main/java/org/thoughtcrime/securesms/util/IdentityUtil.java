@@ -210,7 +210,8 @@ public final class IdentityUtil {
          (identityRecord.isPresent() && !identityRecord.get().getIdentityKey().equals(verifiedMessage.getIdentityKey())) ||
          (identityRecord.isPresent() && !IdentityTable.VerifiedStatus.isVerified(identityRecord.get().getVerifiedStatus()))))
       {
-        Log.i(TAG, "Setting " + recipient.getId() + " verified status to " + IdentityTable.VerifiedStatus.VERIFIED);
+        // TODO: This must be properly adapted to support multidevice together with trusted intros
+        Log.i(TAG, "Setting " + recipient.getId() + " verified status to " + IdentityDatabase.VerifiedStatus.MANUALLY_VERIFIED);
         saveIdentity(verifiedMessage.getDestination().getIdentifier(), verifiedMessage.getIdentityKey());
         identityStore.setVerified(recipient.getId(), verifiedMessage.getIdentityKey(), IdentityTable.VerifiedStatus.VERIFIED);
         identityStore.setVerified(recipient.getId(), verifiedMessage.getIdentityKey(), IdentityTable.VerifiedStatus.MANUALLY_VERIFIED);
