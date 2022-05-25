@@ -1085,7 +1085,7 @@ public class ConversationParentFragment extends Fragment
           return;
         }
         // For any unsupported TI, show the dialogue
-        CanNotIntroduceDialog.show(this, recipientRecord.isPresent() ? recipientRecord.get() : null, conversationType);
+        CanNotIntroduceDialog.show(requireContext(), recipientRecord.isPresent() ? recipientRecord.get() : null, conversationType);
     }
 
     container.hideCurrentInput(composeText);
