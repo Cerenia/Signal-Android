@@ -754,9 +754,9 @@ open class RecipientTable(context: Context, databaseHelper: SignalDatabase) : Da
     val query = StringBuilder()
     if(!identifiers.isEmpty()){
       (1 until identifiers.size).map{
-        query.append("$ACI_COLUMN=? OR ")
+        query.append("$SERVICE_ID=? OR ")
       }
-      query.append("$ACI_COLUMN=?")
+      query.append("$SERVICE_ID=?")
     }
     val newCursor = readableDatabase.query(TABLE_NAME, RECIPIENT_PROJECTION, query.toString(), identifiers.toTypedArray(), null, null, null)
     return RecipientReader(newCursor)
