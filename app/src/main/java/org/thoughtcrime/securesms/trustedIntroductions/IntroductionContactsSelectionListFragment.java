@@ -38,13 +38,13 @@ import org.thoughtcrime.securesms.recipients.LiveRecipient;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.util.ViewUtil;
-import org.thoughtcrime.securesms.util.concurrent.SimpleTask;
-import org.whispersystems.libsignal.util.guava.Optional;
+import org.signal.core.util.concurrent.SimpleTask;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * In order to keep the tight coupling to a minimum, such that we can continue syncing against the upstream repo as it evolves, we opted to
@@ -193,8 +193,8 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
   private class ListClickListener implements ContactSelectionListAdapter.ItemClickListener {
     @Override
     public void onItemClick(ContactSelectionListItem contact) {
-      SelectedContact selectedContact = contact.isUsernameType() ? SelectedContact.forUsername(contact.getRecipientId().orNull(), contact.getNumber())
-                                                                 : SelectedContact.forPhone(contact.getRecipientId().orNull(), contact.getNumber());
+      SelectedContact selectedContact = contact.isUsernameType() ? SelectedContact.forUsername(contact.getRecipientId().orElse(null), contact.getNumber())
+                                                                 : SelectedContact.forPhone(contact.getRecipientId().orElse(null), contact.getNumber());
       if (viewModel.isSelectedContact(selectedContact)) {
         markContactUnselected(selectedContact);
       } else {

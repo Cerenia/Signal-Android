@@ -18,6 +18,7 @@ import org.thoughtcrime.securesms.util.Util;
 import org.signal.core.util.concurrent.SimpleTask;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.ViewModelProvider;
@@ -131,8 +132,9 @@ public final class PickContactsForTrustedIntroductionActivity extends Passphrase
     this.contactFilterView = findViewById(R.id.contact_filter_edit_text);
   }
 
+
   @Override
-  public void onContactSelected(Optional<RecipientId> recipientId, String number){
+  public void onContactSelected(Optional<RecipientId> recipientId, @Nullable String number){
     int selectedContactsCount = viewModel.getSelectedContactsCount();
     if (selectedContactsCount == 0) {
       toolbar.setTitle(getString(R.string.PickContactsForTIActivity_introduce_contacts));
@@ -208,5 +210,9 @@ public final class PickContactsForTrustedIntroductionActivity extends Passphrase
 
     setResult(RESULT_OK, resultIntent);
     finish();
+  }
+
+  @Override public void onPointerCaptureChanged(boolean hasCapture) {
+
   }
 }
