@@ -15,8 +15,7 @@ import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.util.DynamicNoActionBarTheme;
 import org.thoughtcrime.securesms.util.DynamicTheme;
 import org.thoughtcrime.securesms.util.Util;
-import org.thoughtcrime.securesms.util.concurrent.SimpleTask;
-import org.whispersystems.libsignal.util.guava.Optional;
+import org.signal.core.util.concurrent.SimpleTask;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -28,6 +27,7 @@ import com.annimon.stream.Stream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Queries the Contacts Provider for Contacts which match strongly verified contacts in the Signal identity database,
