@@ -29,7 +29,6 @@ import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.ContactSelectionListFragment;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.components.ContactFilterView;
-import org.thoughtcrime.securesms.components.recyclerview.ToolbarShadowAnimationHelper;
 import org.thoughtcrime.securesms.contacts.ContactChipViewModel;
 import org.thoughtcrime.securesms.contacts.ContactSelectionListAdapter;
 import org.thoughtcrime.securesms.contacts.ContactSelectionListItem;
@@ -80,8 +79,6 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
   private RecyclerView   chipRecycler;
   private MappingAdapter contactChipAdapter;
   private ContactChipViewModel contactChipViewModel;
-  private View           shadowView;
-  private ToolbarShadowAnimationHelper                toolbarShadowAnimationHelper;
 
 
   private GlideRequests    glideRequests;
@@ -109,12 +106,9 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
     showContactsProgress     = view.findViewById(R.id.progress);
     chipRecycler                = view.findViewById(R.id.chipRecycler);
     constraintLayout         = view.findViewById(R.id.container);
-    shadowView               = view.findViewById(R.id.toolbar_shadow);
     chipRecycler = view.findViewById(R.id.chipRecycler);
 
-    toolbarShadowAnimationHelper = new ToolbarShadowAnimationHelper(shadowView);
 
-    recyclerView.addOnScrollListener(toolbarShadowAnimationHelper);
     recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
     recyclerView.setItemAnimator(new DefaultItemAnimator() {
       @Override
