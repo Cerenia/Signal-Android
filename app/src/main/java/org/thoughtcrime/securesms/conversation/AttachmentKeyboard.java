@@ -61,7 +61,7 @@ public class AttachmentKeyboard extends FrameLayout implements InputAwareLayout.
 
     this.container        = findViewById(R.id.attachment_keyboard_container);
     this.mediaList        = findViewById(R.id.attachment_keyboard_media_list);
-    this.text = findViewById(R.id.attachment_keyboard_text);
+    this.text = findViewById(R.id.attachment_keyboard_permission_text);
     this.button = findViewById(R.id.attachment_keyboard_permission_button);
 
     RecyclerView buttonList = findViewById(R.id.attachment_keyboard_button_list);
