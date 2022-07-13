@@ -1,6 +1,7 @@
 package org.thoughtcrime.securesms.trustedIntroductions;
 
 import android.animation.LayoutTransition;
+import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,23 +16,26 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.transition.AutoTransition;
 import androidx.transition.TransitionManager;
 
-import com.google.android.material.chip.ChipGroup;
 import com.pnikosis.materialishprogress.ProgressWheel;
 
 import org.signal.core.util.logging.Log;
+import org.thoughtcrime.securesms.ContactSelectionListFragment;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.components.ContactFilterView;
 import org.thoughtcrime.securesms.components.recyclerview.ToolbarShadowAnimationHelper;
-import org.thoughtcrime.securesms.contacts.ContactChip;
+import org.thoughtcrime.securesms.contacts.ContactChipViewModel;
 import org.thoughtcrime.securesms.contacts.ContactSelectionListAdapter;
 import org.thoughtcrime.securesms.contacts.ContactSelectionListItem;
 import org.thoughtcrime.securesms.contacts.SelectedContact;
+import org.thoughtcrime.securesms.contacts.SelectedContacts;
+import org.thoughtcrime.securesms.groups.ui.GroupLimitDialog;
 import org.thoughtcrime.securesms.mms.GlideApp;
 import org.thoughtcrime.securesms.mms.GlideRequests;
 import org.thoughtcrime.securesms.recipients.LiveRecipient;
@@ -39,12 +43,17 @@ import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.util.ViewUtil;
 import org.signal.core.util.concurrent.SimpleTask;
+import org.thoughtcrime.securesms.util.adapter.mapping.MappingAdapter;
+import org.thoughtcrime.securesms.util.adapter.mapping.MappingModelList;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+
+import io.reactivex.rxjava3.disposables.Disposable;
+import kotlin.Unit;
 
 /**
  * In order to keep the tight coupling to a minimum, such that we can continue syncing against the upstream repo as it evolves, we opted to
@@ -65,15 +74,31 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
   private   ProgressWheel showContactsProgress;
   private ConstraintLayout constraintLayout;
   private TrustedIntroductionContactsViewModel viewModel;
-  private IntroducableContactsAdapter          TIRecyclerViewAdapter;
-  private RecyclerView                         recyclerView;
-  private ChipGroup                                                    chipGroup;
-  private   HorizontalScrollView                                         chipGroupScrollContainer;
-  private View                                        shadowView;
+  private IntroducableContactsAdapter                            TIRecyclerViewAdapter;
+  private ContactSelectionListFragment.OnContactSelectedListener onContactSelectedListener;
+  private RecyclerView                                           recyclerView;
+  private RecyclerView   chipRecycler;
+  private MappingAdapter contactChipAdapter;
+  private ContactChipViewModel contactChipViewModel;
+  private View           shadowView;
   private ToolbarShadowAnimationHelper                toolbarShadowAnimationHelper;
 
 
   private GlideRequests    glideRequests;
+
+  @Override
+  public void onAttach(@NonNull Context context) {
+    super.onAttach(context);
+
+    if (getParentFragment() instanceof ContactSelectionListFragment.OnContactSelectedListener) {
+      onContactSelectedListener = (ContactSelectionListFragment.OnContactSelectedListener) getParentFragment();
+    }
+
+    if (context instanceof ContactSelectionListFragment.OnContactSelectedListener) {
+      onContactSelectedListener = (ContactSelectionListFragment.OnContactSelectedListener) context;
+    }
+
+  }
 
   @Override
   public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -82,10 +107,10 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
 
     recyclerView             = view.findViewById(R.id.recycler_view);
     showContactsProgress     = view.findViewById(R.id.progress);
-    chipGroup                = view.findViewById(R.id.chipGroup);
-    chipGroupScrollContainer = view.findViewById(R.id.chipGroupScrollContainer);
+    chipRecycler                = view.findViewById(R.id.chipRecycler);
     constraintLayout         = view.findViewById(R.id.container);
     shadowView               = view.findViewById(R.id.toolbar_shadow);
+    chipRecycler = view.findViewById(R.id.chipRecycler);
 
     toolbarShadowAnimationHelper = new ToolbarShadowAnimationHelper(shadowView);
 
@@ -97,6 +122,14 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
         return true;
       }
     });
+
+    contactChipViewModel = new ViewModelProvider(this).get(ContactChipViewModel.class);
+    contactChipAdapter   = new MappingAdapter();
+
+    SelectedContacts.register(contactChipAdapter, this::onChipCloseIconClicked);
+    chipRecycler.setAdapter(contactChipAdapter);
+
+    Disposable disposable = contactChipViewModel.getState().subscribe(this::handleSelectedContactsChanged);
 
     // Default values for now
     boolean recyclerViewClipping  = true;
@@ -211,20 +244,9 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
   }
 
   private int getChipCount() {
-    int count = chipGroup.getChildCount() - CHIP_GROUP_EMPTY_CHILD_COUNT;
+    int count = contactChipViewModel.getCount() - CHIP_GROUP_EMPTY_CHILD_COUNT;
     if (count < 0) throw new AssertionError();
     return count;
-  }
-
-  private void registerChipRecipientObserver(@NonNull ContactChip chip, @Nullable LiveRecipient recipient) {
-    if (recipient != null) {
-      recipient.observe(getViewLifecycleOwner(), resolved -> {
-        if (chip.isAttachedToWindow()) {
-          chip.setAvatar(glideRequests, resolved, null);
-          chip.setText(resolved.getShortDisplayName(chip.getContext()));
-        }
-      });
-    }
   }
 
   private void markContactSelected(@NonNull SelectedContact selectedContact) {
@@ -243,48 +265,16 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
     Lifecycle state = getLifecycle();
     SimpleTask.run(state,
                    ()       -> Recipient.resolved(selectedContact.getOrCreateRecipientId(requireContext())),
-                   resolved -> addChipForRecipient(resolved, selectedContact));
+                   resolved -> contactChipViewModel.add(selectedContact));
   }
 
-  private void addChipForRecipient(@NonNull Recipient recipient, @NonNull SelectedContact selectedContact) {
-    final ContactChip chip = new ContactChip(requireContext());
-
-    if (getChipCount() == 0) {
-      setChipGroupVisibility(ConstraintSet.VISIBLE);
+  private Unit onChipCloseIconClicked(SelectedContacts.Model model) {
+    markContactUnselected(model.getSelectedContact());
+    if (onContactSelectedListener != null) {
+      onContactSelectedListener.onContactDeselected(Optional.of(model.getRecipient().getId()), model.getRecipient().getE164().orElse(null));
     }
 
-    chip.setText(recipient.getShortDisplayName(requireContext()));
-    chip.setContact(selectedContact);
-    chip.setCloseIconVisible(true);
-    chip.setOnCloseIconClickListener(view -> {
-      markContactUnselected(selectedContact);
-    });
-
-    chipGroup.getLayoutTransition().addTransitionListener(new LayoutTransition.TransitionListener() {
-      @Override
-      public void startTransition(LayoutTransition transition, ViewGroup container, View view, int transitionType) {
-      }
-
-      @Override
-      public void endTransition(LayoutTransition transition, ViewGroup container, View view, int transitionType) {
-        if (getView() == null || !requireView().isAttachedToWindow()) {
-          Log.w(TAG, "Fragment's view was detached before the animation completed.");
-          return;
-        }
-
-        if (view == chip && transitionType == LayoutTransition.APPEARING) {
-          chipGroup.getLayoutTransition().removeTransitionListener(this);
-          registerChipRecipientObserver(chip, recipient.live());
-          chipGroup.post(IntroductionContactsSelectionListFragment.this::smoothScrollChipsToEnd);
-        }
-      }
-    });
-
-    chip.setAvatar(glideRequests, recipient, () -> addChip(chip));
-  }
-
-  private void addChip(@NonNull ContactChip chip) {
-    chipGroup.addView(chip);
+    return Unit.INSTANCE;
   }
 
   private void setChipGroupVisibility(int visibility) {
@@ -296,13 +286,13 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
 
     ConstraintSet constraintSet = new ConstraintSet();
     constraintSet.clone(constraintLayout);
-    constraintSet.setVisibility(R.id.chipGroupScrollContainer, visibility);
+    constraintSet.setVisibility(R.id.chipRecycler, visibility);
     constraintSet.applyTo(constraintLayout);
   }
 
   private void smoothScrollChipsToEnd() {
-    int x = ViewUtil.isLtr(chipGroupScrollContainer) ? chipGroup.getWidth() : 0;
-    chipGroupScrollContainer.smoothScrollTo(x, 0);
+    int x = ViewUtil.isLtr(chipRecycler) ? chipRecycler.getWidth() : 0;
+    chipRecycler.smoothScrollBy(x, 0);
   }
 
   private void markContactUnselected(@NonNull SelectedContact selectedContact) {
@@ -312,20 +302,17 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
     } else {
       Log.i(TAG, String.format(Locale.US,"%d contact(s) were removed from selection.", removed));
       TIRecyclerViewAdapter.notifyItemRangeChanged(0, TIRecyclerViewAdapter.getItemCount(), ContactSelectionListAdapter.PAYLOAD_SELECTION_CHANGE);
-      removeChipForContact(selectedContact);
+      contactChipViewModel.remove(selectedContact);
     }
   }
 
-  private void removeChipForContact(@NonNull SelectedContact contact) {
-    for (int i = chipGroup.getChildCount() - 1; i >= 0; i--) {
-      View v = chipGroup.getChildAt(i);
-      if (v instanceof ContactChip && contact.matches(((ContactChip) v).getContact())) {
-        chipGroup.removeView(v);
-      }
-    }
+  private void handleSelectedContactsChanged(@NonNull List<SelectedContacts.Model> selectedContacts) {
+    contactChipAdapter.submitList(new MappingModelList(selectedContacts), this::smoothScrollChipsToEnd);
 
-    if (getChipCount() == 0) {
+    if (selectedContacts.isEmpty()) {
       setChipGroupVisibility(ConstraintSet.GONE);
+    } else {
+      setChipGroupVisibility(ConstraintSet.VISIBLE);
     }
   }
 }
