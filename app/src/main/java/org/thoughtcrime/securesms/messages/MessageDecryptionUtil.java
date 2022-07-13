@@ -81,7 +81,7 @@ public final class MessageDecryptionUtil {
     ServiceId pni = SignalStore.account().requirePni();
 
     ServiceId destination;
-    if (!FeatureFlags.usePnpCds()) {
+    if (!FeatureFlags.phoneNumberPrivacy()) {
       destination = aci;
     } else if (envelope.hasDestinationUuid()) {
       destination = ServiceId.parseOrThrow(envelope.getDestinationUuid());
@@ -164,7 +164,7 @@ public final class MessageDecryptionUtil {
     long threadId;
 
     if (groupId.isPresent()) {
-      Recipient groupRecipient = Recipient.externalPossiblyMigratedGroup(context, groupId.get());
+      Recipient groupRecipient = Recipient.externalPossiblyMigratedGroup(groupId.get());
       threadId = SignalDatabase.threads().getOrCreateThreadIdFor(groupRecipient);
     } else {
       threadId = SignalDatabase.threads().getOrCreateThreadIdFor(sender);

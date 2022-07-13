@@ -15,11 +15,12 @@ import org.thoughtcrime.securesms.components.settings.DSLSettingsText
 import org.thoughtcrime.securesms.components.settings.configure
 import org.thoughtcrime.securesms.conversation.mutiselect.forward.MultiselectForwardFragment
 import org.thoughtcrime.securesms.conversation.mutiselect.forward.MultiselectForwardFragmentArgs
-import org.thoughtcrime.securesms.conversation.ui.error.SafetyNumberChangeDialog
 import org.thoughtcrime.securesms.database.model.MediaMmsMessageRecord
 import org.thoughtcrime.securesms.database.model.MmsMessageRecord
 import org.thoughtcrime.securesms.recipients.Recipient
+import org.thoughtcrime.securesms.safety.SafetyNumberBottomSheet
 import org.thoughtcrime.securesms.stories.StoryTextPostModel
+import org.thoughtcrime.securesms.stories.StoryViewerArgs
 import org.thoughtcrime.securesms.stories.dialogs.StoryContextMenu
 import org.thoughtcrime.securesms.stories.dialogs.StoryDialogs
 import org.thoughtcrime.securesms.stories.viewer.StoryViewerActivity
@@ -79,7 +80,9 @@ class MyStoriesFragment : DSLSettingsFragment(
                 onClick = { it, preview ->
                   if (it.distributionStory.messageRecord.isOutgoing && it.distributionStory.messageRecord.isFailed) {
                     if (it.distributionStory.messageRecord.isIdentityMismatchFailure) {
-                      SafetyNumberChangeDialog.show(requireContext(), childFragmentManager, it.distributionStory.messageRecord)
+                      SafetyNumberBottomSheet
+                        .forMessageRecord(requireContext(), it.distributionStory.messageRecord)
+                        .show(childFragmentManager)
                     } else {
                       StoryDialogs.resendStory(requireContext()) {
                         lifecycleDisposable += viewModel.resend(it.distributionStory.messageRecord).subscribe()
@@ -101,7 +104,20 @@ class MyStoriesFragment : DSLSettingsFragment(
                     }
 
                     val options = ActivityOptionsCompat.makeSceneTransitionAnimation(requireActivity(), preview, ViewCompat.getTransitionName(preview) ?: "")
-                    startActivity(StoryViewerActivity.createIntent(requireContext(), recipient.id, conversationMessage.messageRecord.id, recipient.shouldHideStory(), text, image, blur), options.toBundle())
+                    startActivity(
+                      StoryViewerActivity.createIntent(
+                        context = requireContext(),
+                        storyViewerArgs = StoryViewerArgs(
+                          recipientId = recipient.id,
+                          storyId = conversationMessage.messageRecord.id,
+                          isInHiddenStoryMode = recipient.shouldHideStory(),
+                          storyThumbTextModel = text,
+                          storyThumbUri = image,
+                          storyThumbBlur = blur
+                        )
+                      ),
+                      options.toBundle()
+                    )
                   }
                 },
                 onLongClick = {

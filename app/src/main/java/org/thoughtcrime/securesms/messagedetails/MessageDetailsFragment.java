@@ -1,5 +1,6 @@
 package org.thoughtcrime.securesms.messagedetails;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -12,10 +13,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.components.FullScreenDialogFragment;
-import org.thoughtcrime.securesms.components.recyclerview.ToolbarShadowAnimationHelper;
 import org.thoughtcrime.securesms.conversation.colors.Colorizer;
 import org.thoughtcrime.securesms.conversation.colors.RecyclerViewColorizer;
-import org.thoughtcrime.securesms.conversation.ui.error.SafetyNumberChangeDialog;
 import org.thoughtcrime.securesms.database.MmsSmsDatabase;
 import org.thoughtcrime.securesms.database.model.MessageRecord;
 import org.thoughtcrime.securesms.giph.mp4.GiphyMp4PlaybackController;
@@ -26,6 +25,8 @@ import org.thoughtcrime.securesms.messagedetails.MessageDetailsViewModel.Factory
 import org.thoughtcrime.securesms.mms.GlideApp;
 import org.thoughtcrime.securesms.mms.GlideRequests;
 import org.thoughtcrime.securesms.recipients.RecipientId;
+import org.thoughtcrime.securesms.safety.SafetyNumberBottomSheet;
+import org.thoughtcrime.securesms.util.Material3OnScrollHelper;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -76,28 +77,27 @@ public final class MessageDetailsFragment extends FullScreenDialogFragment {
   }
 
   @Override
-  public void onResume() {
-    super.onResume();
-    adapter.resumeMessageExpirationTimer();
-  }
+  public void onDismiss(@NonNull DialogInterface dialog) {
+    super.onDismiss(dialog);
 
-  @Override
-  public void onPause() {
-    super.onPause();
-    adapter.pauseMessageExpirationTimer();
+    if (getActivity() instanceof Callback) {
+      ((Callback) getActivity()).onMessageDetailsFragmentDismissed();
+    } else if (getParentFragment() instanceof Callback) {
+      ((Callback) getParentFragment()).onMessageDetailsFragmentDismissed();
+    }
   }
 
   private void initializeList(@NonNull View view) {
-    RecyclerView  list          = view.findViewById(R.id.message_details_list);
-    View          toolbarShadow = view.findViewById(R.id.toolbar_shadow);
+    RecyclerView list          = view.findViewById(R.id.message_details_list);
+    View         toolbarShadow = view.findViewById(R.id.toolbar_shadow);
 
     colorizer             = new Colorizer();
-    adapter               = new MessageDetailsAdapter(this, glideRequests, colorizer, this::onErrorClicked);
+    adapter               = new MessageDetailsAdapter(getViewLifecycleOwner(), glideRequests, colorizer, this::onErrorClicked);
     recyclerViewColorizer = new RecyclerViewColorizer(list);
 
     list.setAdapter(adapter);
     list.setItemAnimator(null);
-    list.addOnScrollListener(new ToolbarShadowAnimationHelper(toolbarShadow));
+    new Material3OnScrollHelper(requireActivity(), toolbarShadow).attach(list);
   }
 
   private void initializeViewModel() {
@@ -159,6 +159,12 @@ public final class MessageDetailsFragment extends FullScreenDialogFragment {
   }
 
   private void onErrorClicked(@NonNull MessageRecord messageRecord) {
-    SafetyNumberChangeDialog.show(requireContext(), getChildFragmentManager(), messageRecord);
+    SafetyNumberBottomSheet
+        .forMessageRecord(requireContext(), messageRecord)
+        .show(getChildFragmentManager());
+  }
+
+  public interface Callback {
+    void onMessageDetailsFragmentDismissed();
   }
 }

@@ -2,6 +2,7 @@ package org.thoughtcrime.securesms.stories.landing
 
 import android.graphics.Color
 import android.graphics.drawable.Drawable
+import android.text.SpannableStringBuilder
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
@@ -13,17 +14,18 @@ import com.bumptech.glide.request.target.Target
 import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.avatar.view.AvatarView
 import org.thoughtcrime.securesms.badges.BadgeImageView
-import org.thoughtcrime.securesms.components.settings.PreferenceModel
 import org.thoughtcrime.securesms.database.model.MediaMmsMessageRecord
 import org.thoughtcrime.securesms.mms.DecryptableStreamUriLoader
 import org.thoughtcrime.securesms.mms.GlideApp
 import org.thoughtcrime.securesms.recipients.Recipient
 import org.thoughtcrime.securesms.stories.StoryTextPostModel
 import org.thoughtcrime.securesms.stories.dialogs.StoryContextMenu
+import org.thoughtcrime.securesms.util.ContextUtil
 import org.thoughtcrime.securesms.util.DateUtils
 import org.thoughtcrime.securesms.util.SpanUtil
 import org.thoughtcrime.securesms.util.adapter.mapping.LayoutFactory
 import org.thoughtcrime.securesms.util.adapter.mapping.MappingAdapter
+import org.thoughtcrime.securesms.util.adapter.mapping.MappingModel
 import org.thoughtcrime.securesms.util.adapter.mapping.MappingViewHolder
 import org.thoughtcrime.securesms.util.visible
 import java.util.Locale
@@ -48,7 +50,7 @@ object StoriesLandingItem {
     val onGoToChat: (Model) -> Unit,
     val onSave: (Model) -> Unit,
     val onDeleteStory: (Model) -> Unit
-  ) : PreferenceModel<Model>() {
+  ) : MappingModel<Model> {
     override fun areItemsTheSame(newItem: Model): Boolean {
       return data.storyRecipient.id == newItem.data.storyRecipient.id
     }
@@ -58,7 +60,7 @@ object StoriesLandingItem {
         data == newItem.data &&
         !hasStatusChange(newItem) &&
         (data.sendingCount == newItem.data.sendingCount && data.failureCount == newItem.data.failureCount) &&
-        super.areContentsTheSame(newItem)
+        data.storyViewState == newItem.data.storyViewState
     }
 
     override fun getChangePayload(newItem: Model): Any? {
@@ -188,6 +190,7 @@ object StoriesLandingItem {
       sender.text = when {
         model.data.storyRecipient.isMyStory -> context.getText(R.string.StoriesLandingFragment__my_stories)
         model.data.storyRecipient.isGroup -> getGroupPresentation(model)
+        model.data.storyRecipient.isReleaseNotes -> getReleaseNotesPresentation(model)
         else -> model.data.storyRecipient.getDisplayName(context)
       }
 
@@ -214,7 +217,8 @@ object StoriesLandingItem {
         }
       } else if (model.data.failureCount > 0 || (model.data.primaryStory.messageRecord.isOutgoing && model.data.primaryStory.messageRecord.isFailed)) {
         errorIndicator.visible = true
-        date.text = SpanUtil.color(ContextCompat.getColor(context, R.color.signal_alert_primary), context.getString(R.string.StoriesLandingItem__send_failed))
+        val message = if (model.data.primaryStory.messageRecord.isIdentityMismatchFailure) R.string.StoriesLandingItem__partially_sent else R.string.StoriesLandingItem__send_failed
+        date.text = SpanUtil.color(ContextCompat.getColor(context, R.color.signal_alert_primary), context.getString(message))
       } else {
         errorIndicator.visible = false
         date.text = DateUtils.getBriefRelativeTimeSpanString(context, Locale.getDefault(), model.data.dateInMilliseconds)
@@ -242,6 +246,15 @@ object StoriesLandingItem {
         getIndividualPresentation(model),
         model.data.storyRecipient.getDisplayName(context)
       )
+    }
+
+    private fun getReleaseNotesPresentation(model: Model): CharSequence {
+      val official = ContextUtil.requireDrawable(context, R.drawable.ic_official_20)
+
+      val name = SpannableStringBuilder(model.data.storyRecipient.getDisplayName(context))
+      SpanUtil.appendCenteredImageSpan(name, official, 20, 20)
+
+      return name
     }
 
     private fun getIndividualPresentation(model: Model): String {

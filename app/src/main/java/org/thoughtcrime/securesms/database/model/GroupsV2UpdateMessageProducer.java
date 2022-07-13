@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.PluralsRes;
 import androidx.annotation.StringRes;
 import androidx.annotation.VisibleForTesting;
+import androidx.core.content.ContextCompat;
 
 import com.google.protobuf.ByteString;
 
@@ -778,7 +779,7 @@ final class GroupsV2UpdateMessageProducer {
                                               @DrawableRes int iconResource)
   {
     ServiceId   serviceId   = ServiceId.fromByteStringOrUnknown(uuid1Bytes);
-    RecipientId recipientId = RecipientId.from(serviceId, null);
+    RecipientId recipientId = RecipientId.from(serviceId);
 
     return UpdateDescription.mentioning(
         Collections.singletonList(serviceId),
@@ -799,8 +800,8 @@ final class GroupsV2UpdateMessageProducer {
     ServiceId sid1 = ServiceId.fromByteStringOrUnknown(uuid1Bytes);
     ServiceId sid2 = ServiceId.fromByteStringOrUnknown(uuid2Bytes);
 
-    RecipientId recipientId1 = RecipientId.from(sid1, null);
-    RecipientId recipientId2 = RecipientId.from(sid2, null);
+    RecipientId recipientId1 = RecipientId.from(sid1);
+    RecipientId recipientId2 = RecipientId.from(sid2);
 
     return UpdateDescription.mentioning(
         Arrays.asList(sid1, sid2),
@@ -820,7 +821,7 @@ final class GroupsV2UpdateMessageProducer {
                                               @DrawableRes int iconResource)
   {
     ServiceId   serviceId   = ServiceId.fromByteStringOrUnknown(uuid1Bytes);
-    RecipientId recipientId = RecipientId.from(serviceId, null);
+    RecipientId recipientId = RecipientId.from(serviceId);
 
     return UpdateDescription.mentioning(
         Collections.singletonList(serviceId),
@@ -841,7 +842,7 @@ final class GroupsV2UpdateMessageProducer {
                                               @DrawableRes int iconResource)
   {
     ServiceId   serviceId   = ServiceId.fromByteStringOrUnknown(uuid1Bytes);
-    RecipientId recipientId = RecipientId.from(serviceId, null);
+    RecipientId recipientId = RecipientId.from(serviceId);
 
     return UpdateDescription.mentioning(
         Collections.singletonList(serviceId),
@@ -896,7 +897,7 @@ final class GroupsV2UpdateMessageProducer {
         String beforeChunk = template.substring(startIndex, nearestPosition);
 
         builder.append(beforeChunk);
-        builder.append(SpanUtil.clickable(Recipient.resolved(recipientId).getDisplayName(context), 0, v -> {
+        builder.append(SpanUtil.clickable(Recipient.resolved(recipientId).getDisplayName(context), ContextCompat.getColor(context, R.color.conversation_item_update_text_color), v -> {
           if (!recipientId.isUnknown() && clickHandler != null) {
             clickHandler.accept(recipientId);
           }

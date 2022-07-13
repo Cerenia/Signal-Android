@@ -1,6 +1,7 @@
 package org.thoughtcrime.securesms.mediasend;
 
 import android.Manifest;
+import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.DisplayMetrics;
@@ -17,17 +18,17 @@ import androidx.camera.view.SignalCameraView;
 import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.util.Executors;
-import com.nineoldandroids.animation.Animator;
-import com.nineoldandroids.animation.ValueAnimator;
 
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.permissions.Permissions;
+import org.thoughtcrime.securesms.util.Debouncer;
 import org.thoughtcrime.securesms.util.MemoryFileDescriptor;
 import org.thoughtcrime.securesms.video.VideoUtil;
 
 import java.io.FileDescriptor;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 @RequiresApi(26)
 class CameraXVideoCaptureHelper implements CameraButtonView.VideoCaptureListener {
@@ -41,15 +42,18 @@ class CameraXVideoCaptureHelper implements CameraButtonView.VideoCaptureListener
   private final @NonNull Callback             callback;
   private final @NonNull MemoryFileDescriptor memoryFileDescriptor;
   private final @NonNull ValueAnimator        updateProgressAnimator;
+  private final @NonNull Debouncer            debouncer;
 
-  private       boolean       isRecording;
-  private       ValueAnimator cameraMetricsAnimator;
+  private boolean       isRecording;
+  private ValueAnimator cameraMetricsAnimator;
 
   private final VideoCapture.OnVideoSavedCallback videoSavedListener = new VideoCapture.OnVideoSavedCallback() {
+    @SuppressLint("RestrictedApi")
     @Override
     public void onVideoSaved(@NonNull VideoCapture.OutputFileResults outputFileResults) {
       try {
         isRecording = false;
+        debouncer.clear();
         camera.setZoomRatio(camera.getMinZoomRatio());
         memoryFileDescriptor.seek(0);
         callback.onVideoSaved(memoryFileDescriptor.getFileDescriptor());
@@ -58,9 +62,11 @@ class CameraXVideoCaptureHelper implements CameraButtonView.VideoCaptureListener
       }
     }
 
+    @SuppressLint("RestrictedApi")
     @Override
     public void onError(int videoCaptureError, @NonNull String message, @Nullable Throwable cause) {
       isRecording = false;
+      debouncer.clear();
       callback.onVideoError(cause);
     }
   };
@@ -69,23 +75,18 @@ class CameraXVideoCaptureHelper implements CameraButtonView.VideoCaptureListener
                             @NonNull CameraButtonView captureButton,
                             @NonNull SignalCameraView camera,
                             @NonNull MemoryFileDescriptor memoryFileDescriptor,
-                            int      maxVideoDurationSec,
+                            int maxVideoDurationSec,
                             @NonNull Callback callback)
   {
     this.fragment               = fragment;
     this.camera                 = camera;
     this.memoryFileDescriptor   = memoryFileDescriptor;
     this.callback               = callback;
-    this.updateProgressAnimator = ValueAnimator.ofFloat(0f, 1f).setDuration(maxVideoDurationSec * 1000);
+    this.updateProgressAnimator = ValueAnimator.ofFloat(0f, 1f).setDuration(TimeUnit.SECONDS.toMillis(maxVideoDurationSec));
+    this.debouncer              = new Debouncer(TimeUnit.SECONDS.toMillis(maxVideoDurationSec));
 
     updateProgressAnimator.setInterpolator(new LinearInterpolator());
     updateProgressAnimator.addUpdateListener(anim -> captureButton.setProgress(anim.getAnimatedFraction()));
-    updateProgressAnimator.addListener(new AnimationEndCallback() {
-      @Override
-      public void onAnimationEnd(Animator animation) {
-        if (isRecording) onVideoCaptureComplete();
-      }
-    });
   }
 
   @Override
@@ -124,14 +125,15 @@ class CameraXVideoCaptureHelper implements CameraButtonView.VideoCaptureListener
 
     camera.startRecording(options, Executors.mainThreadExecutor(), videoSavedListener);
     updateProgressAnimator.start();
+    debouncer.publish(this::onVideoCaptureComplete);
   }
 
   private void shrinkCaptureArea() {
-    Size  screenSize               = getScreenSize();
-    Size  videoRecordingSize       = VideoUtil.getVideoRecordingSize();
-    float scale                    = getSurfaceScaleForRecording();
-    float targetWidthForAnimation  = videoRecordingSize.getWidth() * scale;
-    float scaleX                   = targetWidthForAnimation / screenSize.getWidth();
+    Size  screenSize              = getScreenSize();
+    Size  videoRecordingSize      = VideoUtil.getVideoRecordingSize();
+    float scale                   = getSurfaceScaleForRecording();
+    float targetWidthForAnimation = videoRecordingSize.getWidth() * scale;
+    float scaleX                  = targetWidthForAnimation / screenSize.getWidth();
 
     if (scaleX == 1f) {
       float targetHeightForAnimation = videoRecordingSize.getHeight() * scale;
@@ -188,6 +190,7 @@ class CameraXVideoCaptureHelper implements CameraButtonView.VideoCaptureListener
     }
 
     updateProgressAnimator.cancel();
+    debouncer.clear();
   }
 
   @Override
@@ -204,27 +207,11 @@ class CameraXVideoCaptureHelper implements CameraButtonView.VideoCaptureListener
     );
   }
 
-  private static abstract class AnimationEndCallback implements Animator.AnimatorListener {
-
-    @Override
-    public final void onAnimationStart(Animator animation) {
-
-    }
-
-    @Override
-    public final void onAnimationCancel(Animator animation) {
-
-    }
-
-    @Override
-    public final void onAnimationRepeat(Animator animation) {
-
-    }
-  }
-
   interface Callback {
     void onVideoRecordStarted();
+
     void onVideoSaved(@NonNull FileDescriptor fd);
+
     void onVideoError(@Nullable Throwable cause);
   }
 }

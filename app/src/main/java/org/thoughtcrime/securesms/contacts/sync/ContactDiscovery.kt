@@ -20,7 +20,7 @@ import org.thoughtcrime.securesms.database.SignalDatabase
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies
 import org.thoughtcrime.securesms.keyvalue.SignalStore
 import org.thoughtcrime.securesms.notifications.NotificationChannels
-import org.thoughtcrime.securesms.notifications.v2.NotificationThread
+import org.thoughtcrime.securesms.notifications.v2.ConversationId
 import org.thoughtcrime.securesms.permissions.Permissions
 import org.thoughtcrime.securesms.phonenumbers.PhoneNumberFormatter
 import org.thoughtcrime.securesms.profiles.ProfileName
@@ -74,7 +74,7 @@ object ContactDiscovery {
       context = context,
       descriptor = "refresh-all",
       refresh = {
-        if (FeatureFlags.usePnpCds()) {
+        if (FeatureFlags.phoneNumberPrivacy()) {
           ContactDiscoveryRefreshV2.refreshAll(context)
         } else {
           ContactDiscoveryRefreshV1.refreshAll(context)
@@ -95,7 +95,7 @@ object ContactDiscovery {
       context = context,
       descriptor = "refresh-multiple",
       refresh = {
-        if (FeatureFlags.usePnpCds()) {
+        if (FeatureFlags.phoneNumberPrivacy()) {
           ContactDiscoveryRefreshV2.refresh(context, recipients)
         } else {
           ContactDiscoveryRefreshV1.refresh(context, recipients)
@@ -114,7 +114,7 @@ object ContactDiscovery {
       context = context,
       descriptor = "refresh-single",
       refresh = {
-        if (FeatureFlags.usePnpCds()) {
+        if (FeatureFlags.phoneNumberPrivacy()) {
           ContactDiscoveryRefreshV2.refresh(context, listOf(recipient))
         } else {
           ContactDiscoveryRefreshV1.refresh(context, listOf(recipient))
@@ -134,6 +134,11 @@ object ContactDiscovery {
   @JvmStatic
   @WorkerThread
   fun syncRecipientInfoWithSystemContacts(context: Context) {
+    if (!hasContactsPermissions(context)) {
+      Log.w(TAG, "[syncRecipientInfoWithSystemContacts] No contacts permission, skipping.")
+      return
+    }
+
     syncRecipientsWithSystemContacts(
       context = context,
       rewrites = emptyMap(),
@@ -215,7 +220,7 @@ object ContactDiscovery {
       .forEach { result ->
         val hour = Calendar.getInstance()[Calendar.HOUR_OF_DAY]
         if (hour in 9..22) {
-          ApplicationDependencies.getMessageNotifier().updateNotification(context, NotificationThread.forConversation(result.threadId), true)
+          ApplicationDependencies.getMessageNotifier().updateNotification(context, ConversationId.forConversation(result.threadId), true)
         } else {
           Log.i(TAG, "Not notifying of a new user due to the time of day. (Hour: $hour)")
         }
@@ -317,7 +322,7 @@ object ContactDiscovery {
             }
 
             handle.setSystemContactInfo(
-              Recipient.externalContact(context, realNumber).id,
+              Recipient.externalContact(realNumber).id,
               profileName,
               phoneDetails.displayName,
               phoneDetails.photoUri,

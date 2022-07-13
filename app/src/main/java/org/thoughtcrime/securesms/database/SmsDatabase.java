@@ -658,6 +658,11 @@ public class SmsDatabase extends MessageDatabase {
     return Collections.emptyList();
   }
 
+  @Override
+  public @NonNull List<MarkedMessageInfo> setOutgoingGiftsRevealed(@NonNull List<Long> messageIds) {
+    throw new UnsupportedOperationException();
+  }
+
   private InsertResult updateMessageBodyAndType(long messageId, String body, long maskOff, long maskOn) {
     SQLiteDatabase db = databaseHelper.getSignalWritableDatabase();
     db.execSQL("UPDATE " + TABLE_NAME + " SET " + BODY + " = ?, " +
@@ -1398,7 +1403,7 @@ public class SmsDatabase extends MessageDatabase {
   }
 
   @Override
-  public @NonNull MessageDatabase.Reader getAllOutgoingStories(boolean reverse) {
+  public @NonNull MessageDatabase.Reader getAllOutgoingStories(boolean reverse, int limit) {
     throw new UnsupportedOperationException();
   }
 
@@ -1413,7 +1418,11 @@ public class SmsDatabase extends MessageDatabase {
   }
 
   @Override
-  public @NonNull MessageDatabase.Reader getAllStoriesFor(@NonNull RecipientId recipientId) {
+  public @NonNull MessageDatabase.Reader getAllStoriesFor(@NonNull RecipientId recipientId, int limit) {
+    throw new UnsupportedOperationException();
+  }
+
+  public boolean isOutgoingStoryAlreadyInDatabase(@NonNull RecipientId recipientId, long sentTimestamp) {
     throw new UnsupportedOperationException();
   }
 
@@ -1443,6 +1452,11 @@ public class SmsDatabase extends MessageDatabase {
   }
 
   @Override
+  public boolean hasSelfReplyInGroupStory(long parentStoryId) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public @NonNull Cursor getStoryReplies(long parentStoryId) {
     throw new UnsupportedOperationException();
   }
@@ -1463,7 +1477,7 @@ public class SmsDatabase extends MessageDatabase {
   }
 
   @Override
-  public int deleteStoriesOlderThan(long timestamp) {
+  public int deleteStoriesOlderThan(long timestamp, boolean hasSeenReleaseChannelStories) {
     throw new UnsupportedOperationException();
   }
 
@@ -1474,6 +1488,11 @@ public class SmsDatabase extends MessageDatabase {
 
   @Override
   public @Nullable ParentStoryId.GroupReply getParentStoryIdForGroupReply(long messageId) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public @NonNull List<MarkedMessageInfo> setGroupStoryMessagesReadSince(long threadId, long groupStoryId, long sinceTimestamp) {
     throw new UnsupportedOperationException();
   }
 

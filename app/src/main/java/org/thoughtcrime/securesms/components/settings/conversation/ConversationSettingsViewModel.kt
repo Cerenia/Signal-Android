@@ -152,7 +152,7 @@ sealed class ConversationSettingsViewModel(
           canModifyBlockedState = !recipient.isSelf && RecipientUtil.isBlockable(recipient),
           specificSettingsState = state.requireRecipientSettingsState().copy(
             contactLinkState = when {
-              recipient.isSelf || recipient.isReleaseNotes -> ContactLinkState.NONE
+              recipient.isSelf || recipient.isReleaseNotes || recipient.isBlocked -> ContactLinkState.NONE
               recipient.isSystemContact -> ContactLinkState.OPEN
               else -> ContactLinkState.ADD
             }
@@ -471,7 +471,7 @@ sealed class ConversationSettingsViewModel(
     private val repository: ConversationSettingsRepository,
   ) : ViewModelProvider.Factory {
 
-    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
       return requireNotNull(
         modelClass.cast(
           when {

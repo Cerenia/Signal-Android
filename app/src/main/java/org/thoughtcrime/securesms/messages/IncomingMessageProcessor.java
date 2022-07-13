@@ -23,6 +23,7 @@ import org.thoughtcrime.securesms.jobs.PushProcessMessageJob;
 import org.thoughtcrime.securesms.messages.MessageDecryptionUtil.DecryptionResult;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
+import org.thoughtcrime.securesms.util.FeatureFlags;
 import org.thoughtcrime.securesms.util.GroupUtil;
 import org.signal.core.util.SetUtil;
 import org.thoughtcrime.securesms.util.Stopwatch;
@@ -81,8 +82,13 @@ public class IncomingMessageProcessor {
      *         one was created. Otherwise null.
      */
     public @Nullable String processEnvelope(@NonNull SignalServiceEnvelope envelope) {
+      if (FeatureFlags.phoneNumberPrivacy() && envelope.hasSourceE164()) {
+        Log.w(TAG, "PNP enabled -- mimicking PNP by dropping the E164 from the envelope.");
+        envelope = envelope.withoutE164();
+      }
+
       if (envelope.hasSourceUuid()) {
-        Recipient.externalHighTrustPush(context, envelope.getSourceAddress());
+        Recipient.externalPush(envelope.getSourceAddress());
       }
 
       if (envelope.isReceipt()) {
@@ -158,7 +164,7 @@ public class IncomingMessageProcessor {
     }
 
     private void processReceipt(@NonNull SignalServiceEnvelope envelope) {
-      Recipient sender = Recipient.externalHighTrustPush(context, envelope.getSourceAddress());
+      Recipient sender = Recipient.externalPush(envelope.getSourceAddress());
       Log.i(TAG, "Received server receipt. Sender: " + sender.getId() + ", Device: " + envelope.getSourceDevice() + ", Timestamp: " + envelope.getTimestamp());
 
       mmsSmsDatabase.incrementDeliveryReceiptCount(new SyncMessageId(sender.getId(), envelope.getTimestamp()), System.currentTimeMillis());
@@ -178,7 +184,7 @@ public class IncomingMessageProcessor {
           GroupId groupId = GroupUtil.idFromGroupContext(groupContext);
 
           if (groupId.isV2()) {
-            String        queueName     = PushProcessMessageJob.getQueueName(Recipient.externalPossiblyMigratedGroup(context, groupId).getId());
+            String        queueName     = PushProcessMessageJob.getQueueName(Recipient.externalPossiblyMigratedGroup(groupId).getId());
             GroupDatabase groupDatabase = SignalDatabase.groups();
 
             return !jobManager.isQueueEmpty(queueName)                                                                   ||
@@ -192,7 +198,7 @@ public class IncomingMessageProcessor {
           return false;
         }
       } else if (result.getContent() != null) {
-        RecipientId recipientId = RecipientId.fromHighTrust(result.getContent().getSender());
+        RecipientId recipientId = RecipientId.from(result.getContent().getSender());
         String      queueKey    = PushProcessMessageJob.getQueueName(recipientId);
 
         return !jobManager.isQueueEmpty(queueKey);

@@ -13,6 +13,7 @@ import com.annimon.stream.Stream;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+import org.signal.core.util.Hex;
 import org.signal.core.util.logging.Log;
 import org.signal.libsignal.metadata.certificate.InvalidCertificateException;
 import org.signal.libsignal.metadata.certificate.SenderCertificate;
@@ -44,7 +45,7 @@ import org.thoughtcrime.securesms.mms.OutgoingMediaMessage;
 import org.thoughtcrime.securesms.mms.PartAuthority;
 import org.thoughtcrime.securesms.mms.QuoteModel;
 import org.thoughtcrime.securesms.net.NotPushRegisteredException;
-import org.thoughtcrime.securesms.notifications.v2.NotificationThread;
+import org.thoughtcrime.securesms.notifications.v2.ConversationId;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.recipients.RecipientUtil;
@@ -54,7 +55,6 @@ import org.thoughtcrime.securesms.util.Base64;
 import org.thoughtcrime.securesms.util.BitmapDecodingException;
 import org.thoughtcrime.securesms.util.BitmapUtil;
 import org.thoughtcrime.securesms.util.FeatureFlags;
-import org.signal.core.util.Hex;
 import org.thoughtcrime.securesms.util.MediaUtil;
 import org.thoughtcrime.securesms.util.Util;
 import org.whispersystems.signalservice.api.messages.SignalServiceAttachment;
@@ -296,7 +296,7 @@ public abstract class PushSendJob extends SendJob {
     ParentStoryId.GroupReply groupReplyStoryId  = SignalDatabase.mms().getParentStoryIdForGroupReply(messageId);
 
     if (threadId != -1 && recipient != null) {
-      ApplicationDependencies.getMessageNotifier().notifyMessageDeliveryFailed(context, recipient, NotificationThread.fromThreadAndReply(threadId, groupReplyStoryId));
+      ApplicationDependencies.getMessageNotifier().notifyMessageDeliveryFailed(context, recipient, ConversationId.fromThreadAndReply(threadId, groupReplyStoryId));
     }
   }
 
@@ -355,8 +355,7 @@ public abstract class PushSendJob extends SendJob {
     Recipient quoteAuthorRecipient = Recipient.resolved(quoteAuthor);
 
     if (quoteAuthorRecipient.isMaybeRegistered()) {
-      SignalServiceAddress quoteAddress = RecipientUtil.toSignalServiceAddress(context, quoteAuthorRecipient);
-      return Optional.of(new SignalServiceDataMessage.Quote(quoteId, quoteAddress, quoteBody, quoteAttachments, quoteMentions, quoteType.getDataMessageType()));
+      return Optional.of(new SignalServiceDataMessage.Quote(quoteId, RecipientUtil.getOrFetchServiceId(context, quoteAuthorRecipient), quoteBody, quoteAttachments, quoteMentions, quoteType.getDataMessageType()));
     } else {
       return Optional.empty();
     }
@@ -386,10 +385,10 @@ public abstract class PushSendJob extends SendJob {
 
   protected Optional<SignalServiceDataMessage.Reaction> getStoryReactionFor(@NonNull OutgoingMediaMessage message, @NonNull SignalServiceDataMessage.StoryContext storyContext) {
     if (message.isStoryReaction()) {
-      return Optional.of(new SignalServiceDataMessage.Reaction(
-                         message.getBody(),
-                         false,
-                         new SignalServiceAddress(storyContext.getAuthorServiceId()), storyContext.getSentTimestamp()));
+      return Optional.of(new SignalServiceDataMessage.Reaction(message.getBody(),
+                                                               false,
+                                                               storyContext.getAuthorServiceId(),
+                                                               storyContext.getSentTimestamp()));
     } else {
       return Optional.empty();
     }
@@ -515,7 +514,7 @@ public abstract class PushSendJob extends SendJob {
 
       if (recipient != null) {
         ParentStoryId.GroupReply groupReply = SignalDatabase.mms().getParentStoryIdForGroupReply(messageId);
-        ApplicationDependencies.getMessageNotifier().notifyProofRequired(context, recipient, NotificationThread.fromThreadAndReply(threadId, groupReply));
+        ApplicationDependencies.getMessageNotifier().notifyProofRequired(context, recipient, ConversationId.fromThreadAndReply(threadId, groupReply));
       } else {
         Log.w(TAG, "[Proof Required] No recipient! Couldn't notify.");
       }

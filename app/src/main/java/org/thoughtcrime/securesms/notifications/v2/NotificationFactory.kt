@@ -27,30 +27,29 @@ import org.thoughtcrime.securesms.notifications.NotificationChannels
 import org.thoughtcrime.securesms.notifications.NotificationIds
 import org.thoughtcrime.securesms.recipients.Recipient
 import org.thoughtcrime.securesms.stories.my.MyStoriesActivity
-import org.thoughtcrime.securesms.stories.viewer.StoryViewerActivity
 import org.thoughtcrime.securesms.util.BubbleUtil
 import org.thoughtcrime.securesms.util.ConversationUtil
 import org.thoughtcrime.securesms.util.ServiceUtil
 import org.thoughtcrime.securesms.util.TextSecurePreferences
-
-private val TAG = Log.tag(NotificationFactory::class.java)
 
 /**
  * Given a notification state consisting of conversations of messages, show appropriate system notifications.
  */
 object NotificationFactory {
 
+  val TAG = Log.tag(NotificationFactory::class.java)
+
   fun notify(
     context: Context,
     state: NotificationStateV2,
-    visibleThread: NotificationThread?,
-    targetThread: NotificationThread?,
+    visibleThread: ConversationId?,
+    targetThread: ConversationId?,
     defaultBubbleState: BubbleUtil.BubbleState,
     lastAudibleNotification: Long,
     notificationConfigurationChanged: Boolean,
-    alertOverrides: Set<NotificationThread>,
+    alertOverrides: Set<ConversationId>,
     previousState: NotificationStateV2
-  ): Set<NotificationThread> {
+  ): Set<ConversationId> {
     if (state.isEmpty) {
       Log.d(TAG, "State is empty, bailing")
       return emptySet()
@@ -87,14 +86,14 @@ object NotificationFactory {
   private fun notify19(
     context: Context,
     state: NotificationStateV2,
-    visibleThread: NotificationThread?,
-    targetThread: NotificationThread?,
+    visibleThread: ConversationId?,
+    targetThread: ConversationId?,
     defaultBubbleState: BubbleUtil.BubbleState,
     lastAudibleNotification: Long,
-    alertOverrides: Set<NotificationThread>,
+    alertOverrides: Set<ConversationId>,
     nonVisibleThreadCount: Int
-  ): Set<NotificationThread> {
-    val threadsThatNewlyAlerted: MutableSet<NotificationThread> = mutableSetOf()
+  ): Set<ConversationId> {
+    val threadsThatNewlyAlerted: MutableSet<ConversationId> = mutableSetOf()
 
     state.conversations.find { it.thread == visibleThread }?.let { conversation ->
       if (conversation.hasNewNotifications()) {
@@ -129,16 +128,16 @@ object NotificationFactory {
   private fun notify24(
     context: Context,
     state: NotificationStateV2,
-    visibleThread: NotificationThread?,
-    targetThread: NotificationThread?,
+    visibleThread: ConversationId?,
+    targetThread: ConversationId?,
     defaultBubbleState: BubbleUtil.BubbleState,
     lastAudibleNotification: Long,
     notificationConfigurationChanged: Boolean,
-    alertOverrides: Set<NotificationThread>,
+    alertOverrides: Set<ConversationId>,
     nonVisibleThreadCount: Int,
     previousState: NotificationStateV2
-  ): Set<NotificationThread> {
-    val threadsThatNewlyAlerted: MutableSet<NotificationThread> = mutableSetOf()
+  ): Set<ConversationId> {
+    val threadsThatNewlyAlerted: MutableSet<ConversationId> = mutableSetOf()
 
     state.conversations.forEach { conversation ->
       if (conversation.thread == visibleThread && conversation.hasNewNotifications()) {
@@ -149,13 +148,17 @@ object NotificationFactory {
           threadsThatNewlyAlerted += conversation.thread
         }
 
-        notifyForConversation(
-          context = context,
-          conversation = conversation,
-          targetThread = targetThread,
-          defaultBubbleState = defaultBubbleState,
-          shouldAlert = (conversation.hasNewNotifications() || alertOverrides.contains(conversation.thread)) && !conversation.mostRecentNotification.individualRecipient.isSelf
-        )
+        try {
+          notifyForConversation(
+            context = context,
+            conversation = conversation,
+            targetThread = targetThread,
+            defaultBubbleState = defaultBubbleState,
+            shouldAlert = (conversation.hasNewNotifications() || alertOverrides.contains(conversation.thread)) && !conversation.mostRecentNotification.individualRecipient.isSelf
+          )
+        } catch (e: SecurityException) {
+          Log.w(TAG, "Too many pending intents device quirk", e)
+        }
       }
     }
 
@@ -169,7 +172,7 @@ object NotificationFactory {
   private fun notifyForConversation(
     context: Context,
     conversation: NotificationConversation,
-    targetThread: NotificationThread?,
+    targetThread: ConversationId?,
     defaultBubbleState: BubbleUtil.BubbleState,
     shouldAlert: Boolean
   ) {
@@ -189,8 +192,12 @@ object NotificationFactory {
       setContentTitle(conversation.getContentTitle(context))
       setLargeIcon(conversation.getContactLargeIcon(context).toLargeBitmap(context))
       addPerson(conversation.recipient)
-      setShortcutId(ConversationUtil.getShortcutId(conversation.recipient))
-      setLocusId(ConversationUtil.getShortcutId(conversation.recipient))
+
+      if (conversation.thread.groupStoryId == null) {
+        setShortcutId(ConversationUtil.getShortcutId(conversation.recipient))
+        setLocusId(ConversationUtil.getShortcutId(conversation.recipient))
+      }
+
       setContentInfo(conversation.messageCount.toString())
       setNumber(conversation.messageCount)
       setContentText(conversation.getContentText(context))
@@ -267,7 +274,7 @@ object NotificationFactory {
       recipient.messageRingtone ?: SignalStore.settings().messageNotificationSound
     }
 
-    if (uri.toString().isEmpty()) {
+    if (uri == Uri.EMPTY || uri.toString().isEmpty()) {
       Log.d(TAG, "ringtone uri is empty")
       return
     }
@@ -292,22 +299,18 @@ object NotificationFactory {
     ringtone.play()
   }
 
-  fun notifyMessageDeliveryFailed(context: Context, recipient: Recipient, thread: NotificationThread, visibleThread: NotificationThread?) {
+  fun notifyMessageDeliveryFailed(context: Context, recipient: Recipient, thread: ConversationId, visibleThread: ConversationId?) {
     if (thread == visibleThread) {
       notifyInThread(context, recipient, 0)
       return
     }
 
-    val intent: Intent = if (recipient.isDistributionList) {
+    val intent: Intent = if (recipient.isDistributionList || thread.groupStoryId != null) {
       Intent(context, MyStoriesActivity::class.java)
-        .makeUniqueToPreventMerging()
-    } else if (thread.groupStoryId != null) {
-      StoryViewerActivity.createIntent(context, recipient.id, thread.groupStoryId, recipient.shouldHideStory())
     } else {
       ConversationIntents.createBuilder(context, recipient.id, thread.threadId)
         .build()
-        .makeUniqueToPreventMerging()
-    }
+    }.makeUniqueToPreventMerging()
 
     val builder: NotificationBuilder = NotificationBuilder.create(context)
 
@@ -326,22 +329,18 @@ object NotificationFactory {
     NotificationManagerCompat.from(context).safelyNotify(context, recipient, NotificationIds.getNotificationIdForMessageDeliveryFailed(thread), builder.build())
   }
 
-  fun notifyProofRequired(context: Context, recipient: Recipient, thread: NotificationThread, visibleThread: NotificationThread?) {
+  fun notifyProofRequired(context: Context, recipient: Recipient, thread: ConversationId, visibleThread: ConversationId?) {
     if (thread == visibleThread) {
       notifyInThread(context, recipient, 0)
       return
     }
 
-    val intent: Intent = if (recipient.isDistributionList) {
+    val intent: Intent = if (recipient.isDistributionList || thread.groupStoryId != null) {
       Intent(context, MyStoriesActivity::class.java)
-        .makeUniqueToPreventMerging()
-    } else if (thread.groupStoryId != null) {
-      StoryViewerActivity.createIntent(context, recipient.id, thread.groupStoryId, recipient.shouldHideStory())
     } else {
       ConversationIntents.createBuilder(context, recipient.id, thread.threadId)
         .build()
-        .makeUniqueToPreventMerging()
-    }
+    }.makeUniqueToPreventMerging()
 
     val builder: NotificationBuilder = NotificationBuilder.create(context)
 
@@ -366,7 +365,7 @@ object NotificationFactory {
 
     val conversation = NotificationConversation(
       recipient = recipient,
-      thread = NotificationThread.forConversation(threadId),
+      thread = ConversationId.forConversation(threadId),
       notificationItems = listOf(
         MessageNotification(
           threadRecipient = recipient,

@@ -213,7 +213,7 @@ class DonationPaymentRepository(activity: Activity) : StripeApi.PaymentIntentFet
         DonationReceiptRecord.createForGift(price)
       }
 
-      val donationTypeLabel = donationReceiptRecord.type.code.capitalize(Locale.US)
+      val donationTypeLabel = donationReceiptRecord.type.code.replaceFirstChar { c -> if (c.isLowerCase()) c.titlecase(Locale.US) else c.toString() }
 
       Log.d(TAG, "Confirmed payment intent. Recording $donationTypeLabel receipt and submitting badge reimbursement job chain.", true)
       SignalDatabase.donationReceipts.addReceipt(donationReceiptRecord)
@@ -277,9 +277,8 @@ class DonationPaymentRepository(activity: Activity) : StripeApi.PaymentIntentFet
         ).flatMapCompletable {
           if (it.status == 200 || it.status == 204) {
             Log.d(TAG, "Successfully set user subscription to level $subscriptionLevel with response code ${it.status}", true)
-            SignalStore.donationsValues().clearUserManuallyCancelled()
+            SignalStore.donationsValues().updateLocalStateForLocalSubscribe()
             scheduleSyncForAccountRecordChange()
-            SignalStore.donationsValues().clearLevelOperations()
             LevelUpdate.updateProcessingState(false)
             Completable.complete()
           } else {

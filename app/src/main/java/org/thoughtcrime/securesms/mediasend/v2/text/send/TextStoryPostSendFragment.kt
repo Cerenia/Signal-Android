@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
@@ -13,28 +14,33 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import org.signal.core.util.DimensionUnit
 import org.thoughtcrime.securesms.R
+import org.thoughtcrime.securesms.components.WrapperDialogFragment
 import org.thoughtcrime.securesms.contacts.paged.ContactSearchConfiguration
 import org.thoughtcrime.securesms.contacts.paged.ContactSearchKey
 import org.thoughtcrime.securesms.contacts.paged.ContactSearchMediator
-import org.thoughtcrime.securesms.conversation.ui.error.SafetyNumberChangeDialog
 import org.thoughtcrime.securesms.linkpreview.LinkPreviewViewModel
 import org.thoughtcrime.securesms.mediasend.v2.stories.ChooseGroupStoryBottomSheet
 import org.thoughtcrime.securesms.mediasend.v2.stories.ChooseStoryTypeBottomSheet
 import org.thoughtcrime.securesms.mediasend.v2.text.TextStoryPostCreationViewModel
 import org.thoughtcrime.securesms.recipients.RecipientId
+import org.thoughtcrime.securesms.safety.SafetyNumberBottomSheet
 import org.thoughtcrime.securesms.sharing.ShareSelectionAdapter
 import org.thoughtcrime.securesms.sharing.ShareSelectionMappingModel
 import org.thoughtcrime.securesms.stories.Stories
-import org.thoughtcrime.securesms.stories.dialogs.StoryDialogs
 import org.thoughtcrime.securesms.stories.settings.create.CreateStoryFlowDialogFragment
 import org.thoughtcrime.securesms.stories.settings.create.CreateStoryWithViewersFragment
-import org.thoughtcrime.securesms.stories.settings.hide.HideStoryFromDialogFragment
+import org.thoughtcrime.securesms.stories.settings.privacy.ChooseInitialMyStoryMembershipBottomSheetDialogFragment
 import org.thoughtcrime.securesms.util.BottomSheetUtil
 import org.thoughtcrime.securesms.util.FeatureFlags
 import org.thoughtcrime.securesms.util.LifecycleDisposable
 import org.thoughtcrime.securesms.util.livedata.LiveDataUtil
 
-class TextStoryPostSendFragment : Fragment(R.layout.stories_send_text_post_fragment), ChooseStoryTypeBottomSheet.Callback {
+class TextStoryPostSendFragment :
+  Fragment(R.layout.stories_send_text_post_fragment),
+  ChooseStoryTypeBottomSheet.Callback,
+  WrapperDialogFragment.WrapperDialogFragmentCallback,
+  ChooseInitialMyStoryMembershipBottomSheetDialogFragment.Callback,
+  SafetyNumberBottomSheet.Callbacks {
 
   private lateinit var shareListWrapper: View
   private lateinit var shareSelectionRecyclerView: RecyclerView
@@ -85,22 +91,13 @@ class TextStoryPostSendFragment : Fragment(R.layout.stories_send_text_post_fragm
 
     shareConfirmButton.setOnClickListener {
       viewModel.onSending()
-      StoryDialogs.guardWithAddToYourStoryDialog(
-        contacts = contactSearchMediator.getSelectedContacts(),
-        context = requireContext(),
-        onAddToStory = { send() },
-        onEditViewers = {
-          viewModel.onSendCancelled()
-          HideStoryFromDialogFragment().show(childFragmentManager, null)
-        },
-        onCancel = {
-          viewModel.onSendCancelled()
-        }
-      )
+      send()
     }
 
-    disposables += viewModel.untrustedIdentities.subscribe {
-      SafetyNumberChangeDialog.show(childFragmentManager, it)
+    disposables += viewModel.untrustedIdentities.subscribe { records ->
+      SafetyNumberBottomSheet
+        .forIdentityRecordsAndDestinations(records, contactSearchMediator.getSelectedContacts().toList())
+        .show(childFragmentManager)
     }
 
     searchField.doAfterTextChanged {
@@ -122,7 +119,7 @@ class TextStoryPostSendFragment : Fragment(R.layout.stories_send_text_post_fragm
     }
 
     val contactsRecyclerView: RecyclerView = view.findViewById(R.id.contacts_container)
-    contactSearchMediator = ContactSearchMediator(this, contactsRecyclerView, FeatureFlags.shareSelectionLimit(), true) { contactSearchState ->
+    contactSearchMediator = ContactSearchMediator(this, contactsRecyclerView, FeatureFlags.shareSelectionLimit(), true, { contactSearchState ->
       ContactSearchConfiguration.build {
         query = contactSearchState.query
 
@@ -134,7 +131,7 @@ class TextStoryPostSendFragment : Fragment(R.layout.stories_send_text_post_fragm
           )
         )
       }
-    }
+    })
 
     contactSearchMediator.getSelectionState().observe(viewLifecycleOwner) { selection ->
       shareSelectionAdapter.submitList(selection.mapIndexed { index, contact -> ShareSelectionMappingModel(contact.requireShareContact(), index == 0) })
@@ -151,6 +148,10 @@ class TextStoryPostSendFragment : Fragment(R.layout.stories_send_text_post_fragm
         TextStoryPostSendState.INIT -> shareConfirmButton.isEnabled = selection.isNotEmpty()
         TextStoryPostSendState.SENDING -> shareConfirmButton.isEnabled = false
         TextStoryPostSendState.SENT -> requireActivity().finish()
+        else -> {
+          Toast.makeText(requireContext(), R.string.TextStoryPostSendFragment__an_unexpected_error_occurred_try_again, Toast.LENGTH_SHORT).show()
+          viewModel.onSendCancelled()
+        }
       }
     }
   }
@@ -189,5 +190,24 @@ class TextStoryPostSendFragment : Fragment(R.layout.stories_send_text_post_fragm
 
   override fun onGroupStoryClicked() {
     ChooseGroupStoryBottomSheet().show(parentFragmentManager, BottomSheetUtil.STANDARD_BOTTOM_SHEET_FRAGMENT_TAG)
+  }
+
+  override fun onWrapperDialogFragmentDismissed() {
+    contactSearchMediator.refresh()
+  }
+
+  override fun onMyStoryConfigured(recipientId: RecipientId) {
+    contactSearchMediator.setKeysSelected(setOf(ContactSearchKey.RecipientSearchKey.Story(recipientId)))
+    contactSearchMediator.refresh()
+  }
+
+  override fun sendAnywayAfterSafetyNumberChangedInBottomSheet(destinations: List<ContactSearchKey.RecipientSearchKey>) {
+    send()
+  }
+
+  override fun onMessageResentAfterSafetyNumberChangeInBottomSheet() = error("Not supported here")
+
+  override fun onCanceled() {
+    viewModel.onSendCancelled()
   }
 }

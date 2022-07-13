@@ -1,8 +1,8 @@
 package org.thoughtcrime.securesms.conversation.ui.error;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -18,7 +18,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProviders;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -27,9 +27,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.R;
-import org.thoughtcrime.securesms.database.MmsSmsDatabase;
 import org.thoughtcrime.securesms.database.model.IdentityRecord;
-import org.thoughtcrime.securesms.database.model.MessageRecord;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.verify.VerifyIdentityActivity;
 
@@ -58,37 +56,6 @@ public final class SafetyNumberChangeDialog extends DialogFragment implements Sa
     arguments.putStringArray(RECIPIENT_IDS_EXTRA, new String[] { recipientId.serialize() });
     arguments.putInt(CONTINUE_TEXT_RESOURCE_EXTRA, R.string.safety_number_change_dialog__accept);
     arguments.putBoolean(SKIP_CALLBACKS_EXTRA, true);
-    SafetyNumberChangeDialog fragment = new SafetyNumberChangeDialog();
-    fragment.setArguments(arguments);
-    fragment.show(fragmentManager, SAFETY_NUMBER_DIALOG);
-  }
-
-  public static void show(@NonNull FragmentManager fragmentManager, @NonNull List<IdentityRecord> identityRecords) {
-    List<String> ids = Stream.of(identityRecords)
-                             .filterNot(IdentityRecord::isFirstUse)
-                             .map(record -> record.getRecipientId().serialize())
-                             .distinct()
-                             .toList();
-
-    Bundle arguments = new Bundle();
-    arguments.putStringArray(RECIPIENT_IDS_EXTRA, ids.toArray(new String[0]));
-    arguments.putInt(CONTINUE_TEXT_RESOURCE_EXTRA, R.string.safety_number_change_dialog__send_anyway);
-    SafetyNumberChangeDialog fragment = new SafetyNumberChangeDialog();
-    fragment.setArguments(arguments);
-    fragment.show(fragmentManager, SAFETY_NUMBER_DIALOG);
-  }
-
-  public static void show(@NonNull Context context, @NonNull FragmentManager fragmentManager, @NonNull MessageRecord messageRecord) {
-    List<String> ids = Stream.of(messageRecord.getIdentityKeyMismatches())
-                             .map(mismatch -> mismatch.getRecipientId(context).serialize())
-                             .distinct()
-                             .toList();
-
-    Bundle arguments = new Bundle();
-    arguments.putStringArray(RECIPIENT_IDS_EXTRA, ids.toArray(new String[0]));
-    arguments.putLong(MESSAGE_ID_EXTRA, messageRecord.getId());
-    arguments.putString(MESSAGE_TYPE_EXTRA, messageRecord.isMms() ? MmsSmsDatabase.MMS_TRANSPORT : MmsSmsDatabase.SMS_TRANSPORT);
-    arguments.putInt(CONTINUE_TEXT_RESOURCE_EXTRA, R.string.safety_number_change_dialog__send_anyway);
     SafetyNumberChangeDialog fragment = new SafetyNumberChangeDialog();
     fragment.setArguments(arguments);
     fragment.show(fragmentManager, SAFETY_NUMBER_DIALOG);
@@ -139,7 +106,7 @@ public final class SafetyNumberChangeDialog extends DialogFragment implements Sa
     fragment.show(fragmentManager, SAFETY_NUMBER_DIALOG);
   }
 
-  private SafetyNumberChangeDialog() { }
+  private SafetyNumberChangeDialog() {}
 
   @Override
   public @Nullable View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -155,10 +122,11 @@ public final class SafetyNumberChangeDialog extends DialogFragment implements Sa
     long              messageId    = getArguments().getLong(MESSAGE_ID_EXTRA, -1);
     String            messageType  = getArguments().getString(MESSAGE_TYPE_EXTRA, null);
 
-    viewModel = ViewModelProviders.of(this, new SafetyNumberChangeViewModel.Factory(recipientIds, (messageId != -1) ? messageId : null, messageType)).get(SafetyNumberChangeViewModel.class);
+    viewModel = new ViewModelProvider(this, new SafetyNumberChangeViewModel.Factory(recipientIds, (messageId != -1) ? messageId : null, messageType)).get(SafetyNumberChangeViewModel.class);
     viewModel.getChangedRecipients().observe(getViewLifecycleOwner(), adapter::submitList);
   }
 
+  @SuppressLint("InflateParams")
   @Override
   public @NonNull Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
     int continueText = requireArguments().getInt(CONTINUE_TEXT_RESOURCE_EXTRA, android.R.string.ok);

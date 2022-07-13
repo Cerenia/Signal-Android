@@ -70,19 +70,19 @@ class OpenableGiftItemDecoration(context: Context) : RecyclerView.ItemDecoration
     val notAnimated = openableChildren.filterNot { animationState.containsKey(it.getGiftId()) }
 
     notAnimated.filterNot { messageIdsOpenedThisSession.contains(it.getGiftId()) }.forEach { child ->
-      val projection = child.getOpenableGiftProjection()
+      val projection = child.getOpenableGiftProjection(false)
       if (projection != null) {
-        if (messageIdsShakenThisSession.contains(child.getGiftId())) {
-          child.setOpenGiftCallback {
-            child.clearOpenGiftCallback()
-            val proj = it.getOpenableGiftProjection()
-            if (proj != null) {
-              messageIdsOpenedThisSession.add(it.getGiftId())
-              startOpenAnimation(it)
-              parent.invalidate()
-            }
+        child.setOpenGiftCallback {
+          child.clearOpenGiftCallback()
+          val proj = it.getOpenableGiftProjection(true)
+          if (proj != null) {
+            messageIdsOpenedThisSession.add(it.getGiftId())
+            startOpenAnimation(it)
+            parent.invalidate()
           }
+        }
 
+        if (messageIdsShakenThisSession.contains(child.getGiftId())) {
           drawGiftBox(c, projection)
           drawGiftBow(c, projection)
         } else {
@@ -210,7 +210,7 @@ class OpenableGiftItemDecoration(context: Context) : RecyclerView.ItemDecoration
     }
 
     fun update(animatorDurationScale: Float, canvas: Canvas, drawBox: (Canvas, Projection) -> Unit, drawBow: (Canvas, Projection) -> Unit): Boolean {
-      val projection = openableGift.getOpenableGiftProjection() ?: return false
+      val projection = openableGift.getOpenableGiftProjection(true) ?: return false
 
       if (animatorDurationScale <= 0f) {
         update(canvas, projection, 0f, 0f, drawBox, drawBow)

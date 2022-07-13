@@ -75,7 +75,6 @@ open class SignalDatabase(private val context: Application, databaseSecret: Data
   val remoteMegaphoneDatabase: RemoteMegaphoneDatabase = RemoteMegaphoneDatabase(context, this)
 
   override fun onOpen(db: net.zetetic.database.sqlcipher.SQLiteDatabase) {
-    db.enableWriteAheadLogging()
     db.setForeignKeyConstraintsEnabled(true)
   }
 
@@ -132,6 +131,7 @@ open class SignalDatabase(private val context: Application, databaseSecret: Data
     executeStatements(db, NotificationProfileDatabase.CREATE_INDEXES)
     executeStatements(db, DonationReceiptDatabase.CREATE_INDEXS)
     db.execSQL(StorySendsDatabase.CREATE_INDEX)
+    executeStatements(db, DistributionListDatabase.CREATE_INDEXES)
 
     executeStatements(db, MessageSendLogDatabase.CREATE_TRIGGERS)
     executeStatements(db, ReactionDatabase.CREATE_TRIGGERS)
@@ -213,6 +213,7 @@ open class SignalDatabase(private val context: Application, databaseSecret: Data
         synchronized(SignalDatabase::class.java) {
           if (instance == null) {
             instance = SignalDatabase(application, databaseSecret, attachmentSecret)
+            instance!!.setWriteAheadLoggingEnabled(true)
           }
         }
       }

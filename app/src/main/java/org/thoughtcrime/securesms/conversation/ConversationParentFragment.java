@@ -27,6 +27,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
+import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -68,6 +69,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
+import androidx.annotation.ColorInt;
+import androidx.annotation.ColorRes;
 import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -81,11 +84,14 @@ import androidx.core.content.pm.ShortcutInfoCompat;
 import androidx.core.content.pm.ShortcutManagerCompat;
 import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.core.graphics.drawable.IconCompat;
+import androidx.core.view.MenuItemCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.RecyclerView;
 
+import com.airbnb.lottie.SimpleColorFilter;
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
@@ -110,7 +116,6 @@ import org.thoughtcrime.securesms.MuteDialog;
 import org.thoughtcrime.securesms.PromptMmsActivity;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.ShortcutLauncherActivity;
-import org.thoughtcrime.securesms.TransportOption;
 import org.thoughtcrime.securesms.attachments.Attachment;
 import org.thoughtcrime.securesms.attachments.TombstoneAttachment;
 import org.thoughtcrime.securesms.audio.AudioRecorder;
@@ -147,6 +152,7 @@ import org.thoughtcrime.securesms.components.voice.VoiceNotePlaybackState;
 import org.thoughtcrime.securesms.components.voice.VoiceNotePlayerView;
 import org.thoughtcrime.securesms.contacts.ContactAccessor;
 import org.thoughtcrime.securesms.contacts.ContactAccessor.ContactData;
+import org.thoughtcrime.securesms.contacts.paged.ContactSearchKey;
 import org.thoughtcrime.securesms.contacts.sync.ContactDiscovery;
 import org.thoughtcrime.securesms.contactshare.Contact;
 import org.thoughtcrime.securesms.contactshare.ContactShareEditActivity;
@@ -156,7 +162,6 @@ import org.thoughtcrime.securesms.conversation.ConversationGroupViewModel.GroupA
 import org.thoughtcrime.securesms.conversation.ConversationMessage.ConversationMessageFactory;
 import org.thoughtcrime.securesms.conversation.drafts.DraftRepository;
 import org.thoughtcrime.securesms.conversation.drafts.DraftViewModel;
-import org.thoughtcrime.securesms.conversation.ui.error.SafetyNumberChangeDialog;
 import org.thoughtcrime.securesms.conversation.ui.groupcall.GroupCallViewModel;
 import org.thoughtcrime.securesms.conversation.ui.mentions.MentionsPickerViewModel;
 import org.thoughtcrime.securesms.crypto.ReentrantSessionLock;
@@ -212,6 +217,7 @@ import org.thoughtcrime.securesms.keyvalue.SignalStore;
 import org.thoughtcrime.securesms.linkpreview.LinkPreview;
 import org.thoughtcrime.securesms.linkpreview.LinkPreviewRepository;
 import org.thoughtcrime.securesms.linkpreview.LinkPreviewViewModel;
+import org.thoughtcrime.securesms.main.Material3OnScrollHelperBinder;
 import org.thoughtcrime.securesms.maps.PlacePickerActivity;
 import org.thoughtcrime.securesms.mediaoverview.MediaOverviewActivity;
 import org.thoughtcrime.securesms.mediasend.Media;
@@ -240,7 +246,7 @@ import org.thoughtcrime.securesms.mms.SlideFactory.MediaType;
 import org.thoughtcrime.securesms.mms.StickerSlide;
 import org.thoughtcrime.securesms.mms.VideoSlide;
 import org.thoughtcrime.securesms.notifications.NotificationChannels;
-import org.thoughtcrime.securesms.notifications.v2.NotificationThread;
+import org.thoughtcrime.securesms.notifications.v2.ConversationId;
 import org.thoughtcrime.securesms.payments.CanNotSendPaymentDialog;
 import org.thoughtcrime.securesms.permissions.Permissions;
 import org.thoughtcrime.securesms.profiles.spoofing.ReviewBannerView;
@@ -257,6 +263,7 @@ import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.recipients.RecipientUtil;
 import org.thoughtcrime.securesms.recipients.ui.disappearingmessages.RecipientDisappearingMessagesActivity;
 import org.thoughtcrime.securesms.registration.RegistrationNavigationActivity;
+import org.thoughtcrime.securesms.safety.SafetyNumberBottomSheet;
 import org.thoughtcrime.securesms.search.MessageResult;
 import org.thoughtcrime.securesms.service.KeyCachingService;
 import org.thoughtcrime.securesms.sms.MessageSender;
@@ -267,6 +274,7 @@ import org.thoughtcrime.securesms.stickers.StickerLocator;
 import org.thoughtcrime.securesms.stickers.StickerManagementActivity;
 import org.thoughtcrime.securesms.stickers.StickerPackInstallEvent;
 import org.thoughtcrime.securesms.stickers.StickerSearchRepository;
+import org.thoughtcrime.securesms.stories.StoryViewerArgs;
 import org.thoughtcrime.securesms.stories.viewer.StoryViewerActivity;
 import org.thoughtcrime.securesms.util.AsynchronousCallback;
 import org.thoughtcrime.securesms.util.Base64;
@@ -281,6 +289,7 @@ import org.thoughtcrime.securesms.util.DrawableUtil;
 import org.thoughtcrime.securesms.util.FullscreenHelper;
 import org.thoughtcrime.securesms.util.IdentityUtil;
 import org.thoughtcrime.securesms.util.LifecycleDisposable;
+import org.thoughtcrime.securesms.util.Material3OnScrollHelper;
 import org.thoughtcrime.securesms.util.MediaUtil;
 import org.thoughtcrime.securesms.util.MessageRecordUtil;
 import org.thoughtcrime.securesms.util.MessageUtil;
@@ -318,7 +327,6 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.thoughtcrime.securesms.TransportOption.Type;
 import static org.thoughtcrime.securesms.database.GroupDatabase.GroupRecord;
 
 /**
@@ -341,14 +349,16 @@ public class ConversationParentFragment extends Fragment
                AttachmentKeyboard.Callback,
                ConversationReactionOverlay.OnReactionSelectedListener,
                ReactWithAnyEmojiBottomSheetDialogFragment.Callback,
-               SafetyNumberChangeDialog.Callback,
+               SafetyNumberBottomSheet.Callbacks,
                ReactionsBottomSheetDialogFragment.Callback,
                MediaKeyboard.MediaKeyboardListener,
                EmojiEventListener,
                GifKeyboardPageFragment.Host,
                EmojiKeyboardPageFragment.Callback,
                EmojiSearchFragment.Callback,
-               StickerKeyboardPageFragment.Callback
+               StickerKeyboardPageFragment.Callback,
+               Material3OnScrollHelperBinder,
+               MessageDetailsFragment.Callback
 {
 
   private static final int SHORTCUT_ICON_SIZE = Build.VERSION.SDK_INT >= 26 ? ViewUtil.dpToPx(72) : ViewUtil.dpToPx(48 + 16 * 2);
@@ -397,6 +407,7 @@ public class ConversationParentFragment extends Fragment
   private   MessageRequestsBottomView    messageRequestBottomView;
   private   ConversationReactionDelegate reactionDelegate;
   private   Stub<FrameLayout>            voiceNotePlayerViewStub;
+  private   View                         navigationBarBackground;
 
   private   AttachmentManager        attachmentManager;
   private   AudioRecorder            audioRecorder;
@@ -406,7 +417,6 @@ public class ConversationParentFragment extends Fragment
   protected HidingLinearLayout       quickAttachmentToggle;
   protected HidingLinearLayout       inlineAttachmentToggle;
   private   InputPanel               inputPanel;
-  private   View                     panelParent;
   private   View                     noLongerMemberBanner;
   private   Stub<TextView>           cannotSendInAnnouncementGroupBanner;
   private   View                     requestingMemberBanner;
@@ -418,6 +428,7 @@ public class ConversationParentFragment extends Fragment
   private   ImageView                wallpaper;
   private   View                     wallpaperDim;
   private   Toolbar                  toolbar;
+  private   View                     toolbarBackground;
   private   BroadcastReceiver        pinnedShortcutReceiver;
 
   private LinkPreviewViewModel         linkPreviewViewModel;
@@ -432,7 +443,7 @@ public class ConversationParentFragment extends Fragment
   private DraftViewModel               draftViewModel;
   private VoiceNoteMediaController     voiceNoteMediaController;
   private VoiceNotePlayerView          voiceNotePlayerView;
-
+  private Material3OnScrollHelper      material3OnScrollHelper;
 
   private LiveRecipient recipient;
   private long          threadId;
@@ -573,6 +584,12 @@ public class ConversationParentFragment extends Fragment
         onBackPressed();
       }
     });
+
+    if (isSearchRequested && savedInstanceState == null) {
+      onCreateOptionsMenu(toolbar.getMenu(), requireActivity().getMenuInflater());
+    }
+
+    sendButton.post(() -> sendButton.triggerSelectedChangedEvent());
   }
 
   // TODO [alex] LargeScreenSupport -- This needs to be fed a stream of intents
@@ -655,7 +672,7 @@ public class ConversationParentFragment extends Fragment
     EventBus.getDefault().register(this);
     initializeMmsEnabledCheck();
     initializeIdentityRecords();
-    composeText.setTransport(sendButton.getSelectedTransport());
+    composeText.setMessageSendType(sendButton.getSelectedSendType());
 
     Recipient recipientSnapshot = recipient.get();
 
@@ -701,6 +718,7 @@ public class ConversationParentFragment extends Fragment
     fragment.setLastSeen(System.currentTimeMillis());
     markLastSeen();
     EventBus.getDefault().unregister(this);
+    material3OnScrollHelper.setColorImmediate();
   }
 
   @Override
@@ -714,7 +732,7 @@ public class ConversationParentFragment extends Fragment
   public void onConfigurationChanged(Configuration newConfig) {
     Log.i(TAG, "onConfigurationChanged(" + newConfig.orientation + ")");
     super.onConfigurationChanged(newConfig);
-    composeText.setTransport(sendButton.getSelectedTransport());
+    composeText.setMessageSendType(sendButton.getSelectedSendType());
 
     if (emojiDrawerStub.resolved() && container.getCurrentInput() == emojiDrawerStub.get()) {
       container.hideAttachedInput(true);
@@ -806,7 +824,7 @@ public class ConversationParentFragment extends Fragment
         return;
       }
 
-      sendButton.setTransport(result.getTransport());
+      sendButton.setSendType(result.getMessageSendType());
 
       if (result.isPushPreUpload()) {
         sendMediaMessage(result);
@@ -814,7 +832,6 @@ public class ConversationParentFragment extends Fragment
       }
 
       long       expiresIn      = TimeUnit.SECONDS.toMillis(recipient.get().getExpiresInSeconds());
-      int        subscriptionId = sendButton.getSelectedTransport().getSimSubscriptionId().orElse(-1);
       boolean    initiating     = threadId == -1;
       QuoteModel quote          = result.isViewOnce() ? null : inputPanel.getQuote().orElse(null);
       SlideDeck  slideDeck      = new SlideDeck();
@@ -835,7 +852,7 @@ public class ConversationParentFragment extends Fragment
       final Context context = requireContext().getApplicationContext();
 
       sendMediaMessage(result.getRecipientId(),
-                       result.getTransport().isSms(),
+                       result.getMessageSendType(),
                        result.getBody(),
                        slideDeck,
                        quote,
@@ -844,7 +861,6 @@ public class ConversationParentFragment extends Fragment
                        mentions,
                        expiresIn,
                        result.isViewOnce(),
-                       subscriptionId,
                        initiating,
                        true,
                        null).addListener(new AssertedSuccessListener<Void>() {
@@ -885,7 +901,7 @@ public class ConversationParentFragment extends Fragment
   private void setVisibleThread(long threadId) {
     if (!isInBubble()) {
       // TODO [alex] LargeScreenSupport -- Inform MainActivityViewModel that the conversation was opened.
-      ApplicationDependencies.getMessageNotifier().setVisibleThread(NotificationThread.forConversation(threadId));
+      ApplicationDependencies.getMessageNotifier().setVisibleThread(ConversationId.forConversation(threadId));
     }
   }
 
@@ -986,6 +1002,10 @@ public class ConversationParentFragment extends Fragment
 
     inflater.inflate(R.menu.conversation, menu);
 
+    if (isInMessageRequest() && !recipient.get().isBlocked()) {
+      hideMenuItem(menu, R.id.menu_conversation_settings);
+    }
+
     if (isSingleConversation() && !isSecureText && !recipient.get().isReleaseNotes()) {
       inflater.inflate(R.menu.conversation_insecure, menu);
     }
@@ -993,7 +1013,7 @@ public class ConversationParentFragment extends Fragment
     if (recipient != null && recipient.get().isMuted()) inflater.inflate(R.menu.conversation_muted, menu);
     else                                                inflater.inflate(R.menu.conversation_unmuted, menu);
 
-    if (isSingleConversation() && getRecipient().getContactUri() == null && !recipient.get().isReleaseNotes()) {
+    if (isSingleConversation() && getRecipient().getContactUri() == null && !recipient.get().isReleaseNotes() && !recipient.get().isSelf()) {
       inflater.inflate(R.menu.conversation_add_to_contacts, menu);
     }
 
@@ -1109,6 +1129,9 @@ public class ConversationParentFragment extends Fragment
     }
 
     super.onCreateOptionsMenu(menu, inflater);
+
+    int toolbarTextAndIconColor = getResources().getColor(wallpaper.getDrawable() != null ? R.color.signal_colorNeutralInverse : R.color.signal_colorOnSurface);
+    setToolbarActionItemTint(toolbar, toolbarTextAndIconColor);
   }
 
   public void invalidateOptionsMenu() {
@@ -1122,32 +1145,53 @@ public class ConversationParentFragment extends Fragment
   }
 
   @Override
-  public boolean onOptionsItemSelected(MenuItem item) {
+  public boolean onOptionsItemSelected(@NonNull MenuItem item) {
     super.onOptionsItemSelected(item);
-    switch (item.getItemId()) {
-    case R.id.menu_call_secure:               handleDial(getRecipient(), true);                  return true;
-    case R.id.menu_video_secure:              handleVideo(getRecipient());                       return true;
-    case R.id.menu_call_insecure:             handleDial(getRecipient(), false);                 return true;
-    case R.id.menu_view_media:                handleViewMedia();                                 return true;
-    case R.id.menu_add_shortcut:              handleAddShortcut();                               return true;
-    case R.id.menu_search:                    handleSearch();                                    return true;
-    case R.id.menu_add_to_contacts:           handleAddToContacts();                             return true;
-    case R.id.menu_group_recipients:          handleDisplayGroupRecipients();                    return true;
-    case R.id.menu_distribution_broadcast:    handleDistributionBroadcastEnabled(item);          return true;
-    case R.id.menu_distribution_conversation: handleDistributionConversationEnabled(item);       return true;
-    case R.id.menu_group_settings:            handleManageGroup();                               return true;
-    case R.id.menu_leave:                     handleLeavePushGroup();                            return true;
-    case R.id.menu_invite:                    handleInviteLink();                                return true;
-    case R.id.menu_mute_notifications:        handleMuteNotifications();                         return true;
-    case R.id.menu_unmute_notifications:      handleUnmuteNotifications();                       return true;
-    case R.id.menu_conversation_settings:     handleConversationSettings();                      return true;
-    case R.id.menu_expiring_messages_off:
-    case R.id.menu_expiring_messages:         handleSelectMessageExpiration();                   return true;
-    case R.id.menu_create_bubble:             handleCreateBubble();                              return true;
-    case android.R.id.home:                   requireActivity().finish();                        return true;
+    int itemId = item.getItemId();
+
+    if (itemId == R.id.menu_call_secure) {
+      handleDial(getRecipient(), true);
+    } else if (itemId == R.id.menu_video_secure) {
+      handleVideo(getRecipient());
+    } else if (itemId == R.id.menu_call_insecure) {
+      handleDial(getRecipient(), false);
+    } else if (itemId == R.id.menu_view_media) {
+      handleViewMedia();
+    } else if (itemId == R.id.menu_add_shortcut) {
+      handleAddShortcut();
+    } else if (itemId == R.id.menu_search) {
+      handleSearch();
+    } else if (itemId == R.id.menu_add_to_contacts) {
+      handleAddToContacts();
+    } else if (itemId == R.id.menu_group_recipients) {
+      handleDisplayGroupRecipients();
+    } else if (itemId == R.id.menu_distribution_broadcast) {
+      handleDistributionBroadcastEnabled(item);
+    } else if (itemId == R.id.menu_distribution_conversation) {
+      handleDistributionConversationEnabled(item);
+    } else if (itemId == R.id.menu_group_settings) {
+      handleManageGroup();
+    } else if (itemId == R.id.menu_leave) {
+      handleLeavePushGroup();
+    } else if (itemId == R.id.menu_invite) {
+      handleInviteLink();
+    } else if (itemId == R.id.menu_mute_notifications) {
+      handleMuteNotifications();
+    } else if (itemId == R.id.menu_unmute_notifications) {
+      handleUnmuteNotifications();
+    } else if (itemId == R.id.menu_conversation_settings) {
+      handleConversationSettings();
+    } else if (itemId == R.id.menu_expiring_messages_off || itemId == R.id.menu_expiring_messages) {
+      handleSelectMessageExpiration();
+    } else if (itemId == R.id.menu_create_bubble) {
+      handleCreateBubble();
+    } else if (itemId == android.R.id.home) {
+      requireActivity().finish();
+    } else {
+      return false;
     }
 
-    return false;
+    return true;
   }
 
   public void onBackPressed() {
@@ -1156,6 +1200,7 @@ public class ConversationParentFragment extends Fragment
       reactionDelegate.hide();
     } else if (container.isInputOpen()) {
       container.hideCurrentInput(composeText);
+      navigationBarBackground.setVisibility(View.GONE);
     } else if (isSearchRequested) {
       if (searchViewItem != null) {
         searchViewItem.collapseActionView();
@@ -1168,6 +1213,13 @@ public class ConversationParentFragment extends Fragment
   @Override
   public void onKeyboardShown() {
     inputPanel.onKeyboardShown();
+    if (emojiDrawerStub.resolved() && emojiDrawerStub.get().isShowing() && !emojiDrawerStub.get().isEmojiSearchMode()) {
+      emojiDrawerStub.get().hide(true);
+    }
+    if (attachmentKeyboardStub.resolved() && attachmentKeyboardStub.get().isShowing()) {
+      navigationBarBackground.setVisibility(View.GONE);
+      attachmentKeyboardStub.get().hide(true);
+    }
   }
 
   @Subscribe(threadMode = ThreadMode.MAIN)
@@ -1184,7 +1236,7 @@ public class ConversationParentFragment extends Fragment
   @Override
   public void onAttachmentMediaClicked(@NonNull Media media) {
     linkPreviewViewModel.onUserCancel();
-    startActivityForResult(MediaSelectionActivity.editor(requireActivity(), sendButton.getSelectedTransport(), Collections.singletonList(media), recipient.getId(), composeText.getTextTrimmed()), MEDIA_SENDER);
+    startActivityForResult(MediaSelectionActivity.editor(requireActivity(), sendButton.getSelectedSendType(), Collections.singletonList(media), recipient.getId(), composeText.getTextTrimmed()), MEDIA_SENDER);
     container.hideCurrentInput(composeText);
   }
 
@@ -1192,7 +1244,7 @@ public class ConversationParentFragment extends Fragment
   public void onAttachmentSelectorClicked(@NonNull AttachmentKeyboardButton button) {
     switch (button) {
       case GALLERY:
-        AttachmentManager.selectGallery(this, MEDIA_SENDER, recipient.get(), composeText.getTextTrimmed(), sendButton.getSelectedTransport(), inputPanel.getQuote().isPresent());
+        AttachmentManager.selectGallery(this, MEDIA_SENDER, recipient.get(), composeText.getTextTrimmed(), sendButton.getSelectedSendType(), inputPanel.getQuote().isPresent());
         break;
       case FILE:
         AttachmentManager.selectDocument(this, PICK_DOCUMENT);
@@ -1201,7 +1253,7 @@ public class ConversationParentFragment extends Fragment
         AttachmentManager.selectContactInfo(this, PICK_CONTACT);
         break;
       case LOCATION:
-        AttachmentManager.selectLocation(this, PICK_LOCATION);
+        AttachmentManager.selectLocation(this, PICK_LOCATION, getSendButtonColor(sendButton.getSelectedSendType()));
         break;
       case PAYMENT:
         if (recipient.get().hasProfileKeyCredential()) {
@@ -1249,7 +1301,10 @@ public class ConversationParentFragment extends Fragment
   }
 
   private void handleStoryRingClick() {
-    startActivity(StoryViewerActivity.createIntent(requireContext(), recipient.getId(), -1L, recipient.get().shouldHideStory(), null, null, null, Collections.emptyList()));
+    startActivity(StoryViewerActivity.createIntent(
+                  requireContext(),
+                  new StoryViewerArgs.Builder(recipient.getId(), recipient.get().shouldHideStory())
+                                     .build()));
   }
 
   private void handleConversationSettings() {
@@ -1258,7 +1313,7 @@ public class ConversationParentFragment extends Fragment
       return;
     }
 
-    if (isInMessageRequest()) return;
+    if (isInMessageRequest() && !recipient.get().isBlocked()) return;
 
     Intent intent = ConversationSettingsActivity.forRecipient(requireContext(), recipient.getId());
     Bundle bundle = ConversationSettingsActivity.createTransitionBundle(requireActivity(), titleView.findViewById(R.id.contact_photo_image), toolbar);
@@ -1500,6 +1555,7 @@ public class ConversationParentFragment extends Fragment
         updatePaymentsAvailable();
 
         container.show(composeText, attachmentKeyboardStub.get());
+        navigationBarBackground.setVisibility(View.VISIBLE);
 
         viewModel.onAttachmentKeyboardOpen();
       }
@@ -1539,22 +1595,16 @@ public class ConversationParentFragment extends Fragment
   private void handleRecentSafetyNumberChange() {
     List<IdentityRecord> records = identityRecords.getUnverifiedRecords();
     records.addAll(identityRecords.getUntrustedRecords());
-    SafetyNumberChangeDialog.show(getChildFragmentManager(), records);
+    SafetyNumberBottomSheet
+        .forIdentityRecordsAndDestination(
+            records,
+            new ContactSearchKey.RecipientSearchKey.KnownRecipient(recipient.getId())
+        )
+        .show(getChildFragmentManager());
   }
 
   @Override
-  public void onSendAnywayAfterSafetyNumberChange(@NonNull List<RecipientId> changedRecipients) {
-    Log.d(TAG, "onSendAnywayAfterSafetyNumberChange");
-    initializeIdentityRecords().addListener(new AssertedSuccessListener<Boolean>() {
-      @Override
-      public void onSuccess(Boolean result) {
-        sendMessage(null);
-      }
-    });
-  }
-
-  @Override
-  public void onMessageResentAfterSafetyNumberChange() {
+  public void onMessageResentAfterSafetyNumberChangeInBottomSheet() {
     Log.d(TAG, "onMessageResentAfterSafetyNumberChange");
     initializeIdentityRecords().addListener(new AssertedSuccessListener<Boolean>() {
       @Override
@@ -1579,21 +1629,21 @@ public class ConversationParentFragment extends Fragment
     boolean smsEnabled = true;
 
     if (recipient.get().isPushGroup() || (!recipient.get().isMmsGroup() && !recipient.get().hasSmsAddress())) {
-      sendButton.disableTransport(Type.SMS);
+      sendButton.disableTransportType(MessageSendType.TransportType.SMS);
       smsEnabled = false;
     }
 
     if (!isSecureText && !isPushGroupConversation() && !recipient.get().isServiceIdOnly() && !recipient.get().isReleaseNotes() && smsEnabled) {
-      sendButton.disableTransport(Type.TEXTSECURE);
+      sendButton.disableTransportType(MessageSendType.TransportType.SIGNAL);
     }
 
     if (!recipient.get().isPushGroup() && recipient.get().isForceSmsSelection() && smsEnabled) {
-      sendButton.setDefaultTransport(Type.SMS);
+      sendButton.setDefaultTransport(MessageSendType.TransportType.SMS);
     } else {
       if (isSecureText || isPushGroupConversation() || recipient.get().isServiceIdOnly() || recipient.get().isReleaseNotes() || !smsEnabled) {
-        sendButton.setDefaultTransport(Type.TEXTSECURE);
+        sendButton.setDefaultTransport(MessageSendType.TransportType.SIGNAL);
       } else {
-        sendButton.setDefaultTransport(Type.SMS);
+        sendButton.setDefaultTransport(MessageSendType.TransportType.SMS);
       }
     }
 
@@ -1630,7 +1680,7 @@ public class ConversationParentFragment extends Fragment
 
     if (!Util.isEmpty(mediaList)) {
       Log.d(TAG, "Handling shared Media.");
-      Intent sendIntent = MediaSelectionActivity.editor(requireContext(), sendButton.getSelectedTransport(), mediaList, recipient.getId(), draftText);
+      Intent sendIntent = MediaSelectionActivity.editor(requireContext(), sendButton.getSelectedSendType(), mediaList, recipient.getId(), draftText);
       startActivityForResult(sendIntent, MEDIA_SENDER);
       return new SettableFuture<>(false);
     }
@@ -1708,7 +1758,10 @@ public class ConversationParentFragment extends Fragment
         }
       }
 
-      noLongerMemberBanner.setVisibility(leftGroup ? View.VISIBLE : View.GONE);
+      if (messageRequestBottomView.getVisibility() == View.GONE) {
+        noLongerMemberBanner.setVisibility(leftGroup ? View.VISIBLE : View.GONE);
+      }
+
       requestingMemberBanner.setVisibility(canCancelRequest ? View.VISIBLE : View.GONE);
 
       if (canCancelRequest) {
@@ -1976,7 +2029,7 @@ public class ConversationParentFragment extends Fragment
 
   private void updateDefaultSubscriptionId(Optional<Integer> defaultSubscriptionId) {
     Log.i(TAG, "updateDefaultSubscriptionId(" + defaultSubscriptionId.orElse(null) + ")");
-    sendButton.setDefaultSubscriptionId(defaultSubscriptionId);
+    sendButton.setDefaultSubscriptionId(defaultSubscriptionId.orElse(null));
   }
 
   private void initializeMmsEnabledCheck() {
@@ -2045,7 +2098,7 @@ public class ConversationParentFragment extends Fragment
           unverifiedBannerView.get().hide();
         }
 
-        titleView.setVerified(isSecureText && identityRecords.isVerified());
+        titleView.setVerified(isSecureText && identityRecords.isVerified() && !recipient.get().isSelf());
 
         future.set(true);
       }
@@ -2057,6 +2110,7 @@ public class ConversationParentFragment extends Fragment
 
   private void initializeViews(View view) {
     toolbar                  = view.findViewById(R.id.toolbar);
+    toolbarBackground        = view.findViewById(R.id.toolbar_background);
     titleView                = view.findViewById(R.id.conversation_title_view);
     buttonToggle             = view.findViewById(R.id.button_toggle);
     sendButton               = view.findViewById(R.id.send_button);
@@ -2075,13 +2129,13 @@ public class ConversationParentFragment extends Fragment
     quickAttachmentToggle    = view.findViewById(R.id.quick_attachment_toggle);
     inlineAttachmentToggle   = view.findViewById(R.id.inline_attachment_container);
     inputPanel               = view.findViewById(R.id.bottom_panel);
-    panelParent              = view.findViewById(R.id.conversation_activity_panel_parent);
     searchNav                = view.findViewById(R.id.conversation_search_nav);
     messageRequestBottomView = view.findViewById(R.id.conversation_activity_message_request_bottom_bar);
     mentionsSuggestions      = ViewUtil.findStubById(view, R.id.conversation_mention_suggestions_stub);
     wallpaper                = view.findViewById(R.id.conversation_wallpaper);
     wallpaperDim             = view.findViewById(R.id.conversation_wallpaper_dim);
     voiceNotePlayerViewStub  = ViewUtil.findStubById(view, R.id.voice_note_player_stub);
+    navigationBarBackground  = view.findViewById(R.id.navbar_background);
 
     ImageButton quickCameraToggle      = view.findViewById(R.id.quick_camera_toggle);
     ImageButton inlineAttachmentButton = view.findViewById(R.id.inline_attachment_button);
@@ -2089,13 +2143,14 @@ public class ConversationParentFragment extends Fragment
     Stub<ConversationReactionOverlay> reactionOverlayStub = ViewUtil.findStubById(view, R.id.conversation_reaction_scrubber_stub);
     reactionDelegate = new ConversationReactionDelegate(reactionOverlayStub);
 
-
     noLongerMemberBanner                = view.findViewById(R.id.conversation_no_longer_member_banner);
     cannotSendInAnnouncementGroupBanner = ViewUtil.findStubById(view, R.id.conversation_cannot_send_announcement_stub);
     requestingMemberBanner              = view.findViewById(R.id.conversation_requesting_banner);
     cancelJoinRequest                   = view.findViewById(R.id.conversation_cancel_request);
     releaseChannelUnmute                = ViewUtil.findStubById(view, R.id.conversation_release_notes_unmute_stub);
     joinGroupCallButton                 = view.findViewById(R.id.conversation_group_call_join);
+
+    sendButton.setPopupContainer((ViewGroup) view);
 
     container.setIsBubble(isInBubble());
     container.addOnKeyboardShownListener(this);
@@ -2115,16 +2170,20 @@ public class ConversationParentFragment extends Fragment
     attachButton.setOnLongClickListener(new AttachButtonLongClickListener());
     sendButton.setOnClickListener(sendButtonListener);
     sendButton.setEnabled(true);
-    sendButton.addOnTransportChangedListener((newTransport, manuallySelected) -> {
+    sendButton.addOnSelectionChangedListener((newMessageSendType, manuallySelected) -> {
+      if (getContext() == null) {
+        Log.w(TAG, "onSelectionChanged called in detached state. Ignoring.");
+        return;
+      }
+
       calculateCharactersRemaining();
       updateLinkPreviewState();
-      linkPreviewViewModel.onTransportChanged(newTransport.isSms());
-      composeText.setTransport(newTransport);
+      linkPreviewViewModel.onTransportChanged(newMessageSendType.usesSmsTransport());
+      composeText.setMessageSendType(newMessageSendType);
 
-      buttonToggle.getBackground().setColorFilter(newTransport.getBackgroundColor(), PorterDuff.Mode.MULTIPLY);
-      buttonToggle.getBackground().invalidateSelf();
+      updateSendButtonColor(newMessageSendType);
 
-      if (manuallySelected) recordTransportPreference(newTransport);
+      if (manuallySelected) recordTransportPreference(newMessageSendType);
     });
 
     titleView.setOnStoryRingClickListener(v -> handleStoryRingClick());
@@ -2165,6 +2224,33 @@ public class ConversationParentFragment extends Fragment
     });
 
     voiceNoteMediaController.getVoiceNotePlaybackState().observe(getViewLifecycleOwner(), inputPanel.getPlaybackStateObserver());
+
+    material3OnScrollHelper = new Material3OnScrollHelper(requireActivity(), Collections.singletonList(toolbarBackground), Collections.emptyList()) {
+      @Override
+      public @NonNull ColorSet getActiveColorSet() {
+        return new ColorSet(getActiveToolbarColor(wallpaper.getDrawable() != null));
+      }
+
+      @Override
+      public @NonNull ColorSet getInactiveColorSet() {
+        return new ColorSet(getInactiveToolbarColor(wallpaper.getDrawable() != null));
+      }
+    };
+  }
+
+  private void updateSendButtonColor(MessageSendType newMessageSendType) {
+    buttonToggle.getBackground().setColorFilter(getSendButtonColor(newMessageSendType), PorterDuff.Mode.MULTIPLY);
+    buttonToggle.getBackground().invalidateSelf();
+  }
+
+  private @ColorInt int getSendButtonColor(MessageSendType newTransport) {
+    if (newTransport.usesSmsTransport()) {
+      return getResources().getColor(newTransport.getBackgroundColorRes());
+    } else if (recipient != null) {
+      return getRecipient().getChatColors().asSingleColor();
+    } else {
+      return getResources().getColor(newTransport.getBackgroundColorRes());
+    }
   }
 
   private @NonNull VoiceNotePlayerView requireVoiceNotePlayerView() {
@@ -2186,12 +2272,11 @@ public class ConversationParentFragment extends Fragment
         attachmentKeyboardStub.get().setWallpaperEnabled(true);
       }
 
-      int toolbarColor = getResources().getColor(R.color.conversation_toolbar_color_wallpaper);
-      toolbar.setBackgroundColor(toolbarColor);
-      // TODO [alex] LargeScreenSupport -- statusBarBox
-      if (Build.VERSION.SDK_INT > 23) {
-        WindowUtil.setStatusBarColor(requireActivity().getWindow(), toolbarColor);
-      }
+      material3OnScrollHelper.setColorImmediate();
+      int toolbarTextAndIconColor = getResources().getColor(R.color.signal_colorNeutralInverse);
+      toolbar.setTitleTextColor(toolbarTextAndIconColor);
+      setToolbarActionItemTint(toolbar, toolbarTextAndIconColor);
+      WindowUtil.setNavigationBarColor(requireActivity(), getResources().getColor(R.color.conversation_navigation_wallpaper));
     } else {
       wallpaper.setImageDrawable(null);
       wallpaperDim.setVisibility(View.GONE);
@@ -2200,14 +2285,39 @@ public class ConversationParentFragment extends Fragment
         attachmentKeyboardStub.get().setWallpaperEnabled(false);
       }
 
-      int toolbarColor = getResources().getColor(R.color.conversation_toolbar_color);
-      toolbar.setBackgroundColor(toolbarColor);
-      // TODO [alex] LargeScreenSupport -- statusBarBox
-      if (Build.VERSION.SDK_INT > 23) {
-        WindowUtil.setStatusBarColor(requireActivity().getWindow(), toolbarColor);
-      }
+      material3OnScrollHelper.setColorImmediate();
+      int toolbarTextAndIconColor = getResources().getColor(R.color.signal_colorOnSurface);
+      toolbar.setTitleTextColor(toolbarTextAndIconColor);
+      setToolbarActionItemTint(toolbar, toolbarTextAndIconColor);
+      WindowUtil.setNavigationBarColor(requireActivity(), getResources().getColor(R.color.signal_colorBackground));
     }
     fragment.onWallpaperChanged(chatWallpaper);
+    messageRequestBottomView.setWallpaperEnabled(chatWallpaper != null);
+  }
+
+  private static @ColorRes int getActiveToolbarColor(boolean hasWallpaper) {
+    return hasWallpaper ? R.color.conversation_toolbar_color_wallpaper_scrolled
+                        : R.color.signal_colorSurface2;
+  }
+
+  private static @ColorRes int getInactiveToolbarColor(boolean hasWallpaper) {
+    return hasWallpaper ? R.color.conversation_toolbar_color_wallpaper
+                        : R.color.signal_colorBackground;
+  }
+
+  private void setToolbarActionItemTint(@NonNull Toolbar toolbar, @ColorInt int tint) {
+    for (int i = 0; i < toolbar.getMenu().size(); i++) {
+      MenuItem menuItem = toolbar.getMenu().getItem(i);
+      MenuItemCompat.setIconTintList(menuItem, ColorStateList.valueOf(tint));
+    }
+
+    if (toolbar.getNavigationIcon() != null) {
+      toolbar.getNavigationIcon().setColorFilter(new SimpleColorFilter(tint));
+    }
+
+    if (toolbar.getOverflowIcon() != null) {
+      toolbar.getOverflowIcon().setColorFilter(new SimpleColorFilter(tint));
+    }
   }
 
   protected void initializeActionBar() {
@@ -2521,11 +2631,12 @@ public class ConversationParentFragment extends Fragment
 
     Log.i(TAG, "onModified(" + recipient.getId() + ") " + recipient.getRegistered());
     titleView.setTitle(glideRequests, recipient);
-    titleView.setVerified(identityRecords.isVerified());
+    titleView.setVerified(identityRecords.isVerified() && !recipient.isSelf());
     setBlockedUserState(recipient, isSecureText, isDefaultSms);
     updateReminders();
     updateDefaultSubscriptionId(recipient.getDefaultSubscriptionId());
     updatePaymentsAvailable();
+    updateSendButtonColor(sendButton.getSelectedSendType());
     initializeSecurity(isSecureText, isDefaultSms);
 
     if (searchViewItem == null || !searchViewItem.isActionViewExpanded()) {
@@ -2621,7 +2732,7 @@ public class ConversationParentFragment extends Fragment
       }
 
       Media media = new Media(uri, mimeType, 0, width, height, 0, 0, borderless, videoGif, Optional.empty(), Optional.empty(), Optional.empty());
-      startActivityForResult(MediaSelectionActivity.editor(requireContext(), sendButton.getSelectedTransport(), Collections.singletonList(media), recipient.getId(), composeText.getTextTrimmed()), MEDIA_SENDER);
+      startActivityForResult(MediaSelectionActivity.editor(requireContext(), sendButton.getSelectedSendType(), Collections.singletonList(media), recipient.getId(), composeText.getTextTrimmed()), MEDIA_SENDER);
       return new SettableFuture<>(false);
     } else {
       return attachmentManager.setMedia(glideRequests, uri, mediaType, getCurrentMediaConstraints(), width, height);
@@ -2629,7 +2740,7 @@ public class ConversationParentFragment extends Fragment
   }
 
   private void openContactShareEditor(Uri contactUri) {
-    Intent intent = ContactShareEditActivity.getIntent(requireContext(), Collections.singletonList(contactUri));
+    Intent intent = ContactShareEditActivity.getIntent(requireContext(), Collections.singletonList(contactUri), getSendButtonColor(sendButton.getSelectedSendType()));
     startActivityForResult(intent, GET_CONTACT_DETAILS);
   }
 
@@ -2642,11 +2753,10 @@ public class ConversationParentFragment extends Fragment
   }
 
   private void sendSharedContact(List<Contact> contacts) {
-    int        subscriptionId = sendButton.getSelectedTransport().getSimSubscriptionId().orElse(-1);
     long       expiresIn      = TimeUnit.SECONDS.toMillis(recipient.get().getExpiresInSeconds());
     boolean    initiating     = threadId == -1;
 
-    sendMediaMessage(recipient.getId(), isSmsForced(), "", attachmentManager.buildSlideDeck(), null, contacts, Collections.emptyList(), Collections.emptyList(), expiresIn, false, subscriptionId, initiating, false, null);
+    sendMediaMessage(recipient.getId(), sendButton.getSelectedSendType(), "", attachmentManager.buildSlideDeck(), null, contacts, Collections.emptyList(), Collections.emptyList(), expiresIn, false, initiating, false, null);
   }
 
   private void selectContactInfo(ContactData contactData) {
@@ -2658,7 +2768,7 @@ public class ConversationParentFragment extends Fragment
       numberItems[i] = contactData.numbers.get(i).type + ": " + contactData.numbers.get(i).number;
     }
 
-    AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+    AlertDialog.Builder builder = new MaterialAlertDialogBuilder(requireContext());
     builder.setIcon(R.drawable.ic_account_box);
     builder.setTitle(R.string.ConversationActivity_select_contact_info);
 
@@ -2802,8 +2912,8 @@ public class ConversationParentFragment extends Fragment
 
   private void calculateCharactersRemaining() {
     String          messageBody     = composeText.getTextTrimmed().toString();
-    TransportOption transportOption = sendButton.getSelectedTransport();
-    CharacterState  characterState  = transportOption.calculateCharacters(messageBody);
+    MessageSendType sendType        = sendButton.getSelectedSendType();
+    CharacterState  characterState  = sendType.calculateCharacters(messageBody);
 
     if (characterState.charactersRemaining <= 15 || characterState.messagesSpent > 1) {
       charactersLeft.setText(String.format(Locale.getDefault(),
@@ -2861,7 +2971,7 @@ public class ConversationParentFragment extends Fragment
   }
 
   private boolean isSmsForced() {
-    return sendButton.isManualSelection() && sendButton.getSelectedTransport().isSms();
+    return sendButton.isManualSelection() && sendButton.getSelectedSendType().usesSmsTransport();
   }
 
   protected Recipient getRecipient() {
@@ -2882,9 +2992,9 @@ public class ConversationParentFragment extends Fragment
   }
 
   private MediaConstraints getCurrentMediaConstraints() {
-    return sendButton.getSelectedTransport().getType() == Type.TEXTSECURE
+    return sendButton.getSelectedSendType().usesSignalTransport()
            ? MediaConstraints.getPushMediaConstraints()
-           : MediaConstraints.getMmsMediaConstraints(sendButton.getSelectedTransport().getSimSubscriptionId().orElse(-1));
+           : MediaConstraints.getMmsMediaConstraints(sendButton.getSelectedSendType().getSimSubscriptionIdOr(-1));
   }
 
   private void markLastSeen() {
@@ -2943,12 +3053,10 @@ public class ConversationParentFragment extends Fragment
       }
 
       String          message        = getMessage();
-      TransportOption transport      = sendButton.getSelectedTransport();
-      boolean         forceSms       = (recipient.isForceSmsSelection() || sendButton.isManualSelection()) && transport.isSms();
-      int             subscriptionId = sendButton.getSelectedTransport().getSimSubscriptionId().orElse(-1);
+      MessageSendType sendType       = sendButton.getSelectedSendType();
       long            expiresIn      = TimeUnit.SECONDS.toMillis(recipient.getExpiresInSeconds());
       boolean         initiating     = threadId == -1;
-      boolean         needsSplit     = !transport.isSms() && message.length() > transport.calculateCharacters(message).maxPrimaryMessageSize;
+      boolean         needsSplit     = !sendType.usesSmsTransport() && message.length() > sendType.calculateCharacters(message).maxPrimaryMessageSize;
       boolean         isMediaMessage = attachmentManager.isAttachmentPresent() ||
                                        recipient.isGroup()                     ||
                                        recipient.getEmail().isPresent()        ||
@@ -2957,16 +3065,16 @@ public class ConversationParentFragment extends Fragment
                                        linkPreviewViewModel.hasLinkPreview()   ||
                                        needsSplit;
 
-      Log.i(TAG, "[sendMessage] recipient: " + recipient.getId() + ", threadId: " + threadId + ",  forceSms: " + forceSms + ", isManual: " + sendButton.isManualSelection());
+      Log.i(TAG, "[sendMessage] recipient: " + recipient.getId() + ", threadId: " + threadId + ",  sendType: " + (sendType.usesSignalTransport() ? "signal" : "sms") + ", isManual: " + sendButton.isManualSelection());
 
       if ((recipient.isMmsGroup() || recipient.getEmail().isPresent()) && !isMmsEnabled) {
         handleManualMmsRequired();
-      } else if (!forceSms && (identityRecords.isUnverified(true) || identityRecords.isUntrusted(true))) {
+      } else if (sendType.usesSignalTransport() && (identityRecords.isUnverified(true) || identityRecords.isUntrusted(true))) {
         handleRecentSafetyNumberChange();
       } else if (isMediaMessage) {
-        sendMediaMessage(forceSms, expiresIn, false, subscriptionId, initiating, metricId);
+        sendMediaMessage(sendType, expiresIn, false, initiating, metricId);
       } else {
-        sendTextMessage(forceSms, expiresIn, subscriptionId, initiating, metricId);
+        sendTextMessage(sendType, expiresIn, initiating, metricId);
       }
     } catch (RecipientFormattingException ex) {
       Toast.makeText(requireContext(),
@@ -3008,13 +3116,13 @@ public class ConversationParentFragment extends Fragment
     }, this::sendComplete);
   }
 
-  private void sendMediaMessage(final boolean forceSms, final long expiresIn, final boolean viewOnce, final int subscriptionId, final boolean initiating, @Nullable String metricId)
+  private void sendMediaMessage(@NonNull MessageSendType sendType, final long expiresIn, final boolean viewOnce, final boolean initiating, @Nullable String metricId)
       throws InvalidMessageException
   {
     Log.i(TAG, "Sending media message...");
     List<LinkPreview> linkPreviews = linkPreviewViewModel.onSend();
     sendMediaMessage(recipient.getId(),
-                     forceSms,
+                     sendType,
                      getMessage(),
                      attachmentManager.buildSlideDeck(),
                      inputPanel.getQuote().orElse(null),
@@ -3023,14 +3131,13 @@ public class ConversationParentFragment extends Fragment
                      composeText.getMentions(),
                      expiresIn,
                      viewOnce,
-                     subscriptionId,
                      initiating,
                      true,
                      metricId);
   }
 
   private ListenableFuture<Void> sendMediaMessage(@NonNull RecipientId recipientId,
-                                                  final boolean forceSms,
+                                                  @NonNull MessageSendType sendType,
                                                   @NonNull String body,
                                                   SlideDeck slideDeck,
                                                   QuoteModel quote,
@@ -3039,21 +3146,20 @@ public class ConversationParentFragment extends Fragment
                                                   List<Mention> mentions,
                                                   final long expiresIn,
                                                   final boolean viewOnce,
-                                                  final int subscriptionId,
                                                   final boolean initiating,
                                                   final boolean clearComposeBox,
                                                   final @Nullable String metricId)
   {
-    if (!isDefaultSms && (!isSecureText || forceSms) && recipient.get().hasSmsAddress()) {
+    if (!isDefaultSms && sendType.usesSmsTransport() && recipient.get().hasSmsAddress()) {
       showDefaultSmsPrompt();
       return new SettableFuture<>(null);
     }
 
-    final boolean sendPush = (isSecureText && !forceSms) || recipient.get().isServiceIdOnly();
+    final boolean sendPush = sendType.usesSignalTransport();
     final long    thread   = this.threadId;
 
     if (sendPush) {
-      MessageUtil.SplitResult splitMessage = MessageUtil.getSplitMessage(requireContext(), body, sendButton.getSelectedTransport().calculateCharacters(body).maxPrimaryMessageSize);
+      MessageUtil.SplitResult splitMessage = MessageUtil.getSplitMessage(requireContext(), body, sendButton.getSelectedSendType().calculateCharacters(body).maxPrimaryMessageSize);
       body = splitMessage.getBody();
 
       if (splitMessage.getTextSlide().isPresent()) {
@@ -3061,7 +3167,7 @@ public class ConversationParentFragment extends Fragment
       }
     }
 
-    OutgoingMediaMessage outgoingMessageCandidate = new OutgoingMediaMessage(Recipient.resolved(recipientId), slideDeck, body, System.currentTimeMillis(), subscriptionId, expiresIn, viewOnce, distributionType, StoryType.NONE, null, false, quote, contacts, previews, mentions, null);
+    OutgoingMediaMessage outgoingMessageCandidate = new OutgoingMediaMessage(Recipient.resolved(recipientId), slideDeck, body, System.currentTimeMillis(), sendType.getSimSubscriptionIdOr(-1), expiresIn, viewOnce, distributionType, StoryType.NONE, null, false, quote, contacts, previews, mentions, null);
 
     final SettableFuture<Void> future  = new SettableFuture<>();
     final Context              context = requireContext().getApplicationContext();
@@ -3072,7 +3178,7 @@ public class ConversationParentFragment extends Fragment
       outgoingMessage = new OutgoingSecureMediaMessage(outgoingMessageCandidate);
       ApplicationDependencies.getTypingStatusSender().onTypingStopped(thread);
     } else {
-      outgoingMessage = outgoingMessageCandidate;
+      outgoingMessage = outgoingMessageCandidate.withExpiry(0);
     }
 
     Permissions.with(this)
@@ -3089,7 +3195,7 @@ public class ConversationParentFragment extends Fragment
                  final long id = fragment.stageOutgoingMessage(outgoingMessage);
 
                  SimpleTask.run(() -> {
-                   return MessageSender.send(context, outgoingMessage, thread, forceSms, metricId, null);
+                   return MessageSender.send(context, outgoingMessage, thread, sendType.usesSmsTransport(), metricId, null);
                  }, result -> {
                    sendComplete(result);
                    future.set(null);
@@ -3101,10 +3207,10 @@ public class ConversationParentFragment extends Fragment
     return future;
   }
 
-  private void sendTextMessage(final boolean forceSms, final long expiresIn, final int subscriptionId, final boolean initiating, final @Nullable String metricId)
+  private void sendTextMessage(@NonNull MessageSendType sendType, final long expiresIn, final boolean initiating, final @Nullable String metricId)
       throws InvalidMessageException
   {
-    if (!isDefaultSms && (!isSecureText || forceSms) && recipient.get().hasSmsAddress()) {
+    if (!isDefaultSms && sendType.usesSmsTransport() && recipient.get().hasSmsAddress()) {
       showDefaultSmsPrompt();
       return;
     }
@@ -3112,7 +3218,7 @@ public class ConversationParentFragment extends Fragment
     final long    thread      = this.threadId;
     final Context context     = requireContext().getApplicationContext();
     final String  messageBody = getMessage();
-    final boolean sendPush    = (isSecureText && !forceSms) || recipient.get().isServiceIdOnly();
+    final boolean sendPush    = sendType.usesSignalTransport();
 
     OutgoingTextMessage message;
 
@@ -3120,7 +3226,7 @@ public class ConversationParentFragment extends Fragment
       message = new OutgoingEncryptedMessage(recipient.get(), messageBody, expiresIn);
       ApplicationDependencies.getTypingStatusSender().onTypingStopped(thread);
     } else {
-      message = new OutgoingTextMessage(recipient.get(), messageBody, expiresIn, subscriptionId);
+      message = new OutgoingTextMessage(recipient.get(), messageBody, 0, sendType.getSimSubscriptionIdOr(-1));
     }
 
     Permissions.with(this)
@@ -3130,7 +3236,7 @@ public class ConversationParentFragment extends Fragment
                .onAllGranted(() -> {
                  final long id = new SecureRandom().nextLong();
                  SimpleTask.run(() -> {
-                   return MessageSender.send(context, message, thread, forceSms, metricId, null);
+                   return MessageSender.send(context, message, thread, sendType.usesSmsTransport(), metricId, null);
                  }, this::sendComplete);
 
                  silentlySetComposeText("");
@@ -3140,7 +3246,7 @@ public class ConversationParentFragment extends Fragment
   }
 
   private void showDefaultSmsPrompt() {
-    new AlertDialog.Builder(requireContext())
+    new MaterialAlertDialogBuilder(requireContext())
                    .setMessage(R.string.ConversationActivity_signal_cannot_sent_sms_mms_messages_because_it_is_not_your_default_sms_app)
                    .setNegativeButton(R.string.ConversationActivity_no, (dialog, which) -> dialog.dismiss())
                    .setPositiveButton(R.string.ConversationActivity_yes, (dialog, which) -> handleMakeDefaultSms())
@@ -3187,7 +3293,7 @@ public class ConversationParentFragment extends Fragment
   }
 
   private void updateLinkPreviewState() {
-    if (SignalStore.settings().isLinkPreviewsEnabled() && isSecureText && !sendButton.getSelectedTransport().isSms() && !attachmentManager.isAttachmentPresent() && getContext() != null) {
+    if (SignalStore.settings().isLinkPreviewsEnabled() && isSecureText && !sendButton.getSelectedSendType().usesSmsTransport() && !attachmentManager.isAttachmentPresent() && getContext() != null) {
       linkPreviewViewModel.onEnabled();
       linkPreviewViewModel.onTextChanged(requireContext(), composeText.getTextTrimmed().toString(), composeText.getSelectionStart(), composeText.getSelectionEnd());
     } else {
@@ -3195,16 +3301,16 @@ public class ConversationParentFragment extends Fragment
     }
   }
 
-  private void recordTransportPreference(TransportOption transportOption) {
+  private void recordTransportPreference(MessageSendType sendType) {
     new AsyncTask<Void, Void, Void>() {
       @Override
       protected Void doInBackground(Void... params) {
         RecipientDatabase recipientDatabase = SignalDatabase.recipients();
 
-        recipientDatabase.setDefaultSubscriptionId(recipient.getId(), transportOption.getSimSubscriptionId().orElse(-1));
+        recipientDatabase.setDefaultSubscriptionId(recipient.getId(), sendType.getSimSubscriptionIdOr(-1));
 
         if (!recipient.resolve().isPushGroup()) {
-          recipientDatabase.setForceSmsSelection(recipient.getId(), recipient.get().getRegistered() == RegisteredState.REGISTERED && transportOption.isSms());
+          recipientDatabase.setForceSmsSelection(recipient.getId(), recipient.get().getRegistered() == RegisteredState.REGISTERED && sendType.usesSmsTransport());
         }
 
         return null;
@@ -3339,16 +3445,14 @@ public class ConversationParentFragment extends Fragment
   }
 
   private void sendVoiceNote(@NonNull Uri uri, long size) {
-    boolean    forceSms       = sendButton.isManualSelection() && sendButton.getSelectedTransport().isSms();
     boolean    initiating     = threadId == -1;
-    int        subscriptionId = sendButton.getSelectedTransport().getSimSubscriptionId().orElse(-1);
     long       expiresIn      = TimeUnit.SECONDS.toMillis(recipient.get().getExpiresInSeconds());
     AudioSlide audioSlide     = new AudioSlide(requireContext(), uri, size, MediaUtil.AUDIO_AAC, true);
     SlideDeck  slideDeck      = new SlideDeck();
     slideDeck.addSlide(audioSlide);
 
     ListenableFuture<Void> sendResult = sendMediaMessage(recipient.getId(),
-                                                         forceSms,
+                                                         sendButton.getSelectedSendType(),
                                                          "",
                                                          slideDeck,
                                                          inputPanel.getQuote().orElse(null),
@@ -3357,7 +3461,6 @@ public class ConversationParentFragment extends Fragment
                                                          composeText.getMentions(),
                                                          expiresIn,
                                                          false,
-                                                         subscriptionId,
                                                          initiating,
                                                          true,
                                                          null);
@@ -3380,23 +3483,22 @@ public class ConversationParentFragment extends Fragment
   }
 
   private void sendSticker(@NonNull StickerLocator stickerLocator, @NonNull String contentType, @NonNull Uri uri, long size, boolean clearCompose) {
-    if (sendButton.getSelectedTransport().isSms()) {
+    if (sendButton.getSelectedSendType().usesSmsTransport()) {
       Media  media  = new Media(uri, contentType, System.currentTimeMillis(), StickerSlide.WIDTH, StickerSlide.HEIGHT, size, 0, false, false, Optional.empty(), Optional.empty(), Optional.empty());
-      Intent intent = MediaSelectionActivity.editor(requireContext(), sendButton.getSelectedTransport(), Collections.singletonList(media), recipient.getId(), composeText.getTextTrimmed());
+      Intent intent = MediaSelectionActivity.editor(requireContext(), sendButton.getSelectedSendType(), Collections.singletonList(media), recipient.getId(), composeText.getTextTrimmed());
       startActivityForResult(intent, MEDIA_SENDER);
       return;
     }
 
     long            expiresIn      = TimeUnit.SECONDS.toMillis(recipient.get().getExpiresInSeconds());
-    int             subscriptionId = sendButton.getSelectedTransport().getSimSubscriptionId().orElse(-1);
     boolean         initiating     = threadId == -1;
-    TransportOption transport      = sendButton.getSelectedTransport();
+    MessageSendType sendType       = sendButton.getSelectedSendType();
     SlideDeck       slideDeck      = new SlideDeck();
     Slide           stickerSlide   = new StickerSlide(requireContext(), uri, size, stickerLocator, contentType);
 
     slideDeck.addSlide(stickerSlide);
 
-    sendMediaMessage(recipient.getId(), transport.isSms(), "", slideDeck, null, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), expiresIn, false, subscriptionId, initiating, clearCompose, null);
+    sendMediaMessage(recipient.getId(), sendType, "", slideDeck, null, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), expiresIn, false, initiating, clearCompose, null);
   }
 
   private void silentlySetComposeText(String text) {
@@ -3451,7 +3553,7 @@ public class ConversationParentFragment extends Fragment
 
   @Override
   public void openGifSearch() {
-    AttachmentManager.selectGif(this, ConversationParentFragment.PICK_GIF, recipient.getId(), sendButton.getSelectedTransport(), isMms(), composeText.getTextTrimmed());
+    AttachmentManager.selectGif(this, ConversationParentFragment.PICK_GIF, recipient.getId(), sendButton.getSelectedSendType(), isMms(), composeText.getTextTrimmed());
   }
 
   @Override
@@ -3512,6 +3614,27 @@ public class ConversationParentFragment extends Fragment
     StickerSearchDialogFragment.show(getChildFragmentManager());
   }
 
+  @Override
+  public void bindScrollHelper(@NonNull RecyclerView recyclerView) {
+    material3OnScrollHelper.attach(recyclerView);
+  }
+
+  @Override
+  public void onMessageDetailsFragmentDismissed() {
+    material3OnScrollHelper.setColorImmediate();
+  }
+
+  @Override
+  public void sendAnywayAfterSafetyNumberChangedInBottomSheet(@NonNull List<? extends ContactSearchKey.RecipientSearchKey> destinations) {
+    Log.d(TAG, "onSendAnywayAfterSafetyNumberChange");
+    initializeIdentityRecords().addListener(new AssertedSuccessListener<Boolean>() {
+      @Override
+      public void onSuccess(Boolean result) {
+        sendMessage(null);
+      }
+    });
+  }
+
   // Listeners
 
   private final class DeleteCanceledVoiceNoteListener implements ListenableFuture.Listener<VoiceNoteDraft> {
@@ -3534,7 +3657,7 @@ public class ConversationParentFragment extends Fragment
                  .withPermanentDenialDialog(getString(R.string.ConversationActivity_signal_needs_the_camera_permission_to_take_photos_or_video))
                  .onAllGranted(() -> {
                    composeText.clearFocus();
-                   startActivityForResult(MediaSelectionActivity.camera(requireActivity(), sendButton.getSelectedTransport(), recipient.getId(), inputPanel.getQuote().isPresent()), MEDIA_SENDER);
+                   startActivityForResult(MediaSelectionActivity.camera(requireActivity(), sendButton.getSelectedSendType(), recipient.getId(), inputPanel.getQuote().isPresent()), MEDIA_SENDER);
                    requireActivity().overridePendingTransition(R.anim.camera_slide_from_bottom, R.anim.stationary);
                  })
                  .onAnyDenied(() -> Toast.makeText(requireContext(), R.string.ConversationActivity_signal_needs_camera_permissions_to_take_photos_or_video, Toast.LENGTH_LONG).show())
@@ -3763,12 +3886,17 @@ public class ConversationParentFragment extends Fragment
     reactionDelegate.setOnActionSelectedListener(onActionSelectedListener);
     reactionDelegate.setOnHideListener(onHideListener);
     reactionDelegate.show(requireActivity(), recipient.get(), conversationMessage, groupViewModel.isNonAdminInAnnouncementGroup(), selectedConversationModel);
+    if (attachmentKeyboardStub.resolved()) {
+      attachmentKeyboardStub.get().hide(true);
+    }
   }
 
   @Override
   public void onMessageWithErrorClicked(@NonNull MessageRecord messageRecord) {
     if (messageRecord.isIdentityMismatchFailure()) {
-      SafetyNumberChangeDialog.show(requireContext(), getChildFragmentManager(), messageRecord);
+      SafetyNumberBottomSheet
+          .forMessageRecord(requireContext(), messageRecord)
+          .show(getChildFragmentManager());
     } else if (messageRecord.hasFailedWithNetworkFailures()) {
       new MaterialAlertDialogBuilder(requireContext())
           .setMessage(R.string.conversation_activity__message_could_not_be_sent)
@@ -3836,8 +3964,23 @@ public class ConversationParentFragment extends Fragment
   }
 
   @Override
+  public int getSendButtonTint() {
+    return getSendButtonColor(sendButton.getSelectedSendType());
+  }
+
+  @Override
   public boolean isKeyboardOpen() {
     return container.isKeyboardOpen();
+  }
+
+  @Override
+  public boolean isAttachmentKeyboardOpen() {
+    return attachmentKeyboardStub.resolved() && attachmentKeyboardStub.get().isShowing();
+  }
+
+  @Override
+  public void openAttachmentKeyboard() {
+    attachmentKeyboardStub.get().show(container.getKeyboardHeight(), true);
   }
 
   @Override
@@ -3915,6 +4058,12 @@ public class ConversationParentFragment extends Fragment
   @Override
   public void onMessageActionToolbarOpened() {
     searchViewItem.collapseActionView();
+    toolbar.setVisibility(View.GONE);
+  }
+
+  @Override
+  public void onMessageActionToolbarClosed() {
+    toolbar.setVisibility(View.VISIBLE);
   }
 
   @Override
@@ -3934,19 +4083,6 @@ public class ConversationParentFragment extends Fragment
     updateLinkPreviewState();
   }
 
-  private int inputAreaHeight() {
-    int height = panelParent.getMeasuredHeight();
-
-    if (attachmentKeyboardStub.resolved()) {
-      View keyboard = attachmentKeyboardStub.get();
-      if (keyboard.getVisibility() == View.VISIBLE) {
-        return height + keyboard.getMeasuredHeight();
-      }
-    }
-
-    return height;
-  }
-
   private void onMessageRequestDeleteClicked(@NonNull MessageRequestViewModel requestModel) {
     Recipient recipient = requestModel.getRecipient().getValue();
     if (recipient == null) {
@@ -3954,7 +4090,7 @@ public class ConversationParentFragment extends Fragment
       return;
     }
 
-    AlertDialog.Builder builder = new AlertDialog.Builder(requireContext())
+    AlertDialog.Builder builder = new MaterialAlertDialogBuilder(requireContext())
                                                  .setNeutralButton(R.string.ConversationActivity_cancel, (d, w) -> d.dismiss());
 
     if (recipient.isGroup() && recipient.isBlocked()) {
@@ -4023,7 +4159,6 @@ public class ConversationParentFragment extends Fragment
     }
 
     long       expiresIn      = TimeUnit.SECONDS.toMillis(recipient.get().getExpiresInSeconds());
-    int        subscriptionId = sendButton.getSelectedTransport().getSimSubscriptionId().orElse(-1);
     boolean    initiating     = threadId == -1;
     SlideDeck  slideDeck      = new SlideDeck();
 
@@ -4036,7 +4171,7 @@ public class ConversationParentFragment extends Fragment
     }
 
     sendMediaMessage(recipient.getId(),
-                     isSmsForced(),
+                     sendButton.getSelectedSendType(),
                      "",
                      slideDeck,
                      null,
@@ -4045,7 +4180,6 @@ public class ConversationParentFragment extends Fragment
                      composeText.getMentions(),
                      expiresIn,
                      false,
-                     subscriptionId,
                      initiating,
                      false,
                      null);
@@ -4080,7 +4214,7 @@ public class ConversationParentFragment extends Fragment
           unverifiedNames[i] = Recipient.resolved(unverifiedIdentities.get(i).getRecipientId()).getDisplayName(requireContext());
         }
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        AlertDialog.Builder builder = new MaterialAlertDialogBuilder(requireContext());
         builder.setIcon(R.drawable.ic_warning);
         builder.setTitle("No longer verified");
         builder.setItems(unverifiedNames, (dialog, which) -> {
@@ -4171,18 +4305,23 @@ public class ConversationParentFragment extends Fragment
     {
       Log.d(TAG, "[presentMessageRequestState] Have extra, so ignoring provided state.");
       messageRequestBottomView.setVisibility(View.GONE);
+      inputPanel.setHideForMessageRequestState(false);
     } else if (isPushGroupV1Conversation() && !isActiveGroup()) {
       Log.d(TAG, "[presentMessageRequestState] Inactive push group V1, so ignoring provided state.");
       messageRequestBottomView.setVisibility(View.GONE);
+      inputPanel.setHideForMessageRequestState(false);
     } else if (messageData == null) {
       Log.d(TAG, "[presentMessageRequestState] Null messageData. Ignoring.");
     } else if (messageData.getMessageState() == MessageRequestState.NONE) {
       Log.d(TAG, "[presentMessageRequestState] No message request necessary.");
       messageRequestBottomView.setVisibility(View.GONE);
+      inputPanel.setHideForMessageRequestState(false);
     } else {
       Log.d(TAG, "[presentMessageRequestState] " + messageData.getMessageState());
       messageRequestBottomView.setMessageData(messageData);
       messageRequestBottomView.setVisibility(View.VISIBLE);
+      noLongerMemberBanner.setVisibility(View.GONE);
+      inputPanel.setHideForMessageRequestState(true);
     }
 
     invalidateOptionsMenu();

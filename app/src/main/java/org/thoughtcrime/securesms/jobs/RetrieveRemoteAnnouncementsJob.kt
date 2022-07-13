@@ -19,7 +19,7 @@ import org.thoughtcrime.securesms.jobmanager.Data
 import org.thoughtcrime.securesms.jobmanager.Job
 import org.thoughtcrime.securesms.jobmanager.impl.NetworkConstraint
 import org.thoughtcrime.securesms.keyvalue.SignalStore
-import org.thoughtcrime.securesms.notifications.v2.NotificationThread
+import org.thoughtcrime.securesms.notifications.v2.ConversationId
 import org.thoughtcrime.securesms.providers.BlobProvider
 import org.thoughtcrime.securesms.recipients.Recipient
 import org.thoughtcrime.securesms.releasechannel.ReleaseChannel
@@ -113,7 +113,7 @@ class RetrieveRemoteAnnouncementsJob private constructor(private val force: Bool
         Log.i(TAG, "First check, saving code and skipping download")
         values.highestVersionNoteReceived = BuildConfig.CANONICAL_VERSION_CODE
       }
-      MessageDigest.isEqual(manifestMd5, values.previousManifestMd5) -> {
+      !force && MessageDigest.isEqual(manifestMd5, values.previousManifestMd5) -> {
         Log.i(TAG, "Manifest has not changed since last fetch.")
       }
       else -> fetchManifest(manifestMd5)
@@ -178,6 +178,7 @@ class RetrieveRemoteAnnouncementsJob private constructor(private val force: Bool
 
     val threadId = SignalDatabase.threads.getOrCreateThreadIdFor(Recipient.resolved(values.releaseChannelRecipientId!!))
     var highestVersion = values.highestVersionNoteReceived
+    var addedNewNotes = false
 
     resolvedNotes
       .filterNotNull()
@@ -197,8 +198,8 @@ class RetrieveRemoteAnnouncementsJob private constructor(private val force: Bool
           bodyRangeList.addButton(note.translation.callToActionText, note.releaseNote.ctaId, body.lastIndex, 0)
         }
 
-        ThreadUtil.sleep(1)
-        val insertResult: MessageDatabase.InsertResult? = ReleaseChannel.insertAnnouncement(
+        ThreadUtil.sleep(5)
+        val insertResult: MessageDatabase.InsertResult? = ReleaseChannel.insertReleaseChannelMessage(
           recipientId = values.releaseChannelRecipientId!!,
           body = body,
           threadId = threadId,
@@ -208,18 +209,22 @@ class RetrieveRemoteAnnouncementsJob private constructor(private val force: Bool
           imageHeight = note.translation.imageHeight?.toIntOrNull() ?: 0
         )
 
-        SignalDatabase.sms.insertBoostRequestMessage(values.releaseChannelRecipientId!!, threadId)
-
         if (insertResult != null) {
+          addedNewNotes = true
           SignalDatabase.attachments.getAttachmentsForMessage(insertResult.messageId)
             .forEach { ApplicationDependencies.getJobManager().add(AttachmentDownloadJob(insertResult.messageId, it.attachmentId, false)) }
 
-          ApplicationDependencies.getMessageNotifier().updateNotification(context, NotificationThread.forConversation(insertResult.threadId))
+          ApplicationDependencies.getMessageNotifier().updateNotification(context, ConversationId.forConversation(insertResult.threadId))
           TrimThreadJob.enqueueAsync(insertResult.threadId)
 
           highestVersion = max(highestVersion, note.releaseNote.androidMinVersion!!.toInt())
         }
       }
+
+    if (addedNewNotes) {
+      ThreadUtil.sleep(5)
+      SignalDatabase.sms.insertBoostRequestMessage(values.releaseChannelRecipientId!!, threadId)
+    }
 
     values.highestVersionNoteReceived = highestVersion
   }
