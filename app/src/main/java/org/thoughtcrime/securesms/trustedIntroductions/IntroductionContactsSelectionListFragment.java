@@ -110,7 +110,7 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
     chipRecycler = view.findViewById(R.id.chipRecycler);
 
 
-    recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+    //recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
     recyclerView.setItemAnimator(new DefaultItemAnimator() {
       @Override
       public boolean canReuseUpdatedViewHolder(@NonNull RecyclerView.ViewHolder viewHolder) {
@@ -150,7 +150,8 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
     initializeAdapter();
     // Observe both mutable data sources
     this.viewModel.getContacts().observe(getViewLifecycleOwner(), users -> {
-      TIRecyclerViewAdapter.submitList(getFiltered(users, null));
+      List<Recipient> filtered = getFiltered(users, null);
+      TIRecyclerViewAdapter.submitList(filtered);
     });
   }
 
@@ -163,7 +164,6 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
     // Not directly passing a cursor, instead submitting a list to ContactsAdapter
     TIRecyclerViewAdapter = new IntroducableContactsAdapter(requireContext(),
                                                             glideRequests,
-                                                            this.viewModel,
                                                             new ListClickListener());
 
     recyclerView.setAdapter(TIRecyclerViewAdapter);
@@ -194,12 +194,11 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
   }
 
   // TODO: Unhappy that this is here and not in the viewmodel. But the display or username is context dependant so not sure how/if to decouple.
-  private List<Recipient> getFiltered(@Nullable List<Recipient> contacts, @Nullable String filter){
+  private List<Recipient> getFiltered(List<Recipient> contacts, @Nullable String filter){
     // Fetch ressource from Viewmodel if not provided with the arguments
-    contacts = (contacts==null)? Objects.requireNonNull(viewModel.getContacts().getValue()): contacts;
     List<Recipient> filtered = new ArrayList<>(contacts);
     filter = (filter==null)? Objects.requireNonNull(viewModel.getFilter().getValue()): filter;
-    if (!filter.isEmpty()){
+    if (!filter.isEmpty() && filter.compareTo("") != 0){
       for (Recipient c: contacts) {
         // Choose appropriate string representation
         if(!c.getDisplayNameOrUsername(requireContext()).contains(filter)){
@@ -212,7 +211,7 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
 
   @Override public void onFilterChanged(String filter) {
     viewModel.setQueryFilter(filter);
-    TIRecyclerViewAdapter.submitList(getFiltered(null, filter));
+    TIRecyclerViewAdapter.submitList(getFiltered(viewModel.getContacts().getValue(), filter));
   }
 
   /**

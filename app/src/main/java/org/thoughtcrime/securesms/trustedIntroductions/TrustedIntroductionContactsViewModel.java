@@ -29,7 +29,7 @@ final class TrustedIntroductionContactsViewModel extends ViewModel{
   @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
   TrustedIntroductionContactsViewModel(TrustedIntroductionContactManager manager) {
     this.manager = manager;
-    introducableContacts = new MutableLiveData<>(new ArrayList<>());
+    introducableContacts = new MutableLiveData<>();
     filter = new MutableLiveData<>("");
     selectedContacts = new MutableLiveData<>(new SelectedContactSet());
     loadValidContacts();
