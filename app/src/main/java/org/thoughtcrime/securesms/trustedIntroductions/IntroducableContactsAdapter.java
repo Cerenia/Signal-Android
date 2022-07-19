@@ -33,7 +33,6 @@ class IntroducableContactsAdapter extends ListAdapter<Recipient, IntroducableCon
 
   IntroducableContactsAdapter(@NonNull Context context,
                                      @NonNull GlideRequests glideRequests,
-                                     TrustedIntroductionContactsViewModel viewModel,
                                      @Nullable ContactSelectionListAdapter.ItemClickListener clickListener)
   {
     super(new RecipientDiffCallback());
