@@ -100,6 +100,7 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
   @Override
   public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
     // Reusing this layout, many components in it are never referenced for TI purposes.
+    Log.e(TAG, "BlubBlub");
     View view = inflater.inflate(R.layout.contact_selection_list_fragment, container, false);
 
     recyclerView             = view.findViewById(R.id.recycler_view);
