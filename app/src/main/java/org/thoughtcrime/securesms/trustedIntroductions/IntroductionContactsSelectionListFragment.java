@@ -1,12 +1,10 @@
 package org.thoughtcrime.securesms.trustedIntroductions;
 
-import android.animation.LayoutTransition;
 import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.HorizontalScrollView;
 
 import androidx.annotation.CallSuper;
 import androidx.annotation.MainThread;
@@ -34,10 +32,8 @@ import org.thoughtcrime.securesms.contacts.ContactSelectionListAdapter;
 import org.thoughtcrime.securesms.contacts.ContactSelectionListItem;
 import org.thoughtcrime.securesms.contacts.SelectedContact;
 import org.thoughtcrime.securesms.contacts.SelectedContacts;
-import org.thoughtcrime.securesms.groups.ui.GroupLimitDialog;
 import org.thoughtcrime.securesms.mms.GlideApp;
 import org.thoughtcrime.securesms.mms.GlideRequests;
-import org.thoughtcrime.securesms.recipients.LiveRecipient;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.util.ViewUtil;
@@ -75,8 +71,8 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
   private TrustedIntroductionContactsViewModel viewModel;
   private IntroducableContactsAdapter                            TIRecyclerViewAdapter;
   private ContactSelectionListFragment.OnContactSelectedListener onContactSelectedListener;
-  private RecyclerView                                           recyclerView;
-  private RecyclerView   chipRecycler;
+  private RecyclerView                                           TIContactsRecycler;
+  private RecyclerView                                           chipRecycler;
   private MappingAdapter contactChipAdapter;
   private ContactChipViewModel contactChipViewModel;
 
@@ -103,15 +99,17 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
     Log.e(TAG, "BlubBlub");
     View view = inflater.inflate(R.layout.contact_selection_list_fragment, container, false);
 
-    recyclerView             = view.findViewById(R.id.recycler_view);
-    showContactsProgress     = view.findViewById(R.id.progress);
+    TIContactsRecycler   = view.findViewById(R.id.recycler_view);
+    showContactsProgress = view.findViewById(R.id.progress);
     chipRecycler                = view.findViewById(R.id.chipRecycler);
     constraintLayout         = view.findViewById(R.id.container);
     chipRecycler = view.findViewById(R.id.chipRecycler);
 
 
-    recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-    recyclerView.setItemAnimator(new DefaultItemAnimator() {
+    LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
+    layoutManager.setOrientation(LinearLayoutManager.VERTICAL); // TODO: Still more fiddling..
+    TIContactsRecycler.setLayoutManager(layoutManager);
+    TIContactsRecycler.setItemAnimator(new DefaultItemAnimator() {
       @Override
       public boolean canReuseUpdatedViewHolder(@NonNull RecyclerView.ViewHolder viewHolder) {
         return true;
@@ -129,7 +127,7 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
     // Default values for now
     boolean recyclerViewClipping  = true;
 
-    recyclerView.setClipToPadding(recyclerViewClipping);
+    TIContactsRecycler.setClipToPadding(recyclerViewClipping);
 
     return view;
   }
@@ -166,8 +164,10 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
                                                             glideRequests,
                                                             new ListClickListener());
 
-    recyclerView.setAdapter(TIRecyclerViewAdapter);
-    recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+    TIContactsRecycler.setAdapter(TIRecyclerViewAdapter);
+    // TODO: Trying to get this stupid list to update.. (requestLayout() was breaking in function triggerUpdateProcessor() of RecyclerView) => Still doesn't work.
+    //recyclerView.setHasFixedSize(true);
+    TIContactsRecycler.addOnScrollListener(new RecyclerView.OnScrollListener() {
       @Override
       public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
         if (newState == RecyclerView.SCROLL_STATE_DRAGGING) {
@@ -195,7 +195,6 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
 
   // TODO: Unhappy that this is here and not in the viewmodel. But the display or username is context dependant so not sure how/if to decouple.
   private List<Recipient> getFiltered(List<Recipient> contacts, @Nullable String filter){
-    // Fetch ressource from Viewmodel if not provided with the arguments
     List<Recipient> filtered = new ArrayList<>(contacts);
     filter = (filter==null)? Objects.requireNonNull(viewModel.getFilter().getValue()): filter;
     if (!filter.isEmpty() && filter.compareTo("") != 0){

@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 
 import org.thoughtcrime.securesms.R;
+import org.thoughtcrime.securesms.contacts.ContactRepository;
 import org.thoughtcrime.securesms.contacts.ContactSelectionListItem;
 import org.thoughtcrime.securesms.mms.GlideRequests;
 import org.thoughtcrime.securesms.recipients.Recipient;
@@ -51,13 +52,18 @@ class IntroducableContactsAdapter extends ListAdapter<Recipient, IntroducableCon
   @Override public void onBindViewHolder(@NonNull IntroducableContactsAdapter.ContactViewHolder holder, int position) {
     Recipient current = getItem(position);
     String name = current.getDisplayNameOrUsername(context.getApplicationContext());
+    holder.unbind(glideRequests);
+    // ContactRepository.NORMAL_TYPE == 0 for type, unfortunately private...
     holder.bind(glideRequests, current.getId(), 0, name, null, null, null, false);
   }
 
   @Override public void submitList(@Nullable List<Recipient> list) {
+    // TODO: Remove after fix
     List<Recipient> curL = getCurrentList();
     super.submitList(list);
     curL = getCurrentList();
+    int count = getItemCount();
+    notifyDataSetChanged();
   }
 
   /**
