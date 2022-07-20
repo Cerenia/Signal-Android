@@ -17,10 +17,12 @@ import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.contacts.ContactSelectionListAdapter;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 
+import java.util.List;
+
 /**
  * Adaptation of ContactSelectionListAdapter, CursorRecyclerViewAdapter and BlockedUsersAdapter.
  *
- * Presents the recipients and forwards the click logic to the Viewmodel.
+ * Presents the recipients and forwards the click logic to the enclosing fragment via the clickListener.
  *
  */
 class IntroducableContactsAdapter extends ListAdapter<Recipient, IntroducableContactsAdapter.ContactViewHolder> {
@@ -50,6 +52,12 @@ class IntroducableContactsAdapter extends ListAdapter<Recipient, IntroducableCon
     Recipient current = getItem(position);
     String name = current.getDisplayNameOrUsername(context.getApplicationContext());
     holder.bind(glideRequests, current.getId(), 0, name, null, null, null, false);
+  }
+
+  @Override public void submitList(@Nullable List<Recipient> list) {
+    List<Recipient> curL = getCurrentList();
+    super.submitList(list);
+    curL = getCurrentList();
   }
 
   /**

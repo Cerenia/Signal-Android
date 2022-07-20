@@ -110,7 +110,7 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
     chipRecycler = view.findViewById(R.id.chipRecycler);
 
 
-    //recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+    recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
     recyclerView.setItemAnimator(new DefaultItemAnimator() {
       @Override
       public boolean canReuseUpdatedViewHolder(@NonNull RecyclerView.ViewHolder viewHolder) {
@@ -151,7 +151,7 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
     // Observe both mutable data sources
     this.viewModel.getContacts().observe(getViewLifecycleOwner(), users -> {
       List<Recipient> filtered = getFiltered(users, null);
-      TIRecyclerViewAdapter.submitList(filtered);
+      TIRecyclerViewAdapter.submitList(new ArrayList<>(filtered));
     });
   }
 
