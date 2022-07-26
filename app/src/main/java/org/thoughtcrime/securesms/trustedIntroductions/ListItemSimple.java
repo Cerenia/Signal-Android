@@ -46,6 +46,10 @@ public class ListItemSimple extends LinearLayout {
     this.name.setText(n);
   }
 
+  protected String get(String n){
+    return this.name.getText().toString();
+  }
+
   protected void setChecked(){
     // do nothing
   }

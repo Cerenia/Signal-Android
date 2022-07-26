@@ -106,4 +106,7 @@ public class MinimalAdapter extends ListAdapter<String, MinimalAdapter.ContactVi
       return oldItem.equals(newItem);
     }
   }
+  public interface ItemClickListener {
+    void onItemClick(ListItemSimple item);
+  }
 }
