@@ -280,14 +280,16 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
       return;
     }
 
+    /*
     TransitionManager.beginDelayedTransition(linearLayout, new AutoTransition().setDuration(CHIP_GROUP_REVEAL_DURATION_MS));
 
-    /*
+
     ConstraintSet constraintSet = new ConstraintSet();
     constraintSet.clone(linearLayout);
     constraintSet.setVisibility(R.id.chipRecycler, visibility);
-    constraintSet.applyTo(linearLayout);*/
-    chipRecycler.setVisibility(visibility); // TODO
+    constraintSet.applyTo(linearLayout);
+    TODO
+     */
   }
 
   private void smoothScrollChipsToEnd() {
