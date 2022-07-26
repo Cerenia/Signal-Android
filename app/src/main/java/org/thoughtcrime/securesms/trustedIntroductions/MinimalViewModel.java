@@ -17,7 +17,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 
-public class MinimalViewModel {
+public class MinimalViewModel extends ViewModel {
   private final MinimalManager                      manager;
   private final MutableLiveData<HashSet<String>> selectedContacts;
   private final MutableLiveData<List<String>>  introducableContacts;
