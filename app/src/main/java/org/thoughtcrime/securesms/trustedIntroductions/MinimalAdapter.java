@@ -23,12 +23,12 @@ public class MinimalAdapter extends ListAdapter<String, MinimalAdapter.ContactVi
   private final @NonNull Context context;
 
   private final LayoutInflater                                layoutInflater;
-  private final ContactSelectionListAdapter.ItemClickListener clickListener;
+  private final MinimalAdapter.ItemClickListener clickListener;
   private final GlideRequests                                 glideRequests;
 
   MinimalAdapter(@NonNull Context context,
                               @NonNull GlideRequests glideRequests,
-                              @Nullable ContactSelectionListAdapter.ItemClickListener clickListener)
+                              @Nullable MinimalAdapter.ItemClickListener clickListener)
   {
     super(new DiffUtil.ItemCallback<String>() {
       @Override public boolean areItemsTheSame(@NonNull String oldItem, @NonNull String newItem) {
@@ -106,7 +106,7 @@ public class MinimalAdapter extends ListAdapter<String, MinimalAdapter.ContactVi
       return oldItem.equals(newItem);
     }
   }
-  public interface ItemClickListener {
+  public interface ItemClickListener extends ContactSelectionListAdapter.ItemClickListener{
     void onItemClick(ListItemSimple item);
   }
 }
