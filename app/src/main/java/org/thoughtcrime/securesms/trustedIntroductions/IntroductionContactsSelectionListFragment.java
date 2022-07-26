@@ -68,13 +68,15 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
   // TODO: have a progress wheel for more substantial data? (cosmetic, not super important)
   private ProgressWheel                        showContactsProgress;
   private LinearLayout                         linearLayout;
-  private TrustedIntroductionContactsViewModel viewModel;
+  //private TrustedIntroductionContactsViewModel viewModel;
+  private MinimalViewModel viewModel;
   private MinimalAdapter                            TIRecyclerViewAdapter;
   private ContactSelectionListFragment.OnContactSelectedListener onContactSelectedListener;
   private RecyclerView                                           TIContactsRecycler;
   private RecyclerView                                           chipRecycler;
   private MappingAdapter contactChipAdapter;
-  private ContactChipViewModel contactChipViewModel;
+  //private ContactChipViewModel contactChipViewModel;
+  private MinimalChipViewModel contactChipViewModel;
 
 
   private GlideRequests    glideRequests;
@@ -115,13 +117,14 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
     });*/
     TIContactsRecycler.setItemAnimator(null);
 
-    contactChipViewModel = new ViewModelProvider(this).get(ContactChipViewModel.class);
+    //contactChipViewModel = new ViewModelProvider(this).get(ContactChipViewModel.class);
+    contactChipViewModel = new ViewModelProvider(this).get(MinimalChipViewModel.class);
     contactChipAdapter   = new MappingAdapter();
 
-    SelectedContacts.register(contactChipAdapter, this::onChipCloseIconClicked);
+    SelectedStrings.register(contactChipAdapter, this::onChipCloseIconClicked);
     chipRecycler.setAdapter(contactChipAdapter);
 
-    Disposable disposable = contactChipViewModel.getState().subscribe(this::handleSelectedContactsChanged);
+    //Disposable disposable = contactChipViewModel.getState().subscribe(this::handleSelectedContactsChanged);
 
     // Default values for now
     boolean recyclerViewClipping  = true;
@@ -130,6 +133,7 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
 
     return view;
   }
+
 
   @MainThread
   @CallSuper
@@ -142,18 +146,19 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
    * Called by activity containing the Fragment.
    * @param viewModel The underlying persistent data storage (throughout Activity and Fragment Lifecycle).
    */
-  public void setViewModel(TrustedIntroductionContactsViewModel viewModel){
+  public void setViewModel(MinimalViewModel viewModel){
     this.viewModel = viewModel;
     initializeAdapter();
     // Observe both mutable data sources
     this.viewModel.getContacts().observe(getViewLifecycleOwner(), users -> {
       //List<Recipient> filtered = getFiltered(users, null);
       //TIRecyclerViewAdapter.submitList(new ArrayList<>(filtered));
-      ArrayList<String> list = new ArrayList<String>();
-      for(int i = 1; i < 11; i++){
-        list.add("Recipient: " + i);
-      }
-      TIRecyclerViewAdapter.submitList(list);
+      //ArrayList<String> list = new ArrayList<String>();
+      //for(int i = 1; i < 11; i++){
+       // list.add("Recipient: " + i);
+      //}
+      //TIRecyclerViewAdapter.submitList(list);
+      TIRecyclerViewAdapter.submitList(users);
     });
   }
 
@@ -167,7 +172,7 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
     /*TIRecyclerViewAdapter = new IntroducableContactsAdapter(requireContext(),
                                                             glideRequests,
                                                             new ListClickListener());*/
-    TIRecyclerViewAdapter = new MinimalAdapter(requireContext(), glideRequests, new ListClickListener());
+    TIRecyclerViewAdapter = new MinimalAdapter(requireContext(), glideRequests, new StringListClickListener());
 
     TIContactsRecycler.setAdapter(TIRecyclerViewAdapter);
     // TODO: Trying to get this stupid list to update.. (requestLayout() was breaking in function triggerUpdateProcessor() of RecyclerView) => Still doesn't work.
@@ -191,8 +196,8 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
    */
   private void loadSelection(){
     if(this.viewModel != null){
-      List<SelectedContact> selection = this.viewModel.listSelectedContacts();
-      for(SelectedContact current: selection){
+      List<String> selection = this.viewModel.listSelectedContacts();
+      for(String current: selection){
         addChipForSelectedContact(current);
       }
     } // should never happen, but if ViewModel does not exist, don't load anything.
@@ -218,19 +223,52 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
     //TIRecyclerViewAdapter.submitList(getFiltered(viewModel.getContacts().getValue(), filter)); // TODO
   }
 
+  private class StringListClickListener implements MinimalAdapter.ItemClickListener {
+
+    @Override public void onItemClick(ListItemSimple item) {
+      if (viewModel.isSelectedContact(item.get())) {
+        markContactUnselected(item.get());
+      } else {
+        markContactSelected(item.get());
+      }
+    }
+
+    @Override public void onItemClick(ContactSelectionListItem item) {
+      // do nothing.
+    }
+  }
+
   /**
    * Taken and adapted from ContactSelectionListFragment.java
    */
+  /**
   private class ListClickListener implements ContactSelectionListAdapter.ItemClickListener {
     @Override
     public void onItemClick(ContactSelectionListItem contact) {
-      SelectedContact selectedContact = contact.isUsernameType() ? SelectedContact.forUsername(contact.getRecipientId().orElse(null), contact.getNumber())
+      String selectedContact = contact.isUsernameType() ? SelectedContact.forUsername(contact.getRecipientId().orElse(null), contact.getNumber())
                                                                  : SelectedContact.forPhone(contact.getRecipientId().orElse(null), contact.getNumber());
       if (viewModel.isSelectedContact(selectedContact)) {
         markContactUnselected(selectedContact);
       } else {
         markContactSelected(selectedContact);
       }
+    }
+  }
+**/
+
+  private class ListClickListener implements MinimalAdapter.ItemClickListener{
+
+    @Override public void onItemClick(ListItemSimple item) {
+      String contact = item.get();
+      if(viewModel.isSelectedContact(contact)){
+        markContactUnselected(contact);
+      } else {
+        markContactSelected(contact);
+      }
+    }
+
+    @Override public void onItemClick(ContactSelectionListItem item) {
+      // do nothing
     }
   }
 
@@ -241,19 +279,26 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
     void onContactSelected(Optional<RecipientId> recipientId, @Nullable String number);
   }
 
+  /**
   private int getChipCount() {
     int count = contactChipViewModel.getCount() - CHIP_GROUP_EMPTY_CHILD_COUNT;
     if (count < 0) throw new AssertionError();
     return count;
+  } **/
+
+  private int getChipCount() {
+    return 1;
   }
 
-  private void markContactSelected(@NonNull SelectedContact selectedContact) {
-    boolean added = viewModel.addSelectedContact(selectedContact);
-    if(!added){
-      Log.i(TAG, String.format("Contact %s was already part of the selection.", selectedContact.toString()));
-    } else {
-      addChipForSelectedContact(selectedContact);
-    }
+  /**
+  private void addChipForSelectedContact(@NonNull SelectedContact selectedContact) {
+    // TODO: This change made the chips appear correctly when restoring state from the ViewModel. Was this a bug in the first place?
+    // or have I broken some other things through this change?
+    //Lifecycle state = getViewLifecycleOwner().getLifecycle();
+    Lifecycle state = getLifecycle();
+    SimpleTask.run(state,
+                   ()       -> Recipient.resolved(selectedContact.getOrCreateRecipientId(requireContext())),
+                   resolved -> contactChipViewModel.add(selectedContact));
   }
 
   private void addChipForSelectedContact(@NonNull SelectedContact selectedContact) {
@@ -265,14 +310,26 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
                    ()       -> Recipient.resolved(selectedContact.getOrCreateRecipientId(requireContext())),
                    resolved -> contactChipViewModel.add(selectedContact));
   }
+   private Unit onChipCloseIconClicked(SelectedContacts.Model model) {
+   markContactUnselected(model.getSelectedContact());
+   if (onContactSelectedListener != null) {
+   onContactSelectedListener.onContactDeselected(Optional.of(model.getRecipient().getId()), model.getRecipient().getE164().orElse(null));
+   }
 
-  private Unit onChipCloseIconClicked(SelectedContacts.Model model) {
-    markContactUnselected(model.getSelectedContact());
+   return Unit.INSTANCE;
+   }
+   **/
+
+  private void addChipForSelectedContact(@NonNull String selectedContact) {
+    contactChipViewModel.add(selectedContact);
+  }
+
+  private Unit onChipCloseIconClicked(SelectedStrings.Model m) {
+    markContactUnselected(m.getSelectedString().getName());
     if (onContactSelectedListener != null) {
-      onContactSelectedListener.onContactDeselected(Optional.of(model.getRecipient().getId()), model.getRecipient().getE164().orElse(null));
+      //onContactSelectedListener.onContactDeselected(contact); TODO
     }
-
-    return Unit.INSTANCE;
+    return null;
   }
 
   private void setChipGroupVisibility(int visibility) {
@@ -297,6 +354,27 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
     chipRecycler.smoothScrollBy(x, 0);
   }
 
+  private void markContactUnselected(@NonNull String selectedContact) {
+    int removed = viewModel.removeFromSelectedContacts(selectedContact);
+    if(removed <= 0){
+      Log.w(TAG, String.format(Locale.US,"%s could not be removed from selection!", selectedContact.toString()));
+    } else {
+      Log.i(TAG, String.format(Locale.US,"%d contact(s) were removed from selection.", removed));
+      TIRecyclerViewAdapter.notifyItemRangeChanged(0, TIRecyclerViewAdapter.getItemCount(), ContactSelectionListAdapter.PAYLOAD_SELECTION_CHANGE);
+      //contactChipViewModel.remove(selectedContact);
+    }
+  }
+
+  private void markContactSelected(@NonNull String selectedContact) {
+    boolean added = viewModel.addSelectedContact(selectedContact);
+    if(!added){
+      Log.i(TAG, String.format("Contact %s was already part of the selection.", selectedContact.toString()));
+    } else {
+      addChipForSelectedContact(selectedContact);
+    }
+  }
+
+  /**
   private void markContactUnselected(@NonNull SelectedContact selectedContact) {
     int removed = viewModel.removeFromSelectedContacts(selectedContact);
     if(removed <= 0){
@@ -307,6 +385,15 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
       contactChipViewModel.remove(selectedContact);
     }
   }
+
+  private void markContactSelected(@NonNull SelectedContact selectedContact) {
+    boolean added = viewModel.addSelectedContact(selectedContact);
+    if(!added){
+      Log.i(TAG, String.format("Contact %s was already part of the selection.", selectedContact.toString()));
+    } else {
+      addChipForSelectedContact(selectedContact);
+    }
+  }**/
 
   private void handleSelectedContactsChanged(@NonNull List<SelectedContacts.Model> selectedContacts) {
     contactChipAdapter.submitList(new MappingModelList(selectedContacts), this::smoothScrollChipsToEnd);
