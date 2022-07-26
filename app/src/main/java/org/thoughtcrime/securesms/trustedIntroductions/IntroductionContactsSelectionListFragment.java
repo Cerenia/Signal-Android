@@ -109,12 +109,13 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
     LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
     layoutManager.setOrientation(LinearLayoutManager.VERTICAL); // TODO: Still more fiddling..
     TIContactsRecycler.setLayoutManager(layoutManager);
-    TIContactsRecycler.setItemAnimator(new DefaultItemAnimator() {
+    /*TIContactsRecycler.setItemAnimator(new DefaultItemAnimator() {
       @Override
       public boolean canReuseUpdatedViewHolder(@NonNull RecyclerView.ViewHolder viewHolder) {
         return true;
       }
-    });
+    });*/
+    TIContactsRecycler.setItemAnimator(null);
 
     contactChipViewModel = new ViewModelProvider(this).get(ContactChipViewModel.class);
     contactChipAdapter   = new MappingAdapter();
