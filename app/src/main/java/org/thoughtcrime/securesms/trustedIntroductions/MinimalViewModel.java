@@ -20,10 +20,12 @@ import java.util.Objects;
 public class MinimalViewModel {
   private final MinimalManager                      manager;
   private final MutableLiveData<HashSet<String>> selectedContacts;
+  private final MutableLiveData<List<String>>  introducableContacts;
   private final      MutableLiveData<String> filter;
 
   MinimalViewModel(MinimalManager manager) {
     this.manager = manager;
+    introducableContacts = new MutableLiveData<>();
     selectedContacts = new MutableLiveData<>(new HashSet<>());
     filter = new MutableLiveData<>("");
   }
@@ -72,6 +74,14 @@ public class MinimalViewModel {
 
   LiveData<String> getFilter(){
     return this.filter;
+  }
+
+  private void loadValidContacts() {
+    manager.getValidContacts(introducableContacts::postValue);
+  }
+
+  public LiveData<List<String>> getContacts(){
+    return introducableContacts;
   }
 
   // Leaving the dialogue out for now
