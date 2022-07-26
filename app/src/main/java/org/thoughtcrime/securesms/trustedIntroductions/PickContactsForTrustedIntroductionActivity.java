@@ -43,7 +43,8 @@ public final class PickContactsForTrustedIntroductionActivity extends Passphrase
 
   // when done picking contacts (button)
   private View done;
-  private TrustedIntroductionContactsViewModel viewModel;
+  //private TrustedIntroductionContactsViewModel viewModel;
+  private MinimalViewModel viewModel;
   // Alternative text when no contacts are verified
   private TextView                                  no_valid_contacts;
   private ContactFilterView                         contactFilterView;
@@ -76,8 +77,11 @@ public final class PickContactsForTrustedIntroductionActivity extends Passphrase
     initializeToolbar();
     initializeContactFilterView();
 
-    TrustedIntroductionContactsViewModel.Factory factory = new TrustedIntroductionContactsViewModel.Factory(recipientId);
-    viewModel = new ViewModelProvider(this, factory).get(TrustedIntroductionContactsViewModel.class);
+    //TrustedIntroductionContactsViewModel.Factory factory = new TrustedIntroductionContactsViewModel.Factory(recipientId);
+    //viewModel = new ViewModelProvider(this, factory).get(TrustedIntroductionContactsViewModel.class);
+
+    MinimalViewModel.Factory factory = new MinimalViewModel.Factory(recipientId);
+    viewModel = new ViewModelProvider(this, factory).get(MinimalViewModel.class);
 
     // # of valid contacts
     viewModel.getContacts().observe(this, contacts -> {
@@ -97,9 +101,10 @@ public final class PickContactsForTrustedIntroductionActivity extends Passphrase
       }
     });
 
+    /**
     done.setOnClickListener(v ->
                                 viewModel.getDialogStateForSelectedContacts(this::displayAlertMessage)
-    );
+    ); TODO **/
 
     ti_contacts.setViewModel(viewModel);
     contactFilterView.setOnFilterChangedListener(ti_contacts);
@@ -202,6 +207,7 @@ public final class PickContactsForTrustedIntroductionActivity extends Passphrase
 
   private void onFinishedSelection(@NonNull TrustedIntroductionContactsViewModel.IntroduceDialogMessageState state) {
     // TODO: finish this
+    /**
     Intent                resultIntent     = getIntent();
     List<SelectedContact> selectedContacts = Objects.requireNonNull(viewModel.getSelectedContacts().getValue()).getContacts();
     List<RecipientId>     recipients       = Stream.of(selectedContacts).map(sc -> sc.getOrCreateRecipientId(this)).toList();
@@ -210,6 +216,7 @@ public final class PickContactsForTrustedIntroductionActivity extends Passphrase
 
     setResult(RESULT_OK, resultIntent);
     finish();
+     **/
   }
 
   @Override public void onPointerCaptureChanged(boolean hasCapture) {
