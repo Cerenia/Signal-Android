@@ -69,7 +69,7 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
   private   ProgressWheel showContactsProgress;
   private ConstraintLayout constraintLayout;
   private TrustedIntroductionContactsViewModel viewModel;
-  private IntroducableContactsAdapter                            TIRecyclerViewAdapter;
+  private MinimalAdapter                            TIRecyclerViewAdapter;
   private ContactSelectionListFragment.OnContactSelectedListener onContactSelectedListener;
   private RecyclerView                                           TIContactsRecycler;
   private RecyclerView                                           chipRecycler;
@@ -149,8 +149,13 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
     initializeAdapter();
     // Observe both mutable data sources
     this.viewModel.getContacts().observe(getViewLifecycleOwner(), users -> {
-      List<Recipient> filtered = getFiltered(users, null);
-      TIRecyclerViewAdapter.submitList(new ArrayList<>(filtered));
+      //List<Recipient> filtered = getFiltered(users, null);
+      //TIRecyclerViewAdapter.submitList(new ArrayList<>(filtered));
+      ArrayList<String> list = new ArrayList<String>();
+      for(int i = 1; i < 11; i++){
+        list.add("Recipient: " + i);
+      }
+      TIRecyclerViewAdapter.submitList(list);
     });
   }
 
@@ -161,9 +166,10 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
   private void initializeAdapter() {
     glideRequests = GlideApp.with(this);
     // Not directly passing a cursor, instead submitting a list to ContactsAdapter
-    TIRecyclerViewAdapter = new IntroducableContactsAdapter(requireContext(),
+    /*TIRecyclerViewAdapter = new IntroducableContactsAdapter(requireContext(),
                                                             glideRequests,
-                                                            new ListClickListener());
+                                                            new ListClickListener());*/
+    TIRecyclerViewAdapter = new MinimalAdapter(requireContext(), glideRequests, new ListClickListener());
 
     TIContactsRecycler.setAdapter(TIRecyclerViewAdapter);
     // TODO: Trying to get this stupid list to update.. (requestLayout() was breaking in function triggerUpdateProcessor() of RecyclerView) => Still doesn't work.
@@ -211,7 +217,7 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
 
   @Override public void onFilterChanged(String filter) {
     viewModel.setQueryFilter(filter);
-    TIRecyclerViewAdapter.submitList(getFiltered(viewModel.getContacts().getValue(), filter));
+    //TIRecyclerViewAdapter.submitList(getFiltered(viewModel.getContacts().getValue(), filter)); // TODO
   }
 
   /**
