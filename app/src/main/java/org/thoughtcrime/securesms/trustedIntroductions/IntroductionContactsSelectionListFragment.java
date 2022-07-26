@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 
 import androidx.annotation.CallSuper;
 import androidx.annotation.MainThread;
@@ -15,7 +16,6 @@ import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.transition.AutoTransition;
@@ -66,8 +66,8 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
   public static final String DISPLAY_CHIPS     = "display_chips";
 
   // TODO: have a progress wheel for more substantial data? (cosmetic, not super important)
-  private   ProgressWheel showContactsProgress;
-  private ConstraintLayout constraintLayout;
+  private ProgressWheel                        showContactsProgress;
+  private LinearLayout                         linearLayout;
   private TrustedIntroductionContactsViewModel viewModel;
   private MinimalAdapter                            TIRecyclerViewAdapter;
   private ContactSelectionListFragment.OnContactSelectedListener onContactSelectedListener;
@@ -97,13 +97,11 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
   public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
     // Reusing this layout, many components in it are never referenced for TI purposes.
     Log.e(TAG, "BlubBlub");
-    View view = inflater.inflate(R.layout.contact_selection_list_fragment, container, false);
+    View view = inflater.inflate(R.layout.ti_contact_selection_fragment, container, false);
 
     TIContactsRecycler   = view.findViewById(R.id.recycler_view);
-    showContactsProgress = view.findViewById(R.id.progress);
-    chipRecycler                = view.findViewById(R.id.chipRecycler);
-    constraintLayout         = view.findViewById(R.id.container);
     chipRecycler = view.findViewById(R.id.chipRecycler);
+    linearLayout = view.findViewById(R.id.container);
 
 
     LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
@@ -282,12 +280,14 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
       return;
     }
 
-    TransitionManager.beginDelayedTransition(constraintLayout, new AutoTransition().setDuration(CHIP_GROUP_REVEAL_DURATION_MS));
+    TransitionManager.beginDelayedTransition(linearLayout, new AutoTransition().setDuration(CHIP_GROUP_REVEAL_DURATION_MS));
 
+    /*
     ConstraintSet constraintSet = new ConstraintSet();
-    constraintSet.clone(constraintLayout);
+    constraintSet.clone(linearLayout);
     constraintSet.setVisibility(R.id.chipRecycler, visibility);
-    constraintSet.applyTo(constraintLayout);
+    constraintSet.applyTo(linearLayout);*/
+    chipRecycler.setVisibility(visibility); // TODO
   }
 
   private void smoothScrollChipsToEnd() {
