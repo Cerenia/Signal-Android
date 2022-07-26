@@ -6,7 +6,6 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/chipRecycler"
         android:layout_width="match_parent"
@@ -20,9 +19,7 @@
         android:scrollbars="none"
         android:visibility="gone"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:listitem="@layout/contact_selection_list_chip"
-        tools:visibility="visible" />
+        tools:listitem="@layout/contact_selection_list_chip" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view"
@@ -33,13 +30,6 @@
         android:scrollbars="vertical"
         android:visibility="visible"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        tools:listitem="@layout/contact_selection_list_item_simple"
-        tools:visibility="visible"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="blah"
-        />
+        tools:listitem="@layout/contact_selection_list_item_simple" />
 
 </LinearLayout>
