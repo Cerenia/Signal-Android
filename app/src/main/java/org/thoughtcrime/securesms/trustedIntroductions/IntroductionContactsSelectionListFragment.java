@@ -11,15 +11,11 @@ import androidx.annotation.CallSuper;
 import androidx.annotation.MainThread;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.transition.AutoTransition;
-import androidx.transition.TransitionManager;
 
 import com.pnikosis.materialishprogress.ProgressWheel;
 
@@ -27,17 +23,14 @@ import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.ContactSelectionListFragment;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.components.ContactFilterView;
-import org.thoughtcrime.securesms.contacts.ContactChipViewModel;
 import org.thoughtcrime.securesms.contacts.ContactSelectionListAdapter;
 import org.thoughtcrime.securesms.contacts.ContactSelectionListItem;
-import org.thoughtcrime.securesms.contacts.SelectedContact;
 import org.thoughtcrime.securesms.contacts.SelectedContacts;
 import org.thoughtcrime.securesms.mms.GlideApp;
 import org.thoughtcrime.securesms.mms.GlideRequests;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.util.ViewUtil;
-import org.signal.core.util.concurrent.SimpleTask;
 import org.thoughtcrime.securesms.util.adapter.mapping.MappingAdapter;
 import org.thoughtcrime.securesms.util.adapter.mapping.MappingModelList;
 
@@ -47,7 +40,6 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 
-import io.reactivex.rxjava3.disposables.Disposable;
 import kotlin.Unit;
 
 /**
@@ -76,7 +68,7 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
   private RecyclerView                                           chipRecycler;
   private MappingAdapter contactChipAdapter;
   //private ContactChipViewModel contactChipViewModel;
-  private MinimalChipViewModel contactChipViewModel;
+  private MinimalChipViewModel           contactChipViewModel;
 
 
   private GlideRequests    glideRequests;
