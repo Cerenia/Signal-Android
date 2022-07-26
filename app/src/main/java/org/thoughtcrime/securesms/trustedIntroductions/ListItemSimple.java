@@ -46,7 +46,7 @@ public class ListItemSimple extends LinearLayout {
     this.name.setText(n);
   }
 
-  protected String get(String n){
+  protected String get(){
     return this.name.getText().toString();
   }
 
