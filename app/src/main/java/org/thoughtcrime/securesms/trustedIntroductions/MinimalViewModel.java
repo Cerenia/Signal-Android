@@ -28,6 +28,7 @@ public class MinimalViewModel extends ViewModel {
     introducableContacts = new MutableLiveData<>();
     selectedContacts = new MutableLiveData<>(new HashSet<>());
     filter = new MutableLiveData<>("");
+    loadValidContacts();
   }
 
   boolean addSelectedContact(@NonNull String contact){
