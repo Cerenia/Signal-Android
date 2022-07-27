@@ -64,13 +64,9 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
   //private TrustedIntroductionContactsViewModel viewModel;
   private MinimalViewModel viewModel;
   private MinimalAdapter                            TIRecyclerViewAdapter;
-  private ContactSelectionListFragment.OnContactSelectedListener onContactSelectedListener;
   private RecyclerView                                           TIContactsRecycler;
   private RecyclerView                                           chipRecycler;
   private MappingAdapter contactChipAdapter;
-  //private ContactChipViewModel contactChipViewModel;
-  private MinimalChipViewModel           contactChipViewModel;
-
 
   private GlideRequests    glideRequests;
 
@@ -240,11 +236,6 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
     void onContactSelected(Optional<RecipientId> recipientId, @Nullable String number);
   }
 
-
-  private int getChipCount() {
-    return 1;
-  }
-
   /**
   private void addChipForSelectedContact(@NonNull SelectedContact selectedContact) {
     // TODO: This change made the chips appear correctly when restoring state from the ViewModel. Was this a bug in the first place?
@@ -276,14 +267,12 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
    **/
 
   private void addChipForSelectedContact(@NonNull String selectedContact) {
-    contactChipViewModel.add(selectedContact);
+
+    setChipGroupVisibility(View.VISIBLE);
   }
 
   private Unit onChipCloseIconClicked(SelectedStrings.Model m) {
     markContactUnselected(m.getSelectedString().getName());
-    if (onContactSelectedListener != null) {
-      //onContactSelectedListener.onContactDeselected(contact); TODO
-    }
     return null;
   }
 
@@ -318,6 +307,9 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
       contactChipViewModel.remove(selectedContact);
       viewModel.removeFromSelectedContacts(selectedContact);
       TIRecyclerViewAdapter.notifyItemRangeChanged(0, TIRecyclerViewAdapter.getItemCount(), ContactSelectionListAdapter.PAYLOAD_SELECTION_CHANGE);
+      if (contactChipViewModel.numberOfChips() == 0){
+        chipRecycler.setVisibility(View.GONE);
+      }
     }
   }
 
