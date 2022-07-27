@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.contacts.ContactSelectionListAdapter;
@@ -53,21 +54,37 @@ public class MinimalAdapter extends ListAdapter<String, MinimalAdapter.ContactVi
   @Override public void onBindViewHolder(@NonNull MinimalAdapter.ContactViewHolder holder, int position) {
     String current = getItem(position);
     holder.unbind(glideRequests);
-    holder.bind(glideRequests, null, 0, current, null, null, null, false);
+    holder.bind(glideRequests, null,  current);
   }
 
-  static class ContactViewHolder extends ContactSelectionListAdapter.ViewHolder {
+  static class ContactViewHolder extends RecyclerView.ViewHolder {
 
     ContactViewHolder(@NonNull final View itemView,
-                      @Nullable final ContactSelectionListAdapter.ItemClickListener clickListener)
+                      @Nullable final MinimalAdapter.ItemClickListener clickListener)
     {
       super(itemView);
+      itemView.setOnClickListener(v -> {
+        if (clickListener != null) clickListener.onItemClick(getView());
+      });
     }
 
     ListItemSimple getView() {
       return (ListItemSimple) itemView;
     }
 
+    public void bind(@NonNull GlideRequests glideRequests, @Nullable RecipientId recipientId, String name){
+      getView().set(glideRequests, name);
+    }
+
+    public void unbind(@NonNull GlideRequests glideRequests){
+      getView().unbind();
+    }
+
+    public void setEnabled(boolean enabled){
+      getView().setEnabled(enabled);
+    }
+
+    /**
     @Override
     public void bind(@NonNull GlideRequests glideRequests, @Nullable RecipientId recipientId, int type, String name, String number, String label, String about, boolean checkBoxVisible) {
       getView().set(name);
@@ -92,6 +109,7 @@ public class MinimalAdapter extends ListAdapter<String, MinimalAdapter.ContactVi
     public void setEnabled(boolean enabled) {
       getView().setEnabled(enabled);
     }
+    **/
   }
 
   private static final class RecipientDiffCallback extends DiffUtil.ItemCallback<Recipient> {
@@ -106,7 +124,7 @@ public class MinimalAdapter extends ListAdapter<String, MinimalAdapter.ContactVi
       return oldItem.equals(newItem);
     }
   }
-  public interface ItemClickListener extends ContactSelectionListAdapter.ItemClickListener{
+  public interface ItemClickListener {
     void onItemClick(ListItemSimple item);
   }
 }

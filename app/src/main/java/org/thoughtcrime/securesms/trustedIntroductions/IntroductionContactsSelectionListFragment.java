@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 import kotlin.Unit;
 
@@ -72,20 +73,6 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
 
 
   private GlideRequests    glideRequests;
-
-  @Override
-  public void onAttach(@NonNull Context context) {
-    super.onAttach(context);
-
-    if (getParentFragment() instanceof ContactSelectionListFragment.OnContactSelectedListener) {
-      onContactSelectedListener = (ContactSelectionListFragment.OnContactSelectedListener) getParentFragment();
-    }
-
-    if (context instanceof ContactSelectionListFragment.OnContactSelectedListener) {
-      onContactSelectedListener = (ContactSelectionListFragment.OnContactSelectedListener) context;
-    }
-
-  }
 
   @Override
   public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -215,6 +202,7 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
     //TIRecyclerViewAdapter.submitList(getFiltered(viewModel.getContacts().getValue(), filter)); // TODO
   }
 
+
   private class StringListClickListener implements MinimalAdapter.ItemClickListener {
 
     @Override public void onItemClick(ListItemSimple item) {
@@ -225,9 +213,6 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
       }
     }
 
-    @Override public void onItemClick(ContactSelectionListItem item) {
-      // do nothing.
-    }
   }
 
   /**
@@ -248,22 +233,6 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
   }
 **/
 
-  private class ListClickListener implements MinimalAdapter.ItemClickListener{
-
-    @Override public void onItemClick(ListItemSimple item) {
-      String contact = item.get();
-      if(viewModel.isSelectedContact(contact)){
-        markContactUnselected(contact);
-      } else {
-        markContactSelected(contact);
-      }
-    }
-
-    @Override public void onItemClick(ContactSelectionListItem item) {
-      // do nothing
-    }
-  }
-
   /**
    * Taken and adapted from ContactSelectionListFragment.java
    */
@@ -271,12 +240,6 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
     void onContactSelected(Optional<RecipientId> recipientId, @Nullable String number);
   }
 
-  /**
-  private int getChipCount() {
-    int count = contactChipViewModel.getCount() - CHIP_GROUP_EMPTY_CHILD_COUNT;
-    if (count < 0) throw new AssertionError();
-    return count;
-  } **/
 
   private int getChipCount() {
     return 1;
@@ -352,8 +315,9 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
       Log.w(TAG, String.format(Locale.US,"%s could not be removed from selection!", selectedContact.toString()));
     } else {
       Log.i(TAG, String.format(Locale.US,"%d contact(s) were removed from selection.", removed));
+      contactChipViewModel.remove(selectedContact);
+      viewModel.removeFromSelectedContacts(selectedContact);
       TIRecyclerViewAdapter.notifyItemRangeChanged(0, TIRecyclerViewAdapter.getItemCount(), ContactSelectionListAdapter.PAYLOAD_SELECTION_CHANGE);
-      //contactChipViewModel.remove(selectedContact);
     }
   }
 
@@ -363,6 +327,8 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
       Log.i(TAG, String.format("Contact %s was already part of the selection.", selectedContact.toString()));
     } else {
       addChipForSelectedContact(selectedContact);
+      viewModel.addSelectedContact(selectedContact);
+      TIRecyclerViewAdapter.notifyItemRangeChanged(0, TIRecyclerViewAdapter.getItemCount(), ContactSelectionListAdapter.PAYLOAD_SELECTION_CHANGE);
     }
   }
 

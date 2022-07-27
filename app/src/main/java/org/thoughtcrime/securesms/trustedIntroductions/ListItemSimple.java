@@ -9,11 +9,13 @@ import android.widget.TextView;
 
 
 import org.thoughtcrime.securesms.R;
+import org.thoughtcrime.securesms.mms.GlideRequests;
 import org.thoughtcrime.securesms.util.ViewUtil;
 
 
 public class ListItemSimple extends LinearLayout {
-  private TextView        name;
+  private   TextView      name;
+  private GlideRequests glideRequests;
 
 
   public ListItemSimple(Context context) {
@@ -42,7 +44,8 @@ public class ListItemSimple extends LinearLayout {
     super.onDetachedFromWindow();
   }
 
-  protected void set(String n){
+  protected void set(GlideRequests glideRequests, String n){
+    this.glideRequests = glideRequests;
     this.name.setText(n);
   }
 
