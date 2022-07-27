@@ -14,4 +14,8 @@ class MinimalChipViewModel : ViewModel() {
   fun remove(selectedString: String){
     selected = selected.filterNot { str -> str.equals(selectedString) } as ArrayList<String>
   }
+
+  fun numberOfChips(): Int{
+    return selected.size
+  }
 }
