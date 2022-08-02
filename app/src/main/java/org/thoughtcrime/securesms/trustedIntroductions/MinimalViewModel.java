@@ -6,6 +6,8 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
+import org.thoughtcrime.securesms.database.IdentityDatabase;
+import org.thoughtcrime.securesms.database.RecipientDatabase;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 
@@ -28,18 +30,18 @@ public class MinimalViewModel extends ViewModel {
   }
 
   boolean addSelectedContact(@NonNull Recipient contact){
-    boolean                          added    = selectedContacts.add(new SelectedTIContacts.Model(new MinimalContactSelectionListItem(contact), contact.getId()));
+    boolean                          added    = selectedContacts.add(new SelectedTIContacts.Model(contact, contact.getId()));
     return added;
   }
 
   int removeSelectedContact(@NonNull Recipient contact){
-    SelectedTIContacts.Model c       = new SelectedTIContacts.Model(new MinimalContactSelectionListItem(contact), contact.getId());
+    SelectedTIContacts.Model c       = new SelectedTIContacts.Model(contact, contact.getId());
     boolean                  removed = selectedContacts.remove(c);
     return removed ? 1:0;
   }
 
   boolean isSelectedContact(@NonNull Recipient contact){
-    SelectedTIContacts.Model c = new SelectedTIContacts.Model(new MinimalContactSelectionListItem(contact), contact.getId());
+    SelectedTIContacts.Model c = new SelectedTIContacts.Model(contact, contact.getId());
     return Objects.requireNonNull(selectedContacts).contains(c);
   }
 
@@ -74,8 +76,8 @@ public class MinimalViewModel extends ViewModel {
 
     private final MinimalManager manager;
 
-    Factory(RecipientId id) {
-      this.manager = new MinimalManager(id);
+    Factory(RecipientId id, IdentityDatabase idb, RecipientDatabase rdb) {
+      this.manager = new MinimalManager(id, idb, rdb);
     }
 
     @Override
