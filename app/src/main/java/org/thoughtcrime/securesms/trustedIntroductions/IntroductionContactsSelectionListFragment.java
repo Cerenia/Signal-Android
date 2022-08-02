@@ -20,7 +20,7 @@ import com.pnikosis.materialishprogress.ProgressWheel;
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.components.ContactFilterView;
-import org.thoughtcrime.securesms.contacts.ContactSelectionListAdapter;
+import org.thoughtcrime.securesms.contacts.SelectedContacts;
 import org.thoughtcrime.securesms.mms.GlideApp;
 import org.thoughtcrime.securesms.mms.GlideRequests;
 import org.thoughtcrime.securesms.recipients.Recipient;
@@ -87,7 +87,8 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
     TIContactsRecycler.setItemAnimator(null);
 
     contactChipAdapter = new MappingAdapter();
-    SelectedStrings.register(contactChipAdapter, this::onChipCloseIconClicked);
+    // TODO, can I just use their selected contacts class? if this breaks, build your own
+    SelectedContacts.register(contactChipAdapter, this::onChipCloseIconClicked);
     chipRecycler.setAdapter(contactChipAdapter);
 
     // TODO
@@ -189,7 +190,7 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
 
   private class StringListClickListener implements MinimalAdapter.ItemClickListener {
 
-    @Override public void onItemClick(ListItemSimple item) {
+    @Override public void onItemClick(TIContactSelectionListItem item) {
       if (viewModel.isSelectedContact(item.get())) {
         markContactUnselected(item.get());
       } else {
@@ -215,7 +216,7 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
     }
   }
 
-  private Unit onChipCloseIconClicked(SelectedStrings.Model m) {
+  private Unit onChipCloseIconClicked(SelectedContacts.Model m) {
     String fullName = m.getSelectedString().getFullName();
     markContactUnselected(fullName);
     return null;

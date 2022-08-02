@@ -8,7 +8,7 @@ import org.thoughtcrime.securesms.util.adapter.mapping.MappingAdapter
 import org.thoughtcrime.securesms.util.adapter.mapping.MappingModel
 import org.thoughtcrime.securesms.util.adapter.mapping.MappingViewHolder
 
-object SelectedStrings {
+object SelectedTIContacts {
 
   @JvmStatic
   fun register(adapter: MappingAdapter, onCloseIconClicked: (Model) -> Unit) {

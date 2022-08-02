@@ -15,19 +15,17 @@ import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.signal.core.util.concurrent.SimpleTask;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-final class TrustedIntroductionContactsViewModel extends ViewModel{
+final class Old_TrustedIntroductionContactsViewModel extends ViewModel{
 
-  private final TrustedIntroductionContactManager manager;
-  private final MutableLiveData<List<Recipient>>  introducableContacts;
+  private final Old_TrustedIntroductionContactManager manager;
+  private final MutableLiveData<List<Recipient>>      introducableContacts;
   private final      MutableLiveData<String> filter;
   private final MutableLiveData<SelectedContactSet>      selectedContacts;
 
-  @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-  TrustedIntroductionContactsViewModel(TrustedIntroductionContactManager manager) {
+  @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE) Old_TrustedIntroductionContactsViewModel(Old_TrustedIntroductionContactManager manager) {
     this.manager = manager;
     introducableContacts = new MutableLiveData<>();
     filter = new MutableLiveData<>("");
@@ -90,11 +88,11 @@ final class TrustedIntroductionContactsViewModel extends ViewModel{
     manager.getValidContacts(introducableContacts::postValue);
   }
 
-  void getDialogStateForSelectedContacts(@NonNull Consumer<TrustedIntroductionContactsViewModel.IntroduceDialogMessageState> callback){
+  void getDialogStateForSelectedContacts(@NonNull Consumer<Old_TrustedIntroductionContactsViewModel.IntroduceDialogMessageState> callback){
     SimpleTask.run(
         () -> {
           List<SelectedContact> selection = Objects.requireNonNull(selectedContacts.getValue()).getContacts();
-          return new TrustedIntroductionContactsViewModel.IntroduceDialogMessageState(Recipient.resolved(manager.getRecipientId()), selection);
+          return new Old_TrustedIntroductionContactsViewModel.IntroduceDialogMessageState(Recipient.resolved(manager.getRecipientId()), selection);
         },
         callback::accept
     );
@@ -121,16 +119,16 @@ final class TrustedIntroductionContactsViewModel extends ViewModel{
 
   static class Factory implements ViewModelProvider.Factory {
 
-    private final TrustedIntroductionContactManager manager;
+    private final Old_TrustedIntroductionContactManager manager;
 
     // Passing databases explicitly for testibility
     Factory(RecipientId id) {
-      this.manager = new TrustedIntroductionContactManager(id, SignalDatabase.identities(), SignalDatabase.recipients());
+      this.manager = new Old_TrustedIntroductionContactManager(id, SignalDatabase.identities(), SignalDatabase.recipients());
     }
 
     @Override
     public @NonNull <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
-      return Objects.requireNonNull(modelClass.cast(new TrustedIntroductionContactsViewModel(manager)));
+      return Objects.requireNonNull(modelClass.cast(new Old_TrustedIntroductionContactsViewModel(manager)));
     }
   }
 }
