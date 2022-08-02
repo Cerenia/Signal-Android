@@ -143,8 +143,6 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
     TIRecyclerViewAdapter = new MinimalAdapter(requireContext(), glideRequests, new StringListClickListener());
 
     TIContactsRecycler.setAdapter(TIRecyclerViewAdapter);
-    // TODO: Trying to get this stupid list to update.. (requestLayout() was breaking in function triggerUpdateProcessor() of RecyclerView) => Still doesn't work.
-    //recyclerView.setHasFixedSize(true);
     TIContactsRecycler.addOnScrollListener(new RecyclerView.OnScrollListener() {
       @Override
       public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
@@ -164,7 +162,7 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
    */
   private void loadSelection(){
     if(this.viewModel != null){
-      // TODO
+      updateChips();
     } // should never happen, but if ViewModel does not exist, don't load anything.
   }
 
