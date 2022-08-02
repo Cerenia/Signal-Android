@@ -111,6 +111,6 @@ public class MinimalAdapter extends ListAdapter<Recipient, MinimalAdapter.TICont
   }
 
   public interface ItemClickListener {
-    void onItemClick(TIContactSelectionListItem item);
+    void onItemClick(MinimalContactSelectionListItem item);
   }
 }

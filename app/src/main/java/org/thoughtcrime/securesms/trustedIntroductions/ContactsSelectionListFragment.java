@@ -182,11 +182,11 @@ public class ContactsSelectionListFragment extends Fragment implements ContactFi
 
   private class StringListClickListener implements MinimalAdapter.ItemClickListener {
 
-    @Override public void onItemClick(TIContactSelectionListItem item) {
-      if (viewModel.isSelectedContact(item.get())) {
-        markContactUnselected(item.get());
+    @Override public void onItemClick(MinimalContactSelectionListItem item) {
+      if (viewModel.isSelectedContact(item.getRecipient())) {
+        markContactUnselected(item.getRecipient());
       } else {
-        markContactSelected(item.get());
+        markContactSelected(item.getRecipient());
       }
     }
   }
@@ -209,8 +209,7 @@ public class ContactsSelectionListFragment extends Fragment implements ContactFi
   }
 
   private Unit onChipCloseIconClicked(SelectedContacts.Model m) {
-    String fullName = m.getSelectedString().getFullName();
-    markContactUnselected(fullName);
+    markContactUnselected(m.getRecipient());
     return null;
   }
 
@@ -223,7 +222,7 @@ public class ContactsSelectionListFragment extends Fragment implements ContactFi
     chipRecycler.smoothScrollBy(x, 0);
   }
 
-  private void markContactUnselected(@NonNull String selectedContact) {
+  private void markContactUnselected(@NonNull Recipient selectedContact) {
     int removed = viewModel.removeSelectedContact(selectedContact);
     if(removed < 0){
       Log.w(TAG, String.format(Locale.US,"%s could not be removed from selection!", selectedContact));
@@ -234,7 +233,7 @@ public class ContactsSelectionListFragment extends Fragment implements ContactFi
     }
   }
 
-  private void markContactSelected(@NonNull String selectedContact) {
+  private void markContactSelected(@NonNull Recipient selectedContact) {
     boolean added = viewModel.addSelectedContact(selectedContact);
     if(!added){
       Log.i(TAG, String.format("Contact %s was already part of the selection.", selectedContact));
