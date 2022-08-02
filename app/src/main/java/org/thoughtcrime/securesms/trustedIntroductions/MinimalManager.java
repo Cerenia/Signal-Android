@@ -1,29 +1,56 @@
 package org.thoughtcrime.securesms.trustedIntroductions;
 
-import androidx.annotation.NonNull;
+import androidx.core.util.Consumer;
 
 import org.signal.core.util.concurrent.SignalExecutors;
+import org.thoughtcrime.securesms.database.IdentityDatabase;
+import org.thoughtcrime.securesms.database.RecipientDatabase;
+import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
-import java.util.function.Consumer;
+
+import io.reactivex.rxjava3.annotations.NonNull;
 
 public class MinimalManager {
 
+  // This is the person which will receive the security numbers of the selected contacts through
+  //  a secure introduction.
   private final RecipientId recipientId;
 
-  MinimalManager(RecipientId recipientId){
+  // Dependency injection makes the class testable
+  private final IdentityDatabase  idb;
+  private final RecipientDatabase rdb;
+
+  MinimalManager(RecipientId recipientId, IdentityDatabase idb, RecipientDatabase rdb){
     this.recipientId = recipientId;
+    this.idb = idb;
+    this.rdb = rdb;
   }
 
-  void getValidContacts(@NonNull Consumer<List<String>> introducableContacts){
+  void getValidContacts(@NonNull Consumer<List<Recipient>> introducableContacts){
     SignalExecutors.BOUNDED.execute(() -> {
-      ArrayList<String> list = new ArrayList<>();
-      for(int i = 1; i < 11; i++){
-        list.add("Recipient: " + i);
+      try(RecipientDatabase.RecipientReader reader = rdb.getReaderForTI(idb.getTIUnlocked())){
+        int count = reader.getCount();
+        if (count == 0){
+          introducableContacts.accept(Collections.emptyList());
+        } else {
+          List<Recipient> contacts = new ArrayList<>();
+          while(reader.getNext() != null){
+            Recipient current = reader.getCurrent();
+            RecipientId id = current.getId();
+            if(!current.isSelf() && id.compareTo(recipientId)!=0){
+              contacts.add(current);
+            }
+          }
+          // sort ascending
+          Collections.sort(contacts, Comparator.comparing((Recipient recipient) -> recipient.getProfileName().toString()));
+          introducableContacts.accept(contacts);
+        }
       }
-      introducableContacts.accept(list);
     });
   }
 

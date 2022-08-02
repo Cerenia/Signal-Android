@@ -28,18 +28,18 @@ public class MinimalViewModel extends ViewModel {
   }
 
   boolean addSelectedContact(@NonNull Recipient contact){
-    boolean                          added    = selectedContacts.add(new SelectedTIContacts.Model(new MinimalContactSelectionListItem(contact), contact));
+    boolean                          added    = selectedContacts.add(new SelectedTIContacts.Model(new MinimalContactSelectionListItem(contact), contact.getId()));
     return added;
   }
 
-  int removeSelectedContact(@NonNull String contact){
-    SelectedTIContacts.Model c       = new SelectedTIContacts.Model(new MinimalContactSelectionListItem(contact), contact);
+  int removeSelectedContact(@NonNull Recipient contact){
+    SelectedTIContacts.Model c       = new SelectedTIContacts.Model(new MinimalContactSelectionListItem(contact), contact.getId());
     boolean                  removed = selectedContacts.remove(c);
     return removed ? 1:0;
   }
 
-  boolean isSelectedContact(@NonNull String contact){
-    SelectedTIContacts.Model c = new SelectedTIContacts.Model(new MinimalContactSelectionListItem(contact), contact);
+  boolean isSelectedContact(@NonNull Recipient contact){
+    SelectedTIContacts.Model c = new SelectedTIContacts.Model(new MinimalContactSelectionListItem(contact), contact.getId());
     return Objects.requireNonNull(selectedContacts).contains(c);
   }
 
@@ -64,7 +64,7 @@ public class MinimalViewModel extends ViewModel {
     manager.getValidContacts(introducableContacts::postValue);
   }
 
-  public LiveData<List<String>> getContacts(){
+  public LiveData<List<Recipient>> getContacts(){
     return introducableContacts;
   }
 

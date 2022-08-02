@@ -14,8 +14,6 @@ import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.util.ViewUtil;
 
-import android.content.Context;
-
 public class MinimalContactSelectionListItem extends ConstraintLayout {
 
   private     AvatarImageView contactPhotoImage;
@@ -24,8 +22,8 @@ public class MinimalContactSelectionListItem extends ConstraintLayout {
   private Recipient recipient;
 
 
-  MinimalContactSelectionListItem(Context context){
-    super(context);
+  MinimalContactSelectionListItem(Recipient recipient){
+    this.recipient = recipient;
   }
 
   @Override

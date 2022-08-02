@@ -3,6 +3,7 @@ package org.thoughtcrime.securesms.trustedIntroductions
 import android.view.View
 import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.contacts.ContactChip
+import org.thoughtcrime.securesms.recipients.RecipientId
 import org.thoughtcrime.securesms.util.adapter.mapping.LayoutFactory
 import org.thoughtcrime.securesms.util.adapter.mapping.MappingAdapter
 import org.thoughtcrime.securesms.util.adapter.mapping.MappingModel
@@ -15,7 +16,7 @@ object SelectedTIContacts {
     adapter.registerFactory(Model::class.java, LayoutFactory({ ViewHolder(it, onCloseIconClicked) }, R.layout.contact_selection_list_chip))
   }
 
-  class Model(val selectedContact: MinimalContactSelectionListItem, val str: String): MappingModel<Model> {
+  class Model(val selectedContact: MinimalContactSelectionListItem, val recipientId: RecipientId): MappingModel<Model> {
 
     override fun equals(other: Any?): Boolean {
       if (other is Model){
@@ -29,7 +30,7 @@ object SelectedTIContacts {
     }
 
     override fun areItemsTheSame(newItem: Model): Boolean {
-      return newItem.selectedContact.getFullName().equals(str);
+      return newItem.selectedContact.getFullName().equals(recipientId);
     }
   }
 
