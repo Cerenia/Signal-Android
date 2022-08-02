@@ -74,7 +74,6 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
     chipRecycler = view.findViewById(R.id.chipRecycler);
     linearLayout = view.findViewById(R.id.container);
 
-
     LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
     layoutManager.setOrientation(LinearLayoutManager.VERTICAL); // TODO: Still more fiddling..
     TIContactsRecycler.setLayoutManager(layoutManager);
@@ -219,7 +218,8 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
   }
 
   private Unit onChipCloseIconClicked(SelectedStrings.Model m) {
-    markContactUnselected(m.getSelectedString().getFullName());
+    String fullName = m.getSelectedString().getFullName();
+    markContactUnselected(fullName);
     return null;
   }
 
@@ -234,10 +234,10 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
 
   private void markContactUnselected(@NonNull String selectedContact) {
     int removed = viewModel.removeSelectedContact(selectedContact);
-    if(removed <= 0){
+    if(removed < 0){
       Log.w(TAG, String.format(Locale.US,"%s could not be removed from selection!", selectedContact));
     } else {
-      Log.i(TAG, String.format(Locale.US,"%d was removed from selection.", selectedContact));
+      Log.i(TAG, String.format(Locale.US,"%s was removed from selection.", selectedContact));
       // TODO: I used to call TIRecycleViewAdapter.NotifyItemRanceChanged, still necessary?
       updateChips();
     }
@@ -246,7 +246,7 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
   private void markContactSelected(@NonNull String selectedContact) {
     boolean added = viewModel.addSelectedContact(selectedContact);
     if(!added){
-      Log.i(TAG, String.format("Contact %s was already part of the selection.", selectedContact.toString()));
+      Log.i(TAG, String.format("Contact %s was already part of the selection.", selectedContact));
     } else {
       updateChips();
       // TODO: I used to call TIRecycleViewAdapter.NotifyItemRanceChanged, still necessary?

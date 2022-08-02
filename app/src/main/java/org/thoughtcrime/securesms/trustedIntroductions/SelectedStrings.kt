@@ -16,6 +16,14 @@ object SelectedStrings {
   }
 
   class Model(val selectedString: MinimalStringItem, val str: String): MappingModel<Model> {
+
+    override fun equals(other: Any?): Boolean {
+      if (other is Model){
+        return this.areContentsTheSame(other)
+      }
+      return super.equals(other)
+    }
+
     override fun areContentsTheSame(newItem: Model): Boolean {
       return areItemsTheSame(newItem);
     }
