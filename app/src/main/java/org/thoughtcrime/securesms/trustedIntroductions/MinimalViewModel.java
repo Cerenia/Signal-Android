@@ -6,6 +6,7 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
+import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 
 import java.util.ArrayList;
@@ -15,30 +16,30 @@ import java.util.Objects;
 public class MinimalViewModel extends ViewModel {
   private final MinimalManager                      manager;
   private final ArrayList<SelectedTIContacts.Model> selectedContacts;
-  private final MutableLiveData<List<String>>       introducableContacts;
-  private final MutableLiveData<String> filter;
+  private final MutableLiveData<List<Recipient>>    introducableContacts;
+  private final MutableLiveData<String>             filter;
 
   MinimalViewModel(MinimalManager manager) {
     this.manager = manager;
     introducableContacts = new MutableLiveData<>();
-    selectedContacts = new ArrayList<SelectedTIContacts.Model>();
+    selectedContacts = new ArrayList<>();
     filter = new MutableLiveData<>("");
     loadValidContacts();
   }
 
-  boolean addSelectedContact(@NonNull String contact){
-    boolean                          added    = selectedContacts.add(new SelectedTIContacts.Model(new MinimalStringItem(contact), contact));
+  boolean addSelectedContact(@NonNull Recipient contact){
+    boolean                          added    = selectedContacts.add(new SelectedTIContacts.Model(new MinimalContactSelectionListItem(contact), contact));
     return added;
   }
 
   int removeSelectedContact(@NonNull String contact){
-    SelectedTIContacts.Model c       = new SelectedTIContacts.Model(new MinimalStringItem(contact), contact);
+    SelectedTIContacts.Model c       = new SelectedTIContacts.Model(new MinimalContactSelectionListItem(contact), contact);
     boolean                  removed = selectedContacts.remove(c);
     return removed ? 1:0;
   }
 
   boolean isSelectedContact(@NonNull String contact){
-    SelectedTIContacts.Model c = new SelectedTIContacts.Model(new MinimalStringItem(contact), contact);
+    SelectedTIContacts.Model c = new SelectedTIContacts.Model(new MinimalContactSelectionListItem(contact), contact);
     return Objects.requireNonNull(selectedContacts).contains(c);
   }
 

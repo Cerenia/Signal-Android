@@ -15,7 +15,7 @@ import org.thoughtcrime.securesms.mms.GlideRequests;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 
 
-public class TIContactSelectionListItem extends ContactSelectionListItem {
+public class TIContactSelectionListItem extends org.thoughtcrime.securesms.contacts.ContactSelectionListItem {
 
   public TIContactSelectionListItem(Context context) {
     super(context);

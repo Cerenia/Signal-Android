@@ -43,9 +43,9 @@ import kotlin.Unit;
  * This is an adaptation of ContactSelectionListFragment, but it's always a multiselect and the data is loaded from an external cursor
  * instead of using DisplayMode.
  */
-public class IntroductionContactsSelectionListFragment extends Fragment implements ContactFilterView.OnFilterChangedListener {
+public class ContactsSelectionListFragment extends Fragment implements ContactFilterView.OnFilterChangedListener {
 
-  private static final String TAG = Log.tag(IntroductionContactsSelectionListFragment.class);
+  private static final String TAG = Log.tag(ContactsSelectionListFragment.class);
 
   private static final int CHIP_GROUP_EMPTY_CHILD_COUNT  = 1;
   private static final int CHIP_GROUP_REVEAL_DURATION_MS = 150;
@@ -117,17 +117,9 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
   public void setViewModel(MinimalViewModel viewModel){
     this.viewModel = viewModel;
     initializeAdapter();
-    // Observe both mutable data sources
     this.viewModel.getContacts().observe(getViewLifecycleOwner(), users -> {
-      // TODO
-      //List<Recipient> filtered = getFiltered(users, null);
-      //TIRecyclerViewAdapter.submitList(new ArrayList<>(filtered));
-      //ArrayList<String> list = new ArrayList<String>();
-      //for(int i = 1; i < 11; i++){
-       // list.add("Recipient: " + i);
-      //}
-      //TIRecyclerViewAdapter.submitList(list);
-      TIRecyclerViewAdapter.submitList(users);
+      List<Recipient> filtered = getFiltered(users, null);
+      TIRecyclerViewAdapter.submitList(new ArrayList<>(filtered));
     });
   }
 
