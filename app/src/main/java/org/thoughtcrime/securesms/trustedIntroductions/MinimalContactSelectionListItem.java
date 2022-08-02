@@ -47,4 +47,8 @@ public class MinimalContactSelectionListItem extends ConstraintLayout {
     return this.recipient.getId();
   }
 
+  public Recipient getRecipient() {
+    return this.recipient;
+  }
+
 }
