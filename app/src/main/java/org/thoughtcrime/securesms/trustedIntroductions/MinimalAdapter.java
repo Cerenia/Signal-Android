@@ -46,7 +46,7 @@ public class MinimalAdapter extends ListAdapter<Recipient, MinimalAdapter.TICont
   }
 
   @NonNull public TIContactViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-    return new TIContactViewHolder(layoutInflater.inflate(R.layout.contact_selection_list_item, parent, false), clickListener);
+    return new TIContactViewHolder(layoutInflater.inflate(R.layout.ti_contact_selection_list_item, parent, false), clickListener);
   }
 
   /**

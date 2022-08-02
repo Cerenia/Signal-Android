@@ -30,6 +30,6 @@
         android:scrollbars="vertical"
         android:visibility="visible"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        tools:listitem="@layout/contact_selection_list_item_simple" />
+        tools:listitem="@layout/ti_contact_selection_list_item" />
 
 </LinearLayout>
