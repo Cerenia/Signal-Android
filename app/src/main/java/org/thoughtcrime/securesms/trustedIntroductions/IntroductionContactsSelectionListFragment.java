@@ -92,10 +92,7 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
     });*/
     TIContactsRecycler.setItemAnimator(null);
 
-    //contactChipViewModel = new ViewModelProvider(this).get(ContactChipViewModel.class);
-    contactChipViewModel = new ViewModelProvider(this).get(MinimalChipViewModel.class);
-    contactChipAdapter   = new MappingAdapter();
-
+    contactChipAdapter = new MappingAdapter();
     SelectedStrings.register(contactChipAdapter, this::onChipCloseIconClicked);
     chipRecycler.setAdapter(contactChipAdapter);
 
@@ -267,7 +264,6 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
    **/
 
   private void addChipForSelectedContact(@NonNull String selectedContact) {
-
     setChipGroupVisibility(View.VISIBLE);
   }
 
@@ -277,9 +273,7 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
   }
 
   private void setChipGroupVisibility(int visibility) {
-    if (!safeArguments().getBoolean(DISPLAY_CHIPS, requireActivity().getIntent().getBooleanExtra(DISPLAY_CHIPS, true))) {
-      return;
-    }
+    chipRecycler.setVisibility(visibility);
 
     /*
     TransitionManager.beginDelayedTransition(linearLayout, new AutoTransition().setDuration(CHIP_GROUP_REVEAL_DURATION_MS));
@@ -304,10 +298,9 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
       Log.w(TAG, String.format(Locale.US,"%s could not be removed from selection!", selectedContact.toString()));
     } else {
       Log.i(TAG, String.format(Locale.US,"%d contact(s) were removed from selection.", removed));
-      contactChipViewModel.remove(selectedContact);
       viewModel.removeFromSelectedContacts(selectedContact);
       TIRecyclerViewAdapter.notifyItemRangeChanged(0, TIRecyclerViewAdapter.getItemCount(), ContactSelectionListAdapter.PAYLOAD_SELECTION_CHANGE);
-      if (contactChipViewModel.numberOfChips() == 0){
+      if (viewModel.getSelectedContactsCount() == 0){
         chipRecycler.setVisibility(View.GONE);
       }
     }
@@ -319,7 +312,6 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
       Log.i(TAG, String.format("Contact %s was already part of the selection.", selectedContact.toString()));
     } else {
       addChipForSelectedContact(selectedContact);
-      viewModel.addSelectedContact(selectedContact);
       TIRecyclerViewAdapter.notifyItemRangeChanged(0, TIRecyclerViewAdapter.getItemCount(), ContactSelectionListAdapter.PAYLOAD_SELECTION_CHANGE);
     }
   }
@@ -345,9 +337,8 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
     }
   }**/
 
-  private void handleSelectedContactsChanged(@NonNull List<SelectedContacts.Model> selectedContacts) {
+  private void handleSelectedContactsChanged(@NonNull List<SelectedStrings.Model> selectedContacts) {
     contactChipAdapter.submitList(new MappingModelList(selectedContacts), this::smoothScrollChipsToEnd);
-
     if (selectedContacts.isEmpty()) {
       setChipGroupVisibility(ConstraintSet.GONE);
     } else {

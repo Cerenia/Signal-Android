@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import org.thoughtcrime.securesms.contacts.SelectedContact;
 import org.thoughtcrime.securesms.contacts.SelectedContactSet;
+import org.thoughtcrime.securesms.contacts.SelectedContacts;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
@@ -18,22 +19,22 @@ import java.util.List;
 import java.util.Objects;
 
 public class MinimalViewModel extends ViewModel {
-  private final MinimalManager                      manager;
-  private final MutableLiveData<HashSet<String>> selectedContacts;
+  private final MinimalManager                             manager;
+  private final MutableLiveData<ArrayList<SelectedStrings.Model>> selectedContacts;
   private final MutableLiveData<List<String>>  introducableContacts;
-  private final      MutableLiveData<String> filter;
+  private final MutableLiveData<String> filter;
 
   MinimalViewModel(MinimalManager manager) {
     this.manager = manager;
     introducableContacts = new MutableLiveData<>();
-    selectedContacts = new MutableLiveData<>(new HashSet<>());
+    selectedContacts = new MutableLiveData<>(new ArrayList<>());
     filter = new MutableLiveData<>("");
     loadValidContacts();
   }
 
   boolean addSelectedContact(@NonNull String contact){
-    HashSet<String> selected = Objects.requireNonNull(selectedContacts.getValue());
-    boolean            added    = selected.add(contact);
+    ArrayList<SelectedStrings.Model> selected = Objects.requireNonNull(selectedContacts.getValue());
+    boolean            added    = selected.add(new SelectedStrings.Model(new MinimalStringModel(contact), contact));
     if (added){
       // Notify observers
       selectedContacts.setValue(selected);
@@ -42,7 +43,7 @@ public class MinimalViewModel extends ViewModel {
   }
 
   int removeFromSelectedContacts(@NonNull String contact){
-    HashSet<String> selected = Objects.requireNonNull(selectedContacts.getValue());
+    ArrayList<SelectedStrings.Model> selected = Objects.requireNonNull(selectedContacts.getValue());
     boolean removed = selected.remove(contact);
     if (removed){
       // Notify observers
@@ -60,13 +61,17 @@ public class MinimalViewModel extends ViewModel {
   }
 
   // observable
-  LiveData<HashSet<String>> getSelectedContacts(){
+  LiveData<ArrayList<SelectedStrings.Model>> getSelectedContacts(){
     return selectedContacts;
   }
 
   List<String> listSelectedContacts(){
-    HashSet<String> selected = Objects.requireNonNull(selectedContacts.getValue());
-    return new ArrayList<>(selected);
+    ArrayList<SelectedStrings.Model> selected = Objects.requireNonNull(selectedContacts.getValue());
+    ArrayList<String> l = new ArrayList<>();
+    for(SelectedStrings.Model m: selected){
+      l.add(m.getStr());
+    }
+    return l;
   }
 
   public void setQueryFilter(String filter) {
