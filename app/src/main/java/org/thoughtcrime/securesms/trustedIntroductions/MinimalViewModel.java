@@ -47,12 +47,8 @@ public class MinimalViewModel extends ViewModel {
   }
 
 
-  List<String> listSelectedContacts(){
-    ArrayList<String>                l        = new ArrayList<>();
-    for(SelectedStrings.Model m: selectedContacts){
-      l.add(m.getStr());
-    }
-    return l;
+  List<SelectedStrings.Model> listSelectedContacts(){
+     return selectedContacts;
   }
 
   public void setQueryFilter(String filter) {
