@@ -6,69 +6,50 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
-import org.thoughtcrime.securesms.contacts.SelectedContact;
-import org.thoughtcrime.securesms.contacts.SelectedContactSet;
-import org.thoughtcrime.securesms.contacts.SelectedContacts;
-import org.thoughtcrime.securesms.database.SignalDatabase;
-import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 
 public class MinimalViewModel extends ViewModel {
-  private final MinimalManager                             manager;
-  private final MutableLiveData<ArrayList<SelectedStrings.Model>> selectedContacts;
-  private final MutableLiveData<List<String>>  introducableContacts;
+  private final MinimalManager                                    manager;
+  private final ArrayList<SelectedStrings.Model> selectedContacts;
+  private final MutableLiveData<List<String>>                     introducableContacts;
   private final MutableLiveData<String> filter;
 
   MinimalViewModel(MinimalManager manager) {
     this.manager = manager;
     introducableContacts = new MutableLiveData<>();
-    selectedContacts = new MutableLiveData<>(new ArrayList<>());
+    selectedContacts = new ArrayList<SelectedStrings.Model>();
     filter = new MutableLiveData<>("");
     loadValidContacts();
   }
 
   boolean addSelectedContact(@NonNull String contact){
-    ArrayList<SelectedStrings.Model> selected = Objects.requireNonNull(selectedContacts.getValue());
-    boolean            added    = selected.add(new SelectedStrings.Model(new MinimalStringModel(contact), contact));
-    if (added){
-      // Notify observers
-      selectedContacts.setValue(selected);
-    }
+    boolean                          added    = selectedContacts.add(new SelectedStrings.Model(new MinimalStringItem(contact), contact));
     return added;
   }
 
-  int removeFromSelectedContacts(@NonNull String contact){
-    ArrayList<SelectedStrings.Model> selected = Objects.requireNonNull(selectedContacts.getValue());
-    boolean removed = selected.remove(contact);
-    if (removed){
-      // Notify observers
-      selectedContacts.setValue(selected);
-    }
+  int removeSelectedContact(@NonNull String contact){
+    SelectedStrings.Model c = new SelectedStrings.Model(new MinimalStringItem(contact), contact);
+    boolean                          removed  = selectedContacts.remove(c);
     return removed ? 1:0;
   }
 
   boolean isSelectedContact(@NonNull String contact){
-    return Objects.requireNonNull(selectedContacts.getValue()).contains(contact);
+    SelectedStrings.Model c = new SelectedStrings.Model(new MinimalStringItem(contact), contact);
+    return Objects.requireNonNull(selectedContacts).contains(c);
   }
 
   int getSelectedContactsCount(){
-    return Objects.requireNonNull(selectedContacts.getValue()).size();
+    return Objects.requireNonNull(selectedContacts).size();
   }
 
-  // observable
-  LiveData<ArrayList<SelectedStrings.Model>> getSelectedContacts(){
-    return selectedContacts;
-  }
 
   List<String> listSelectedContacts(){
-    ArrayList<SelectedStrings.Model> selected = Objects.requireNonNull(selectedContacts.getValue());
-    ArrayList<String> l = new ArrayList<>();
-    for(SelectedStrings.Model m: selected){
+    ArrayList<String>                l        = new ArrayList<>();
+    for(SelectedStrings.Model m: selectedContacts){
       l.add(m.getStr());
     }
     return l;
@@ -96,7 +77,6 @@ public class MinimalViewModel extends ViewModel {
 
     private final MinimalManager manager;
 
-    // Passing databases explicitly for testibility
     Factory(RecipientId id) {
       this.manager = new MinimalManager(id);
     }

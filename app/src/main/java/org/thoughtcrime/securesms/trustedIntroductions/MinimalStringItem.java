@@ -1,9 +1,9 @@
 package org.thoughtcrime.securesms.trustedIntroductions;
 
-public class MinimalStringModel {
+public class MinimalStringItem {
   private final String name;
 
-  MinimalStringModel(String s){
+  MinimalStringItem(String s){
     name = s;
   }
 
@@ -18,7 +18,7 @@ public class MinimalStringModel {
     return res;
   }
 
-  String getName(){
+  String getFullName(){
     return name;
   }
 

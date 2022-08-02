@@ -4,22 +4,19 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ListView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
-import androidx.recyclerview.widget.RecyclerView;
 
 import org.thoughtcrime.securesms.R;
-import org.thoughtcrime.securesms.contacts.ContactSelectionListAdapter;
-import org.thoughtcrime.securesms.contacts.ContactSelectionListItem;
 import org.thoughtcrime.securesms.mms.GlideRequests;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
+import org.thoughtcrime.securesms.util.adapter.mapping.MappingViewHolder;
 
-public class MinimalAdapter extends ListAdapter<String, MinimalAdapter.ContactViewHolder> {
+public class MinimalAdapter extends ListAdapter<String, MinimalAdapter.StringViewHolder> {
 
   private final @NonNull Context context;
 
@@ -46,21 +43,21 @@ public class MinimalAdapter extends ListAdapter<String, MinimalAdapter.ContactVi
     this.clickListener   = clickListener;
   }
 
-  @NonNull public MinimalAdapter.ContactViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-    return new MinimalAdapter.ContactViewHolder(layoutInflater.inflate(R.layout.contact_selection_list_item_simple, parent, false), clickListener);
+  @NonNull public StringViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    return new StringViewHolder(layoutInflater.inflate(R.layout.contact_selection_list_item_simple, parent, false), clickListener);
   }
 
 
-  @Override public void onBindViewHolder(@NonNull MinimalAdapter.ContactViewHolder holder, int position) {
+  @Override public void onBindViewHolder(@NonNull StringViewHolder holder, int position) {
     String current = getItem(position);
     holder.unbind(glideRequests);
     holder.bind(glideRequests, null,  current);
   }
 
-  static class ContactViewHolder extends RecyclerView.ViewHolder {
+  static class StringViewHolder extends MappingViewHolder<String> {
 
-    ContactViewHolder(@NonNull final View itemView,
-                      @Nullable final MinimalAdapter.ItemClickListener clickListener)
+    StringViewHolder(@NonNull final View itemView,
+                     @Nullable final MinimalAdapter.ItemClickListener clickListener)
     {
       super(itemView);
       itemView.setOnClickListener(v -> {
@@ -82,6 +79,10 @@ public class MinimalAdapter extends ListAdapter<String, MinimalAdapter.ContactVi
 
     public void setEnabled(boolean enabled){
       getView().setEnabled(enabled);
+    }
+
+    @Override public void bind(@NonNull String s) {
+
     }
 
     /**
