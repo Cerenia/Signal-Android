@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.contacts.ContactSelectionListAdapter;
@@ -69,14 +70,13 @@ public class MinimalAdapter extends ListAdapter<Recipient, MinimalAdapter.TICont
    * @param position The position of the item within the adapter's data set.
    */
   @Override public void onBindViewHolder(@NonNull TIContactViewHolder holder, int position) {
-    holder.unbind(glideRequests);
     Recipient current = getItem(position);
     // For Type, see contactRepository, 0 == normal
-    holder.bind(glideRequests, current.getId(), 0, current.getDisplayNameOrUsername(context), null, null, null, false);
+    holder.bind(glideRequests, current);
   }
 
 
-  static class TIContactViewHolder extends ContactSelectionListAdapter.ViewHolder {
+  static class TIContactViewHolder extends RecyclerView.ViewHolder {
 
     TIContactViewHolder(@NonNull final View itemView,
                         @Nullable final MinimalAdapter.ItemClickListener clickListener)
@@ -87,21 +87,12 @@ public class MinimalAdapter extends ListAdapter<Recipient, MinimalAdapter.TICont
       });
     }
 
-    TIContactSelectionListItem getView() {
-      return (TIContactSelectionListItem) itemView;
+    MinimalContactSelectionListItem getView() {
+      return (MinimalContactSelectionListItem) itemView;
     }
 
-    @Override
-    public void bind(@NonNull GlideRequests glideRequests, @Nullable RecipientId recipientId, int type, String name, String number, String label, String about, boolean checkBoxVisible){
-      getView().set(glideRequests, recipientId, type, name, number, label, about, checkBoxVisible);
-    }
-
-    public void unbind(@NonNull GlideRequests glideRequests){
-      getView().unbind();
-    }
-
-    @Override public void setChecked(boolean checked) {
-      // do nothing
+    public void bind(@NonNull GlideRequests glideRequests, Recipient recipient){
+      getView().set(glideRequests, recipient);
     }
 
     public void setEnabled(boolean enabled){
