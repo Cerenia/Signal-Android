@@ -133,7 +133,7 @@ public class ContactsSelectionListFragment extends Fragment implements ContactFi
     /*TIRecyclerViewAdapter = new IntroducableContactsAdapter(requireContext(),
                                                             glideRequests,
                                                             new ListClickListener());*/
-    TIRecyclerViewAdapter = new MinimalAdapter(requireContext(), glideRequests, new StringListClickListener());
+    TIRecyclerViewAdapter = new MinimalAdapter(requireContext(), glideRequests, new ContactClickListener());
 
     TIContactsRecycler.setAdapter(TIRecyclerViewAdapter);
     TIContactsRecycler.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -176,11 +176,11 @@ public class ContactsSelectionListFragment extends Fragment implements ContactFi
 
   @Override public void onFilterChanged(String filter) {
     viewModel.setQueryFilter(filter);
-    //TIRecyclerViewAdapter.submitList(getFiltered(viewModel.getContacts().getValue(), filter)); // TODO
+    TIRecyclerViewAdapter.submitList(getFiltered(viewModel.getContacts().getValue(), filter));
   }
 
 
-  private class StringListClickListener implements MinimalAdapter.ItemClickListener {
+  private class ContactClickListener implements MinimalAdapter.ItemClickListener {
 
     @Override public void onItemClick(MinimalContactSelectionListItem item) {
       if (viewModel.isSelectedContact(item.getRecipient())) {
