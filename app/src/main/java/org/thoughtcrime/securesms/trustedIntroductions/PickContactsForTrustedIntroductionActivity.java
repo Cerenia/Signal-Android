@@ -30,7 +30,7 @@ import java.util.Optional;
  * Queries the Contacts Provider for Contacts which match strongly verified contacts in the Signal identity database,
  * and let's the user choose some for the purpose of carrying out trusted introductions.
  */
-public final class PickContactsForTrustedIntroductionActivity extends PassphraseRequiredActivity implements IntroductionContactsSelectionListFragment.OnContactSelectedListener {
+public final class PickContactsForTrustedIntroductionActivity extends PassphraseRequiredActivity implements ContactsSelectionListFragment.OnContactSelectedListener {
 
   public static final String RECIPIENT_ID = "recipient_id";
   public static final String KEY_SELECTED_CONTACTS_TO_FORWARD = "forwarding_contacts";
@@ -66,7 +66,7 @@ public final class PickContactsForTrustedIntroductionActivity extends Passphrase
     toolbar           = findViewById(R.id.toolbar);
     contactFilterView = findViewById(R.id.contact_filter_edit_text);
     no_valid_contacts = findViewById(R.id.ti_no_contacts);
-    final IntroductionContactsSelectionListFragment ti_contacts = (IntroductionContactsSelectionListFragment) getSupportFragmentManager().findFragmentById(R.id.trusted_introduction_contacts_fragment);
+    final ContactsSelectionListFragment ti_contacts = (ContactsSelectionListFragment) getSupportFragmentManager().findFragmentById(R.id.trusted_introduction_contacts_fragment);
     done = findViewById(R.id.done);
 
     // Initialize

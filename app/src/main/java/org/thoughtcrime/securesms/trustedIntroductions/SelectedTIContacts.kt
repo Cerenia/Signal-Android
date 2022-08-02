@@ -15,7 +15,7 @@ object SelectedTIContacts {
     adapter.registerFactory(Model::class.java, LayoutFactory({ ViewHolder(it, onCloseIconClicked) }, R.layout.contact_selection_list_chip))
   }
 
-  class Model(val selectedString: MinimalStringItem, val str: String): MappingModel<Model> {
+  class Model(val selectedContact: MinimalContactSelectionListItem, val str: String): MappingModel<Model> {
 
     override fun equals(other: Any?): Boolean {
       if (other is Model){
@@ -29,7 +29,7 @@ object SelectedTIContacts {
     }
 
     override fun areItemsTheSame(newItem: Model): Boolean {
-      return newItem.selectedString.getFullName().equals(str);
+      return newItem.selectedContact.getFullName().equals(str);
     }
   }
 
@@ -38,7 +38,7 @@ object SelectedTIContacts {
     private val chip: ContactChip = itemView.findViewById(R.id.contact_chip)
 
     override fun bind(m: Model) {
-      chip.text = m.selectedString.get()
+      chip.text = m.selectedContact.get()
       chip.isCloseIconVisible = true
       chip.setOnCloseIconClickListener {
         onCloseIconClicked(m);

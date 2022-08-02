@@ -12,12 +12,10 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 
 import org.thoughtcrime.securesms.R;
-import org.thoughtcrime.securesms.contacts.ContactRepository;
 import org.thoughtcrime.securesms.contacts.ContactSelectionListAdapter;
 import org.thoughtcrime.securesms.mms.GlideRequests;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
-import org.thoughtcrime.securesms.util.adapter.mapping.MappingViewHolder;
 
 public class MinimalAdapter extends ListAdapter<Recipient, MinimalAdapter.TIContactViewHolder> {
 
@@ -111,7 +109,7 @@ public class MinimalAdapter extends ListAdapter<Recipient, MinimalAdapter.TICont
     }
 
   }
-  
+
   public interface ItemClickListener {
     void onItemClick(TIContactSelectionListItem item);
   }
