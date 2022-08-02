@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import org.thoughtcrime.securesms.database.IdentityDatabase;
 import org.thoughtcrime.securesms.database.RecipientDatabase;
+import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 
@@ -76,8 +77,8 @@ public class MinimalViewModel extends ViewModel {
 
     private final MinimalManager manager;
 
-    Factory(RecipientId id, IdentityDatabase idb, RecipientDatabase rdb) {
-      this.manager = new MinimalManager(id, idb, rdb);
+    Factory(RecipientId id) {
+      this.manager = new MinimalManager(id, SignalDatabase.identities(), SignalDatabase.recipients());
     }
 
     @Override
