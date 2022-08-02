@@ -13,32 +13,32 @@ import java.util.List;
 import java.util.Objects;
 
 public class MinimalViewModel extends ViewModel {
-  private final MinimalManager                                    manager;
-  private final ArrayList<SelectedStrings.Model> selectedContacts;
-  private final MutableLiveData<List<String>>                     introducableContacts;
+  private final MinimalManager                      manager;
+  private final ArrayList<SelectedTIContacts.Model> selectedContacts;
+  private final MutableLiveData<List<String>>       introducableContacts;
   private final MutableLiveData<String> filter;
 
   MinimalViewModel(MinimalManager manager) {
     this.manager = manager;
     introducableContacts = new MutableLiveData<>();
-    selectedContacts = new ArrayList<SelectedStrings.Model>();
+    selectedContacts = new ArrayList<SelectedTIContacts.Model>();
     filter = new MutableLiveData<>("");
     loadValidContacts();
   }
 
   boolean addSelectedContact(@NonNull String contact){
-    boolean                          added    = selectedContacts.add(new SelectedStrings.Model(new MinimalStringItem(contact), contact));
+    boolean                          added    = selectedContacts.add(new SelectedTIContacts.Model(new MinimalStringItem(contact), contact));
     return added;
   }
 
   int removeSelectedContact(@NonNull String contact){
-    SelectedStrings.Model c = new SelectedStrings.Model(new MinimalStringItem(contact), contact);
-    boolean                          removed  = selectedContacts.remove(c);
+    SelectedTIContacts.Model c       = new SelectedTIContacts.Model(new MinimalStringItem(contact), contact);
+    boolean                  removed = selectedContacts.remove(c);
     return removed ? 1:0;
   }
 
   boolean isSelectedContact(@NonNull String contact){
-    SelectedStrings.Model c = new SelectedStrings.Model(new MinimalStringItem(contact), contact);
+    SelectedTIContacts.Model c = new SelectedTIContacts.Model(new MinimalStringItem(contact), contact);
     return Objects.requireNonNull(selectedContacts).contains(c);
   }
 
@@ -47,7 +47,7 @@ public class MinimalViewModel extends ViewModel {
   }
 
 
-  List<SelectedStrings.Model> listSelectedContacts(){
+  List<SelectedTIContacts.Model> listSelectedContacts(){
      return selectedContacts;
   }
 

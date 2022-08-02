@@ -25,7 +25,7 @@ import java.util.List;
  * Presents the recipients and forwards the click logic to the enclosing fragment via the clickListener.
  *
  */
-class IntroducableContactsAdapter extends ListAdapter<Recipient, IntroducableContactsAdapter.ContactViewHolder> {
+class Old_IntroducableContactsAdapter extends ListAdapter<Recipient, Old_IntroducableContactsAdapter.ContactViewHolder> {
 
   private final @NonNull Context         context;
 
@@ -33,9 +33,9 @@ class IntroducableContactsAdapter extends ListAdapter<Recipient, IntroducableCon
   private final ContactSelectionListAdapter.ItemClickListener clickListener;
   private final GlideRequests    glideRequests;
 
-  IntroducableContactsAdapter(@NonNull Context context,
-                                     @NonNull GlideRequests glideRequests,
-                                     @Nullable ContactSelectionListAdapter.ItemClickListener clickListener)
+  Old_IntroducableContactsAdapter(@NonNull Context context,
+                                  @NonNull GlideRequests glideRequests,
+                                  @Nullable ContactSelectionListAdapter.ItemClickListener clickListener)
   {
     super(new RecipientDiffCallback());
     this.context = context;
@@ -44,11 +44,11 @@ class IntroducableContactsAdapter extends ListAdapter<Recipient, IntroducableCon
     this.clickListener   = clickListener;
   }
 
-  @NonNull public IntroducableContactsAdapter.ContactViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+  @NonNull public Old_IntroducableContactsAdapter.ContactViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
     return new ContactViewHolder(layoutInflater.inflate(R.layout.contact_selection_list_item, parent, false), clickListener);
   }
 
-  @Override public void onBindViewHolder(@NonNull IntroducableContactsAdapter.ContactViewHolder holder, int position) {
+  @Override public void onBindViewHolder(@NonNull Old_IntroducableContactsAdapter.ContactViewHolder holder, int position) {
     Recipient current = getItem(position);
     String name = current.getDisplayNameOrUsername(context.getApplicationContext());
     holder.unbind(glideRequests);

@@ -15,7 +15,7 @@ import java.util.List;
 
 import io.reactivex.rxjava3.annotations.NonNull;
 
-final class TrustedIntroductionContactManager {
+final class Old_TrustedIntroductionContactManager {
 
   // This is the person which will receive the security numbers of the selected contacts through
   //  a secure introduction.
@@ -25,7 +25,7 @@ final class TrustedIntroductionContactManager {
   private final IdentityDatabase idb;
   private final RecipientDatabase rdb;
 
-  TrustedIntroductionContactManager(RecipientId recipientId, IdentityDatabase idb, RecipientDatabase rdb){
+  Old_TrustedIntroductionContactManager(RecipientId recipientId, IdentityDatabase idb, RecipientDatabase rdb){
     this.recipientId = recipientId;
     this.idb = idb;
     this.rdb = rdb;
