@@ -30,7 +30,7 @@ object SelectedTIContacts {
     }
 
     override fun areItemsTheSame(newItem: Model): Boolean {
-      return newItem.selectedContact.getFullName().equals(recipientId);
+      return newItem.selectedContact.id.equals(recipientId);
     }
   }
 
@@ -39,12 +39,11 @@ object SelectedTIContacts {
     private val chip: ContactChip = itemView.findViewById(R.id.contact_chip)
 
     override fun bind(m: Model) {
-      chip.text = m.selectedContact.get()
+      chip.text = m.selectedContact.getShortName()
       chip.isCloseIconVisible = true
       chip.setOnCloseIconClickListener {
         onCloseIconClicked(m);
       }
     }
   }
-
 }

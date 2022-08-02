@@ -1,5 +1,6 @@
 package org.thoughtcrime.securesms.trustedIntroductions;
 
+import android.content.Context;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -22,7 +23,8 @@ public class MinimalContactSelectionListItem extends ConstraintLayout {
   private Recipient recipient;
 
 
-  MinimalContactSelectionListItem(Recipient recipient){
+  MinimalContactSelectionListItem(@NonNull Context context, Recipient recipient){
+    super(context);
     this.recipient = recipient;
   }
 
@@ -43,5 +45,9 @@ public class MinimalContactSelectionListItem extends ConstraintLayout {
 
   public RecipientId getRecipientId(){
     return this.recipient.getId();
+  }
+
+  public String getShortName(){
+    return this.recipient.getShortDisplayName(getContext());
   }
 }
