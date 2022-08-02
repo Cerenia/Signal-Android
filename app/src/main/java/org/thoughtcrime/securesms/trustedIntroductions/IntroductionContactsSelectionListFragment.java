@@ -162,10 +162,7 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
    */
   private void loadSelection(){
     if(this.viewModel != null){
-      List<String> selection = this.viewModel.listSelectedContacts();
-      for(String current: selection){
-        addChipForSelectedContact(current);
-      }
+      // TODO
     } // should never happen, but if ViewModel does not exist, don't load anything.
   }
 
@@ -257,9 +254,8 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
    }
    **/
 
-  private void addChipForSelectedContact(@NonNull String selectedContact) {
-    //viewModel.addSelectedContact(selectedContact);
-    // TODO how is the connection between the ViewModel and the chipgroup done??
+  private void updateChips() {
+    contactChipAdapter.submitList(new MappingModelList(viewModel.listSelectedContacts()));
     setChipGroupVisibility(View.VISIBLE);
   }
 
@@ -284,6 +280,7 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
     } else {
       Log.i(TAG, String.format(Locale.US,"%d was removed from selection.", selectedContact));
       TIRecyclerViewAdapter.notifyItemRangeChanged(0, TIRecyclerViewAdapter.getItemCount(), ContactSelectionListAdapter.PAYLOAD_SELECTION_CHANGE);
+      updateChips();
       if (viewModel.getSelectedContactsCount() == 0){
         setChipGroupVisibility(View.GONE);
       }
@@ -295,7 +292,7 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
     if(!added){
       Log.i(TAG, String.format("Contact %s was already part of the selection.", selectedContact.toString()));
     } else {
-      addChipForSelectedContact(selectedContact);
+      updateChips();
       TIRecyclerViewAdapter.notifyItemRangeChanged(0, TIRecyclerViewAdapter.getItemCount(), ContactSelectionListAdapter.PAYLOAD_SELECTION_CHANGE);
     }
   }
