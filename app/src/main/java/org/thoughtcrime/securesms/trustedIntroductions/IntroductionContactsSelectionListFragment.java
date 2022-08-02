@@ -1,6 +1,5 @@
 package org.thoughtcrime.securesms.trustedIntroductions;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,19 +12,15 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.pnikosis.materialishprogress.ProgressWheel;
 
 import org.signal.core.util.logging.Log;
-import org.thoughtcrime.securesms.ContactSelectionListFragment;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.components.ContactFilterView;
 import org.thoughtcrime.securesms.contacts.ContactSelectionListAdapter;
-import org.thoughtcrime.securesms.contacts.ContactSelectionListItem;
-import org.thoughtcrime.securesms.contacts.SelectedContacts;
 import org.thoughtcrime.securesms.mms.GlideApp;
 import org.thoughtcrime.securesms.mms.GlideRequests;
 import org.thoughtcrime.securesms.recipients.Recipient;
@@ -39,7 +34,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Consumer;
 
 import kotlin.Unit;
 
@@ -264,27 +258,18 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
    **/
 
   private void addChipForSelectedContact(@NonNull String selectedContact) {
+    //viewModel.addSelectedContact(selectedContact);
+    // TODO how is the connection between the ViewModel and the chipgroup done??
     setChipGroupVisibility(View.VISIBLE);
   }
 
   private Unit onChipCloseIconClicked(SelectedStrings.Model m) {
-    markContactUnselected(m.getSelectedString().getName());
+    markContactUnselected(m.getSelectedString().getFullName());
     return null;
   }
 
   private void setChipGroupVisibility(int visibility) {
     chipRecycler.setVisibility(visibility);
-
-    /*
-    TransitionManager.beginDelayedTransition(linearLayout, new AutoTransition().setDuration(CHIP_GROUP_REVEAL_DURATION_MS));
-
-
-    ConstraintSet constraintSet = new ConstraintSet();
-    constraintSet.clone(linearLayout);
-    constraintSet.setVisibility(R.id.chipRecycler, visibility);
-    constraintSet.applyTo(linearLayout);
-    TODO
-     */
   }
 
   private void smoothScrollChipsToEnd() {
@@ -293,15 +278,14 @@ public class IntroductionContactsSelectionListFragment extends Fragment implemen
   }
 
   private void markContactUnselected(@NonNull String selectedContact) {
-    int removed = viewModel.removeFromSelectedContacts(selectedContact);
+    int removed = viewModel.removeSelectedContact(selectedContact);
     if(removed <= 0){
-      Log.w(TAG, String.format(Locale.US,"%s could not be removed from selection!", selectedContact.toString()));
+      Log.w(TAG, String.format(Locale.US,"%s could not be removed from selection!", selectedContact));
     } else {
-      Log.i(TAG, String.format(Locale.US,"%d contact(s) were removed from selection.", removed));
-      viewModel.removeFromSelectedContacts(selectedContact);
+      Log.i(TAG, String.format(Locale.US,"%d was removed from selection.", selectedContact));
       TIRecyclerViewAdapter.notifyItemRangeChanged(0, TIRecyclerViewAdapter.getItemCount(), ContactSelectionListAdapter.PAYLOAD_SELECTION_CHANGE);
       if (viewModel.getSelectedContactsCount() == 0){
-        chipRecycler.setVisibility(View.GONE);
+        setChipGroupVisibility(View.GONE);
       }
     }
   }

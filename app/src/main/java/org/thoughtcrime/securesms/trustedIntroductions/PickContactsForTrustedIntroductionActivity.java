@@ -92,14 +92,6 @@ public final class PickContactsForTrustedIntroductionActivity extends Passphrase
       }
     });
 
-    // selection
-    viewModel.getSelectedContacts().observe(this, selected -> {
-      if (selected.size() > 0){
-        enableDone();
-      } else {
-        disableDone();
-      }
-    });
 
     /**
     done.setOnClickListener(v ->
@@ -144,11 +136,11 @@ public final class PickContactsForTrustedIntroductionActivity extends Passphrase
     if (selectedContactsCount == 0) {
       toolbar.setTitle(getString(R.string.PickContactsForTIActivity_introduce_contacts));
       disableDone();
-    } else {
-      assert selectedContactsCount > 0 : "Contacts count below 0!";
-      // TODO: 1 vs. many?
+    } if (selectedContactsCount > 0){
       enableDone();
       toolbar.setTitle(getResources().getQuantityString(R.plurals.PickContactsForTIActivity_d_contacts, selectedContactsCount, selectedContactsCount));
+    } else {
+      assert selectedContactsCount < 0 : "Contacts count below 0!";
     }
   }
 
