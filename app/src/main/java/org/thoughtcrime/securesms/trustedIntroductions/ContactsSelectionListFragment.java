@@ -66,33 +66,18 @@ public class ContactsSelectionListFragment extends Fragment implements ContactFi
 
   @Override
   public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-    // Reusing this layout, many components in it are never referenced for TI purposes.
-    Log.e(TAG, "BlubBlub");
     View view = inflater.inflate(R.layout.ti_contact_selection_fragment, container, false);
 
     TIContactsRecycler   = view.findViewById(R.id.recycler_view);
     chipRecycler = view.findViewById(R.id.chipRecycler);
     linearLayout = view.findViewById(R.id.container);
 
-    LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
-    layoutManager.setOrientation(LinearLayoutManager.VERTICAL); // TODO: Still more fiddling..
-    TIContactsRecycler.setLayoutManager(layoutManager);
-    // TODO
-    /*TIContactsRecycler.setItemAnimator(new DefaultItemAnimator() {
-      @Override
-      public boolean canReuseUpdatedViewHolder(@NonNull RecyclerView.ViewHolder viewHolder) {
-        return true;
-      }
-    });*/
     TIContactsRecycler.setItemAnimator(null);
 
     contactChipAdapter = new MappingAdapter();
     // TODO, can I just use their selected contacts class? if this breaks, build your own
     SelectedTIContacts.register(contactChipAdapter, this::onChipCloseIconClicked);
     chipRecycler.setAdapter(contactChipAdapter);
-
-    // TODO
-    //Disposable disposable = contactChipViewModel.getState().subscribe(this::handleSelectedContactsChanged);
 
     // Default values for now
     boolean recyclerViewClipping  = true;
@@ -132,11 +117,7 @@ public class ContactsSelectionListFragment extends Fragment implements ContactFi
       @Override
       public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
         if (newState == RecyclerView.SCROLL_STATE_DRAGGING) {
-          // TODO: Add scrollCallback if needed
-          // => will be figured out with unittests and injection of fake long list of introducable contacts.
-          /*if (scrollCallback != null) {
-            scrollCallback.onBeginScroll();
-          }*/
+          // TODO: Add scrollCallback if needed, determined during Integration testing
         }
       }
     });
@@ -238,23 +219,19 @@ public class ContactsSelectionListFragment extends Fragment implements ContactFi
   }
 
   private void markContactUnselected(@NonNull Recipient selectedContact) {
-    int removed = viewModel.removeSelectedContact(selectedContact);
-    if(removed < 0){
+    if(viewModel.removeSelectedContact(selectedContact) < 0){
       Log.w(TAG, String.format(Locale.US,"%s could not be removed from selection!", selectedContact));
     } else {
       Log.i(TAG, String.format(Locale.US,"%s was removed from selection.", selectedContact));
-      // TODO: I used to call TIRecycleViewAdapter.NotifyItemRanceChanged, still necessary?
       updateChips();
     }
   }
 
   private void markContactSelected(@NonNull Recipient selectedContact) {
-    boolean added = viewModel.addSelectedContact(selectedContact);
-    if(!added){
+    if(!viewModel.addSelectedContact(selectedContact)){
       Log.i(TAG, String.format("Contact %s was already part of the selection.", selectedContact));
     } else {
       updateChips();
-      // TODO: I used to call TIRecycleViewAdapter.NotifyItemRanceChanged, still necessary?
     }
   }
 
