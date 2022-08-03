@@ -92,6 +92,8 @@ public class MinimalViewModel extends ViewModel {
     );
   }
 
+  // TODO: Opted to use recipients directly instead of the SelectedContact class..
+  // May need to reconsider if there are performance issues during integration testing.
   static final class IntroduceDialogMessageState {
     private final Recipient recipient;
     private final List<Recipient> toIntroduce;
@@ -126,15 +128,5 @@ public class MinimalViewModel extends ViewModel {
     }
   }
 
-  private static final class RecipientIDNameTuple {
-    public String name;
-    public RecipientId id;
-
-    RecipientIDNameTuple(String name, RecipientId id){
-      this.name = name;
-      this.id = id;
-    }
-
-  }
 }
 

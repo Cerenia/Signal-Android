@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -160,12 +161,10 @@ public final class PickContactsForTrustedIntroductionActivity extends Passphrase
   
   private void displayAlertMessage(@NonNull MinimalViewModel.IntroduceDialogMessageState state) {
     Recipient recipient = Util.firstNonNull(state.getRecipient(), Recipient.UNKNOWN);
-    List<SelectedContact> selection = state.getToIntroduce();
+    List<Recipient> selection = state.getToIntroduce();
     int count = selection.size();
     if(count == 1){
-      SimpleTask.run(
-          () -> Recipient.resolved(selection.get(0).getOrCreateRecipientId(this)),
-          resolved -> displayAlertForSingleIntroduction(recipient, resolved, state));
+      displayAlertForSingleIntroduction(recipient, selection.get(0), state);
     } else {
       assert count != 0 : "No contacts selected to introduce!";
       displayAlertForMultiIntroduction(recipient, state);
@@ -198,15 +197,13 @@ public final class PickContactsForTrustedIntroductionActivity extends Passphrase
   }
 
   private void onFinishedSelection(@NonNull MinimalViewModel.IntroduceDialogMessageState state) {
-    // TODO: finish this
     Intent                resultIntent     = getIntent();
-    List<SelectedContact> selectedContacts = Objects.requireNonNull(viewModel.getSelectedContacts().getValue()).getContacts();
-    List<RecipientId>     recipients       = Stream.of(selectedContacts).map(sc -> sc.getOrCreateRecipientId(this)).toList();
+    List<RecipientId> recipientIds = state.getToIntroduce().stream().map(Recipient::getId).collect(Collectors.toList());
 
-    resultIntent.putParcelableArrayListExtra(KEY_SELECTED_CONTACTS_TO_FORWARD, new ArrayList<>(recipients));
+    resultIntent.putParcelableArrayListExtra(KEY_SELECTED_CONTACTS_TO_FORWARD, new ArrayList<>(recipientIds));
 
     setResult(RESULT_OK, resultIntent);
     finish();
-  } **/
+  }
 
 }
