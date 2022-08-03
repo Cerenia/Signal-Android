@@ -4,8 +4,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
-import android.widget.LinearLayout;
 
 import androidx.annotation.CallSuper;
 import androidx.annotation.MainThread;
@@ -13,7 +11,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.pnikosis.materialishprogress.ProgressWheel;
@@ -132,7 +129,7 @@ public class ContactsSelectionListFragment extends Fragment implements ContactFi
   }
 
   private boolean restoreCheckboxState(){
-    for (SelectedTIContacts.Model model : this.viewModel.listSelectedContacts()) {
+    for (SelectedTIContacts.Model model : this.viewModel.listSelectedContactModels()) {
       RecipientId selected = model.getRecipientId();
       for (int i = 0; i < TIContactsRecycler.getChildCount(); i++) {
         MinimalContactSelectionListItem item = ((MinimalAdapter.TIContactViewHolder) TIContactsRecycler.getChildViewHolder(TIContactsRecycler.getChildAt(i))).getView();
@@ -186,7 +183,7 @@ public class ContactsSelectionListFragment extends Fragment implements ContactFi
   }
 
   private void updateChips() {
-    contactChipAdapter.submitList(new MappingModelList(viewModel.listSelectedContacts()), this::smoothScrollChipsToEnd);
+    contactChipAdapter.submitList(new MappingModelList(viewModel.listSelectedContactModels()), this::smoothScrollChipsToEnd);
     int selectedCount = viewModel.getSelectedContactsCount();
     if (selectedCount == 0) {
       setChipGroupVisibility(ConstraintSet.GONE);
