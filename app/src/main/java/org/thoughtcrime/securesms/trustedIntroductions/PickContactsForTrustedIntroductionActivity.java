@@ -203,6 +203,9 @@ public final class PickContactsForTrustedIntroductionActivity extends Passphrase
     resultIntent.putParcelableArrayListExtra(KEY_SELECTED_CONTACTS_TO_FORWARD, new ArrayList<>(recipientIds));
 
     setResult(RESULT_OK, resultIntent);
+    // TODO:
+    // TODO Where should the Jobs be started? Here or in the conversation activity?
+    // It seems like a better idea to do it here.
     finish();
   }
 
