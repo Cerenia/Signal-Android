@@ -27,12 +27,15 @@ import androidx.lifecycle.DefaultLifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.ViewModelProvider;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 /**
  * Queries the Contacts Provider for Contacts which match strongly verified contacts in the Signal identity database,
- * and let's the user choose some for the purpose of carrying out trusted introductions.
+ * and let's the user choose a set of them for the purpose of carrying out a trusted introduction.
  */
 public final class PickContactsForTrustedIntroductionActivity extends PassphraseRequiredActivity implements ContactsSelectionListFragment.OnContactSelectedListener {
 
@@ -57,7 +60,6 @@ public final class PickContactsForTrustedIntroductionActivity extends Passphrase
   }
 
   @Override protected void onCreate(Bundle savedInstanceState, boolean ready) {
-    //getIntent().putExtra(ContactSelectionActivity.EXTRA_LAYOUT_RES_ID, R.layout.trusted_introduction_contacts_picker_activity);
     super.onCreate(savedInstanceState, ready);
 
     dynamicTheme.onCreate(this);
@@ -77,9 +79,6 @@ public final class PickContactsForTrustedIntroductionActivity extends Passphrase
     initializeToolbar();
     initializeContactFilterView();
 
-    //TrustedIntroductionContactsViewModel.Factory factory = new TrustedIntroductionContactsViewModel.Factory(recipientId);
-    //viewModel = new ViewModelProvider(this, factory).get(TrustedIntroductionContactsViewModel.class);
-
     MinimalViewModel.Factory factory = new MinimalViewModel.Factory(recipientId);
     viewModel = new ViewModelProvider(this, factory).get(MinimalViewModel.class);
 
@@ -93,10 +92,10 @@ public final class PickContactsForTrustedIntroductionActivity extends Passphrase
     });
 
 
-    /**
+
     done.setOnClickListener(v ->
                                 viewModel.getDialogStateForSelectedContacts(this::displayAlertMessage)
-    ); TODO **/
+    );
 
     ti_contacts.setViewModel(viewModel);
     contactFilterView.setOnFilterChangedListener(ti_contacts);
@@ -158,8 +157,8 @@ public final class PickContactsForTrustedIntroductionActivity extends Passphrase
     done.animate().alpha(0.5f);
   }
 
-  /**
-  private void displayAlertMessage(@NonNull Old_TrustedIntroductionContactsViewModel.IntroduceDialogMessageState state) {
+  
+  private void displayAlertMessage(@NonNull MinimalViewModel.IntroduceDialogMessageState state) {
     Recipient recipient = Util.firstNonNull(state.getRecipient(), Recipient.UNKNOWN);
     List<SelectedContact> selection = state.getToIntroduce();
     int count = selection.size();
@@ -173,20 +172,20 @@ public final class PickContactsForTrustedIntroductionActivity extends Passphrase
     }
   }
 
-  private void displayAlertForSingleIntroduction(Recipient recipient, Recipient introducee, @NonNull Old_TrustedIntroductionContactsViewModel.IntroduceDialogMessageState state){
+  private void displayAlertForSingleIntroduction(Recipient recipient, Recipient introducee, @NonNull MinimalViewModel.IntroduceDialogMessageState state){
     String message = getResources().getQuantityString(R.plurals.PickContactsForTIActivity__introduce_d_contacts_to_s, 1,
                                                       introducee.getDisplayNameOrUsername(getApplicationContext()), recipient.getDisplayName(this));
     displayAlert(message, state);
   }
 
-  private void displayAlertForMultiIntroduction(Recipient recipient, @NonNull Old_TrustedIntroductionContactsViewModel.IntroduceDialogMessageState state){
+  private void displayAlertForMultiIntroduction(Recipient recipient, @NonNull MinimalViewModel.IntroduceDialogMessageState state){
     int count = state.getToIntroduce().size();
     String message = getResources().getQuantityString(R.plurals.PickContactsForTIActivity__introduce_d_contacts_to_s, count,
                                                       count, recipient.getDisplayName(this));
     displayAlert(message, state);
   }
 
-  private void displayAlert(String message, @NonNull Old_TrustedIntroductionContactsViewModel.IntroduceDialogMessageState state){
+  private void displayAlert(String message, @NonNull MinimalViewModel.IntroduceDialogMessageState state){
     new AlertDialog.Builder(this)
         .setMessage(message)
         .setNegativeButton(android.R.string.cancel, (dialog, which) -> dialog.cancel())
@@ -198,7 +197,7 @@ public final class PickContactsForTrustedIntroductionActivity extends Passphrase
         .show();
   }
 
-  private void onFinishedSelection(@NonNull Old_TrustedIntroductionContactsViewModel.IntroduceDialogMessageState state) {
+  private void onFinishedSelection(@NonNull MinimalViewModel.IntroduceDialogMessageState state) {
     // TODO: finish this
     Intent                resultIntent     = getIntent();
     List<SelectedContact> selectedContacts = Objects.requireNonNull(viewModel.getSelectedContacts().getValue()).getContacts();
