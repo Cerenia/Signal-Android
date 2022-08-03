@@ -156,6 +156,7 @@ public final class PickContactsForTrustedIntroductionActivity extends Passphrase
     done.animate().alpha(0.5f);
   }
 
+  /**
   private void displayAlertMessage(@NonNull Old_TrustedIntroductionContactsViewModel.IntroduceDialogMessageState state) {
     Recipient recipient = Util.firstNonNull(state.getRecipient(), Recipient.UNKNOWN);
     List<SelectedContact> selection = state.getToIntroduce();
@@ -197,7 +198,6 @@ public final class PickContactsForTrustedIntroductionActivity extends Passphrase
 
   private void onFinishedSelection(@NonNull Old_TrustedIntroductionContactsViewModel.IntroduceDialogMessageState state) {
     // TODO: finish this
-    /**
     Intent                resultIntent     = getIntent();
     List<SelectedContact> selectedContacts = Objects.requireNonNull(viewModel.getSelectedContacts().getValue()).getContacts();
     List<RecipientId>     recipients       = Stream.of(selectedContacts).map(sc -> sc.getOrCreateRecipientId(this)).toList();
@@ -206,8 +206,8 @@ public final class PickContactsForTrustedIntroductionActivity extends Passphrase
 
     setResult(RESULT_OK, resultIntent);
     finish();
-     **/
-  }
+  } **/
+
 
   @Override public void onPointerCaptureChanged(boolean hasCapture) {
 

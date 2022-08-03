@@ -180,10 +180,11 @@ public class ContactsSelectionListFragment extends Fragment implements ContactFi
 
     @Override public void onItemClick(MinimalContactSelectionListItem item) {
       if (viewModel.isSelectedContact(item.getRecipient())) {
-        //markContactUnselected(item.getRecipient()); TODO: would it be better to add this?
+        markContactUnselected(item.getRecipient());
       } else {
         markContactSelected(item.getRecipient());
       }
+      item.toggleCheckbox();
     }
   }
 

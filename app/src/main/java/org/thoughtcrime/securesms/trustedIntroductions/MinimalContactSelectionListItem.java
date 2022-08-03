@@ -2,6 +2,7 @@ package org.thoughtcrime.securesms.trustedIntroductions;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.widget.CheckBox;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -25,6 +26,7 @@ public class MinimalContactSelectionListItem extends ConstraintLayout {
   private TextView      nameView;
   private Recipient recipient;
   private TextView        numberView;
+  private CheckBox checkbox;
 
 
   MinimalContactSelectionListItem(@NonNull Context context, Recipient recipient){
@@ -48,6 +50,7 @@ public class MinimalContactSelectionListItem extends ConstraintLayout {
     this.contactPhotoImage = findViewById(R.id.contact_photo_image);
     this.nameView          = findViewById(R.id.name);
     this.numberView = findViewById(R.id.number);
+    this.checkbox = findViewById(R.id.check_box);
 
     ViewUtil.setTextViewGravityStart(this.nameView, getContext());
   }
@@ -65,6 +68,10 @@ public class MinimalContactSelectionListItem extends ConstraintLayout {
 
   public Recipient getRecipient() {
     return this.recipient;
+  }
+
+  public void toggleCheckbox(){
+    checkbox.toggle();
   }
 
 }
