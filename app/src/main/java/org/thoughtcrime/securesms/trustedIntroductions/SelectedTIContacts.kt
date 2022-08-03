@@ -3,6 +3,7 @@ package org.thoughtcrime.securesms.trustedIntroductions
 import android.view.View
 import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.contacts.ContactChip
+import org.thoughtcrime.securesms.mms.GlideApp
 import org.thoughtcrime.securesms.recipients.Recipient
 import org.thoughtcrime.securesms.recipients.RecipientId
 import org.thoughtcrime.securesms.util.adapter.mapping.LayoutFactory
@@ -45,6 +46,7 @@ object SelectedTIContacts {
       chip.setOnCloseIconClickListener {
         onCloseIconClicked(m);
       }
+      chip.setAvatar(GlideApp.with(itemView), m.selectedContact, null);
     }
   }
 }
