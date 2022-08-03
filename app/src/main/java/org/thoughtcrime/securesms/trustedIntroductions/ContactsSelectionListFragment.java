@@ -47,22 +47,14 @@ public class ContactsSelectionListFragment extends Fragment implements ContactFi
 
   private static final String TAG = Log.tag(ContactsSelectionListFragment.class);
 
-  private static final int CHIP_GROUP_EMPTY_CHILD_COUNT  = 1;
-  private static final int CHIP_GROUP_REVEAL_DURATION_MS = 150;
-
-  public static final String DISPLAY_CHIPS     = "display_chips";
-
   // TODO: have a progress wheel for more substantial data? (cosmetic, not super important)
   private ProgressWheel                        showContactsProgress;
-  private LinearLayout                         linearLayout;
-  //private TrustedIntroductionContactsViewModel viewModel;
   private MinimalViewModel viewModel;
   private MinimalAdapter                            TIRecyclerViewAdapter;
   private RecyclerView                                           TIContactsRecycler;
   private RecyclerView                                           chipRecycler;
   private MappingAdapter contactChipAdapter;
 
-  private GlideRequests    glideRequests;
 
   @Override
   public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -70,7 +62,6 @@ public class ContactsSelectionListFragment extends Fragment implements ContactFi
 
     TIContactsRecycler   = view.findViewById(R.id.recycler_view);
     chipRecycler = view.findViewById(R.id.chipRecycler);
-    linearLayout = view.findViewById(R.id.container);
 
     TIContactsRecycler.setItemAnimator(null);
 
@@ -108,7 +99,7 @@ public class ContactsSelectionListFragment extends Fragment implements ContactFi
   }
 
   private void initializeAdapter() {
-    glideRequests = GlideApp.with(this);
+    GlideRequests glideRequests = GlideApp.with(this);
     // Not directly passing a cursor, instead submitting a list to ContactsAdapter
     TIRecyclerViewAdapter = new MinimalAdapter(requireContext(), glideRequests, new ContactClickListener());
 
@@ -154,7 +145,7 @@ public class ContactsSelectionListFragment extends Fragment implements ContactFi
     return true;
   }
 
-  // TODO: Unhappy that this is here and not in the viewmodel. But the display or username is context dependant so not sure how/if to decouple.
+  // TODO: Slightly unhappy that this is here and not in the Viewmodel. But the display or username is context dependant so not sure how/if to decouple.
   private List<Recipient> getFiltered(List<Recipient> contacts, @Nullable String filter){
     List<Recipient> filtered = new ArrayList<>(contacts);
     filter = (filter==null)? Objects.requireNonNull(viewModel.getFilter().getValue()): filter;
