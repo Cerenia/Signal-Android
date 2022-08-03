@@ -23,6 +23,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
+import androidx.lifecycle.DefaultLifecycleObserver;
+import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.ViewModelProvider;
 
 import java.util.List;
@@ -41,7 +43,7 @@ public final class PickContactsForTrustedIntroductionActivity extends Passphrase
 
   // when done picking contacts (button)
   private View done;
-  //private TrustedIntroductionContactsViewModel viewModel;
+  private ContactsSelectionListFragment ti_contacts;
   private MinimalViewModel viewModel;
   // Alternative text when no contacts are verified
   private TextView                                  no_valid_contacts;
@@ -68,7 +70,7 @@ public final class PickContactsForTrustedIntroductionActivity extends Passphrase
     toolbar           = findViewById(R.id.toolbar);
     contactFilterView = findViewById(R.id.contact_filter_edit_text);
     no_valid_contacts = findViewById(R.id.ti_no_contacts);
-    final ContactsSelectionListFragment ti_contacts = (ContactsSelectionListFragment) getSupportFragmentManager().findFragmentById(R.id.trusted_introduction_contacts_fragment);
+    ti_contacts = (ContactsSelectionListFragment) getSupportFragmentManager().findFragmentById(R.id.trusted_introduction_contacts_fragment);
     done = findViewById(R.id.done);
 
     // Initialize
@@ -208,8 +210,4 @@ public final class PickContactsForTrustedIntroductionActivity extends Passphrase
     finish();
   } **/
 
-
-  @Override public void onPointerCaptureChanged(boolean hasCapture) {
-
-  }
 }
