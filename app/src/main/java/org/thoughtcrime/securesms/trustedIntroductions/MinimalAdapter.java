@@ -99,6 +99,7 @@ public class MinimalAdapter extends ListAdapter<Recipient, MinimalAdapter.TICont
       getView().setEnabled(enabled);
     }
 
+
   }
 
   public interface ItemClickListener {

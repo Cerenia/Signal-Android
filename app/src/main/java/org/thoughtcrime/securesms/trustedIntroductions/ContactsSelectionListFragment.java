@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.LinearLayout;
 
 import androidx.annotation.CallSuper;
@@ -20,7 +21,6 @@ import com.pnikosis.materialishprogress.ProgressWheel;
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.components.ContactFilterView;
-import org.thoughtcrime.securesms.contacts.SelectedContacts;
 import org.thoughtcrime.securesms.mms.GlideApp;
 import org.thoughtcrime.securesms.mms.GlideRequests;
 import org.thoughtcrime.securesms.recipients.Recipient;
@@ -99,15 +99,10 @@ public class ContactsSelectionListFragment extends Fragment implements ContactFi
 
     TIContactsRecycler.setClipToPadding(recyclerViewClipping);
 
+    // Register checkbox behavior
+    TIContactsRecycler.getViewTreeObserver().addOnPreDrawListener(this::restoreCheckboxState);
+
     return view;
-  }
-
-
-  @MainThread
-  @CallSuper
-  public void onViewStateRestored(@Nullable Bundle savedInstanceState){
-    super.onViewStateRestored(savedInstanceState);
-    loadSelection();
   }
 
   /**
@@ -147,13 +142,35 @@ public class ContactsSelectionListFragment extends Fragment implements ContactFi
     });
   }
 
+  @MainThread
+  @CallSuper
+  public void onViewStateRestored(@Nullable Bundle savedInstanceState){
+    super.onViewStateRestored(savedInstanceState);
+    loadSelection();
+  }
+
   /**
    * Saved state to be restored from viewModel.
    */
   private void loadSelection(){
-    if(this.viewModel != null){
+    if(this.viewModel != null) {
       updateChips();
-    } // should never happen, but if ViewModel does not exist, don't load anything.
+      restoreCheckboxState();
+    } // Do nothing if viewModel is null, should never happen
+  }
+
+  private boolean restoreCheckboxState(){
+    for (SelectedTIContacts.Model model : this.viewModel.listSelectedContacts()) {
+      RecipientId selected = model.getRecipientId();
+      for (int i = 0; i < TIContactsRecycler.getChildCount(); i++) {
+        MinimalContactSelectionListItem item = ((MinimalAdapter.TIContactViewHolder) TIContactsRecycler.getChildViewHolder(TIContactsRecycler.getChildAt(i))).getView();
+        if (item.getRecipientId().equals(selected)) {
+          item.setCheckboxChecked(true);
+          break;
+        }
+      }
+    }
+    return true;
   }
 
   // TODO: Unhappy that this is here and not in the viewmodel. But the display or username is context dependant so not sure how/if to decouple.
@@ -181,10 +198,11 @@ public class ContactsSelectionListFragment extends Fragment implements ContactFi
     @Override public void onItemClick(MinimalContactSelectionListItem item) {
       if (viewModel.isSelectedContact(item.getRecipient())) {
         markContactUnselected(item.getRecipient());
+        item.setCheckboxChecked(false);
       } else {
         markContactSelected(item.getRecipient());
+        item.setCheckboxChecked(true);
       }
-      item.toggleCheckbox();
     }
   }
 

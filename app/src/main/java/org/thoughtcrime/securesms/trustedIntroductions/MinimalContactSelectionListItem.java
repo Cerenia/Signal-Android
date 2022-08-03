@@ -70,8 +70,8 @@ public class MinimalContactSelectionListItem extends ConstraintLayout {
     return this.recipient;
   }
 
-  public void toggleCheckbox(){
-    checkbox.toggle();
+  public void setCheckboxChecked(boolean checked){
+    checkbox.setChecked(checked);
   }
 
 }
