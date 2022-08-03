@@ -130,9 +130,6 @@ public class ContactsSelectionListFragment extends Fragment implements ContactFi
   private void initializeAdapter() {
     glideRequests = GlideApp.with(this);
     // Not directly passing a cursor, instead submitting a list to ContactsAdapter
-    /*TIRecyclerViewAdapter = new IntroducableContactsAdapter(requireContext(),
-                                                            glideRequests,
-                                                            new ListClickListener());*/
     TIRecyclerViewAdapter = new MinimalAdapter(requireContext(), glideRequests, new ContactClickListener());
 
     TIContactsRecycler.setAdapter(TIRecyclerViewAdapter);
@@ -179,12 +176,11 @@ public class ContactsSelectionListFragment extends Fragment implements ContactFi
     TIRecyclerViewAdapter.submitList(getFiltered(viewModel.getContacts().getValue(), filter));
   }
 
-
   private class ContactClickListener implements MinimalAdapter.ItemClickListener {
 
     @Override public void onItemClick(MinimalContactSelectionListItem item) {
       if (viewModel.isSelectedContact(item.getRecipient())) {
-        markContactUnselected(item.getRecipient());
+        //markContactUnselected(item.getRecipient()); TODO: would it be better to add this?
       } else {
         markContactSelected(item.getRecipient());
       }
