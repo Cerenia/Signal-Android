@@ -88,7 +88,7 @@ public class ContactsSelectionListFragment extends Fragment implements ContactFi
 
     contactChipAdapter = new MappingAdapter();
     // TODO, can I just use their selected contacts class? if this breaks, build your own
-    SelectedContacts.register(contactChipAdapter, this::onChipCloseIconClicked);
+    SelectedTIContacts.register(contactChipAdapter, this::onChipCloseIconClicked);
     chipRecycler.setAdapter(contactChipAdapter);
 
     // TODO
@@ -208,8 +208,8 @@ public class ContactsSelectionListFragment extends Fragment implements ContactFi
     }
   }
 
-  private Unit onChipCloseIconClicked(SelectedContacts.Model m) {
-    markContactUnselected(m.getRecipient());
+  private Unit onChipCloseIconClicked(SelectedTIContacts.Model m) {
+    markContactUnselected(m.getSelectedContact());
     return null;
   }
 
