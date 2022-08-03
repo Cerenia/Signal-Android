@@ -16,12 +16,15 @@ import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.util.ViewUtil;
 
+/**
+ * Modelled and simplified from contacts.ContactSelectionListItem
+ */
 public class MinimalContactSelectionListItem extends ConstraintLayout {
 
   private     AvatarImageView contactPhotoImage;
   private TextView      nameView;
-  private GlideRequests glideRequests;
   private Recipient recipient;
+  private TextView        numberView;
 
 
   MinimalContactSelectionListItem(@NonNull Context context, Recipient recipient){
@@ -44,14 +47,16 @@ public class MinimalContactSelectionListItem extends ConstraintLayout {
     super.onFinishInflate();
     this.contactPhotoImage = findViewById(R.id.contact_photo_image);
     this.nameView          = findViewById(R.id.name);
+    this.numberView = findViewById(R.id.number);
 
     ViewUtil.setTextViewGravityStart(this.nameView, getContext());
   }
 
   public void set(@NonNull GlideRequests glideRequests, @NonNull Recipient recipient){
-    this.glideRequests = glideRequests;
     this.recipient = recipient;
     this.nameView.setText(recipient.getDisplayName(getContext()));
+    this.contactPhotoImage.setAvatar(glideRequests, recipient, false);
+    this.numberView.setText(recipient.getE164().orElse(""));
   }
 
   public RecipientId getRecipientId(){
