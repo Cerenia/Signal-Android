@@ -19,20 +19,23 @@ import java.util.List;
 import java.util.Objects;
 
 final class Old_TrustedIntroductionContactsViewModel extends ViewModel{
-
+  /**
   private final Old_TrustedIntroductionContactManager manager;
   private final MutableLiveData<List<Recipient>>      introducableContacts;
   private final      MutableLiveData<String> filter;
   private final MutableLiveData<SelectedContactSet>      selectedContacts;
+   **/
 
+  /**
   @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE) Old_TrustedIntroductionContactsViewModel(Old_TrustedIntroductionContactManager manager) {
     this.manager = manager;
     introducableContacts = new MutableLiveData<>();
     filter = new MutableLiveData<>("");
     selectedContacts = new MutableLiveData<>(new SelectedContactSet());
     loadValidContacts();
-  }
+  }**/
 
+ /**
   boolean addSelectedContact(@NonNull SelectedContact contact){
     SelectedContactSet selected = Objects.requireNonNull(selectedContacts.getValue());
     boolean added = selected.add(contact);
@@ -131,4 +134,5 @@ final class Old_TrustedIntroductionContactsViewModel extends ViewModel{
       return Objects.requireNonNull(modelClass.cast(new Old_TrustedIntroductionContactsViewModel(manager)));
     }
   }
+  **/
 }
