@@ -29,12 +29,12 @@ import java.util.List;
 public class AttachmentKeyboard extends FrameLayout implements InputAwareLayout.InputView {
 
   private static final List<AttachmentKeyboardButton> DEFAULT_BUTTONS = Arrays.asList(
+      AttachmentKeyboardButton.TRUSTED_INTRODUCTION,
       AttachmentKeyboardButton.GALLERY,
       AttachmentKeyboardButton.FILE,
       AttachmentKeyboardButton.PAYMENT,
       AttachmentKeyboardButton.CONTACT,
-      AttachmentKeyboardButton.LOCATION,
-      AttachmentKeyboardButton.TRUSTED_INTRODUCTION
+      AttachmentKeyboardButton.LOCATION
   );
 
   private View                            container;
