@@ -13,10 +13,11 @@ import org.whispersystems.signalservice.api.push.exceptions.PushNetworkException
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-public class TrustedIntroductionSendJob extends BaseJob {
+public class TrustedIntroductionSendJob extends PushSendJob {
 
   private static final String TAG = Log.tag(TrustedIntroductionSendJob.class);
 
@@ -24,7 +25,7 @@ public class TrustedIntroductionSendJob extends BaseJob {
   public static final String KEY = "TISendJob";
 
   private final RecipientId introductionRecipientId;
-  private final List<RecipientId> introduceeIds;
+  private final Set<RecipientId>  introduceeIds;
 
   // Serialization Keys
   private static final String KEY_INTRODUCTION_RECIPIENT_ID = "introduction_recipient_id";
@@ -36,7 +37,7 @@ public class TrustedIntroductionSendJob extends BaseJob {
   // TODO: Peeps you want to additionally introduce to the List of this Job if it hasn't run yet... Prolly a good idea to listen to .cancel() and recreate if necessary?
 
 
-  public TrustedIntroductionSendJob(@NonNull RecipientId introductionRecipientId, @NonNull List<RecipientId> introduceeIds){
+  public TrustedIntroductionSendJob(@NonNull RecipientId introductionRecipientId, @NonNull Set<RecipientId> introduceeIds){
     this(introductionRecipientId,
          introduceeIds,
          new Parameters.Builder()
@@ -47,7 +48,7 @@ public class TrustedIntroductionSendJob extends BaseJob {
                        .build());
   }
 
-  private TrustedIntroductionSendJob(@NonNull RecipientId introductionRecipientId, @NonNull List<RecipientId> introduceeIds, @NonNull Parameters parameters) {
+  private TrustedIntroductionSendJob(@NonNull RecipientId introductionRecipientId, @NonNull Set<RecipientId> introduceeIds, @NonNull Parameters parameters) {
     super(parameters);
     if (introduceeIds.isEmpty()){
       // TODO: What do I do in this case? should not happen.
@@ -82,15 +83,9 @@ public class TrustedIntroductionSendJob extends BaseJob {
     Log.e(TAG, String.format(Locale.ENGLISH,"Failed to introduce %d contacts to %s", introduceeIds.size(), introductionRecipientId.toString()));
   }
 
-  @Override protected void onRun() throws Exception {
-    // For now, just query the database and create the fingerprint for each recipient
-    // TODO, how do I encapsulate this task, probably in a Whisper message? Rebuild what they do there I guess.. idk if this will mess with my state though. Definitely needs to be encrypted though!
 
-  }
+  @Override protected void onPushSend() throws Exception {
 
-  @Override protected boolean onShouldRetry(@NonNull Exception e) {
-    // TODO: ... HM, which exceptions should I NOT retry on? for now following example of ResendMessageJob
-    return e instanceof PushNetworkException;
   }
 
   public static final class Factory implements Job.Factory<TrustedIntroductionSendJob> {
