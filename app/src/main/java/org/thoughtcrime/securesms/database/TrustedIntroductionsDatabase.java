@@ -169,12 +169,12 @@ public class TrustedIntroductionsDatabase extends Database{
 
   /**
    *
+   *
    * @param introductionUUID which introduction to modify
    * @param state what state to set, cannot be PENDING
-   * @return true if this was successfull, false otherwise (most likely missing entry or invalid UUID)
-   * @throws AssertionError if state was PENDING
+   * @return true if this was successfull, false otherwise (UUID did not exist in the database)
    */
-  public boolean setState(@NonNull UUID introductionUUID, @NonNull State state) {
+  private boolean setState(@NonNull UUID introductionUUID, @NonNull State state) {
     SQLiteDatabase database = databaseHelper.getSignalWritableDatabase();
     String query = INTRODUCTION_UUID + " = ?";
     String[] args = SqlUtil.buildArgs(introductionUUID.toString());
@@ -193,5 +193,9 @@ public class TrustedIntroductionsDatabase extends Database{
     }
     return false;
   }
+
+  // TODO: all state transition methods can be public => FSM Logic adhered to this way.
+
+  // TODO: Method which returns all non-stale introductions for a given recipient ID
 
 }
