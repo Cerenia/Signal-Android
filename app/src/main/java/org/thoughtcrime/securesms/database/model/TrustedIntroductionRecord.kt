@@ -15,6 +15,5 @@ data class TrustedIntroductionRecord(
   val introducingRecipientId: RecipientId?,
   val introduceeRecipientId: RecipientId,
   val timestamp: Long,
-  val recordState: TrustedIntroductionsDatabase.State,
-
+  val recordState: TrustedIntroductionsDatabase.State
 )
