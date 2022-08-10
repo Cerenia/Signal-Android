@@ -319,8 +319,9 @@ open class RecipientTable(context: Context, databaseHelper: SignalDatabase) : Da
 
     // Used when querying Recipients to introduce to someone
     private val TRUSTED_INTRODUCTION_PROJECTION: Array<String> = arrayOf(
-      SERVICE_ID, // to lookup public key in identity database
+      SERVICE_ID, // to lookup public key in identity database, I *think* this is ACI which *should* match across users, so sending that too..
       USERNAME,
+      PROFILE_JOINED_NAME,
       PROFILE_GIVEN_NAME,
       PROFILE_FAMILY_NAME,
       PHONE

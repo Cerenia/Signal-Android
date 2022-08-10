@@ -41,6 +41,7 @@ import org.whispersystems.signalservice.api.util.UuidUtil;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class IdentityDatabase extends Database {
@@ -65,7 +66,8 @@ public class IdentityDatabase extends Database {
                                                                                   VERIFIED             + " INTEGER DEFAULT 0, " +
                                                                                   NONBLOCKING_APPROVAL + " INTEGER DEFAULT 0);";
 
-  private final String[] TI_PROJECTION = {ADDRESS};
+  private final String[] TI_ADDRESS_PROJECTION      = { ADDRESS};
+  private final String[] TI_IDENTITY_KEY_PROJECTION = {IDENTITY_KEY};
 
   /**
    * Trusted Introductions: We differentiate between a direct verification <code>DIRECTLY_VERIFIED</code> (via. QR code)
@@ -250,7 +252,7 @@ public class IdentityDatabase extends Database {
    * @return Returns a Cursor which iterates through all contacts that are unlocked for
    * trusted introductions (for which @see VerifiedStatus.tiUnlocked returns true)
    */
-  public @NonNull Cursor getTIUnlocked(){
+  public @NonNull Cursor getCursorForTIUnlocked(){
     ArrayList<String> validStates = new ArrayList<>();
     // dynamically compute the valid states and query the Signal database for these contacts
     for(VerifiedStatus e: VerifiedStatus.values()){
@@ -270,7 +272,24 @@ public class IdentityDatabase extends Database {
     // create the rest of the query
     SQLiteDatabase readableDatabase = getReadableDatabase();
     String[] states = validStates.toArray(new String[]{});
-    return readableDatabase.query(TABLE_NAME, TI_PROJECTION, selectionBuilder.toString(), states, null, null, null);
+    return readableDatabase.query(TABLE_NAME, TI_ADDRESS_PROJECTION, selectionBuilder.toString(), states, null, null, null);
+  }
+
+  /**
+   *
+   * @param addresses List of ACI addresses
+   * @return a cursor containing the Identity Keys
+   */
+  public @NonNull Cursor getCursorForIdentityKeys(List<String> addresses){
+    assert !addresses.isEmpty(): "No addresses given to query for TI";
+    StringBuilder query = new StringBuilder();
+    query.append(String.format("%s=?", ADDRESS));
+    if (addresses.size() > 1){
+      query.append(String.format(" OR %s=?", ADDRESS));
+    }
+    SQLiteDatabase readableDatabase = getReadableDatabase();
+    String[] args = addresses.toArray(new String[]{});
+    return readableDatabase.query(TABLE_NAME, TI_IDENTITY_KEY_PROJECTION, query.toString(), args, null, null, null);
   }
 
   public void updateIdentityAfterSync(@NonNull String addressName, @NonNull RecipientId recipientId, IdentityKey identityKey, VerifiedStatus verifiedStatus) {
