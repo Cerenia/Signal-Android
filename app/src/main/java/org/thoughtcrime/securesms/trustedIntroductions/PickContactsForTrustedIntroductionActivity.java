@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 
+import org.json.JSONException;
+import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.PassphraseRequiredActivity;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.components.ContactFilterView;
@@ -39,6 +41,8 @@ import java.util.stream.Stream;
  * and let's the user choose a set of them for the purpose of carrying out a trusted introduction.
  */
 public final class PickContactsForTrustedIntroductionActivity extends PassphraseRequiredActivity implements ContactsSelectionListFragment.OnContactSelectedListener {
+
+  private static final String TAG = Log.tag(PickContactsForTrustedIntroductionActivity.class);
 
   public static final String RECIPIENT_ID = "recipient_id";
   public static final String KEY_SELECTED_CONTACTS_TO_FORWARD = "forwarding_contacts";
@@ -201,6 +205,14 @@ public final class PickContactsForTrustedIntroductionActivity extends Passphrase
     List<RecipientId> recipientIds = state.getToIntroduce().stream().map(Recipient::getId).collect(Collectors.toList());
 
     resultIntent.putParcelableArrayListExtra(KEY_SELECTED_CONTACTS_TO_FORWARD, new ArrayList<>(recipientIds));
+
+    // TODO: Will be in the job, just testing
+    try{
+      String message = TrustedIntroductionsStringUtils.buildMessageBody(recipientIds);
+      Log.e(TAG, message);
+    } catch (JSONException e){
+      Log.e(TAG, e.toString());
+    }
 
     setResult(RESULT_OK, resultIntent);
     // TODO:
