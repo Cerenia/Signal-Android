@@ -317,6 +317,15 @@ open class RecipientTable(context: Context, databaseHelper: SignalDatabase) : Da
       REPORTING_TOKEN
     )
 
+    // Used when querying Recipients to introduce to someone
+    private val TRUSTED_INTRODUCTION_PROJECTION: Array<String> = arrayOf(
+      SERVICE_ID, // to lookup public key in identity database
+      USERNAME,
+      PROFILE_GIVEN_NAME,
+      PROFILE_FAMILY_NAME,
+      PHONE
+    )
+
     private val ID_PROJECTION = arrayOf(ID)
 
     private val SEARCH_PROJECTION = arrayOf(
@@ -741,6 +750,21 @@ open class RecipientTable(context: Context, databaseHelper: SignalDatabase) : Da
     return RecipientReader(cursor)
   }
 
+  /**
+   * Trusted Introductions
+   */
+  fun getCursorForTI(recipientIds: List<RecipientId>): Cursor {
+    val query = StringBuilder()
+    if(!recipientIds.isEmpty()){
+      (1 until recipientIds.size).map{
+        query.append("$ID=? OR ")
+      }
+      query.append("$ID=?")
+    }
+    val identifiers = recipientIds.map { id -> id.toString() }
+    return readableDatabase.query(TABLE_NAME, TRUSTED_INTRODUCTION_PROJECTION, query.toString(), identifiers.toTypedArray(), null, null, null)
+  }
+
   fun getReaderForTI(cursor: Cursor): RecipientReader {
     val identifiers = arrayListOf<String>()
     if(cursor.moveToFirst()){
@@ -761,6 +785,10 @@ open class RecipientTable(context: Context, databaseHelper: SignalDatabase) : Da
     val newCursor = readableDatabase.query(TABLE_NAME, RECIPIENT_PROJECTION, query.toString(), identifiers.toTypedArray(), null, null, null)
     return RecipientReader(newCursor)
   }
+
+  /**
+   * \Trusted Introductions
+   */
 
   fun getRecipientsWithNotificationChannels(): RecipientReader {
     val cursor = readableDatabase.query(TABLE_NAME, ID_PROJECTION, "$NOTIFICATION_CHANNEL NOT NULL", null, null, null, null)
