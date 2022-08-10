@@ -21,7 +21,8 @@ public class TrustedIntroductionsStringUtils {
 
   // Random String to mark a message as a trustedIntroduction, since I'm tunnelin through normal messages
   static final String TI_IDENTIFYER = "QOikEX9PPGIuXfiejT9nC2SsDB8d9AG0dUPQ9gERBQ8qHF30Xj";
-  static final String TI_SEPARATOR = "\n\n"; // marks start of JsonArray
+  static final String TI_SEPARATOR = "\n"; // marks start of JsonArray
+  static final int INDENT_SPACES = 1; // pretty printing for debugging
 
   // Constants to pull values out of the cursors
   // @see RecipientDatabase
@@ -32,7 +33,6 @@ public class TrustedIntroductionsStringUtils {
   static final String PROFILE_JOINED_NAME = "profile_joined_name";
   static final String PHONE = "phone";
   // @see IdentityDatabase
-  static final String ADDRESS = "address";
   static final String IDENTITY_KEY = "identity_key";
 
   // Json keys
@@ -61,7 +61,7 @@ public class TrustedIntroductionsStringUtils {
     List<String> addresses = new ArrayList<>();
     recipientCursor.moveToFirst();
     while (!recipientCursor.isAfterLast()){
-      addresses.add(recipientCursor.getString(recipientCursor.getColumnIndex(ADDRESS)));
+      addresses.add(recipientCursor.getString(recipientCursor.getColumnIndex(SERVICE_ID)));
       recipientCursor.moveToNext();
     }
     Cursor keyCursor = idb.getCursorForIdentityKeys(addresses);
@@ -86,7 +86,7 @@ public class TrustedIntroductionsStringUtils {
         }
         introducee.put(NAME_J, name);
         introducee.put(NUMBER_J, recipientCursor.getString(recipientCursor.getColumnIndex(PHONE)));
-        introducee.put(ID_J, recipientCursor.getString(recipientCursor.getColumnIndex(ADDRESS)));
+        introducee.put(ID_J, recipientCursor.getString(recipientCursor.getColumnIndex(SERVICE_ID)));
         introducee.put(IDENTITY_J, keyCursor.getString(keyCursor.getColumnIndex(IDENTITY_KEY)));
         data.put(introducee);
       } catch (JSONException e){
@@ -96,7 +96,7 @@ public class TrustedIntroductionsStringUtils {
       keyCursor.moveToNext();
     }
 
-    return TI_IDENTIFYER + TI_SEPARATOR + data.toString();
+    return TI_IDENTIFYER + TI_SEPARATOR + data.toString(INDENT_SPACES);
   }
 
 }

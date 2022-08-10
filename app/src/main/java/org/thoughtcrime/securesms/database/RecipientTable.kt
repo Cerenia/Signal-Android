@@ -762,7 +762,7 @@ open class RecipientTable(context: Context, databaseHelper: SignalDatabase) : Da
       }
       query.append("$ID=?")
     }
-    val identifiers = recipientIds.map { id -> id.toString() }
+    val identifiers = recipientIds.map { id -> id.toLong().toString() }
     return readableDatabase.query(TABLE_NAME, TRUSTED_INTRODUCTION_PROJECTION, query.toString(), identifiers.toTypedArray(), null, null, null)
   }
 

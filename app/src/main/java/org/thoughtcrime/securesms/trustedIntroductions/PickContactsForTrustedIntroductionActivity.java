@@ -209,7 +209,7 @@ public final class PickContactsForTrustedIntroductionActivity extends Passphrase
     // TODO: Will be in the job, just testing
     try{
       String message = TrustedIntroductionsStringUtils.buildMessageBody(recipientIds);
-      Log.e(TAG, message);
+      Log.e(TAG, "\n" + message);
     } catch (JSONException e){
       Log.e(TAG, e.toString());
     }
