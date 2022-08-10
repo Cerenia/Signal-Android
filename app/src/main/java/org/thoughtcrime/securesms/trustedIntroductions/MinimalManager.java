@@ -33,7 +33,7 @@ public class MinimalManager {
 
   void getValidContacts(@NonNull Consumer<List<Recipient>> introducableContacts){
     SignalExecutors.BOUNDED.execute(() -> {
-      try(RecipientDatabase.RecipientReader reader = rdb.getReaderForTI(idb.getTIUnlocked())){
+      try(RecipientDatabase.RecipientReader reader = rdb.getReaderForTI(idb.getCursorForTIUnlocked())){
         int count = reader.getCount();
         if (count == 0){
           introducableContacts.accept(Collections.emptyList());

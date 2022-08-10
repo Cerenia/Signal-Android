@@ -206,6 +206,7 @@ public final class PickContactsForTrustedIntroductionActivity extends Passphrase
     // TODO:
     // TODO Where should the Jobs be started? Here or in the conversation activity?
     // It seems like a better idea to do it here.
+    // => Yes, definitely... and then try to rebuild the "sendTextMessage method from the ConversationParentFragment here with the weird Json Formatting that you have."
     finish();
   }
 
