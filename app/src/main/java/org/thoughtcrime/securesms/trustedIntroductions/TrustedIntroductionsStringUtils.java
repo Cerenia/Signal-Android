@@ -155,7 +155,7 @@ public class TrustedIntroductionsStringUtils {
       introductionRecipientId = introductionRecipientACI.getBytes();
     } else {
       version = 1;
-      introductionRecipientId = UuidUtil.toByteArray(UUID.fromString(introcutionRecipientE164));
+      introductionRecipientId = introcutionRecipientE164.getBytes();
     }
 
     while(!recipientCursor.isAfterLast()){
@@ -181,7 +181,7 @@ public class TrustedIntroductionsStringUtils {
       if (FeatureFlags.verifyV2()){
         introduceeId = introduceeACI.getBytes();
       } else {
-        introduceeId = UuidUtil.toByteArray(UUID.fromString(introduceeE164));
+        introduceeId = introduceeE164.getBytes();
       }
       // @see VerifyDisplayFragment::initializeFingerprint(), iterations there also hardcoded to 5200 for FingerprintGenerator
       // @see ServiceId.java to understand how they convert the ACI to ByteArray
