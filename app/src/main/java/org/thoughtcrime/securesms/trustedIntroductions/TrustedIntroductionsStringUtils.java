@@ -143,6 +143,7 @@ public class TrustedIntroductionsStringUtils {
     String introductionRecipientSerializedPublicKey = keyCursor.getString(keyCursor.getColumnIndex(IDENTITY_KEY));
     String introductionRecipientACI = recipientCursor.getString(recipientCursor.getColumnIndex(SERVICE_ID));
     String introcutionRecipientE164 = recipientCursor.getString(recipientCursor.getColumnIndex(PHONE));
+    Log.e(TAG, recipientCursor.getString(recipientCursor.getColumnIndex(PROFILE_JOINED_NAME)));
     advanceCursors(recipientCursor, keyCursor);
 
     // Initialize version and introduction recipients id & key
@@ -152,9 +153,11 @@ public class TrustedIntroductionsStringUtils {
     // @see VerifyDisplayFragment for verification version differences... Not sure I am doing this correctly
     if (FeatureFlags.verifyV2()){
       version = 2;
+      Log.e(TAG, introductionRecipientACI);
       introductionRecipientId = introductionRecipientACI.getBytes();
     } else {
       version = 1;
+      Log.e(TAG, introcutionRecipientE164);
       introductionRecipientId = introcutionRecipientE164.getBytes();
     }
 
@@ -190,7 +193,7 @@ public class TrustedIntroductionsStringUtils {
                                                       introductionRecipientId,
                                                       introductionRecipientPublicKey,
                                                       introduceeId,
-                                                      new IdentityKey(Base64.decode(introductionRecipientSerializedPublicKey)));
+                                                      new IdentityKey(Base64.decode(introduceeSerializedPublicKey)));
       introducee.put(PREDICTED_FINGERPRINT_J, "\n" + getFormattedSafetyNumbers(fingerprint, SEGMENTS));
       data.put(introducee);
       advanceCursors(recipientCursor, keyCursor);
