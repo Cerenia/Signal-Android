@@ -1,5 +1,6 @@
 package org.thoughtcrime.securesms.database
 
+import android.annotation.SuppressLint
 import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
@@ -766,6 +767,7 @@ open class RecipientTable(context: Context, databaseHelper: SignalDatabase) : Da
     return readableDatabase.query(TABLE_NAME, TRUSTED_INTRODUCTION_PROJECTION, query.toString(), identifiers.toTypedArray(), null, null, null)
   }
 
+  @SuppressLint("Range")
   fun getReaderForTI(cursor: Cursor): RecipientReader {
     val identifiers = arrayListOf<String>()
     if(cursor.moveToFirst()){

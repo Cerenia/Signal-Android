@@ -17,7 +17,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-public class TrustedIntroductionSendJob extends PushSendJob {
+public class TrustedIntroductionSendJob extends BaseJob {
 
   private static final String TAG = Log.tag(TrustedIntroductionSendJob.class);
 
@@ -33,7 +33,9 @@ public class TrustedIntroductionSendJob extends PushSendJob {
 
   // TODO: How about enforcing rate limiting?
   // TODO: You should not be able to send the same job again if you've already tried earlier with the same introducees...
+  // I think I will just enforce ignoring the messages on the receiving side instead
   // TODO: Now that I think about it... Ideally one would query if a Job already exists that goes to the introductionRecipient and just add whichever
+  // Naa should be fine
   // TODO: Peeps you want to additionally introduce to the List of this Job if it hasn't run yet... Prolly a good idea to listen to .cancel() and recreate if necessary?
 
 
@@ -84,8 +86,14 @@ public class TrustedIntroductionSendJob extends PushSendJob {
   }
 
 
-  @Override protected void onPushSend() throws Exception {
+  @Override protected void onRun() throws Exception {
+    // Build the message body with the TrustedIntroductionStringUtils class
+    // Build a normal Signal message
+    // Schedule this message to be sent!
+  }
 
+  @Override protected boolean onShouldRetry(@NonNull Exception e) {
+    return false;
   }
 
   public static final class Factory implements Job.Factory<TrustedIntroductionSendJob> {
