@@ -8,6 +8,7 @@ import android.widget.TextView;
 
 import org.json.JSONException;
 import org.signal.core.util.logging.Log;
+import org.signal.libsignal.protocol.InvalidKeyException;
 import org.thoughtcrime.securesms.PassphraseRequiredActivity;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.components.ContactFilterView;
@@ -29,6 +30,7 @@ import androidx.lifecycle.DefaultLifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.ViewModelProvider;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -208,10 +210,14 @@ public final class PickContactsForTrustedIntroductionActivity extends Passphrase
 
     // TODO: Will be in the job, just testing
     try{
-      String message = TrustedIntroductionsStringUtils.buildMessageBody(recipientIds);
-      Log.e(TAG, "\n" + message);
-    } catch (JSONException e){
-      Log.e(TAG, e.toString());
+      String message = TrustedIntroductionsStringUtils.buildMessageBody(state.getRecipient().getId(), recipientIds);
+      Log.i(TAG, "\n" + message);
+    } catch (JSONException je){
+      Log.e(TAG, "Something went wrong while building the json Introduction data! " + je.toString());
+    } catch (IOException eio){
+      Log.e(TAG, "Something went wrong while trying to generate the safety number! " + eio.toString());
+    } catch (InvalidKeyException ike){
+      Log.e(TAG, "A key was invalid while trying to generate the safety number! " + ike.toString());
     }
 
     setResult(RESULT_OK, resultIntent);
