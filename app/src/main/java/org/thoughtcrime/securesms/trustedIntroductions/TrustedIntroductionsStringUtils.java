@@ -15,6 +15,7 @@ import org.signal.libsignal.protocol.fingerprint.NumericFingerprintGenerator;
 import org.thoughtcrime.securesms.database.IdentityDatabase;
 import org.thoughtcrime.securesms.database.RecipientDatabase;
 import org.thoughtcrime.securesms.database.SignalDatabase;
+import org.thoughtcrime.securesms.keyvalue.SignalStore;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 
@@ -26,6 +27,7 @@ import java.util.UUID;
 import org.json.JSONObject;
 import org.json.JSONArray;
 import org.thoughtcrime.securesms.util.Base64;
+import org.thoughtcrime.securesms.util.FeatureFlags;
 import org.whispersystems.signalservice.api.util.UuidUtil;
 
 public class TrustedIntroductionsStringUtils {
@@ -40,10 +42,6 @@ public class TrustedIntroductionsStringUtils {
   // For safety_number generation
   // @see VerifyDisplayFragment, iterations hardcoded there
   static final int ITERATIONS = 5200;
-  // Assuming V2 (does not contain phone number anymore) since this is the newer version which is also more privacy preserving.
-  // I am already assuming I can get a service ID out of the database...
-  // TODO: Is this problematic in practise?
-  static final int VERSION = 2;
   // @See length of codes in VerifyDisplayFragment
   static final int SEGMENTS = 12;
 
@@ -112,6 +110,7 @@ public class TrustedIntroductionsStringUtils {
   public static String buildMessageBody(@NonNull RecipientId introductionRecipient, @NonNull List<RecipientId> introducees) throws JSONException, IOException, InvalidKeyException {
     assert introducees.size() > 0: TAG + " buildMessageBody called with no Recipient Ids!";
 
+    // TODO: Should I just use the LiveRecipient Stuff instead?  :/ caching etc..
     RecipientDatabase rdb = SignalDatabase.recipients();
     IdentityDatabase idb = SignalDatabase.identities();
 
@@ -143,7 +142,21 @@ public class TrustedIntroductionsStringUtils {
     // Pull out public key and ACI (ServiceID) of introduction recipient for fingerprint generation and handle the rest of the list seperately
     String introductionRecipientSerializedPublicKey = keyCursor.getString(keyCursor.getColumnIndex(IDENTITY_KEY));
     String introductionRecipientACI = recipientCursor.getString(recipientCursor.getColumnIndex(SERVICE_ID));
+    String introcutionRecipientE164 = recipientCursor.getString(recipientCursor.getColumnIndex(PHONE));
     advanceCursors(recipientCursor, keyCursor);
+
+    // Initialize version and introduction recipients id & key
+    int version;
+    byte[] introductionRecipientId;
+    IdentityKey introductionRecipientPublicKey = new IdentityKey(Base64.decode(introductionRecipientSerializedPublicKey));
+    // @see VerifyDisplayFragment for verification version differences... Not sure I am doing this correctly
+    if (FeatureFlags.verifyV2()){
+      version = 2;
+      introductionRecipientId = introductionRecipientACI.getBytes();
+    } else {
+      version = 1;
+      introductionRecipientId = UuidUtil.toByteArray(UUID.fromString(introcutionRecipientE164));
+    }
 
     while(!recipientCursor.isAfterLast()){
       JSONObject introducee = new JSONObject();
@@ -157,20 +170,27 @@ public class TrustedIntroductionsStringUtils {
         name = recipientCursor.getString(recipientCursor.getColumnIndex(USERNAME));
       }
       introducee.put(NAME_J, name);
-      introducee.put(NUMBER_J, recipientCursor.getString(recipientCursor.getColumnIndex(PHONE)));
+      String introduceeE164 = recipientCursor.getString(recipientCursor.getColumnIndex(PHONE));
+      introducee.put(NUMBER_J, introduceeE164);
       String introduceeACI = recipientCursor.getString(recipientCursor.getColumnIndex(SERVICE_ID));
       introducee.put(ID_J, introduceeACI);
       String introduceeSerializedPublicKey = keyCursor.getString(keyCursor.getColumnIndex(IDENTITY_KEY));
       introducee.put(IDENTITY_J, introduceeSerializedPublicKey);
 
+      byte[] introduceeId;
+      if (FeatureFlags.verifyV2()){
+        introduceeId = introduceeACI.getBytes();
+      } else {
+        introduceeId = UuidUtil.toByteArray(UUID.fromString(introduceeE164));
+      }
       // @see VerifyDisplayFragment::initializeFingerprint(), iterations there also hardcoded to 5200 for FingerprintGenerator
       // @see ServiceId.java to understand how they convert the ACI to ByteArray
       // @see IdentityKey.java
-      Fingerprint fingerprint = generator.createFor(VERSION,
-                                                      UuidUtil.toByteArray(UUID.fromString(introductionRecipientACI)),
-                                                      new IdentityKey(Base64.decode(introductionRecipientSerializedPublicKey)),
-                                                      UuidUtil.toByteArray(UUID.fromString(introduceeACI)),
-                                                      new IdentityKey(Base64.decode(introduceeSerializedPublicKey)));
+      Fingerprint fingerprint = generator.createFor(version,
+                                                      introductionRecipientId,
+                                                      introductionRecipientPublicKey,
+                                                      introduceeId,
+                                                      new IdentityKey(Base64.decode(introductionRecipientSerializedPublicKey)));
       introducee.put(PREDICTED_FINGERPRINT_J, "\n" + getFormattedSafetyNumbers(fingerprint, SEGMENTS));
       data.put(introducee);
       advanceCursors(recipientCursor, keyCursor);
