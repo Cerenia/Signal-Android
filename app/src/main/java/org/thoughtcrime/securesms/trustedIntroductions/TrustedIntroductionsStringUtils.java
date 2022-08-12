@@ -15,14 +15,19 @@ import org.signal.libsignal.protocol.fingerprint.NumericFingerprintGenerator;
 import org.thoughtcrime.securesms.database.IdentityDatabase;
 import org.thoughtcrime.securesms.database.RecipientDatabase;
 import org.thoughtcrime.securesms.database.SignalDatabase;
+import org.thoughtcrime.securesms.database.model.IdentityRecord;
+import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.keyvalue.SignalStore;
+import org.thoughtcrime.securesms.recipients.LiveRecipient;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 
 import org.json.JSONObject;
 import org.json.JSONArray;
@@ -107,61 +112,81 @@ public class TrustedIntroductionsStringUtils {
   }
 
   @SuppressLint("Range") @WorkerThread
-  public static String buildMessageBody(@NonNull RecipientId introductionRecipient, @NonNull List<RecipientId> introducees) throws JSONException, IOException, InvalidKeyException {
+  public static String buildMessageBody(@NonNull RecipientId introductionRecipientId, @NonNull List<RecipientId> introducees) throws JSONException, IOException, InvalidKeyException {
     assert introducees.size() > 0: TAG + " buildMessageBody called with no Recipient Ids!";
 
     // TODO: Should I just use the LiveRecipient Stuff instead?  :/ caching etc..
     RecipientDatabase rdb = SignalDatabase.recipients();
+
+    /**
     IdentityDatabase idb = SignalDatabase.identities();
+     **/
 
     NumericFingerprintGenerator generator = new NumericFingerprintGenerator(ITERATIONS);
 
+    /**
     // Add introduction recipient to list, such that we can use their public key to predict the security number with everybody else
     ArrayList<RecipientId> allQueryArgs = new ArrayList<>();
     allQueryArgs.add(introductionRecipient);
     allQueryArgs.addAll(introducees);
 
-    Cursor recipientCursor = rdb.getCursorForTI(allQueryArgs);
 
+    Cursor recipientCursor = rdb.getCursorForTI(allQueryArgs);**/
+
+    Cursor recipientCursor = rdb.getCursorForTI(introducees);
+
+    /**
     List<String> addresses = new ArrayList<>();
     recipientCursor.moveToFirst();
     while (!recipientCursor.isAfterLast()){
       addresses.add(recipientCursor.getString(recipientCursor.getColumnIndex(SERVICE_ID)));
       recipientCursor.moveToNext();
     }
-    Cursor keyCursor = idb.getCursorForIdentityKeys(addresses);
+    Cursor keyCursor = idb.getCursorForIdentityKeys(addresses);**/
 
+    /**
     // If this triggers, there is a programming error further up the chain. The UI must not allow a TI for contacts that we
     // do not have the identity key for.
     assert recipientCursor.getCount() == keyCursor.getCount() : TAG + " Cursor length mismatch!";
+    **/
 
     JSONArray data = new JSONArray();
     recipientCursor.moveToFirst();
-    keyCursor.moveToFirst();
+    //keyCursor.moveToFirst();
+
 
     // Pull out public key and ACI (ServiceID) of introduction recipient for fingerprint generation and handle the rest of the list seperately
-    String introductionRecipientSerializedPublicKey = keyCursor.getString(keyCursor.getColumnIndex(IDENTITY_KEY));
-    String introductionRecipientACI = recipientCursor.getString(recipientCursor.getColumnIndex(SERVICE_ID));
-    String introcutionRecipientE164 = recipientCursor.getString(recipientCursor.getColumnIndex(PHONE));
+    //String introductionRecipientSerializedPublicKey = keyCursor.getString(keyCursor.getColumnIndex(IDENTITY_KEY));
+    //String introductionRecipientACI = recipientCursor.getString(recipientCursor.getColumnIndex(SERVICE_ID));
+    //String introcutionRecipientE164 = recipientCursor.getString(recipientCursor.getColumnIndex(PHONE));
     Log.e(TAG, recipientCursor.getString(recipientCursor.getColumnIndex(PROFILE_JOINED_NAME)));
-    advanceCursors(recipientCursor, keyCursor);
+    //advanceCursors(recipientCursor, keyCursor);
+    //recipientCursor.moveToNext();
+
+    Optional<IdentityRecord> introductionRecipientIdentity = ApplicationDependencies.getProtocolStore().aci().identities().getIdentityRecord(introductionRecipientId);
+    // If this doesn't work we have a programming error.
+    assert introductionRecipientIdentity.isPresent() : TAG + " No identity found for the introduction recipient!";
+    IdentityKey introductionRecipientPublicKey = introductionRecipientIdentity.get().getIdentityKey();
+
 
     // Initialize version and introduction recipients id & key
     int version;
-    byte[] introductionRecipientId;
-    IdentityKey introductionRecipientPublicKey = new IdentityKey(Base64.decode(introductionRecipientSerializedPublicKey));
+    byte[]        introductionRecipientIdBytes;
+    LiveRecipient live = Recipient.live(introductionRecipientId);
+    //IdentityKey introductionRecipientPublicKey = new IdentityKey(Base64.decode(introductionRecipientSerializedPublicKey));
+    Recipient introductionRecipientResolved = live.resolve();
     // @see VerifyDisplayFragment for verification version differences... Not sure I am doing this correctly
     if (FeatureFlags.verifyV2()){
       version = 2;
-      Log.e(TAG, introductionRecipientACI);
-      introductionRecipientId = introductionRecipientACI.getBytes();
+      Log.e(TAG, introductionRecipientResolved.requireServiceId().toString());
+      introductionRecipientIdBytes = introductionRecipientResolved.requireServiceId().toByteArray();
     } else {
       version = 1;
-      Log.e(TAG, introcutionRecipientE164);
-      introductionRecipientId = introcutionRecipientE164.getBytes();
+      Log.e(TAG, introductionRecipientResolved.requireE164());
+      introductionRecipientIdBytes = introductionRecipientResolved.requireE164().getBytes();
     }
 
-    while(!recipientCursor.isAfterLast()){
+    for(int i = 0; !recipientCursor.isAfterLast(); i++){
       JSONObject introducee = new JSONObject();
       // For the name, try joint name first, if empty, individual components, if still empty username as last attempt
       String name = "";
@@ -177,26 +202,31 @@ public class TrustedIntroductionsStringUtils {
       introducee.put(NUMBER_J, introduceeE164);
       String introduceeACI = recipientCursor.getString(recipientCursor.getColumnIndex(SERVICE_ID));
       introducee.put(ID_J, introduceeACI);
-      String introduceeSerializedPublicKey = keyCursor.getString(keyCursor.getColumnIndex(IDENTITY_KEY));
-      introducee.put(IDENTITY_J, introduceeSerializedPublicKey);
+      //String introduceeSerializedPublicKey = keyCursor.getString(keyCursor.getColumnIndex(IDENTITY_KEY));
+      //Base64.encodeBytes(identityKey.serialize())
+      Optional<IdentityRecord> introduceeIdentityRecord = ApplicationDependencies.getProtocolStore().aci().identities().getIdentityRecord(introducees.get(i));
+      assert introduceeIdentityRecord.isPresent() : "blah!";
+      IdentityKey introduceeIdentityKey = introduceeIdentityRecord.get().getIdentityKey();
+      introducee.put(IDENTITY_J, Base64.encodeBytes(introduceeIdentityKey.serialize()));
 
-      byte[] introduceeId;
+      byte[] introduceeIdBytes;
       if (FeatureFlags.verifyV2()){
-        introduceeId = introduceeACI.getBytes();
+        introduceeIdBytes = introduceeACI.getBytes();
       } else {
-        introduceeId = introduceeE164.getBytes();
+        introduceeIdBytes = introduceeE164.getBytes();
       }
       // @see VerifyDisplayFragment::initializeFingerprint(), iterations there also hardcoded to 5200 for FingerprintGenerator
       // @see ServiceId.java to understand how they convert the ACI to ByteArray
       // @see IdentityKey.java
       Fingerprint fingerprint = generator.createFor(version,
-                                                      introductionRecipientId,
+                                                      introductionRecipientIdBytes,
                                                       introductionRecipientPublicKey,
-                                                      introduceeId,
-                                                      new IdentityKey(Base64.decode(introduceeSerializedPublicKey)));
+                                                      introduceeIdBytes,
+                                                      introduceeIdentityKey);
       introducee.put(PREDICTED_FINGERPRINT_J, "\n" + getFormattedSafetyNumbers(fingerprint, SEGMENTS));
       data.put(introducee);
-      advanceCursors(recipientCursor, keyCursor);
+      //advanceCursors(recipientCursor, keyCursor);
+      recipientCursor.moveToNext();
     }
 
     return TI_IDENTIFYER + TI_SEPARATOR + data.toString(INDENT_SPACES);

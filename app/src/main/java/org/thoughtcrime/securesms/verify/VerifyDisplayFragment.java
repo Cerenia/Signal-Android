@@ -62,6 +62,7 @@ import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.storage.StorageSyncHelper;
 import org.thoughtcrime.securesms.trustedIntroductions.ClearVerificationDialog;
+import org.thoughtcrime.securesms.util.Base64;
 import org.thoughtcrime.securesms.util.FeatureFlags;
 import org.thoughtcrime.securesms.util.IdentityUtil;
 import org.thoughtcrime.securesms.util.Util;
@@ -207,6 +208,10 @@ public class VerifyDisplayFragment extends Fragment implements ViewTreeObserver.
     this.localIdentity  = localIdentityParcelable.get();
     this.recipient      = Recipient.live(recipientId);
     this.remoteIdentity = remoteIdentityParcelable.get();
+
+    String keyString = remoteIdentity.toString();
+    String keyfinger = remoteIdentity.getFingerprint();
+    String base64 = Base64.encodeBytes(remoteIdentity.serialize());
 
     int    version;
     byte[] localId;
