@@ -67,16 +67,11 @@ import org.thoughtcrime.securesms.util.IdentityUtil;
 import org.thoughtcrime.securesms.util.Util;
 import org.thoughtcrime.securesms.util.ViewUtil;
 import org.signal.core.util.concurrent.SimpleTask;
-import org.thoughtcrime.securesms.util.concurrent.SimpleTask;
-import org.whispersystems.libsignal.IdentityKey;
-import org.whispersystems.libsignal.fingerprint.Fingerprint;
-import org.whispersystems.libsignal.fingerprint.FingerprintVersionMismatchException;
-import org.whispersystems.libsignal.fingerprint.NumericFingerprintGenerator;
-import org.whispersystems.libsignal.util.guava.Optional;
 import org.whispersystems.signalservice.api.SignalSessionLock;
 
 import java.nio.charset.Charset;
 import java.util.Locale;
+import java.util.Optional;
 
 /**
  * Fragment to display a user's identity key.
@@ -537,7 +532,7 @@ public class VerifyDisplayFragment extends Fragment implements ViewTreeObserver.
     qrCodeContainer.setEnabled(false);
   }
 
-  private void updateVerifyButtonText(boolean verified){
+  private void updateVerifyButtonText(boolean verified) {
     if (verified) {
       verifyButton.setText(R.string.verify_display_fragment__clear_verification);
     } else {
@@ -548,27 +543,24 @@ public class VerifyDisplayFragment extends Fragment implements ViewTreeObserver.
   private void updateVerifyButtonLogic() {
     final RecipientId recipientId = recipient.getId();
     // Check the current verification status
-    Optional<IdentityRecord> record = ApplicationDependencies.getIdentityStore().getIdentityRecord(recipientId);
-    if (record.isPresent()) { // TODO: When would this not be present??
-      IdentityDatabase.VerifiedStatus previousStatus = record.get().getVerifiedStatus();
-      Log.i(TAG, "Saving identity: " + recipientId);
-      if (IdentityDatabase.VerifiedStatus.stronglyVerified(previousStatus)) {
-        androidx.fragment.app.FragmentActivity activity = getActivity();
-        // TODO: when would this activity ever be null?
-        if (activity != null) {
-          // go through user check first.
-          ClearVerificationDialog.show(activity, this, previousStatus);
-        }
-      } else if (previousStatus == VerifiedStatus.MANUALLY_VERIFIED){
-        // manually verified, no user check necessary
-        updateContactsVerifiedStatus(VerifiedStatus.UNVERIFIED);
-        updateVerifyButtonText(false);
-      } else {
-        // Unverified or default, simply set to manually verified
-        updateContactsVerifiedStatus(VerifiedStatus.MANUALLY_VERIFIED);
-        updateVerifyButtonText(true);
+    IdentityDatabase.VerifiedStatus previousStatus = SignalDatabase.identities().getVerifiedStatus(recipientId);
+    Log.i(TAG, "Saving identity: " + recipientId);
+    if (IdentityDatabase.VerifiedStatus.stronglyVerified(previousStatus)) {
+      androidx.fragment.app.FragmentActivity activity = getActivity();
+      // TODO: when would this activity ever be null?
+      if (activity != null) {
+        // go through user check first.
+        ClearVerificationDialog.show(activity, this, previousStatus);
       }
-    }// Nothing happens if record is not present.
+    } else if (previousStatus == VerifiedStatus.MANUALLY_VERIFIED) {
+      // manually verified, no user check necessary
+      updateContactsVerifiedStatus(VerifiedStatus.UNVERIFIED);
+      updateVerifyButtonText(false);
+    } else {
+      // Unverified or default, simply set to manually verified
+      updateContactsVerifiedStatus(VerifiedStatus.MANUALLY_VERIFIED);
+      updateVerifyButtonText(true);
+    }
   }
 
   @Override
@@ -579,6 +571,7 @@ public class VerifyDisplayFragment extends Fragment implements ViewTreeObserver.
 
   /**
    * Runs in its own thread.
+   *
    * @param status The new verification status
    */
   private void updateContactsVerifiedStatus(IdentityDatabase.VerifiedStatus status) {
@@ -597,7 +590,7 @@ public class VerifyDisplayFragment extends Fragment implements ViewTreeObserver.
                                                                  System.currentTimeMillis(),
                                                                  true);
         } else {
-          ApplicationDependencies.getIdentityStore().setVerified(recipientId, remoteIdentity, status);
+          ApplicationDependencies.getProtocolStore().aci().identities().setVerified(recipientId, remoteIdentity, status);
         }
 
         // For other devices but the Android phone, we map the finer statusses to verified or unverified.
