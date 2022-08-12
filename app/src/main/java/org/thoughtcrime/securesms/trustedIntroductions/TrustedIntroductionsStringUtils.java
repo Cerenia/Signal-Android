@@ -51,6 +51,8 @@ public class TrustedIntroductionsStringUtils {
   static final int SEGMENTS = 12;
 
   // Constants to pull values out of the cursors
+  // Might be worth it to consider using live recipient for all of them... but I only need a few values, not sure
+  // what is less overhead and if caching is really relevant here.
   // @see RecipientDatabase
   static final String SERVICE_ID = "uuid";
   static final String USERNAME = "username";
@@ -58,8 +60,6 @@ public class TrustedIntroductionsStringUtils {
   static final String PROFILE_FAMILY_NAME = "profile_family_name";
   static final String PROFILE_JOINED_NAME = "profile_joined_name";
   static final String PHONE = "phone";
-  // @see IdentityDatabase
-  static final String IDENTITY_KEY = "identity_key";
 
   // Json keys
   static final String NAME_J = "name";
@@ -98,11 +98,7 @@ public class TrustedIntroductionsStringUtils {
     return segments;
   }
 
-  private static void advanceCursors(Cursor c1, Cursor c2){
-    c1.moveToNext();
-    c2.moveToNext();
-  }
-
+  // Needed because of 19 min API
   private static boolean isOnlyWhitespace(String name){
     for(Character c: name.toCharArray()){
       if(!Character.isWhitespace(c))
@@ -111,81 +107,42 @@ public class TrustedIntroductionsStringUtils {
     return true;
   }
 
+  private static IdentityKey getIdentityKey(RecipientId id){
+    Optional<IdentityRecord> identityRecord = ApplicationDependencies.getProtocolStore().aci().identities().getIdentityRecord(id);
+    // If this doesn't work we have a programming error further up the stack, no introduction can be made if we don't have the identity.
+    assert identityRecord.isPresent() : TAG + " No identity found for the introduction recipient!";
+    return identityRecord.get().getIdentityKey();
+  }
+
   @SuppressLint("Range") @WorkerThread
   public static String buildMessageBody(@NonNull RecipientId introductionRecipientId, @NonNull List<RecipientId> introducees) throws JSONException, IOException, InvalidKeyException {
     assert introducees.size() > 0: TAG + " buildMessageBody called with no Recipient Ids!";
 
     // TODO: Should I just use the LiveRecipient Stuff instead?  :/ caching etc..
     RecipientDatabase rdb = SignalDatabase.recipients();
-
-    /**
-    IdentityDatabase idb = SignalDatabase.identities();
-     **/
-
     NumericFingerprintGenerator generator = new NumericFingerprintGenerator(ITERATIONS);
-
-    /**
-    // Add introduction recipient to list, such that we can use their public key to predict the security number with everybody else
-    ArrayList<RecipientId> allQueryArgs = new ArrayList<>();
-    allQueryArgs.add(introductionRecipient);
-    allQueryArgs.addAll(introducees);
-
-
-    Cursor recipientCursor = rdb.getCursorForTI(allQueryArgs);**/
-
     Cursor recipientCursor = rdb.getCursorForTI(introducees);
-
-    /**
-    List<String> addresses = new ArrayList<>();
-    recipientCursor.moveToFirst();
-    while (!recipientCursor.isAfterLast()){
-      addresses.add(recipientCursor.getString(recipientCursor.getColumnIndex(SERVICE_ID)));
-      recipientCursor.moveToNext();
-    }
-    Cursor keyCursor = idb.getCursorForIdentityKeys(addresses);**/
-
-    /**
-    // If this triggers, there is a programming error further up the chain. The UI must not allow a TI for contacts that we
-    // do not have the identity key for.
-    assert recipientCursor.getCount() == keyCursor.getCount() : TAG + " Cursor length mismatch!";
-    **/
-
     JSONArray data = new JSONArray();
-    recipientCursor.moveToFirst();
-    //keyCursor.moveToFirst();
-
-
-    // Pull out public key and ACI (ServiceID) of introduction recipient for fingerprint generation and handle the rest of the list seperately
-    //String introductionRecipientSerializedPublicKey = keyCursor.getString(keyCursor.getColumnIndex(IDENTITY_KEY));
-    //String introductionRecipientACI = recipientCursor.getString(recipientCursor.getColumnIndex(SERVICE_ID));
-    //String introcutionRecipientE164 = recipientCursor.getString(recipientCursor.getColumnIndex(PHONE));
-    Log.e(TAG, recipientCursor.getString(recipientCursor.getColumnIndex(PROFILE_JOINED_NAME)));
-    //advanceCursors(recipientCursor, keyCursor);
-    //recipientCursor.moveToNext();
-
-    Optional<IdentityRecord> introductionRecipientIdentity = ApplicationDependencies.getProtocolStore().aci().identities().getIdentityRecord(introductionRecipientId);
-    // If this doesn't work we have a programming error.
-    assert introductionRecipientIdentity.isPresent() : TAG + " No identity found for the introduction recipient!";
-    IdentityKey introductionRecipientPublicKey = introductionRecipientIdentity.get().getIdentityKey();
-
 
     // Initialize version and introduction recipients id & key
     int version;
-    byte[]        introductionRecipientIdBytes;
+    byte[]        introductionRecipientFingerprintId;
     LiveRecipient live = Recipient.live(introductionRecipientId);
-    //IdentityKey introductionRecipientPublicKey = new IdentityKey(Base64.decode(introductionRecipientSerializedPublicKey));
     Recipient introductionRecipientResolved = live.resolve();
-    // @see VerifyDisplayFragment for verification version differences... Not sure I am doing this correctly
+    // @see VerifyDisplayFragment for verification version differences
     if (FeatureFlags.verifyV2()){
       version = 2;
       Log.e(TAG, introductionRecipientResolved.requireServiceId().toString());
-      introductionRecipientIdBytes = introductionRecipientResolved.requireServiceId().toByteArray();
+      introductionRecipientFingerprintId = introductionRecipientResolved.requireServiceId().toByteArray();
     } else {
       version = 1;
       Log.e(TAG, introductionRecipientResolved.requireE164());
-      introductionRecipientIdBytes = introductionRecipientResolved.requireE164().getBytes();
+      introductionRecipientFingerprintId = introductionRecipientResolved.requireE164().getBytes();
     }
+    IdentityKey introductionRecipientIdentityKey = getIdentityKey(introductionRecipientId);
 
+    // Loop over all the contacts you want to introduce
+    recipientCursor.moveToFirst();
     for(int i = 0; !recipientCursor.isAfterLast(); i++){
       JSONObject introducee = new JSONObject();
       // For the name, try joint name first, if empty, individual components, if still empty username as last attempt
@@ -202,30 +159,26 @@ public class TrustedIntroductionsStringUtils {
       introducee.put(NUMBER_J, introduceeE164);
       String introduceeACI = recipientCursor.getString(recipientCursor.getColumnIndex(SERVICE_ID));
       introducee.put(ID_J, introduceeACI);
-      //String introduceeSerializedPublicKey = keyCursor.getString(keyCursor.getColumnIndex(IDENTITY_KEY));
-      //Base64.encodeBytes(identityKey.serialize())
       Optional<IdentityRecord> introduceeIdentityRecord = ApplicationDependencies.getProtocolStore().aci().identities().getIdentityRecord(introducees.get(i));
       assert introduceeIdentityRecord.isPresent() : "blah!";
       IdentityKey introduceeIdentityKey = introduceeIdentityRecord.get().getIdentityKey();
       introducee.put(IDENTITY_J, Base64.encodeBytes(introduceeIdentityKey.serialize()));
-
-      byte[] introduceeIdBytes;
+      byte[] introduceeFingerprintId;
       if (FeatureFlags.verifyV2()){
-        introduceeIdBytes = introduceeACI.getBytes();
+        introduceeFingerprintId = introduceeACI.getBytes();
       } else {
-        introduceeIdBytes = introduceeE164.getBytes();
+        introduceeFingerprintId = introduceeE164.getBytes();
       }
       // @see VerifyDisplayFragment::initializeFingerprint(), iterations there also hardcoded to 5200 for FingerprintGenerator
       // @see ServiceId.java to understand how they convert the ACI to ByteArray
       // @see IdentityKey.java
       Fingerprint fingerprint = generator.createFor(version,
-                                                      introductionRecipientIdBytes,
-                                                      introductionRecipientPublicKey,
-                                                      introduceeIdBytes,
+                                                      introductionRecipientFingerprintId,
+                                                      introductionRecipientIdentityKey,
+                                                      introduceeFingerprintId,
                                                       introduceeIdentityKey);
       introducee.put(PREDICTED_FINGERPRINT_J, "\n" + getFormattedSafetyNumbers(fingerprint, SEGMENTS));
       data.put(introducee);
-      //advanceCursors(recipientCursor, keyCursor);
       recipientCursor.moveToNext();
     }
 

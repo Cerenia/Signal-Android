@@ -275,22 +275,6 @@ public class IdentityDatabase extends Database {
     return readableDatabase.query(TABLE_NAME, TI_ADDRESS_PROJECTION, selectionBuilder.toString(), states, null, null, null);
   }
 
-  /**
-   *
-   * @param addresses List of ACI addresses
-   * @return a cursor containing the Identity Keys
-   */
-  public @NonNull Cursor getCursorForIdentityKeys(List<String> addresses){
-    assert !addresses.isEmpty(): "No addresses given to query for TI";
-    StringBuilder query = new StringBuilder();
-    query.append(String.format("%s=?", ADDRESS));
-    for(int i = 1; i < addresses.size(); i++)
-      query.append(String.format(" OR %s=?", ADDRESS));
-    SQLiteDatabase readableDatabase = getReadableDatabase();
-    String[] args = addresses.toArray(new String[]{});
-    return readableDatabase.query(TABLE_NAME, TI_IDENTITY_KEY_PROJECTION, query.toString(), args, null, null, null);
-  }
-
   public void updateIdentityAfterSync(@NonNull String addressName, @NonNull RecipientId recipientId, IdentityKey identityKey, VerifiedStatus verifiedStatus) {
     Optional<IdentityRecord> existingRecord = getIdentityRecord(addressName);
 
