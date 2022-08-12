@@ -64,7 +64,7 @@ public class TrustedIntroductionsStringUtils {
   // Json keys
   static final String NAME_J = "name";
   static final String NUMBER_J = "number";
-  static final String IDENTITY_J = "public_key";
+  static final String IDENTITY_J = "identity_key_base64";
   static final String ID_J = "uuid";
   static final String PREDICTED_FINGERPRINT_J = "safety_number";
 
