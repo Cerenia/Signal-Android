@@ -159,9 +159,7 @@ public class TrustedIntroductionsStringUtils {
       introducee.put(NUMBER_J, introduceeE164);
       String introduceeACI = recipientCursor.getString(recipientCursor.getColumnIndex(SERVICE_ID));
       introducee.put(ID_J, introduceeACI);
-      Optional<IdentityRecord> introduceeIdentityRecord = ApplicationDependencies.getProtocolStore().aci().identities().getIdentityRecord(introducees.get(i));
-      assert introduceeIdentityRecord.isPresent() : "blah!";
-      IdentityKey introduceeIdentityKey = introduceeIdentityRecord.get().getIdentityKey();
+      IdentityKey introduceeIdentityKey = getIdentityKey(introducees.get(i));
       introducee.put(IDENTITY_J, Base64.encodeBytes(introduceeIdentityKey.serialize()));
       byte[] introduceeFingerprintId;
       if (FeatureFlags.verifyV2()){
