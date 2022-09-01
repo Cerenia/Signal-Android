@@ -12,31 +12,25 @@ import org.signal.libsignal.protocol.InvalidKeyException;
 import org.thoughtcrime.securesms.PassphraseRequiredActivity;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.components.ContactFilterView;
-import org.thoughtcrime.securesms.contacts.SelectedContact;
-import org.thoughtcrime.securesms.database.IdentityDatabase;
-import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.util.DynamicNoActionBarTheme;
 import org.thoughtcrime.securesms.util.DynamicTheme;
 import org.thoughtcrime.securesms.util.Util;
-import org.signal.core.util.concurrent.SimpleTask;
 
+import androidx.activity.result.contract.ActivityResultContract;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
-import androidx.lifecycle.DefaultLifecycleObserver;
-import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.ViewModelProvider;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Queries the Contacts Provider for Contacts which match strongly verified contacts in the Signal identity database,
@@ -46,8 +40,8 @@ public final class PickContactsForTrustedIntroductionActivity extends Passphrase
 
   private static final String TAG = Log.tag(PickContactsForTrustedIntroductionActivity.class);
 
-  public static final String RECIPIENT_ID = "recipient_id";
-  public static final String KEY_SELECTED_CONTACTS_TO_FORWARD = "forwarding_contacts";
+  public static final String RECIPIENT_ID                 = "recipient_id";
+  public static final String SELECTED_CONTACTS_TO_FORWARD = "forwarding_contacts";
 
   private final DynamicTheme dynamicTheme = new DynamicNoActionBarTheme();
 
@@ -59,6 +53,7 @@ public final class PickContactsForTrustedIntroductionActivity extends Passphrase
   private TextView                                  no_valid_contacts;
   private ContactFilterView                         contactFilterView;
   private Toolbar           toolbar;
+
 
   public static @NonNull Intent createIntent(@NonNull Context context, @NonNull RecipientId id){
     Intent intent = new Intent(context, PickContactsForTrustedIntroductionActivity.class);
@@ -203,12 +198,13 @@ public final class PickContactsForTrustedIntroductionActivity extends Passphrase
   }
 
   private void onFinishedSelection(@NonNull MinimalViewModel.IntroduceDialogMessageState state) {
-    Intent                resultIntent     = getIntent();
-    List<RecipientId> recipientIds = state.getToIntroduce().stream().map(Recipient::getId).collect(Collectors.toList());
+    Intent           resultIntent = getIntent();
+    Set<RecipientId> recipientIds = state.getToIntroduce().stream().map(Recipient::getId).collect(Collectors.toSet());
 
-    resultIntent.putParcelableArrayListExtra(KEY_SELECTED_CONTACTS_TO_FORWARD, new ArrayList<>(recipientIds));
+    resultIntent.putParcelableArrayListExtra(SELECTED_CONTACTS_TO_FORWARD, new ArrayList<>(recipientIds));
 
     // TODO: Will be in the job, just testing
+    // TODO: Remove once job works
     try{
       String message = TrustedIntroductionsStringUtils.buildMessageBody(state.getRecipient().getId(), recipientIds);
       Log.i(TAG, "\n" + message);
@@ -221,11 +217,8 @@ public final class PickContactsForTrustedIntroductionActivity extends Passphrase
     }
 
     setResult(RESULT_OK, resultIntent);
-    // TODO:
-    // TODO Where should the Jobs be started? Here or in the conversation activity?
-    // It seems like a better idea to do it here.
-    // => Yes, definitely... and then try to rebuild the "sendTextMessage method from the ConversationParentFragment here with the weird Json Formatting that you have."
     finish();
   }
 
 }
+

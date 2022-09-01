@@ -51,6 +51,7 @@ import org.thoughtcrime.securesms.components.RemovableEditableMediaView;
 import org.thoughtcrime.securesms.components.ThumbnailView;
 import org.thoughtcrime.securesms.components.location.SignalMapView;
 import org.thoughtcrime.securesms.components.location.SignalPlace;
+import org.thoughtcrime.securesms.conversation.ConversationParentFragment;
 import org.thoughtcrime.securesms.conversation.MessageSendType;
 import org.thoughtcrime.securesms.database.AttachmentTable;
 import org.thoughtcrime.securesms.database.MediaTable;
@@ -476,10 +477,10 @@ public class AttachmentManager {
         .show();
   }
 
-  public static void selectTI(@NonNull Fragment fragment, @NonNull RecipientId recipientId){
+  public static void selectTI(@NonNull ConversationParentFragment fragment, @NonNull RecipientId recipientId){
     // Start contact picker activity
-    Intent intent = PickContactsForTrustedIntroductionActivity.createIntent(fragment.requireContext(), recipientId);
-    fragment.startActivity(intent);
+    // TODO: Only left here for consistency with the preexisting structure.. But trying to avoid using deprecated code.
+    fragment.tiLaunch.launch(PickContactsForTrustedIntroductionActivity.createIntent(fragment.requireContext(), recipientId));
   }
 
   private @Nullable Uri getSlideUri() {
