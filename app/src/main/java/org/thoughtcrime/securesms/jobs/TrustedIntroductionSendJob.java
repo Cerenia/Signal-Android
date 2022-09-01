@@ -111,7 +111,7 @@ public class TrustedIntroductionSendJob extends BaseJob {
 
     @Override
     public @NonNull TrustedIntroductionSendJob create(@NonNull Parameters params, @NonNull Data data){
-      return new TrustedIntroductionSendJob(RecipientId.from(data.getLong(KEY_INTRODUCTION_RECIPIENT_ID)),
+      return new TrustedIntroductionSendJob(RecipientId.from(data.getString(KEY_INTRODUCTION_RECIPIENT_ID)),
                                             data.getLongArrayAsList(KEY_INTRODUCEE_IDS).stream().map(RecipientId::from).collect(Collectors.toSet()),
                                             params);
     }
