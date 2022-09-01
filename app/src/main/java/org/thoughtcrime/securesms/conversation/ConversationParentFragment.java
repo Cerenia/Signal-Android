@@ -277,7 +277,7 @@ import org.thoughtcrime.securesms.stickers.StickerPackInstallEvent;
 import org.thoughtcrime.securesms.stickers.StickerSearchRepository;
 import org.thoughtcrime.securesms.stories.StoryViewerArgs;
 import org.thoughtcrime.securesms.stories.viewer.StoryViewerActivity;
-import org.thoughtcrime.securesms.trustedIntroductions.PickContactsForTrustedIntroductionActivity;
+import org.thoughtcrime.securesms.trustedIntroductions.TI_ContactsChooseActivity;
 import org.thoughtcrime.securesms.util.AsynchronousCallback;
 import org.thoughtcrime.securesms.util.BitmapUtil;
 import org.thoughtcrime.securesms.util.BubbleUtil;
@@ -503,8 +503,8 @@ public class ConversationParentFragment extends Fragment
         Intent intent = result.getData();
         assert intent != null; // Programming error.
         // Start TI Job with the id arrayList
-        RecipientId            recipientId   = RecipientId.from(intent.getLongExtra(PickContactsForTrustedIntroductionActivity.RECIPIENT_ID, -1));
-        ArrayList<RecipientId> introduceeIds = intent.getParcelableArrayListExtra(PickContactsForTrustedIntroductionActivity.SELECTED_CONTACTS_TO_FORWARD);
+        RecipientId            recipientId   = RecipientId.from(intent.getLongExtra(TI_ContactsChooseActivity.RECIPIENT_ID, -1));
+        ArrayList<RecipientId> introduceeIds = intent.getParcelableArrayListExtra(TI_ContactsChooseActivity.SELECTED_CONTACTS_TO_FORWARD);
         HashSet<RecipientId>   idSet         = new HashSet<>(introduceeIds);
         ApplicationDependencies.getJobManager().add(new TrustedIntroductionSendJob(recipientId, idSet));
       } else{

@@ -13,22 +13,20 @@ import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import org.thoughtcrime.securesms.R;
-import org.thoughtcrime.securesms.contacts.ContactSelectionListAdapter;
 import org.thoughtcrime.securesms.mms.GlideRequests;
 import org.thoughtcrime.securesms.recipients.Recipient;
-import org.thoughtcrime.securesms.recipients.RecipientId;
 
-public class MinimalAdapter extends ListAdapter<Recipient, MinimalAdapter.TIContactViewHolder> {
+public class TI_ContactsChooseAdapter extends ListAdapter<Recipient, TI_ContactsChooseAdapter.TIContactViewHolder> {
 
   private final @NonNull Context context;
 
-  private final LayoutInflater                                layoutInflater;
-  private final MinimalAdapter.ItemClickListener clickListener;
-  private final GlideRequests                                 glideRequests;
+  private final LayoutInflater                             layoutInflater;
+  private final TI_ContactsChooseAdapter.ItemClickListener clickListener;
+  private final GlideRequests                              glideRequests;
 
-  MinimalAdapter(@NonNull Context context,
-                              @NonNull GlideRequests glideRequests,
-                              @Nullable MinimalAdapter.ItemClickListener clickListener)
+  TI_ContactsChooseAdapter(@NonNull Context context,
+                           @NonNull GlideRequests glideRequests,
+                           @Nullable TI_ContactsChooseAdapter.ItemClickListener clickListener)
   {
     super(new DiffUtil.ItemCallback<Recipient>() {
       @Override public boolean areItemsTheSame(@NonNull Recipient oldItem, @NonNull Recipient newItem) {
@@ -79,7 +77,7 @@ public class MinimalAdapter extends ListAdapter<Recipient, MinimalAdapter.TICont
   static class TIContactViewHolder extends RecyclerView.ViewHolder {
 
     TIContactViewHolder(@NonNull final View itemView,
-                        @Nullable final MinimalAdapter.ItemClickListener clickListener)
+                        @Nullable final TI_ContactsChooseAdapter.ItemClickListener clickListener)
     {
       super(itemView);
       itemView.setOnClickListener(v -> {
@@ -87,8 +85,8 @@ public class MinimalAdapter extends ListAdapter<Recipient, MinimalAdapter.TICont
       });
     }
 
-    MinimalContactSelectionListItem getView() {
-      return (MinimalContactSelectionListItem) itemView;
+    TI_ContactsChooseSelectionListItem getView() {
+      return (TI_ContactsChooseSelectionListItem) itemView;
     }
 
     public void bind(@NonNull GlideRequests glideRequests, Recipient recipient){
@@ -103,6 +101,6 @@ public class MinimalAdapter extends ListAdapter<Recipient, MinimalAdapter.TICont
   }
 
   public interface ItemClickListener {
-    void onItemClick(MinimalContactSelectionListItem item);
+    void onItemClick(TI_ContactsChooseSelectionListItem item);
   }
 }

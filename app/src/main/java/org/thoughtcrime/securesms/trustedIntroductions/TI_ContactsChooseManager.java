@@ -15,7 +15,7 @@ import java.util.List;
 
 import io.reactivex.rxjava3.annotations.NonNull;
 
-public class MinimalManager {
+public class TI_ContactsChooseManager {
 
   // This is the person which will receive the security numbers of the selected contacts through
   //  a secure introduction.
@@ -25,7 +25,7 @@ public class MinimalManager {
   private final IdentityDatabase  idb;
   private final RecipientDatabase rdb;
 
-  MinimalManager(RecipientId recipientId, IdentityDatabase idb, RecipientDatabase rdb){
+  TI_ContactsChooseManager(RecipientId recipientId, IdentityDatabase idb, RecipientDatabase rdb){
     this.recipientId = recipientId;
     this.idb = idb;
     this.rdb = rdb;

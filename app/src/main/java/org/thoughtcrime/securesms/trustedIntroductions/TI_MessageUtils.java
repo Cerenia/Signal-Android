@@ -12,36 +12,30 @@ import org.signal.libsignal.protocol.IdentityKey;
 import org.signal.libsignal.protocol.InvalidKeyException;
 import org.signal.libsignal.protocol.fingerprint.Fingerprint;
 import org.signal.libsignal.protocol.fingerprint.NumericFingerprintGenerator;
-import org.thoughtcrime.securesms.database.IdentityDatabase;
 import org.thoughtcrime.securesms.database.RecipientDatabase;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.database.model.IdentityRecord;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
-import org.thoughtcrime.securesms.keyvalue.SignalStore;
 import org.thoughtcrime.securesms.recipients.LiveRecipient;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 
 import org.json.JSONObject;
 import org.json.JSONArray;
 import org.thoughtcrime.securesms.util.Base64;
 import org.thoughtcrime.securesms.util.FeatureFlags;
-import org.whispersystems.signalservice.api.util.UuidUtil;
 
-public class TrustedIntroductionsStringUtils {
+public class TI_MessageUtils {
 
-  static final String TAG = Log.tag(TrustedIntroductionsStringUtils.class);
+  static final String TAG = Log.tag(TI_MessageUtils.class);
 
   // Random String to mark a message as a trustedIntroduction, since I'm tunneling through normal messages
-  static final String TI_IDENTIFYER = "QOikEX9PPGIuXfiejT9nC2SsDB8d9AG0dUPQ9gERBQ8qHF30Xj";
+  static final String TI_IDENTIFYER = "QOikEX9PPGIuXfiejT9nC2SsDB8d9AG0dUPQ9gERBQ8qHF30Xj --- Introduction Data:\n";
   static final String TI_SEPARATOR = "\n"; // marks start of JsonArray, human friendly
   static final int INDENT_SPACES = 1; // pretty printing for human readableness
 
@@ -115,17 +109,8 @@ public class TrustedIntroductionsStringUtils {
     return identityRecord.get().getIdentityKey();
   }
 
-  // TODO: clean up at some point. No reason for this to ever not be a set.
-  public static String buildMessageBody(@NonNull RecipientId introductionRecipientId, @NonNull Set<RecipientId> introducees) throws JSONException, IOException, InvalidKeyException {
-    ArrayList<RecipientId> i = new ArrayList<>();
-    for(RecipientId id : introducees){
-      i.add(id);
-    }
-    return buildMessageBody(introductionRecipientId, i);
-  }
-
   @SuppressLint("Range") @WorkerThread
-  public static String buildMessageBody(@NonNull RecipientId introductionRecipientId, @NonNull List<RecipientId> introducees) throws JSONException, IOException, InvalidKeyException {
+  public static String buildMessageBody(@NonNull RecipientId introductionRecipientId, @NonNull Set<RecipientId> introducees) throws JSONException, IOException, InvalidKeyException {
     assert introducees.size() > 0: TAG + " buildMessageBody called with no Recipient Ids!";
 
     // TODO: Should I just use the LiveRecipient Stuff instead?  :/ caching etc..
@@ -153,6 +138,7 @@ public class TrustedIntroductionsStringUtils {
 
     // Loop over all the contacts you want to introduce
     recipientCursor.moveToFirst();
+    ArrayList<RecipientId> introduceesList = new ArrayList<>(introducees);
     for(int i = 0; !recipientCursor.isAfterLast(); i++){
       JSONObject introducee = new JSONObject();
       // For the name, try joint name first, if empty, individual components, if still empty username as last attempt
@@ -169,7 +155,7 @@ public class TrustedIntroductionsStringUtils {
       introducee.put(NUMBER_J, introduceeE164);
       String introduceeACI = recipientCursor.getString(recipientCursor.getColumnIndex(SERVICE_ID));
       introducee.put(ID_J, introduceeACI);
-      IdentityKey introduceeIdentityKey = getIdentityKey(introducees.get(i));
+      IdentityKey introduceeIdentityKey = getIdentityKey(introduceesList.get(i));
       introducee.put(IDENTITY_J, Base64.encodeBytes(introduceeIdentityKey.serialize()));
       byte[] introduceeFingerprintId;
       if (FeatureFlags.verifyV2()){
@@ -185,7 +171,8 @@ public class TrustedIntroductionsStringUtils {
                                                       introductionRecipientIdentityKey,
                                                       introduceeFingerprintId,
                                                       introduceeIdentityKey);
-      introducee.put(PREDICTED_FINGERPRINT_J, "\n" + getFormattedSafetyNumbers(fingerprint, SEGMENTS));
+      String formatedSafetyNr = getFormattedSafetyNumbers(fingerprint, SEGMENTS).replace("\n", "");
+      introducee.put(PREDICTED_FINGERPRINT_J, formatedSafetyNr);
       data.put(introducee);
       recipientCursor.moveToNext();
     }

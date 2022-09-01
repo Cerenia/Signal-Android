@@ -1572,7 +1572,7 @@
     <string name="PlacePickerActivity_drop_pin">Drop pin</string>
     <string name="PlacePickerActivity_accept_address">Accept address</string>
 
-    <!-- PickContactsForTIActivity -->
+    <!-- TI_ContactsChooseActivity -->
     <string name="PickContactsForTIActivity_title">Introduce contacts:</string>
     <plurals name="PickContactsForTIActivity__introduce_d_contacts_to_s">
         <item quantity="one">Introduce %1$s to %2$s?</item>

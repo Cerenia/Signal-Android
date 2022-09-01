@@ -689,7 +689,7 @@ open class RecipientTable(context: Context, databaseHelper: SignalDatabase) : Da
   /**
    * Trusted Introductions
    */
-  fun getCursorForTI(recipientIds: List<RecipientId>): Cursor {
+  fun getCursorForTI(recipientIds: Set<RecipientId>): Cursor {
     val query = StringBuilder()
     if(!recipientIds.isEmpty()){
       (1 until recipientIds.size).map{
