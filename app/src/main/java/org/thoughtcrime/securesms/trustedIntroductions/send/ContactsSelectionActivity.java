@@ -73,7 +73,7 @@ public final class ContactsSelectionActivity extends PassphraseRequiredActivity 
     toolbar           = findViewById(R.id.toolbar);
     contactFilterView = findViewById(R.id.contact_filter_edit_text);
     no_valid_contacts = findViewById(R.id.ti_no_contacts);
-    ti_contacts = (ContactsSelectionListFragment) getSupportFragmentManager().findFragmentById(R.id.trusted_introduction_contacts_fragment);
+    ti_contacts = (TI_ContactsChooseSelectionListFragment) getSupportFragmentManager().findFragmentById(R.id.trusted_introduction_contacts_fragment);
     done = findViewById(R.id.done);
 
     // Initialize
