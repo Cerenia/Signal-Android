@@ -17,6 +17,7 @@ import org.thoughtcrime.securesms.sms.OutgoingTextMessage;
 import org.thoughtcrime.securesms.trustedIntroductions.TrustedIntroductionsStringUtils;
 import org.whispersystems.signalservice.api.push.exceptions.PushNetworkException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -110,8 +111,9 @@ public class TrustedIntroductionSendJob extends BaseJob {
 
     @Override
     public @NonNull TrustedIntroductionSendJob create(@NonNull Parameters params, @NonNull Data data){
-      //  TODO
-      return null;
+      return new TrustedIntroductionSendJob(RecipientId.from(data.getLong(KEY_INTRODUCTION_RECIPIENT_ID)),
+                                            data.getLongArrayAsList(KEY_INTRODUCEE_IDS).stream().map(RecipientId::from).collect(Collectors.toSet()),
+                                            params);
     }
   }
 }
