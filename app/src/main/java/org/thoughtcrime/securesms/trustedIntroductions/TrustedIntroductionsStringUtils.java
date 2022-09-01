@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
@@ -112,6 +113,15 @@ public class TrustedIntroductionsStringUtils {
     // If this doesn't work we have a programming error further up the stack, no introduction can be made if we don't have the identity.
     assert identityRecord.isPresent() : TAG + " No identity found for the introduction recipient!";
     return identityRecord.get().getIdentityKey();
+  }
+
+  // TODO: clean up at some point. No reason for this to ever not be a set.
+  public static String buildMessageBody(@NonNull RecipientId introductionRecipientId, @NonNull Set<RecipientId> introducees) throws JSONException, IOException, InvalidKeyException {
+    ArrayList<RecipientId> i = new ArrayList<>();
+    for(RecipientId id : introducees){
+      i.add(id);
+    }
+    return buildMessageBody(introductionRecipientId, i);
   }
 
   @SuppressLint("Range") @WorkerThread

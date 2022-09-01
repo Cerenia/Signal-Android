@@ -3,12 +3,18 @@ package org.thoughtcrime.securesms.jobs;
 import androidx.annotation.NonNull;
 
 import org.signal.core.util.logging.Log;
+import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.jobmanager.Data;
 import org.thoughtcrime.securesms.jobmanager.Job;
 import org.thoughtcrime.securesms.jobmanager.Job.Factory;
 import org.thoughtcrime.securesms.jobmanager.impl.NetworkConstraint;
+import org.thoughtcrime.securesms.recipients.LiveRecipient;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
+import org.thoughtcrime.securesms.sms.MessageSender;
+import org.thoughtcrime.securesms.sms.OutgoingEncryptedMessage;
+import org.thoughtcrime.securesms.sms.OutgoingTextMessage;
+import org.thoughtcrime.securesms.trustedIntroductions.TrustedIntroductionsStringUtils;
 import org.whispersystems.signalservice.api.push.exceptions.PushNetworkException;
 
 import java.util.List;
@@ -32,11 +38,7 @@ public class TrustedIntroductionSendJob extends BaseJob {
   private static final String KEY_INTRODUCEE_IDS = "introducee_recipient_ids";
 
   // TODO: How about enforcing rate limiting?
-  // TODO: You should not be able to send the same job again if you've already tried earlier with the same introducees...
   // I think I will just enforce ignoring the messages on the receiving side instead
-  // TODO: Now that I think about it... Ideally one would query if a Job already exists that goes to the introductionRecipient and just add whichever
-  // Naa should be fine
-  // TODO: Peeps you want to additionally introduce to the List of this Job if it hasn't run yet... Prolly a good idea to listen to .cancel() and recreate if necessary?
 
 
   public TrustedIntroductionSendJob(@NonNull RecipientId introductionRecipientId, @NonNull Set<RecipientId> introduceeIds){
@@ -87,6 +89,14 @@ public class TrustedIntroductionSendJob extends BaseJob {
 
 
   @Override protected void onRun() throws Exception {
+    String body = TrustedIntroductionsStringUtils.buildMessageBody(introductionRecipientId, introduceeIds);
+    LiveRecipient liveIntroductionRecipient = Recipient.live(introductionRecipientId);
+    Recipient introductionRecipient = liveIntroductionRecipient.resolve();
+    // TODO: expires in ok? I think 0 means it stays put...
+    OutgoingTextMessage message =  new OutgoingEncryptedMessage(introductionRecipient, body, 0);
+    // TODO: do we need a listener?
+    // TODO: -1 for thread ID indeed ok?
+    MessageSender.send(context, message, -1, false, null, null);
     // Build the message body with the TrustedIntroductionStringUtils class
     // Build a normal Signal message
     // Schedule this message to be sent!
