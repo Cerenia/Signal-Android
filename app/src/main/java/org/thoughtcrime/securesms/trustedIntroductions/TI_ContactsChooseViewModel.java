@@ -8,8 +8,6 @@ import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
 import org.signal.core.util.concurrent.SimpleTask;
-import org.thoughtcrime.securesms.database.IdentityDatabase;
-import org.thoughtcrime.securesms.database.RecipientDatabase;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
@@ -18,13 +16,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class MinimalViewModel extends ViewModel {
-  private final MinimalManager                      manager;
+public class TI_ContactsChooseViewModel extends ViewModel {
+  private final TI_ContactsChooseManager            manager;
   private final ArrayList<SelectedTIContacts.Model> selectedContacts;
   private final MutableLiveData<List<Recipient>>    introducableContacts;
   private final MutableLiveData<String>             filter;
 
-  MinimalViewModel(MinimalManager manager) {
+  TI_ContactsChooseViewModel(TI_ContactsChooseManager manager) {
     this.manager         = manager;
     introducableContacts = new MutableLiveData<>();
     selectedContacts     = new ArrayList<>();
@@ -116,15 +114,15 @@ public class MinimalViewModel extends ViewModel {
 
   static class Factory implements ViewModelProvider.Factory {
 
-    private final MinimalManager manager;
+    private final TI_ContactsChooseManager manager;
 
     Factory(RecipientId id) {
-      this.manager = new MinimalManager(id, SignalDatabase.identities(), SignalDatabase.recipients());
+      this.manager = new TI_ContactsChooseManager(id, SignalDatabase.identities(), SignalDatabase.recipients());
     }
 
     @Override
     public @NonNull <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
-      return Objects.requireNonNull(modelClass.cast(new MinimalViewModel(manager)));
+      return Objects.requireNonNull(modelClass.cast(new TI_ContactsChooseViewModel(manager)));
     }
   }
 

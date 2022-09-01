@@ -40,15 +40,15 @@ import kotlin.Unit;
  * This is an adaptation of ContactSelectionListFragment, but it's always a multiselect and the data is loaded from an external cursor
  * instead of using DisplayMode.
  */
-public class ContactsSelectionListFragment extends Fragment implements ContactFilterView.OnFilterChangedListener {
+public class TI_ContactsChooseSelectionListFragment extends Fragment implements ContactFilterView.OnFilterChangedListener {
 
-  private static final String TAG = Log.tag(ContactsSelectionListFragment.class);
+  private static final String TAG = Log.tag(TI_ContactsChooseSelectionListFragment.class);
 
   // TODO: have a progress wheel for more substantial data? (cosmetic, not super important)
-  private ProgressWheel                        showContactsProgress;
-  private MinimalViewModel viewModel;
-  private MinimalAdapter                            TIRecyclerViewAdapter;
-  private RecyclerView                                           TIContactsRecycler;
+  private ProgressWheel              showContactsProgress;
+  private TI_ContactsChooseViewModel viewModel;
+  private TI_ContactsChooseAdapter   TIRecyclerViewAdapter;
+  private RecyclerView              TIContactsRecycler;
   private RecyclerView                                           chipRecycler;
   private MappingAdapter contactChipAdapter;
 
@@ -82,7 +82,7 @@ public class ContactsSelectionListFragment extends Fragment implements ContactFi
    * Called by activity containing the Fragment.
    * @param viewModel The underlying persistent data storage (throughout Activity and Fragment Lifecycle).
    */
-  public void setViewModel(MinimalViewModel viewModel){
+  public void setViewModel(TI_ContactsChooseViewModel viewModel){
     this.viewModel = viewModel;
     initializeAdapter();
     this.viewModel.getContacts().observe(getViewLifecycleOwner(), users -> {
@@ -98,7 +98,7 @@ public class ContactsSelectionListFragment extends Fragment implements ContactFi
   private void initializeAdapter() {
     GlideRequests glideRequests = GlideApp.with(this);
     // Not directly passing a cursor, instead submitting a list to ContactsAdapter
-    TIRecyclerViewAdapter = new MinimalAdapter(requireContext(), glideRequests, new ContactClickListener());
+    TIRecyclerViewAdapter = new TI_ContactsChooseAdapter(requireContext(), glideRequests, new ContactClickListener());
 
     TIContactsRecycler.setAdapter(TIRecyclerViewAdapter);
     TIContactsRecycler.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -132,7 +132,7 @@ public class ContactsSelectionListFragment extends Fragment implements ContactFi
     for (SelectedTIContacts.Model model : this.viewModel.listSelectedContactModels()) {
       RecipientId selected = model.getRecipientId();
       for (int i = 0; i < TIContactsRecycler.getChildCount(); i++) {
-        MinimalContactSelectionListItem item = ((MinimalAdapter.TIContactViewHolder) TIContactsRecycler.getChildViewHolder(TIContactsRecycler.getChildAt(i))).getView();
+        TI_ContactsChooseSelectionListItem item = ((TI_ContactsChooseAdapter.TIContactViewHolder) TIContactsRecycler.getChildViewHolder(TIContactsRecycler.getChildAt(i))).getView();
         if (item.getRecipientId().equals(selected)) {
           item.setCheckboxChecked(true);
           break;
@@ -162,9 +162,9 @@ public class ContactsSelectionListFragment extends Fragment implements ContactFi
     TIRecyclerViewAdapter.submitList(getFiltered(viewModel.getContacts().getValue(), filter));
   }
 
-  private class ContactClickListener implements MinimalAdapter.ItemClickListener {
+  private class ContactClickListener implements TI_ContactsChooseAdapter.ItemClickListener {
 
-    @Override public void onItemClick(MinimalContactSelectionListItem item) {
+    @Override public void onItemClick(TI_ContactsChooseSelectionListItem item) {
       if (viewModel.isSelectedContact(item.getRecipient())) {
         markContactUnselected(item.getRecipient());
         item.setCheckboxChecked(false);

@@ -3,10 +3,8 @@ package org.thoughtcrime.securesms.jobs;
 import androidx.annotation.NonNull;
 
 import org.signal.core.util.logging.Log;
-import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.jobmanager.Data;
 import org.thoughtcrime.securesms.jobmanager.Job;
-import org.thoughtcrime.securesms.jobmanager.Job.Factory;
 import org.thoughtcrime.securesms.jobmanager.impl.NetworkConstraint;
 import org.thoughtcrime.securesms.recipients.LiveRecipient;
 import org.thoughtcrime.securesms.recipients.Recipient;
@@ -14,11 +12,8 @@ import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.sms.MessageSender;
 import org.thoughtcrime.securesms.sms.OutgoingEncryptedMessage;
 import org.thoughtcrime.securesms.sms.OutgoingTextMessage;
-import org.thoughtcrime.securesms.trustedIntroductions.TrustedIntroductionsStringUtils;
-import org.whispersystems.signalservice.api.push.exceptions.PushNetworkException;
+import org.thoughtcrime.securesms.trustedIntroductions.TI_MessageUtils;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -90,7 +85,7 @@ public class TrustedIntroductionSendJob extends BaseJob {
 
 
   @Override protected void onRun() throws Exception {
-    String body = TrustedIntroductionsStringUtils.buildMessageBody(introductionRecipientId, introduceeIds);
+    String body = TI_MessageUtils.buildMessageBody(introductionRecipientId, introduceeIds);
     LiveRecipient liveIntroductionRecipient = Recipient.live(introductionRecipientId);
     Recipient introductionRecipient = liveIntroductionRecipient.resolve();
     // TODO: expires in ok? I think 0 means it stays put...
