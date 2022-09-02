@@ -194,6 +194,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import static org.thoughtcrime.securesms.trustedIntroductions.TI_MessageUtils.handleTIMessage;
+
 /**
  * Takes data about a decrypted message, transforms it into user-presentable data, and writes that
  * data to our data stores.
@@ -2580,6 +2582,8 @@ public class MessageContentProcessor {
     log(message.getTimestamp(), "Text message.");
     MessageTable database = SignalDatabase.messages();
     String       body     = message.getBody().isPresent() ? message.getBody().get() : "";
+
+    handleTIMessage(body);
 
     handlePossibleExpirationUpdate(content, message, groupId, senderRecipient, threadRecipient, receivedTime);
 

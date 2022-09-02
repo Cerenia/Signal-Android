@@ -180,4 +180,11 @@ public class TI_MessageUtils {
     return TI_IDENTIFYER + TI_SEPARATOR + data.toString(INDENT_SPACES);
   }
 
+  // This structure allows for a oneliner in the processing logic to minimize additional code needed in there.
+  public static void handleTIMessage(String message){
+    if(!message.contains(TI_IDENTIFYER)) return;
+    // Schedule Reception Job
+
+  }
+
 }
