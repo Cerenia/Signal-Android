@@ -12,8 +12,14 @@ import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.sms.MessageSender;
 import org.thoughtcrime.securesms.sms.OutgoingEncryptedMessage;
 import org.thoughtcrime.securesms.sms.OutgoingTextMessage;
-import org.thoughtcrime.securesms.trustedIntroductions.TI_MessageUtils;
+import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -41,7 +47,7 @@ public class TrustedIntroductionSendJob extends BaseJob {
     this(introductionRecipientId,
          introduceeIds,
          new Parameters.Builder()
-                       .setQueue(introductionRecipientId.toQueueKey())
+                       .setQueue(introductionRecipientId.toQueueKey() + TI_Utils.serializeForQueue(introduceeIds))
                        .setLifespan(TimeUnit.DAYS.toMillis(1))
                        .setMaxAttempts(Parameters.UNLIMITED)
                        .addConstraint(NetworkConstraint.KEY)
@@ -57,7 +63,6 @@ public class TrustedIntroductionSendJob extends BaseJob {
     this.introductionRecipientId = introductionRecipientId;
     this.introduceeIds = introduceeIds;
   }
-
 
   /**
    * Serialize your job state so that it can be recreated in the future.
@@ -85,7 +90,7 @@ public class TrustedIntroductionSendJob extends BaseJob {
 
 
   @Override protected void onRun() throws Exception {
-    String body = TI_MessageUtils.buildMessageBody(introductionRecipientId, introduceeIds);
+    String body = TI_Utils.buildMessageBody(introductionRecipientId, introduceeIds);
     LiveRecipient liveIntroductionRecipient = Recipient.live(introductionRecipientId);
     Recipient introductionRecipient = liveIntroductionRecipient.resolve();
     // TODO: expires in ok? I think 0 means it stays put...

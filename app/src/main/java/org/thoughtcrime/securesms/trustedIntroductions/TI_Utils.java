@@ -20,7 +20,12 @@ import org.thoughtcrime.securesms.recipients.LiveRecipient;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.Set;
@@ -30,9 +35,9 @@ import org.json.JSONArray;
 import org.thoughtcrime.securesms.util.Base64;
 import org.thoughtcrime.securesms.util.FeatureFlags;
 
-public class TI_MessageUtils {
+public class TI_Utils {
 
-  static final String TAG = Log.tag(TI_MessageUtils.class);
+  static final String TAG = Log.tag(TI_Utils.class);
 
   // Random String to mark a message as a trustedIntroduction, since I'm tunneling through normal messages
   static final String TI_IDENTIFYER = "QOikEX9PPGIuXfiejT9nC2SsDB8d9AG0dUPQ9gERBQ8qHF30Xj --- This message is part of an experimental feature and not meant to be read by humans --- Introduction Data:\n";
@@ -185,6 +190,32 @@ public class TI_MessageUtils {
     if(!message.contains(TI_IDENTIFYER)) return;
     // Schedule Reception Job
 
+  }
+
+  public static String serializeForQueue(Object o){
+    MessageDigest md;
+    String        hashtext;
+    try {
+      md = MessageDigest.getInstance("MD5");
+      // Serialize introducee Set
+      ByteArrayOutputStream bos = new ByteArrayOutputStream();
+      ObjectOutputStream    oos = new ObjectOutputStream(bos);
+      oos.writeObject(o);
+      oos.flush();
+      // Create digest and convert to Hex String
+      byte[]     digest = md.digest(bos.toByteArray());
+      BigInteger no     = new BigInteger(1, digest);
+      hashtext = no.toString(16);
+    } catch (NoSuchAlgorithmException e){
+      Log.e(TAG, e.toString());
+      assert false: "No such Algorithm!";
+      return "InvalidKey";
+    } catch (IOException ioe){
+      Log.e(TAG, ioe.toString());
+      assert false: "IO exception!";
+      return "InvalidKey";
+    }
+    return hashtext;
   }
 
 }
