@@ -33,7 +33,7 @@ public class TrustedIntroductionsDatabase extends Database{
   private static final String ID                       = "_id";
   private static final String INTRODUCTION_UUID        = "introduction_uuid";
   private static final String INTRODUCING_RECIPIENT_ID = "introducer";
-  private static final String INTRODUCEE_RECIPIENT_ID = "introducer";
+  private static final String INTRODUCEE_RECIPIENT_ID = "introducee";
   private static final String INTRODUCEE_PUBLIC_IDENTITY_KEY = "introducee_identity_key"; // The one contained in the Introduction
   private static final String TIMESTAMP    = "timestamp";
   private static final String STATE        = "state";

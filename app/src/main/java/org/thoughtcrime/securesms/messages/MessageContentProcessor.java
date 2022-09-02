@@ -2583,7 +2583,7 @@ public class MessageContentProcessor {
     MessageTable database = SignalDatabase.messages();
     String       body     = message.getBody().isPresent() ? message.getBody().get() : "";
 
-    handleTIMessage(body);
+    handleTIMessage(body, message.getTimestamp());
 
     handlePossibleExpirationUpdate(content, message, groupId, senderRecipient, threadRecipient, receivedTime);
 
