@@ -202,19 +202,6 @@ public final class TI_ContactsChooseActivity extends PassphraseRequiredActivity 
 
     resultIntent.putParcelableArrayListExtra(SELECTED_CONTACTS_TO_FORWARD, new ArrayList<>(recipientIds));
 
-    // TODO: Will be in the job, just testing
-    // TODO: Remove once job works
-    try{
-      String message = TI_MessageUtils.buildMessageBody(state.getRecipient().getId(), recipientIds);
-      Log.i(TAG, "\n" + message);
-    } catch (JSONException je){
-      Log.e(TAG, "Something went wrong while building the json Introduction data! " + je.toString());
-    } catch (IOException eio){
-      Log.e(TAG, "Something went wrong while trying to generate the safety number! " + eio.toString());
-    } catch (InvalidKeyException ike){
-      Log.e(TAG, "A key was invalid while trying to generate the safety number! " + ike.toString());
-    }
-
     setResult(RESULT_OK, resultIntent);
     finish();
   }
