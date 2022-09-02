@@ -194,7 +194,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import static org.thoughtcrime.securesms.trustedIntroductions.TI_MessageUtils.handleTIMessage;
+import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.handleTIMessage;
 
 /**
  * Takes data about a decrypted message, transforms it into user-presentable data, and writes that
