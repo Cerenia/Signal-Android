@@ -35,7 +35,7 @@ public class TI_MessageUtils {
   static final String TAG = Log.tag(TI_MessageUtils.class);
 
   // Random String to mark a message as a trustedIntroduction, since I'm tunneling through normal messages
-  static final String TI_IDENTIFYER = "QOikEX9PPGIuXfiejT9nC2SsDB8d9AG0dUPQ9gERBQ8qHF30Xj --- Introduction Data:\n";
+  static final String TI_IDENTIFYER = "QOikEX9PPGIuXfiejT9nC2SsDB8d9AG0dUPQ9gERBQ8qHF30Xj --- This message is part of an experimental feature and not meant to be read by humans --- Introduction Data:\n";
   static final String TI_SEPARATOR = "\n"; // marks start of JsonArray, human friendly
   static final int INDENT_SPACES = 1; // pretty printing for human readableness
 
