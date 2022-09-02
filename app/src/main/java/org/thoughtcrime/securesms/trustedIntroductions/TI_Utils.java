@@ -28,6 +28,7 @@ import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -196,6 +197,30 @@ public class TI_Utils {
     if(!message.contains(TI_IDENTIFYER)) return;
     // Schedule Reception Job
 
+  }
+
+  public static List<TI_Data> parseTIMessage(String body, long timestamp){
+    if (!body.contains(TI_IDENTIFYER)){
+      assert false: "Non TI message passed into parse TI!";
+    }
+    ArrayList<TI_Data> result = new ArrayList<>();
+    String jsonDataS = body.replace(TI_IDENTIFYER, "");
+    try {
+      JSONArray data = new JSONArray(jsonDataS);
+      for(int i = 0; i < data.length(); i++){
+        JSONObject o = data.getJSONObject(i);
+        result.add(new TI_Data(null,
+                               o.getString(NAME_J),
+                               o.getString(NUMBER_J),
+                               o.getString(IDENTITY_J),
+                               o.getString(PREDICTED_FINGERPRINT_J),
+                               timestamp));
+      }
+    } catch(JSONException e){
+      Log.e(TAG, String.format("A JSON exception occured while trying to parse the TI message: %s", jsonDataS));
+      return null;
+    }
+    return result;
   }
 
   public static String serializeForQueue(Object o){
