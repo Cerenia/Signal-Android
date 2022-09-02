@@ -7,9 +7,13 @@ import org.thoughtcrime.securesms.jobmanager.Data;
 import org.thoughtcrime.securesms.jobmanager.Job;
 import org.thoughtcrime.securesms.jobmanager.impl.NetworkConstraint;
 import org.thoughtcrime.securesms.recipients.RecipientId;
+import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
 
+import java.util.List;
 import java.util.Locale;
+
+import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.parseTIMessage;
 
 public class TrustedIntroductionsReceiveJob extends BaseJob  {
 
@@ -73,7 +77,10 @@ public class TrustedIntroductionsReceiveJob extends BaseJob  {
 
 
   @Override protected void onRun() throws Exception {
+    List<TI_Data> tiData = parseTIMessage(messageBody, timestamp);
+    for(TI_Data introduction: tiData){
 
+    }
   }
 
   // TODO

@@ -210,6 +210,7 @@ public class TI_Utils {
       for(int i = 0; i < data.length(); i++){
         JSONObject o = data.getJSONObject(i);
         result.add(new TI_Data(null,
+                               null,
                                o.getString(NAME_J),
                                o.getString(NUMBER_J),
                                o.getString(IDENTITY_J),
