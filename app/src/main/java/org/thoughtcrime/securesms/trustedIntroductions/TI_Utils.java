@@ -192,7 +192,7 @@ public class TI_Utils {
   }
 
   // This structure allows for a oneliner in the processing logic to minimize additional code needed in there.
-  public static void handleTIMessage(String message){
+  public static void handleTIMessage(String message, long timestamp){
     if(!message.contains(TI_IDENTIFYER)) return;
     // Schedule Reception Job
 

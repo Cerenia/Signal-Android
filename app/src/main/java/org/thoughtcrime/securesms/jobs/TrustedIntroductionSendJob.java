@@ -98,11 +98,9 @@ public class TrustedIntroductionSendJob extends BaseJob {
     // TODO: do we need a listener?
     // TODO: -1 for thread ID indeed ok?
     MessageSender.send(context, message, -1, false, null, null);
-    // Build the message body with the TrustedIntroductionStringUtils class
-    // Build a normal Signal message
-    // Schedule this message to be sent!
   }
 
+  // TODO
   @Override protected boolean onShouldRetry(@NonNull Exception e) {
     return false;
   }
