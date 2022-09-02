@@ -4,7 +4,9 @@ import androidx.annotation.NonNull;
 
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.jobmanager.Data;
+import org.thoughtcrime.securesms.jobmanager.impl.NetworkConstraint;
 import org.thoughtcrime.securesms.recipients.RecipientId;
+import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
 
 public class TrustedIntroductionsReceiveJob extends BaseJob  {
 
@@ -23,7 +25,12 @@ public class TrustedIntroductionsReceiveJob extends BaseJob  {
   public TrustedIntroductionsReceiveJob(@NonNull RecipientId introducerId, @NonNull String messageBody){
     this(introducerId,
          messageBody,
-         new Parameters.Builder());
+         new Parameters.Builder()
+                       .setQueue(introducerId.toQueueKey() + TI_Utils.serializeForQueue(messageBody))
+                       .setLifespan(TI_Utils.TI_JOB_LIFESPAN)
+                       .setMaxAttempts(TI_Utils.TI_JOB_MAX_ATTEMPTS)
+                       .addConstraint(NetworkConstraint.KEY)
+                       .build());
   }
 
   private TrustedIntroductionsReceiveJob(@NonNull RecipientId introducerId, @NonNull String messageBody, @NonNull Parameters parameters){

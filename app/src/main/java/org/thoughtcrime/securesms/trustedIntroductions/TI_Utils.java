@@ -16,6 +16,7 @@ import org.thoughtcrime.securesms.database.RecipientDatabase;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.database.model.IdentityRecord;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
+import org.thoughtcrime.securesms.jobmanager.Job;
 import org.thoughtcrime.securesms.recipients.LiveRecipient;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
@@ -29,6 +30,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.json.JSONObject;
 import org.json.JSONArray;
@@ -67,6 +69,10 @@ public class TI_Utils {
   static final String IDENTITY_J = "identity_key_base64";
   static final String ID_J = "uuid";
   static final String PREDICTED_FINGERPRINT_J = "safety_number";
+
+  // Job constants
+  public static final long TI_JOB_LIFESPAN = TimeUnit.DAYS.toMillis(1);
+  public static final int TI_JOB_MAX_ATTEMPTS = Job.Parameters.UNLIMITED;
 
   //copied from @see VerifyDisplayFragment
   private static @NonNull String getFormattedSafetyNumbers(@NonNull Fingerprint fingerprint, int segmentCount) {

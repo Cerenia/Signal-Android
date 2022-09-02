@@ -48,8 +48,8 @@ public class TrustedIntroductionSendJob extends BaseJob {
          introduceeIds,
          new Parameters.Builder()
                        .setQueue(introductionRecipientId.toQueueKey() + TI_Utils.serializeForQueue(introduceeIds))
-                       .setLifespan(TimeUnit.DAYS.toMillis(1))
-                       .setMaxAttempts(Parameters.UNLIMITED)
+                       .setLifespan(TI_Utils.TI_JOB_LIFESPAN)
+                       .setMaxAttempts(TI_Utils.TI_JOB_MAX_ATTEMPTS)
                        .addConstraint(NetworkConstraint.KEY)
                        .build());
   }
