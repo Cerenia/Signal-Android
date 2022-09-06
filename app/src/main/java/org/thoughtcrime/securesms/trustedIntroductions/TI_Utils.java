@@ -111,7 +111,7 @@ public class TI_Utils {
   /**
    * Recreates the safety number that is generated between two recipients.
    * (used when sending intro, and to conveniently compute difference on conflict to expose in UI)
-   * PRE: Nullable parameters must either be all provided or all null.
+   * PRE: Nullable parameters must either ALL BE NULL or NONE BE NULL.
    * @param introductionRecipientId first Recipient
    * @param introduceeId second Recipient (introducee) => Must be present in the local database!
    * @param introduceeServiceId, fetched if null and needed
@@ -119,7 +119,7 @@ public class TI_Utils {
    * @param introduceeIdentityKey fetched if null
    * @return The expected safety number as a String, formated into segments identical to the VerifyFingerprint Activity.
    */
-  private static String predictFingerprint(@NonNull RecipientId introductionRecipientId, @NonNull RecipientId introduceeId, @Nullable String introduceeServiceId, @Nullable String introduceeE164, @Nullable IdentityKey introduceeIdentityKey){
+  public static String predictFingerprint(@NonNull RecipientId introductionRecipientId, @NonNull RecipientId introduceeId, @Nullable String introduceeServiceId, @Nullable String introduceeE164, @Nullable IdentityKey introduceeIdentityKey){
     if(introduceeServiceId == null && introduceeE164 == null && introduceeIdentityKey == null){
       // Fetch all the values
       LiveRecipient liveIntroducee = Recipient.live(introduceeId);
@@ -170,6 +170,10 @@ public class TI_Utils {
     return identityRecord.get().getIdentityKey();
   }
 
+  private static String encodeIdentityKey(IdentityKey key){
+    return Base64.encodeBytes(key.serialize());
+  }
+
   @SuppressLint("Range") @WorkerThread
   public static String buildMessageBody(@NonNull RecipientId introductionRecipientId, @NonNull Set<RecipientId> introducees) throws JSONException, IOException, InvalidKeyException {
     assert introducees.size() > 0: TAG + " buildMessageBody called with no Recipient Ids!";
@@ -190,8 +194,8 @@ public class TI_Utils {
       String introduceeServiceId = recipientCursor.getString(recipientCursor.getColumnIndex(SERVICE_ID));
       introducee.put(INTRODUCEE_SERVICE_ID_J, introduceeServiceId);
       IdentityKey introduceeIdentityKey = getIdentityKey(introduceesList.get(i));
-      introducee.put(IDENTITY_J, Base64.encodeBytes(introduceeIdentityKey.serialize()));
-      String formatedSafetyNr = predictFingerprint(introductionRecipientId, introduceesList.get(i), introduceeServiceId, introduceeE164);
+      introducee.put(IDENTITY_J, encodeIdentityKey(introduceeIdentityKey));
+      String formatedSafetyNr = predictFingerprint(introductionRecipientId, introduceesList.get(i), introduceeServiceId, introduceeE164, introduceeIdentityKey);
       introducee.put(PREDICTED_FINGERPRINT_J, formatedSafetyNr);
       data.put(introducee);
       recipientCursor.moveToNext();
@@ -206,10 +210,10 @@ public class TI_Utils {
   public static void handleTIMessage(String message, long timestamp){
     if(!message.contains(TI_IDENTIFYER)) return;
     // Schedule Reception Job
-
+  
   }
 
-  @SuppressLint("Range") // SERVICE_ID keyword exists
+  @SuppressLint("Range") // keywords exists
   public static List<TI_Data> parseTIMessage(String body, long timestamp, RecipientId introducerId){
     if (!body.contains(TI_IDENTIFYER)){
       assert false: "Non TI message passed into parse TI!";
@@ -219,13 +223,13 @@ public class TI_Utils {
     try {
       JSONArray data = new JSONArray(jsonDataS);
       ArrayList<String> serviceIds = new ArrayList<>();
-      // Get all ACI's of introducees first to minimize database Queries
+      // Get all SerciveIds of introducees first to minimize database Queries
       for(int i = 0; i < data.length(); i++){
         JSONObject o = data.getJSONObject(i);
         serviceIds.add(o.getString(INTRODUCEE_SERVICE_ID_J));
       }
       Cursor cursor = SignalDatabase.recipients().getCursorForReceivingTI(serviceIds);
-      // Construct TI Data & rebuild serviceIds to only contain the ones present in the database, freeing some memory
+      // Construct TI Data & rebuild serviceId List to only contain the ones present in the database, freeing some memory
       serviceIds = new ArrayList<>();
       if(cursor.getCount() > 0) {
         cursor.moveToFirst();
@@ -233,25 +237,33 @@ public class TI_Utils {
           RecipientId introduceeId = RecipientId.from(cursor.getLong(cursor.getColumnIndex(LOCAL_RECIPIENT_ID)));
           String serviceId = cursor.getString(cursor.getColumnIndex(SERVICE_ID));
           serviceIds.add(serviceId);
-          Recipient r = Recipient.resolved(introduceeId);
-          String name =
-          TI_Data d = TI_Data(null, null, introducerId, introduceeId, serviceId, )
+          //Recipient r = Recipient.resolved(introduceeId);
+          String name = cursor.getString(cursor.getColumnIndex(SORT_NAME));
+          String phone = cursor.getString(cursor.getColumnIndex(PHONE));
+          IdentityKey identityKey = getIdentityKey(introduceeId);
+          TI_Data d = new TI_Data(null, null, introducerId, introduceeId, serviceId, name, phone, encodeIdentityKey(identityKey), null, timestamp);
+          result.add(d);
         }
-
+        cursor.close();
       }
-
-      // Have to look for existance of Recipients in the database and populate RecipientIds if present
-      // This needs to be constructed outside the for loop...
-        /*result.add(new TI_Data(null,
-                               null,
-                               o.getString(INTRODUCEE_SERVICE_ID_J),
-                               o.getString(NAME_J),
-                               o.getString(NUMBER_J),
-                               o.getString(IDENTITY_J),
-                               o.getString(PREDICTED_FINGERPRINT_J),
-                               timestamp));*/
+      // Iterate through JSONData again and create incomplete introductions for the still unknown recipients & set the predictedSecurityNumbers
+      for(int i = 0; i < data.length(); i++){
+        JSONObject o = data.getJSONObject(i);
+        // If data was fetched from local database, simply add the Security number information
+        String introduceeServiceId = o.getString(INTRODUCEE_SERVICE_ID_J);
+        if (serviceIds.contains(introduceeServiceId)){
+          int j = 0;
+          while(!result.get(j).getIntroduceeServiceId().equals(introduceeServiceId)) j++;
+          assert j < serviceIds.size(): "Programming error in parseTIMessage (size of service IDs vs. JSONArray)";
+          result.get(j).setPredictedSecurityNumber(o.getString(PREDICTED_FINGERPRINT_J));
+        } else {
+          TI_Data d = new TI_Data(null, null, introducerId, null, o.getString(INTRODUCEE_SERVICE_ID_J), o.getString(NAME_J), o.getString(NUMBER_J), o.getString(IDENTITY_J), o.getString(PREDICTED_FINGERPRINT_J), timestamp);
+          result.add(d);
+        }
+      }
     } catch(JSONException e){
       Log.e(TAG, String.format("A JSON exception occured while trying to parse the TI message: %s", jsonDataS));
+      Log.e(TAG, e.toString());
       return null;
     }
     return result;
@@ -281,34 +293,6 @@ public class TI_Utils {
       return "InvalidKey";
     }
     return hashtext;
-  }
-
-  /**
-   * Helper to construct the name to include in the Introduction.
-   * !!! Pass EITHER a cursor OR a recipient.
-   * Supplying none or both will cause an assertion failure.
-   * @return The constructed name
-   */
-  @SuppressLint("Range") // Because of duplicate column names
-  private static String constructName(@Nullable Cursor recipientCursor, @Nullable Recipient recipient){
-    if (recipientCursor == null && recipient == null || recipientCursor != null && recipient != null) {
-      assert false: "Precondition violation of TI_Utils.constructName";
-    }
-    String name = "";
-    // In both cases, try joint name first, if empty, individual components, if still empty username as last attempt
-    // cursor
-    if(recipientCursor != null){
-      name = recipientCursor.getString(recipientCursor.getColumnIndex(PROFILE_JOINED_NAME));
-      if (name.isEmpty() || isOnlyWhitespace(name)){
-        name = recipientCursor.getString(recipientCursor.getColumnIndex(PROFILE_GIVEN_NAME)) + recipientCursor.getString(recipientCursor.getColumnIndex(PROFILE_FAMILY_NAME));
-      }
-      if (name.isEmpty() || isOnlyWhitespace(name)){
-        name = recipientCursor.getString(recipientCursor.getColumnIndex(USERNAME));
-      }
-    }
-    // recipient
-    name = recipient.pro
-
   }
 
 }
