@@ -130,7 +130,7 @@ public class TI_Utils {
     // TODO: Should I just use the LiveRecipient Stuff instead?  :/ caching etc..
     RecipientDatabase rdb = SignalDatabase.recipients();
     NumericFingerprintGenerator generator = new NumericFingerprintGenerator(ITERATIONS);
-    Cursor recipientCursor = rdb.getCursorForTI(introducees);
+    Cursor recipientCursor = rdb.getCursorForSendingTI(introducees);
     JSONArray data = new JSONArray();
 
     // Initialize version and introduction recipients id & key
@@ -215,7 +215,7 @@ public class TI_Utils {
         JSONObject o = data.getJSONObject(i);
         acis.add(o.getString(INTRODUCEE_SERVICE_ID_J));
       }
-      
+
       // Have to look for existance of Recipients in the database and populate RecipientIds if present
       // This needs to be constructed outside the for loop...
         /*result.add(new TI_Data(null,

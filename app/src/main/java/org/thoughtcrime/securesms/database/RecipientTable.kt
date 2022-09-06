@@ -329,6 +329,12 @@ open class RecipientTable(context: Context, databaseHelper: SignalDatabase) : Da
       PHONE
     )
 
+    // Used when parsing an incoming introduction, to check which Recipients were known
+    private val RECIEVING_TRUSTED_INTRODUCTIONS_PROJECTION: Array<String> = arrayOf(
+      ID,
+      SERVICE_ID
+    )
+
     private val ID_PROJECTION = arrayOf(ID)
 
     private val SEARCH_PROJECTION = arrayOf(
@@ -687,9 +693,10 @@ open class RecipientTable(context: Context, databaseHelper: SignalDatabase) : Da
   }
 
   /**
-   * Trusted Introductions
+   * Trusted Introductions send operation.
+   * Fetches all the Information of the recipient that we need to include in the Data.
    */
-  fun getCursorForTI(recipientIds: Set<RecipientId>): Cursor {
+  fun getCursorForSendingTI(recipientIds: Set<RecipientId>): Cursor {
     val query = StringBuilder()
     if(!recipientIds.isEmpty()){
       (1 until recipientIds.size).map{
@@ -701,8 +708,21 @@ open class RecipientTable(context: Context, databaseHelper: SignalDatabase) : Da
     return readableDatabase.query(TABLE_NAME, TRUSTED_INTRODUCTION_PROJECTION, query.toString(), identifiers.toTypedArray(), null, null, null)
   }
 
+  /**
+   * Returns a RecipientReader pointing to the Recipients who were present in the database by SERVICE_ID
+   */
+  fun getReaderForReceivingTI(serializedAcis: List<String>): RecipientReader{
+    val query = buildACIQuery(serializedAcis)
+    return RecipientReader(readableDatabase.query(TABLE_NAME, RECIEVING_TRUSTED_INTRODUCTIONS_PROJECTION, query, serializedAcis.toTypedArray(), null, null, null))
+  }
+
+  /**
+   * Returns a cursor populated with the Recipients that correspond to the
+   * ones that are a valid target for an introduction.
+   * @See IdentityDatabase.getCursorForTIUnlocked()
+   */
   @SuppressLint("Range")
-  fun getReaderForTI(cursor: Cursor): RecipientReader {
+  fun getReaderForValidTI_Candidates(cursor: Cursor): RecipientReader {
     val identifiers = arrayListOf<String>()
     if(cursor.moveToFirst()){
       cursor.use {
@@ -712,15 +732,24 @@ open class RecipientTable(context: Context, databaseHelper: SignalDatabase) : Da
         }
       }
     }
-    val query = StringBuilder()
-    if(!identifiers.isEmpty()){
-      (1 until identifiers.size).map{
+    val query = buildACIQuery(identifiers)
+    val newCursor = readableDatabase.query(TABLE_NAME, RECIPIENT_PROJECTION, query, identifiers.toTypedArray(), null, null, null)
+    return RecipientReader(newCursor)
+  }
+
+  /**
+   * Helpers
+   */
+
+  private fun buildACIQuery(serializedAcis: List<String>) : String{
+    val query = StringBuilder();
+    if(!serializedAcis.isEmpty()){
+      (1 until serializedAcis.size).map{
         query.append("$SERVICE_ID=? OR ")
       }
       query.append("$SERVICE_ID=?")
     }
-    val newCursor = readableDatabase.query(TABLE_NAME, RECIPIENT_PROJECTION, query.toString(), identifiers.toTypedArray(), null, null, null)
-    return RecipientReader(newCursor)
+    return query.toString()
   }
 
   /**
