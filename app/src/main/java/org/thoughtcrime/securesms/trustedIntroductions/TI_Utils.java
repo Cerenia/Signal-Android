@@ -65,10 +65,12 @@ public class TI_Utils {
   static final String PHONE = "phone";
 
   // Json keys
+  //static final String INTRODUCER_SERVICE_ID_J = "introducer_uuid"; // TODO: Don't really need this in the message I think... can be inferred when receiving the message
+  // Sending the INTRODUCER_SERVICE_ID_J would probably lead to problems if someone spoofs it. Would be preferential to query it when the message is received.
+  static final String INTRODUCEE_SERVICE_ID_J = "introducee_uuid";
   static final String NAME_J = "name";
   static final String NUMBER_J = "number";
   static final String IDENTITY_J = "identity_key_base64";
-  static final String ID_J = "uuid";
   static final String PREDICTED_FINGERPRINT_J = "safety_number";
 
   // Job constants
@@ -166,7 +168,7 @@ public class TI_Utils {
       String introduceeE164 = recipientCursor.getString(recipientCursor.getColumnIndex(PHONE));
       introducee.put(NUMBER_J, introduceeE164);
       String introduceeACI = recipientCursor.getString(recipientCursor.getColumnIndex(SERVICE_ID));
-      introducee.put(ID_J, introduceeACI);
+      introducee.put(INTRODUCEE_SERVICE_ID_J, introduceeACI);
       IdentityKey introduceeIdentityKey = getIdentityKey(introduceesList.get(i));
       introducee.put(IDENTITY_J, Base64.encodeBytes(introduceeIdentityKey.serialize()));
       byte[] introduceeFingerprintId;
@@ -199,7 +201,7 @@ public class TI_Utils {
 
   }
 
-  public static List<TI_Data> parseTIMessage(String body, long timestamp){
+  public static List<TI_Data> parseTIMessage(String body, long timestamp, RecipientId introducerId){
     if (!body.contains(TI_IDENTIFYER)){
       assert false: "Non TI message passed into parse TI!";
     }
@@ -207,16 +209,23 @@ public class TI_Utils {
     String jsonDataS = body.replace(TI_IDENTIFYER, "");
     try {
       JSONArray data = new JSONArray(jsonDataS);
+      ArrayList<String> acis = new ArrayList<>();
+      // Get all ACI's of introducees first to minimize database Queries
       for(int i = 0; i < data.length(); i++){
         JSONObject o = data.getJSONObject(i);
-        result.add(new TI_Data(null,
+        acis.add(o.getString(INTRODUCEE_SERVICE_ID_J));
+      }
+      
+      // Have to look for existance of Recipients in the database and populate RecipientIds if present
+      // This needs to be constructed outside the for loop...
+        /*result.add(new TI_Data(null,
                                null,
+                               o.getString(INTRODUCEE_SERVICE_ID_J),
                                o.getString(NAME_J),
                                o.getString(NUMBER_J),
                                o.getString(IDENTITY_J),
                                o.getString(PREDICTED_FINGERPRINT_J),
-                               timestamp));
-      }
+                               timestamp));*/
     } catch(JSONException e){
       Log.e(TAG, String.format("A JSON exception occured while trying to parse the TI message: %s", jsonDataS));
       return null;
