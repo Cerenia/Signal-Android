@@ -11,14 +11,9 @@ import com.mobilecoin.lib.exceptions.SerializationException;
 
 import org.signal.core.util.SqlUtil;
 import org.signal.core.util.logging.Log;
-import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
-import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.UUID;
 
@@ -222,7 +217,7 @@ public class TrustedIntroductionsDatabase extends Database{
     // TODO: Simplify if you see that you finally never query this cursor with more than 1 recipient...
     Set<RecipientId> s = new HashSet<>();
     s.add(introduceeId);
-    return rdb.getCursorForTI(s);
+    return rdb.getCursorForSendingTI(s);
   }
 
   // TODO: For now I'm keeping the history of introductions, but only showing the newest valid one. Might be beneficial to have them eventually go away if they become stale?
