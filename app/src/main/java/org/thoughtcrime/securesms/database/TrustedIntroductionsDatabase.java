@@ -141,7 +141,7 @@ public class TrustedIntroductionsDatabase extends Database{
     // iff introducee ID is already present in recipient database, compare identity keys
     Cursor c = fetchRecipientDBCursor(introduceeId);
     if(c.getCount() > 0){
-      
+
     }
     // otherwise simply generate a new entry in either pending or conflicting state
 
