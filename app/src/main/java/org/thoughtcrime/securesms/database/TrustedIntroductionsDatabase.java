@@ -2,6 +2,7 @@ package org.thoughtcrime.securesms.database;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.WorkerThread;
@@ -10,8 +11,15 @@ import com.mobilecoin.lib.exceptions.SerializationException;
 
 import org.signal.core.util.SqlUtil;
 import org.signal.core.util.logging.Log;
+import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
+import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -35,6 +43,7 @@ public class TrustedIntroductionsDatabase extends Database{
   private static final String INTRODUCING_RECIPIENT_ID = "introducer";
   private static final String INTRODUCEE_RECIPIENT_ID = "introducee";
   private static final String INTRODUCEE_PUBLIC_IDENTITY_KEY = "introducee_identity_key"; // The one contained in the Introduction
+  private static final String PREDICTED_FINGERPRING = "predicted_fingerprint";
   private static final String TIMESTAMP    = "timestamp";
   private static final String STATE        = "state";
 
@@ -46,6 +55,7 @@ public class TrustedIntroductionsDatabase extends Database{
       INTRODUCING_RECIPIENT_ID + " INTEGER, " +
       INTRODUCEE_RECIPIENT_ID + " INTEGER, " +
       INTRODUCEE_PUBLIC_IDENTITY_KEY + " TEXT, " +
+      PREDICTED_FINGERPRING + " TEXT, " +
       TIMESTAMP + " INTEGER, " +
       STATE + " INTEGER, " +
       "UNIQUE(" + INTRODUCTION_UUID + ") ON CONFLICT ABORT)";
@@ -112,10 +122,48 @@ public class TrustedIntroductionsDatabase extends Database{
     super(context, databaseHelper);
   }
 
+
+  /**
+   *
+   * @return -1 -> conflict occured on insert, TODO what if not -1? play around a bit
+   */
   @WorkerThread
-  private void createIncomingIntroduction(@NonNull UUID introductionUUID,
+  public long newIntroduction(@NonNull RecipientId introducerId,
+                               RecipientId introduceeId,
+                               String introduceeName,
+                               String introduceePhone,
+                               String introduceeIdentityKey,
+                               String predictedSecurityNumber,
+                               long timestamp){
+
+    // TODO: How do I check if it is a duplicate introduction? (-> then only timestamp differs), should be fast update instead
+
+    // iff introducee ID is already present in recipient database, compare identity keys
+    Cursor c = fetchRecipientDBCursor(introduceeId);
+    if(c.getCount() > 0){
+      
+    }
+    // otherwise simply generate a new entry in either pending or conflicting state
+
+
+  }
+
+  // TODO: Just pass a TI_Data object instead?
+  @WorkerThread
+  public boolean acceptIntroduction(UUID introductionId, RecipientId introduceeId){
+    Cursor c = fetchRecipientDBCursor(introduceeId);
+    if(c.getCount() <= 0){
+      // TODO: Add introducee if not present in the database
+    }
+    // TODO: Statechange, pending -> accepted
+    return true;
+  }
+
+  @WorkerThread
+  private long createIncomingIntroduction(@NonNull UUID introductionUUID,
                                           @NonNull RecipientId introducerId,
                                           @NonNull RecipientId introduceeId,
+                                          @NonNull String predictedFingerprint,
                                           @NonNull String serializedIdentityKey, // @See IdentityDatabase.java, Base64 encoded
                                           @NonNull long timestamp)
       throws SerializationException
@@ -124,18 +172,16 @@ public class TrustedIntroductionsDatabase extends Database{
     SQLiteDatabase database = databaseHelper.getSignalWritableDatabase();
     ContentValues values = new ContentValues(6);
 
+    // @See class TI_Data
     values.put(INTRODUCTION_UUID, introductionUUID.toString());
+    values.put(STATE, State.PENDING.toInt()); //Intro always starts with PENDING state
     values.put(INTRODUCING_RECIPIENT_ID, introducerId.serialize());
     values.put(INTRODUCEE_RECIPIENT_ID, introduceeId.serialize());
     values.put(INTRODUCEE_PUBLIC_IDENTITY_KEY, serializedIdentityKey);
+    values.put(PREDICTED_FINGERPRING, predictedFingerprint);
     values.put(TIMESTAMP, timestamp);
-    values.put(STATE, State.PENDING.toInt()); //Intro always starts with PENDING state
 
-    long inserted = database.insert(TABLE_NAME, null, values);
-
-    // TODO: Any observers needed? (probably to increase the "count" of 1-hop introductions in the identity database at some point => future issue)
-
-    // TODO: Yes: Observer for checking the local identity key which may change the state to conflicting if the keys don't match.
+    return database.insert(TABLE_NAME, null, values);
   }
 
  @WorkerThread
@@ -161,6 +207,23 @@ public class TrustedIntroductionsDatabase extends Database{
    }
    return false;
  }
+
+  /*
+    General Utilities
+   */
+
+  /**
+   * @param introduceeId Which recipient to look for in the recipient database
+   * @return Cursor pointing to query result
+   */
+  @WorkerThread
+  private Cursor fetchRecipientDBCursor(RecipientId introduceeId){
+    RecipientDatabase rdb = SignalDatabase.recipients();
+    // TODO: Simplify if you see that you finally never query this cursor with more than 1 recipient...
+    Set<RecipientId> s = new HashSet<>();
+    s.add(introduceeId);
+    return rdb.getCursorForTI(s);
+  }
 
   // TODO: For now I'm keeping the history of introductions, but only showing the newest valid one. Might be beneficial to have them eventually go away if they become stale?
   // Maybe keep around one level of previous introduction? Apparently there is a situation in the app, whereas if someone does not follow the instructions of setting up
@@ -197,5 +260,6 @@ public class TrustedIntroductionsDatabase extends Database{
   // TODO: all state transition methods can be public => FSM Logic adhered to this way.
 
   // TODO: Method which returns all non-stale introductions for a given recipient ID
+
 
 }
