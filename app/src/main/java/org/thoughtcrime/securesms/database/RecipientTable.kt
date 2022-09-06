@@ -320,6 +320,7 @@ open class RecipientTable(context: Context, databaseHelper: SignalDatabase) : Da
 
     // Used when querying Recipients to introduce to someone
     private val TRUSTED_INTRODUCTION_PROJECTION: Array<String> = arrayOf(
+      ID,
       SERVICE_ID, // to lookup public key in identity database, uuid identifying instance of signal service (recipient will see identical one).
       PHONE,
       """
@@ -338,25 +339,6 @@ open class RecipientTable(context: Context, databaseHelper: SignalDatabase) : Da
       """.trimIndent()
     )
 
-    // Used when parsing an incoming introduction, to check which Recipients were known
-    private val RECIEVING_TRUSTED_INTRODUCTIONS_PROJECTION: Array<String> = arrayOf(
-      ID,
-      SERVICE_ID,
-      """
-      REPLACE(
-        COALESCE(
-          NULLIF($SYSTEM_JOINED_NAME, ''), 
-          NULLIF($SYSTEM_GIVEN_NAME, ''), 
-          NULLIF($PROFILE_JOINED_NAME, ''), 
-          NULLIF($PROFILE_GIVEN_NAME, ''),
-          NULLIF($USERNAME, ''),
-          NULLIF($PHONE, '')
-        ),
-        ' ',
-        ''
-      ) AS $SORT_NAME
-       """.trimIndent()
-    )
 
     private val ID_PROJECTION = arrayOf(ID)
 
@@ -803,7 +785,7 @@ open class RecipientTable(context: Context, databaseHelper: SignalDatabase) : Da
    */
   fun getCursorForReceivingTI(serializedAcis: List<String>): Cursor{
     val query = buildService_ID_Query(serializedAcis)
-    return readableDatabase.query(TABLE_NAME, RECIEVING_TRUSTED_INTRODUCTIONS_PROJECTION, query, serializedAcis.toTypedArray(), null, null, null)
+    return readableDatabase.query(TABLE_NAME, TRUSTED_INTRODUCTION_PROJECTION, query, serializedAcis.toTypedArray(), null, null, null)
   }
 
   /**
