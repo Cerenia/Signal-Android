@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.database.Cursor;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
 
 import org.json.JSONException;
@@ -32,11 +33,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 import org.json.JSONObject;
 import org.json.JSONArray;
 import org.thoughtcrime.securesms.util.Base64;
 import org.thoughtcrime.securesms.util.FeatureFlags;
+import org.whispersystems.signalservice.api.push.ServiceId;
 
 public class TI_Utils {
 
@@ -57,11 +60,9 @@ public class TI_Utils {
   // Might be worth it to consider using live recipient for all of them... but I only need a few values, not sure
   // what is less overhead and if caching is really relevant here.
   // @see RecipientDatabase
+  static final String LOCAL_RECIPIENT_ID = "_id";
   static final String SERVICE_ID = "uuid";
-  static final String USERNAME = "username";
-  static final String PROFILE_GIVEN_NAME = "signal_profile_name";
-  static final String PROFILE_FAMILY_NAME = "profile_family_name";
-  static final String PROFILE_JOINED_NAME = "profile_joined_name";
+  static final String SORT_NAME = "sort_name"; // From search projection, keeps me from doing name shenanigans
   static final String PHONE = "phone";
 
   // Json keys
@@ -107,13 +108,59 @@ public class TI_Utils {
     return segments;
   }
 
-  // Needed because of 19 min API
-  private static boolean isOnlyWhitespace(String name){
-    for(Character c: name.toCharArray()){
-      if(!Character.isWhitespace(c))
-        return false;
+  /**
+   * Recreates the safety number that is generated between two recipients.
+   * (used when sending intro, and to conveniently compute difference on conflict to expose in UI)
+   * PRE: Nullable parameters must either be all provided or all null.
+   * @param introductionRecipientId first Recipient
+   * @param introduceeId second Recipient (introducee) => Must be present in the local database!
+   * @param introduceeServiceId, fetched if null and needed
+   * @param introduceeE164, phone nr., fetched if null and needed
+   * @param introduceeIdentityKey fetched if null
+   * @return The expected safety number as a String, formated into segments identical to the VerifyFingerprint Activity.
+   */
+  private static String predictFingerprint(@NonNull RecipientId introductionRecipientId, @NonNull RecipientId introduceeId, @Nullable String introduceeServiceId, @Nullable String introduceeE164, @Nullable IdentityKey introduceeIdentityKey){
+    if(introduceeServiceId == null && introduceeE164 == null && introduceeIdentityKey == null){
+      // Fetch all the values
+      LiveRecipient liveIntroducee = Recipient.live(introduceeId);
+      Recipient introduceeResolved = liveIntroducee.resolve();
+      introduceeServiceId = introduceeResolved.getServiceId().orElseGet((Supplier<? extends ServiceId>) ServiceId.UNKNOWN).toString();
+      introduceeE164 = introduceeResolved.requireE164();
+    } else if(introduceeServiceId != null && introduceeE164 != null && introduceeIdentityKey != null){
+      //noop, normal case when recipient fetched through cursor
+    } else {
+      // TODO: Does that make sense??
+      assert false: "Unexpected non-null parameter in TI_Utils.predictFingerprint";
     }
-    return true;
+    // Initialize version and introduction recipients id & key
+    int version;
+    byte[]        introductionRecipientFingerprintId;
+    byte[] introduceeFingerprintId;
+    LiveRecipient live = Recipient.live(introductionRecipientId);
+    Recipient introductionRecipientResolved = live.resolve();
+    NumericFingerprintGenerator generator = new NumericFingerprintGenerator(ITERATIONS);
+    // @see VerifyDisplayFragment for verification version differences
+    if (FeatureFlags.verifyV2()){
+      version = 2;
+      Log.e(TAG, introductionRecipientResolved.requireServiceId().toString());
+      introductionRecipientFingerprintId = introductionRecipientResolved.requireServiceId().toByteArray();
+      introduceeFingerprintId = introduceeServiceId.getBytes();
+    } else {
+      version = 1;
+      Log.e(TAG, introductionRecipientResolved.requireE164());
+      introductionRecipientFingerprintId = introductionRecipientResolved.requireE164().getBytes();
+      introduceeFingerprintId = introduceeE164.getBytes();
+    }
+    IdentityKey introductionRecipientIdentityKey = getIdentityKey(introductionRecipientId);
+    // @see VerifyDisplayFragment::initializeFingerprint(), iterations there also hardcoded to 5200 for FingerprintGenerator
+    // @see ServiceId.java to understand how they convert the ACI to ByteArray
+    // @see IdentityKey.java
+    Fingerprint fingerprint = generator.createFor(version,
+                                                  introductionRecipientFingerprintId,
+                                                  introductionRecipientIdentityKey,
+                                                  introduceeFingerprintId,
+                                                  introduceeIdentityKey);
+    return getFormattedSafetyNumbers(fingerprint, SEGMENTS).replace("\n", "");
   }
 
   private static IdentityKey getIdentityKey(RecipientId id){
@@ -129,67 +176,28 @@ public class TI_Utils {
 
     // TODO: Should I just use the LiveRecipient Stuff instead?  :/ caching etc..
     RecipientDatabase rdb = SignalDatabase.recipients();
-    NumericFingerprintGenerator generator = new NumericFingerprintGenerator(ITERATIONS);
     Cursor recipientCursor = rdb.getCursorForSendingTI(introducees);
     JSONArray data = new JSONArray();
-
-    // Initialize version and introduction recipients id & key
-    int version;
-    byte[]        introductionRecipientFingerprintId;
-    LiveRecipient live = Recipient.live(introductionRecipientId);
-    Recipient introductionRecipientResolved = live.resolve();
-    // @see VerifyDisplayFragment for verification version differences
-    if (FeatureFlags.verifyV2()){
-      version = 2;
-      Log.e(TAG, introductionRecipientResolved.requireServiceId().toString());
-      introductionRecipientFingerprintId = introductionRecipientResolved.requireServiceId().toByteArray();
-    } else {
-      version = 1;
-      Log.e(TAG, introductionRecipientResolved.requireE164());
-      introductionRecipientFingerprintId = introductionRecipientResolved.requireE164().getBytes();
-    }
-    IdentityKey introductionRecipientIdentityKey = getIdentityKey(introductionRecipientId);
 
     // Loop over all the contacts you want to introduce
     recipientCursor.moveToFirst();
     ArrayList<RecipientId> introduceesList = new ArrayList<>(introducees);
     for(int i = 0; !recipientCursor.isAfterLast(); i++){
       JSONObject introducee = new JSONObject();
-      // For the name, try joint name first, if empty, individual components, if still empty username as last attempt
-      String name = "";
-      name = recipientCursor.getString(recipientCursor.getColumnIndex(PROFILE_JOINED_NAME));
-      if (name.isEmpty() || isOnlyWhitespace(name)){
-        name = recipientCursor.getString(recipientCursor.getColumnIndex(PROFILE_GIVEN_NAME)) + recipientCursor.getString(recipientCursor.getColumnIndex(PROFILE_FAMILY_NAME));
-      }
-      if (name.isEmpty() || isOnlyWhitespace(name)){
-        name = recipientCursor.getString(recipientCursor.getColumnIndex(USERNAME));
-      }
-      introducee.put(NAME_J, name);
+      introducee.put(NAME_J, recipientCursor.getString(recipientCursor.getColumnIndex(SORT_NAME)));
       String introduceeE164 = recipientCursor.getString(recipientCursor.getColumnIndex(PHONE));
       introducee.put(NUMBER_J, introduceeE164);
-      String introduceeACI = recipientCursor.getString(recipientCursor.getColumnIndex(SERVICE_ID));
-      introducee.put(INTRODUCEE_SERVICE_ID_J, introduceeACI);
+      String introduceeServiceId = recipientCursor.getString(recipientCursor.getColumnIndex(SERVICE_ID));
+      introducee.put(INTRODUCEE_SERVICE_ID_J, introduceeServiceId);
       IdentityKey introduceeIdentityKey = getIdentityKey(introduceesList.get(i));
       introducee.put(IDENTITY_J, Base64.encodeBytes(introduceeIdentityKey.serialize()));
-      byte[] introduceeFingerprintId;
-      if (FeatureFlags.verifyV2()){
-        introduceeFingerprintId = introduceeACI.getBytes();
-      } else {
-        introduceeFingerprintId = introduceeE164.getBytes();
-      }
-      // @see VerifyDisplayFragment::initializeFingerprint(), iterations there also hardcoded to 5200 for FingerprintGenerator
-      // @see ServiceId.java to understand how they convert the ACI to ByteArray
-      // @see IdentityKey.java
-      Fingerprint fingerprint = generator.createFor(version,
-                                                      introductionRecipientFingerprintId,
-                                                      introductionRecipientIdentityKey,
-                                                      introduceeFingerprintId,
-                                                      introduceeIdentityKey);
-      String formatedSafetyNr = getFormattedSafetyNumbers(fingerprint, SEGMENTS).replace("\n", "");
+      String formatedSafetyNr = predictFingerprint(introductionRecipientId, introduceesList.get(i), introduceeServiceId, introduceeE164);
       introducee.put(PREDICTED_FINGERPRINT_J, formatedSafetyNr);
       data.put(introducee);
       recipientCursor.moveToNext();
     }
+
+    recipientCursor.close();
 
     return TI_IDENTIFYER + TI_SEPARATOR + data.toString(INDENT_SPACES);
   }
@@ -201,6 +209,7 @@ public class TI_Utils {
 
   }
 
+  @SuppressLint("Range") // SERVICE_ID keyword exists
   public static List<TI_Data> parseTIMessage(String body, long timestamp, RecipientId introducerId){
     if (!body.contains(TI_IDENTIFYER)){
       assert false: "Non TI message passed into parse TI!";
@@ -209,11 +218,26 @@ public class TI_Utils {
     String jsonDataS = body.replace(TI_IDENTIFYER, "");
     try {
       JSONArray data = new JSONArray(jsonDataS);
-      ArrayList<String> acis = new ArrayList<>();
+      ArrayList<String> serviceIds = new ArrayList<>();
       // Get all ACI's of introducees first to minimize database Queries
       for(int i = 0; i < data.length(); i++){
         JSONObject o = data.getJSONObject(i);
-        acis.add(o.getString(INTRODUCEE_SERVICE_ID_J));
+        serviceIds.add(o.getString(INTRODUCEE_SERVICE_ID_J));
+      }
+      Cursor cursor = SignalDatabase.recipients().getCursorForReceivingTI(serviceIds);
+      // Construct TI Data & rebuild serviceIds to only contain the ones present in the database, freeing some memory
+      serviceIds = new ArrayList<>();
+      if(cursor.getCount() > 0) {
+        cursor.moveToFirst();
+        while(!cursor.isAfterLast()){
+          RecipientId introduceeId = RecipientId.from(cursor.getLong(cursor.getColumnIndex(LOCAL_RECIPIENT_ID)));
+          String serviceId = cursor.getString(cursor.getColumnIndex(SERVICE_ID));
+          serviceIds.add(serviceId);
+          Recipient r = Recipient.resolved(introduceeId);
+          String name =
+          TI_Data d = TI_Data(null, null, introducerId, introduceeId, serviceId, )
+        }
+
       }
 
       // Have to look for existance of Recipients in the database and populate RecipientIds if present
@@ -257,6 +281,34 @@ public class TI_Utils {
       return "InvalidKey";
     }
     return hashtext;
+  }
+
+  /**
+   * Helper to construct the name to include in the Introduction.
+   * !!! Pass EITHER a cursor OR a recipient.
+   * Supplying none or both will cause an assertion failure.
+   * @return The constructed name
+   */
+  @SuppressLint("Range") // Because of duplicate column names
+  private static String constructName(@Nullable Cursor recipientCursor, @Nullable Recipient recipient){
+    if (recipientCursor == null && recipient == null || recipientCursor != null && recipient != null) {
+      assert false: "Precondition violation of TI_Utils.constructName";
+    }
+    String name = "";
+    // In both cases, try joint name first, if empty, individual components, if still empty username as last attempt
+    // cursor
+    if(recipientCursor != null){
+      name = recipientCursor.getString(recipientCursor.getColumnIndex(PROFILE_JOINED_NAME));
+      if (name.isEmpty() || isOnlyWhitespace(name)){
+        name = recipientCursor.getString(recipientCursor.getColumnIndex(PROFILE_GIVEN_NAME)) + recipientCursor.getString(recipientCursor.getColumnIndex(PROFILE_FAMILY_NAME));
+      }
+      if (name.isEmpty() || isOnlyWhitespace(name)){
+        name = recipientCursor.getString(recipientCursor.getColumnIndex(USERNAME));
+      }
+    }
+    // recipient
+    name = recipient.pro
+
   }
 
 }

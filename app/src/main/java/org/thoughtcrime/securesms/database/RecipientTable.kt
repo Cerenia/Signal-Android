@@ -320,18 +320,42 @@ open class RecipientTable(context: Context, databaseHelper: SignalDatabase) : Da
 
     // Used when querying Recipients to introduce to someone
     private val TRUSTED_INTRODUCTION_PROJECTION: Array<String> = arrayOf(
-      SERVICE_ID, // to lookup public key in identity database, I *think* this is ACI which *should* match across users, so sending that too..
-      USERNAME,
-      PROFILE_JOINED_NAME,
-      PROFILE_GIVEN_NAME,
-      PROFILE_FAMILY_NAME,
-      PHONE
+      SERVICE_ID, // to lookup public key in identity database, uuid identifying instance of signal service (recipient will see identical one).
+      PHONE,
+      """
+      REPLACE(
+        COALESCE(
+          NULLIF($SYSTEM_JOINED_NAME, ''), 
+          NULLIF($SYSTEM_GIVEN_NAME, ''), 
+          NULLIF($PROFILE_JOINED_NAME, ''), 
+          NULLIF($PROFILE_GIVEN_NAME, ''),
+          NULLIF($USERNAME, ''),
+          NULLIF($PHONE, '')
+        ),
+        ' ',
+        ''
+      ) AS $SORT_NAME 
+      """.trimIndent()
     )
 
     // Used when parsing an incoming introduction, to check which Recipients were known
     private val RECIEVING_TRUSTED_INTRODUCTIONS_PROJECTION: Array<String> = arrayOf(
       ID,
-      SERVICE_ID
+      SERVICE_ID,
+      """
+      REPLACE(
+        COALESCE(
+          NULLIF($SYSTEM_JOINED_NAME, ''), 
+          NULLIF($SYSTEM_GIVEN_NAME, ''), 
+          NULLIF($PROFILE_JOINED_NAME, ''), 
+          NULLIF($PROFILE_GIVEN_NAME, ''),
+          NULLIF($USERNAME, ''),
+          NULLIF($PHONE, '')
+        ),
+        ' ',
+        ''
+      ) AS $SORT_NAME
+       """.trimIndent()
     )
 
     private val ID_PROJECTION = arrayOf(ID)
@@ -400,7 +424,7 @@ open class RecipientTable(context: Context, databaseHelper: SignalDatabase) : Da
         ),
         ' ',
         ''
-      ) AS $SORT_NAME
+      ) AS $SORT_NAME 
       """.trimIndent()
     )
 
@@ -777,9 +801,9 @@ open class RecipientTable(context: Context, databaseHelper: SignalDatabase) : Da
   /**
    * Returns a RecipientReader pointing to the Recipients who were present in the database by SERVICE_ID
    */
-  fun getReaderForReceivingTI(serializedAcis: List<String>): RecipientReader{
-    val query = buildACIQuery(serializedAcis)
-    return RecipientReader(readableDatabase.query(TABLE_NAME, RECIEVING_TRUSTED_INTRODUCTIONS_PROJECTION, query, serializedAcis.toTypedArray(), null, null, null))
+  fun getCursorForReceivingTI(serializedAcis: List<String>): Cursor{
+    val query = buildService_ID_Query(serializedAcis)
+    return readableDatabase.query(TABLE_NAME, RECIEVING_TRUSTED_INTRODUCTIONS_PROJECTION, query, serializedAcis.toTypedArray(), null, null, null)
   }
 
   /**
@@ -798,7 +822,7 @@ open class RecipientTable(context: Context, databaseHelper: SignalDatabase) : Da
         }
       }
     }
-    val query = buildACIQuery(identifiers)
+    val query = buildService_ID_Query(identifiers)
     val newCursor = readableDatabase.query(TABLE_NAME, RECIPIENT_PROJECTION, query, identifiers.toTypedArray(), null, null, null)
     return RecipientReader(newCursor)
   }
@@ -807,10 +831,10 @@ open class RecipientTable(context: Context, databaseHelper: SignalDatabase) : Da
    * Helpers
    */
 
-  private fun buildACIQuery(serializedAcis: List<String>) : String{
+  private fun buildService_ID_Query(serializedServiceIds: List<String>) : String{
     val query = StringBuilder();
-    if(!serializedAcis.isEmpty()){
-      (1 until serializedAcis.size).map{
+    if(!serializedServiceIds.isEmpty()){
+      (1 until serializedServiceIds.size).map{
         query.append("$SERVICE_ID=? OR ")
       }
       query.append("$SERVICE_ID=?")
