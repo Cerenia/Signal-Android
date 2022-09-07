@@ -35,34 +35,38 @@ public class TrustedIntroductionsDatabase extends Database{
 
   public static final String TABLE_NAME = "trusted_introductions";
 
-  // TODO: Should the phone number be in there?
   private static final String ID                       = "_id";
   private static final String INTRODUCING_RECIPIENT_ID = "introducer_id";
-  private static final String INTRODUCEE_RECIPIENT_ID = "introducee_id";
+  private static final String INTRODUCEE_RECIPIENT_ID = "introducee_id"; // TODO: Is this really as immutable as I think?...
   private static final String INTRODUCEE_SERVICE_ID = "introducee_service_id";
   private static final String INTRODUCEE_PUBLIC_IDENTITY_KEY = "introducee_identity_key"; // The one contained in the Introduction
-  private static final String INTRODUCEE_NAME = "introducee_name";
-  private static final String INTRODUCEE_NUMBER = "introducee_number";
+  private static final String INTRODUCEE_NAME = "introducee_name"; // TODO: snapshot when introduction happened. Necessary? Or wrong approach?
+  private static final String INTRODUCEE_NUMBER = "introducee_number"; // TODO: snapshot when introduction happened. Necessary? Or wrong approach?
   private static final String PREDICTED_FINGERPRING = "predicted_fingerprint";
   private static final String TIMESTAMP    = "timestamp";
   private static final String STATE        = "state";
 
-  public static final int CLEARED_INTRODUCING_RECIPIENT_ID = -1;
+  public static final long CLEARED_INTRODUCING_RECIPIENT_ID = -1; // See RecipientId.UNKNOWN
 
   public static final String CREATE_TABLE =
-      "CREATE TABLE " + TABLE_NAME + " (" + ID + " INTEGER PRIMARY KEY, " +
+      "CREATE TABLE " + TABLE_NAME + " (" + ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
       INTRODUCING_RECIPIENT_ID + " INTEGER NOT NULL, " + // TODO: Do I need to mark RecipientId as UNIQUE?
       INTRODUCEE_RECIPIENT_ID + " INTEGER DEFAULT NULL, " +
       INTRODUCEE_SERVICE_ID + " TEXT UNIQUE NOT NULL, " +
       INTRODUCEE_PUBLIC_IDENTITY_KEY + " TEXT NOT NULL, " +
       INTRODUCEE_NAME + " TEXT NOT NULL, " +
       INTRODUCEE_NUMBER + " TEXT UNIQUE NOT NULL, " +
-      PREDICTED_FINGERPRING + " TEXT NOT NULL, " +
+      PREDICTED_FINGERPRING + " TEXT UNIQUE NOT NULL, " +
       TIMESTAMP + " INTEGER NOT NULL, " +
       STATE + " INTEGER NOT NULL);";
 
   private static final ArrayList<String> DUPLICATE_SEARCH_PROJECTION = new ArrayList<>(Arrays.asList(
-      , "b"));
+      INTRODUCING_RECIPIENT_ID,
+      INTRODUCEE_RECIPIENT_ID,
+      INTRODUCEE_SERVICE_ID,
+      INTRODUCEE_PUBLIC_IDENTITY_KEY,
+      STATE
+      ));
 
 
   /**
@@ -137,8 +141,22 @@ public class TrustedIntroductionsDatabase extends Database{
 
     // TODO: How do I check if it is a duplicate introduction? (-> then only timestamp differs), should be fast update instead
 
+    /*
+    *
+      INTRODUCING_RECIPIENT_ID,
+      INTRODUCEE_RECIPIENT_ID,
+      INTRODUCEE_SERVICE_ID,
+      INTRODUCEE_PUBLIC_IDENTITY_KEY,
+      STATE
+    */
     // Fetch Data out of database where everything is identical but timestamp.
-
+    StringBuilder selectionBuilder = new StringBuilder();
+    selectionBuilder.append(String.format("%s=?", INTRODUCING_RECIPIENT_ID)); // if ID was purged, duplicate detection no longer possible // TODO: issue for, e.g., count if pure distance-1 case (future problem)
+    String andAppend = " AND %s=?";
+    selectionBuilder.append(String.format(andAppend, INTRODUCEE_RECIPIENT_ID));
+    selectionBuilder.append(String.format(andAppend, INTRODUCEE_SERVICE_ID));
+    selectionBuilder.append(String.format(andAppend, INTRODUCEE_PUBLIC_IDENTITY_KEY));
+    selectionBuilder.append(String.format(andAppend, STATE)); // for now checking for pending state TODO: does that make sense?
 
     // iff introducee ID is already present in recipient database, compare identity keys
     Cursor c = fetchRecipientDBCursor(introduceeId);
@@ -180,7 +198,6 @@ public class TrustedIntroductionsDatabase extends Database{
     ContentValues values = new ContentValues(6);
 
     // @See class TI_Data
-    values.put(INTRODUCTION_UUID, introductionUUID.toString());
     values.put(STATE, State.PENDING.toInt()); //Intro always starts with PENDING state
     values.put(INTRODUCING_RECIPIENT_ID, introducerId.serialize());
     values.put(INTRODUCEE_RECIPIENT_ID, introduceeId.serialize());
