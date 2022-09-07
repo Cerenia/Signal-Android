@@ -14,6 +14,8 @@ import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -35,10 +37,12 @@ public class TrustedIntroductionsDatabase extends Database{
 
   // TODO: Should the phone number be in there?
   private static final String ID                       = "_id";
-  private static final String INTRODUCTION_UUID        = "introduction_uuid";
-  private static final String INTRODUCING_RECIPIENT_ID = "introducer";
-  private static final String INTRODUCEE_RECIPIENT_ID = "introducee";
+  private static final String INTRODUCING_RECIPIENT_ID = "introducer_id";
+  private static final String INTRODUCEE_RECIPIENT_ID = "introducee_id";
+  private static final String INTRODUCEE_SERVICE_ID = "introducee_service_id";
   private static final String INTRODUCEE_PUBLIC_IDENTITY_KEY = "introducee_identity_key"; // The one contained in the Introduction
+  private static final String INTRODUCEE_NAME = "introducee_name";
+  private static final String INTRODUCEE_NUMBER = "introducee_number";
   private static final String PREDICTED_FINGERPRING = "predicted_fingerprint";
   private static final String TIMESTAMP    = "timestamp";
   private static final String STATE        = "state";
@@ -46,15 +50,20 @@ public class TrustedIntroductionsDatabase extends Database{
   public static final int CLEARED_INTRODUCING_RECIPIENT_ID = -1;
 
   public static final String CREATE_TABLE =
-      "CREATE TABLE " + TABLE_NAME + "(" + ID + " INTEGER PRIMARY KEY, " +
-      INTRODUCTION_UUID + " TEXT, " +
-      INTRODUCING_RECIPIENT_ID + " INTEGER, " +
-      INTRODUCEE_RECIPIENT_ID + " INTEGER, " +
-      INTRODUCEE_PUBLIC_IDENTITY_KEY + " TEXT, " +
-      PREDICTED_FINGERPRING + " TEXT, " +
-      TIMESTAMP + " INTEGER, " +
-      STATE + " INTEGER, " +
-      "UNIQUE(" + INTRODUCTION_UUID + ") ON CONFLICT ABORT)";
+      "CREATE TABLE " + TABLE_NAME + " (" + ID + " INTEGER PRIMARY KEY, " +
+      INTRODUCING_RECIPIENT_ID + " INTEGER NOT NULL, " + // TODO: Do I need to mark RecipientId as UNIQUE?
+      INTRODUCEE_RECIPIENT_ID + " INTEGER DEFAULT NULL, " +
+      INTRODUCEE_SERVICE_ID + " TEXT UNIQUE NOT NULL, " +
+      INTRODUCEE_PUBLIC_IDENTITY_KEY + " TEXT NOT NULL, " +
+      INTRODUCEE_NAME + " TEXT NOT NULL, " +
+      INTRODUCEE_NUMBER + " TEXT UNIQUE NOT NULL, " +
+      PREDICTED_FINGERPRING + " TEXT NOT NULL, " +
+      TIMESTAMP + " INTEGER NOT NULL, " +
+      STATE + " INTEGER NOT NULL);";
+
+  private static final ArrayList<String> DUPLICATE_SEARCH_PROJECTION = new ArrayList<>(Arrays.asList(
+      , "b"));
+
 
   /**
    * An Introduction can either be waiting for a decision from the user (PENDING),
@@ -127,6 +136,9 @@ public class TrustedIntroductionsDatabase extends Database{
   public long incomingIntroduction(@NonNull TI_Data data){
 
     // TODO: How do I check if it is a duplicate introduction? (-> then only timestamp differs), should be fast update instead
+
+    // Fetch Data out of database where everything is identical but timestamp.
+
 
     // iff introducee ID is already present in recipient database, compare identity keys
     Cursor c = fetchRecipientDBCursor(introduceeId);
