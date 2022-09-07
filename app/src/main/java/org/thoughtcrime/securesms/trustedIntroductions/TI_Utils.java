@@ -117,7 +117,7 @@ public class TI_Utils {
    * @param introduceeServiceId, fetched if null and needed
    * @param introduceeE164, phone nr., fetched if null and needed
    * @param introduceeIdentityKey fetched if null
-   * @return The expected safety number as a String, formated into segments identical to the VerifyFingerprint Activity.
+   * @return The expected safety number as a String, formated into segments identical to the VerifyDisplayFragment
    */
   public static String predictFingerprint(@NonNull RecipientId introductionRecipientId, @NonNull RecipientId introduceeId, @Nullable String introduceeServiceId, @Nullable String introduceeE164, @Nullable IdentityKey introduceeIdentityKey){
     if(introduceeServiceId == null && introduceeE164 == null && introduceeIdentityKey == null){
@@ -210,11 +210,11 @@ public class TI_Utils {
   public static void handleTIMessage(String message, long timestamp){
     if(!message.contains(TI_IDENTIFYER)) return;
     // Schedule Reception Job
-  
+
   }
 
   @SuppressLint("Range") // keywords exists
-  public static List<TI_Data> parseTIMessage(String body, long timestamp, RecipientId introducerId){
+  public static @NonNull List<TI_Data> parseTIMessage(String body, long timestamp, RecipientId introducerId){
     if (!body.contains(TI_IDENTIFYER)){
       assert false: "Non TI message passed into parse TI!";
     }
@@ -237,7 +237,6 @@ public class TI_Utils {
           RecipientId introduceeId = RecipientId.from(cursor.getLong(cursor.getColumnIndex(LOCAL_RECIPIENT_ID)));
           String serviceId = cursor.getString(cursor.getColumnIndex(SERVICE_ID));
           serviceIds.add(serviceId);
-          //Recipient r = Recipient.resolved(introduceeId);
           String name = cursor.getString(cursor.getColumnIndex(SORT_NAME));
           String phone = cursor.getString(cursor.getColumnIndex(PHONE));
           IdentityKey identityKey = getIdentityKey(introduceeId);
