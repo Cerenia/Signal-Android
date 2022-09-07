@@ -3,6 +3,7 @@ package org.thoughtcrime.securesms.jobs;
 import androidx.annotation.NonNull;
 
 import org.signal.core.util.logging.Log;
+import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.jobmanager.Data;
 import org.thoughtcrime.securesms.jobmanager.Job;
 import org.thoughtcrime.securesms.jobmanager.impl.NetworkConstraint;
@@ -10,6 +11,7 @@ import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -25,6 +27,10 @@ public class TrustedIntroductionsReceiveJob extends BaseJob  {
   private final RecipientId introducerId;
   private final long timestamp;
   private final String messageBody;
+  // counter keeping track of which TI_DATA has made it's way to the database
+  // allows to only serialize introductions that have not yet been done if process get's interrupted
+  private final List<TI_Data> introductions = new ArrayList();
+  private int next_insert = 0;
 
   // Serialization Keys
   private static final String KEY_INTRODUCER_ID = "introducer_id";
@@ -77,9 +83,13 @@ public class TrustedIntroductionsReceiveJob extends BaseJob  {
 
 
   @Override protected void onRun() throws Exception {
-    List<TI_Data> tiData = parseTIMessage(messageBody, timestamp);
-    for(TI_Data introduction: tiData){
-
+    if(introductions.isEmpty()){
+      List<TI_Data> tiData = parseTIMessage(messageBody, timestamp, introducerId);
+      introductions.addAll(tiData);
+    }
+    for(TI_Data introduction: introductions){
+      SignalDatabase.
+      // TODO: What if insert fails? (-1 answer)
     }
   }
 

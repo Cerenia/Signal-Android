@@ -12,6 +12,7 @@ import com.mobilecoin.lib.exceptions.SerializationException;
 import org.signal.core.util.SqlUtil;
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.recipients.RecipientId;
+import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -123,13 +124,7 @@ public class TrustedIntroductionsDatabase extends Database{
    * @return -1 -> conflict occured on insert, TODO what if not -1? play around a bit
    */
   @WorkerThread
-  public long newIntroduction(@NonNull RecipientId introducerId,
-                               RecipientId introduceeId,
-                               String introduceeName,
-                               String introduceePhone,
-                               String introduceeIdentityKey,
-                               String predictedSecurityNumber,
-                               long timestamp){
+  public long incomingIntroduction(@NonNull TI_Data data){
 
     // TODO: How do I check if it is a duplicate introduction? (-> then only timestamp differs), should be fast update instead
 
@@ -139,7 +134,6 @@ public class TrustedIntroductionsDatabase extends Database{
 
     }
     // otherwise simply generate a new entry in either pending or conflicting state
-
 
   }
 
@@ -155,7 +149,13 @@ public class TrustedIntroductionsDatabase extends Database{
   }
 
   @WorkerThread
-  private long createIncomingIntroduction(@NonNull UUID introductionUUID,
+  private long updateIntroduction(@NonNull UUID introductionUUID, long timestamp){
+    // TODO
+    return -1;
+  }
+
+  @WorkerThread
+  private long newIntroduction(@NonNull UUID introductionUUID,
                                           @NonNull RecipientId introducerId,
                                           @NonNull RecipientId introduceeId,
                                           @NonNull String predictedFingerprint,
