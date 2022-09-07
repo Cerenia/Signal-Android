@@ -18,6 +18,8 @@ import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.database.model.IdentityRecord;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.jobmanager.Job;
+import org.thoughtcrime.securesms.jobmanager.JobManager;
+import org.thoughtcrime.securesms.jobs.TrustedIntroductionsReceiveJob;
 import org.thoughtcrime.securesms.recipients.LiveRecipient;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
@@ -207,10 +209,10 @@ public class TI_Utils {
   }
 
   // This structure allows for a oneliner in the processing logic to minimize additional code needed in there.
-  public static void handleTIMessage(String message, long timestamp){
+  public static void handleTIMessage(RecipientId introducer, String message, long timestamp){
     if(!message.contains(TI_IDENTIFYER)) return;
     // Schedule Reception Job
-
+    ApplicationDependencies.getJobManager().add(new TrustedIntroductionsReceiveJob(introducer, message, timestamp));
   }
 
   @SuppressLint("Range") // keywords exists
