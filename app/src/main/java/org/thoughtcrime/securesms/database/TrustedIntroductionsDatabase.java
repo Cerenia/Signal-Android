@@ -1,5 +1,6 @@
 package org.thoughtcrime.securesms.database;
 
+import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -13,9 +14,8 @@ import org.signal.core.util.SqlUtil;
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
+import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -29,44 +29,45 @@ import java.util.UUID;
  * This implementation currently does not support multidevice.
  *
  */
-public class TrustedIntroductionsDatabase extends Database{
+public class TrustedIntroductionsDatabase extends Database {
 
   private final String TAG = Log.tag(TrustedIntroductionsDatabase.class);
 
   public static final String TABLE_NAME = "trusted_introductions";
 
-  private static final String ID                       = "_id";
-  private static final String INTRODUCING_RECIPIENT_ID = "introducer_id";
-  private static final String INTRODUCEE_RECIPIENT_ID = "introducee_id"; // TODO: Is this really as immutable as I think?...
-  private static final String INTRODUCEE_SERVICE_ID = "introducee_service_id";
+  private static final String ID                             = "_id";
+  private static final String INTRODUCING_RECIPIENT_ID       = "introducer_id";
+  private static final String INTRODUCEE_RECIPIENT_ID        = "introducee_id"; // TODO: Is this really as immutable as I think?...
+  private static final String INTRODUCEE_SERVICE_ID          = "introducee_service_id";
   private static final String INTRODUCEE_PUBLIC_IDENTITY_KEY = "introducee_identity_key"; // The one contained in the Introduction
-  private static final String INTRODUCEE_NAME = "introducee_name"; // TODO: snapshot when introduction happened. Necessary? Or wrong approach?
-  private static final String INTRODUCEE_NUMBER = "introducee_number"; // TODO: snapshot when introduction happened. Necessary? Or wrong approach?
-  private static final String PREDICTED_FINGERPRING = "predicted_fingerprint";
-  private static final String TIMESTAMP    = "timestamp";
-  private static final String STATE        = "state";
+  private static final String INTRODUCEE_NAME                = "introducee_name"; // TODO: snapshot when introduction happened. Necessary? Or wrong approach?
+  private static final String INTRODUCEE_NUMBER     = "introducee_number"; // TODO: snapshot when introduction happened. Necessary? Or wrong approach?
+  private static final String PREDICTED_FINGERPRINT = "predicted_fingerprint";
+  private static final String TIMESTAMP             = "timestamp";
+  private static final String STATE                          = "state";
 
   public static final long CLEARED_INTRODUCING_RECIPIENT_ID = -1; // See RecipientId.UNKNOWN
+  public static final long UNINITIALIZED_INTRODUCEE_RECIPIENT_ID = -1;
 
   public static final String CREATE_TABLE =
       "CREATE TABLE " + TABLE_NAME + " (" + ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
       INTRODUCING_RECIPIENT_ID + " INTEGER NOT NULL, " + // TODO: Do I need to mark RecipientId as UNIQUE?
-      INTRODUCEE_RECIPIENT_ID + " INTEGER DEFAULT NULL, " +
+      INTRODUCEE_RECIPIENT_ID + " INTEGER DEFAULT " + UNINITIALIZED_INTRODUCEE_RECIPIENT_ID + ", " +
       INTRODUCEE_SERVICE_ID + " TEXT UNIQUE NOT NULL, " +
       INTRODUCEE_PUBLIC_IDENTITY_KEY + " TEXT NOT NULL, " +
       INTRODUCEE_NAME + " TEXT NOT NULL, " +
       INTRODUCEE_NUMBER + " TEXT UNIQUE NOT NULL, " +
-      PREDICTED_FINGERPRING + " TEXT UNIQUE NOT NULL, " +
+      PREDICTED_FINGERPRINT + " TEXT UNIQUE NOT NULL, " +
       TIMESTAMP + " INTEGER NOT NULL, " +
       STATE + " INTEGER NOT NULL);";
 
-  private static final ArrayList<String> DUPLICATE_SEARCH_PROJECTION = new ArrayList<>(Arrays.asList(
-      INTRODUCING_RECIPIENT_ID,
-      INTRODUCEE_RECIPIENT_ID,
-      INTRODUCEE_SERVICE_ID,
-      INTRODUCEE_PUBLIC_IDENTITY_KEY,
-      STATE
-      ));
+  private static final String[] DUPLICATE_SEARCH_PROJECTION = new String[]{
+    INTRODUCING_RECIPIENT_ID,
+    INTRODUCEE_RECIPIENT_ID,
+    INTRODUCEE_SERVICE_ID,
+    INTRODUCEE_PUBLIC_IDENTITY_KEY,
+    STATE
+    };
 
 
   /**
@@ -134,21 +135,11 @@ public class TrustedIntroductionsDatabase extends Database{
 
   /**
    *
-   * @return -1 -> conflict occured on insert, TODO what if not -1? play around a bit
+   * @return -1 -> conflict occured on insert, else id of introduction.
    */
-  @WorkerThread
+  @SuppressLint("Range") @WorkerThread
   public long incomingIntroduction(@NonNull TI_Data data){
 
-    // TODO: How do I check if it is a duplicate introduction? (-> then only timestamp differs), should be fast update instead
-
-    /*
-    *
-      INTRODUCING_RECIPIENT_ID,
-      INTRODUCEE_RECIPIENT_ID,
-      INTRODUCEE_SERVICE_ID,
-      INTRODUCEE_PUBLIC_IDENTITY_KEY,
-      STATE
-    */
     // Fetch Data out of database where everything is identical but timestamp.
     StringBuilder selectionBuilder = new StringBuilder();
     selectionBuilder.append(String.format("%s=?", INTRODUCING_RECIPIENT_ID)); // if ID was purged, duplicate detection no longer possible // TODO: issue for, e.g., count if pure distance-1 case (future problem)
@@ -156,20 +147,63 @@ public class TrustedIntroductionsDatabase extends Database{
     selectionBuilder.append(String.format(andAppend, INTRODUCEE_RECIPIENT_ID));
     selectionBuilder.append(String.format(andAppend, INTRODUCEE_SERVICE_ID));
     selectionBuilder.append(String.format(andAppend, INTRODUCEE_PUBLIC_IDENTITY_KEY));
-    selectionBuilder.append(String.format(andAppend, STATE)); // for now checking for pending state TODO: does that make sense?
+    selectionBuilder.append(String.format(andAppend, STATE));
 
-    // iff introducee ID is already present in recipient database, compare identity keys
-    Cursor c = fetchRecipientDBCursor(introduceeId);
-    if(c.getCount() > 0){
+    // TODO: if this works well, use in other dbs where you build queries
+    String[] args = SqlUtil.buildArgs(data.getIntroducerId().serialize(),
+                                      data.getIntroduceeId() == null ? "NULL" : data.getIntroduceeId().serialize(),
+                                      data.getIntroduceeServiceId(),
+                                      data.getIntroduceeIdentityKey(),
+                                      State.PENDING.toInt()); // for now checking for pending state TODO: does that make sense?
 
+    SQLiteDatabase writeableDatabase = databaseHelper.getSignalWritableDatabase();
+    Cursor c = writeableDatabase.query(TABLE_NAME, DUPLICATE_SEARCH_PROJECTION, selectionBuilder.toString(), args, null, null, null);
+    if (c.getCount() == 1){
+      c.moveToFirst();
+      ContentValues value = new ContentValues(1);
+      value.put(TIMESTAMP, data.getTimestamp());
+      long result = writeableDatabase.update(TABLE_NAME, value, ID + " = ?", SqlUtil.buildArgs(c.getInt(c.getColumnIndex(ID))));
+      // TODO testing
+      Log.e(TAG, "Updated timestamp of introduction " + result + " to: " + data.getTimestamp());
+      c.close();
+      return result;
     }
-    // otherwise simply generate a new entry in either pending or conflicting state
+    assert c.getCount() == 0: TAG + " Either there is one entry or none, nothing else valid.";
+    c.close();
 
+    ContentValues values;
+    RecipientId introduceeId = data.getIntroduceeId();
+    if(introduceeId == null){
+      values = new ContentValues(8);
+      values.put(STATE, State.PENDING.toInt()); // if recipient does not exist, we have nothing to compare against.
+      // TODO: How to fetch a recipient based on ServiceID? Should compare in any case...
+    } else {
+      values = new ContentValues(9);
+      values.put(INTRODUCEE_RECIPIENT_ID, data.getIntroduceeId().toLong());
+      if (TI_Utils.encodedIdentityKeysEqual(introduceeId, data.getIntroduceeIdentityKey())){
+        values.put(STATE, State.PENDING.toInt());
+      } else {
+        values.put(STATE, State.CONFLICTING.toInt());
+      }
+    }
+
+    values.put(INTRODUCING_RECIPIENT_ID, data.getIntroducerId().toLong());
+    values.put(INTRODUCEE_SERVICE_ID, data.getIntroduceeServiceId());
+    values.put(INTRODUCEE_PUBLIC_IDENTITY_KEY, data.getIntroduceeIdentityKey());
+    values.put(INTRODUCEE_NAME, data.getIntroduceeName());
+    values.put(INTRODUCEE_NUMBER, data.getIntroduceeNumber());
+    values.put(PREDICTED_FINGERPRINT, data.getPredictedSecurityNumber());
+    values.put(TIMESTAMP, data.getTimestamp());
+
+    long id = writeableDatabase.insert(TABLE_NAME, null, values);
+    // TODO: testing
+    Log.e(TAG, "Inserted new introduction for: " + data.getIntroduceeName() + ", with id: " + id);
+    return id;
   }
 
   // TODO: Just pass a TI_Data object instead?
   @WorkerThread
-  public boolean acceptIntroduction(UUID introductionId, RecipientId introduceeId){
+  public boolean acceptIntroduction(int id, RecipientId introduceeId){
     Cursor c = fetchRecipientDBCursor(introduceeId);
     if(c.getCount() <= 0){
       // TODO: Add introducee if not present in the database
@@ -178,35 +212,6 @@ public class TrustedIntroductionsDatabase extends Database{
     return true;
   }
 
-  @WorkerThread
-  private long updateIntroduction(@NonNull UUID introductionUUID, long timestamp){
-    // TODO
-    return -1;
-  }
-
-  @WorkerThread
-  private long newIntroduction(@NonNull UUID introductionUUID,
-                                          @NonNull RecipientId introducerId,
-                                          @NonNull RecipientId introduceeId,
-                                          @NonNull String predictedFingerprint,
-                                          @NonNull String serializedIdentityKey, // @See IdentityDatabase.java, Base64 encoded
-                                          @NonNull long timestamp)
-      throws SerializationException
-  {
-
-    SQLiteDatabase database = databaseHelper.getSignalWritableDatabase();
-    ContentValues values = new ContentValues(6);
-
-    // @See class TI_Data
-    values.put(STATE, State.PENDING.toInt()); //Intro always starts with PENDING state
-    values.put(INTRODUCING_RECIPIENT_ID, introducerId.serialize());
-    values.put(INTRODUCEE_RECIPIENT_ID, introduceeId.serialize());
-    values.put(INTRODUCEE_PUBLIC_IDENTITY_KEY, serializedIdentityKey);
-    values.put(PREDICTED_FINGERPRING, predictedFingerprint);
-    values.put(TIMESTAMP, timestamp);
-
-    return database.insert(TABLE_NAME, null, values);
-  }
 
  @WorkerThread
  /**
@@ -215,10 +220,10 @@ public class TrustedIntroductionsDatabase extends Database{
   *
   * @return true if success, false otherwise
   */
- public boolean clearIntroducer(@NonNull UUID introductionUUID){
+ public boolean clearIntroducer(int introductionId){
    SQLiteDatabase database = databaseHelper.getSignalWritableDatabase();
-   String query = INTRODUCTION_UUID + " = ?";
-   String[] args = SqlUtil.buildArgs(introductionUUID.toString());
+   String query = ID + " = ?";
+   String[] args = SqlUtil.buildArgs(introductionId);
 
    ContentValues values = new ContentValues(1);
    values.put(INTRODUCING_RECIPIENT_ID, CLEARED_INTRODUCING_RECIPIENT_ID);
@@ -257,14 +262,14 @@ public class TrustedIntroductionsDatabase extends Database{
   /**
    *
    *
-   * @param introductionUUID which introduction to modify
+   * @param id which introduction to modify
    * @param state what state to set, cannot be PENDING
    * @return true if this was successfull, false otherwise (UUID did not exist in the database)
    */
-  private boolean setState(@NonNull UUID introductionUUID, @NonNull State state) {
+  private boolean setState(int id, @NonNull State state) {
     SQLiteDatabase database = databaseHelper.getSignalWritableDatabase();
-    String query = INTRODUCTION_UUID + " = ?";
-    String[] args = SqlUtil.buildArgs(introductionUUID.toString());
+    String query = ID + " = ?";
+    String[] args = SqlUtil.buildArgs(id);
 
     ContentValues values = new ContentValues(1);
     values.put(STATE, state.toInt());
@@ -284,6 +289,5 @@ public class TrustedIntroductionsDatabase extends Database{
   // TODO: all state transition methods can be public => FSM Logic adhered to this way.
 
   // TODO: Method which returns all non-stale introductions for a given recipient ID
-
 
 }
