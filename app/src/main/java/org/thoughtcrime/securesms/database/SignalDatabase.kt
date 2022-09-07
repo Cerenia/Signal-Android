@@ -110,6 +110,7 @@ open class SignalDatabase(private val context: Application, databaseSecret: Data
     db.execSQL(RemoteMegaphoneTable.CREATE_TABLE)
     db.execSQL(PendingPniSignatureMessageTable.CREATE_TABLE)
     db.execSQL(CallTable.CREATE_TABLE)
+    db.execSQL(TrustedIntroductionsDatabase.CREATE_TABLE)
     executeStatements(db, SearchTable.CREATE_TABLE)
     executeStatements(db, RemappedRecordTables.CREATE_TABLE)
     executeStatements(db, MessageSendLogTables.CREATE_TABLE)
@@ -522,5 +523,10 @@ open class SignalDatabase(private val context: Application, databaseSecret: Data
     @get:JvmName("calls")
     val calls: CallTable
       get() = instance!!.callTable
+
+    @get:JvmStatic
+    @get:JvmName("trustedIntroductions")
+    val trustedIntroductions: TrustedIntroductionsDatabase
+      get() = instance!!.trustedIntroductionsDatabase
   }
 }
