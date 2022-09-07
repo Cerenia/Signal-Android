@@ -68,9 +68,8 @@ public class TrustedIntroductionsReceiveJob extends BaseJob  {
     this.introductions = tiData != null ? tiData : new ArrayList<>();
   }
 
-
   /**
-   * // TODO: Test
+   * // TODO: Test serialization and deserialization
    * Serialize your job state so that it can be recreated in the future.
    */
   @NonNull @Override public Data serialize() {
