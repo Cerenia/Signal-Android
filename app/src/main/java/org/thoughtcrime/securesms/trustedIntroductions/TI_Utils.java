@@ -176,6 +176,10 @@ public class TI_Utils {
     return Base64.encodeBytes(key.serialize());
   }
 
+  public static boolean encodedIdentityKeysEqual(RecipientId presentIntroduceeId, String identityKeyIntroduction){
+    return encodeIdentityKey(getIdentityKey(presentIntroduceeId)).compareTo(identityKeyIntroduction) == 0;
+  }
+
   @SuppressLint("Range") @WorkerThread
   public static String buildMessageBody(@NonNull RecipientId introductionRecipientId, @NonNull Set<RecipientId> introducees) throws JSONException, IOException, InvalidKeyException {
     assert introducees.size() > 0: TAG + " buildMessageBody called with no Recipient Ids!";
