@@ -1,6 +1,7 @@
 package org.thoughtcrime.securesms.jobs;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.jobmanager.Data;
@@ -20,6 +21,9 @@ import java.io.ObjectOutputStream;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -47,11 +51,25 @@ public class TrustedIntroductionSendJob extends BaseJob {
     this(introductionRecipientId,
          introduceeIds,
          new Parameters.Builder()
-                       .setQueue(introductionRecipientId.toQueueKey() + TI_Utils.serializeForQueue(introduceeIds))
+                       .setQueue(introductionRecipientId.toQueueKey() + TI_Utils.serializeForQueue(transformIntroduceeIdSetToLong(introduceeIds)))
                        .setLifespan(TI_Utils.TI_JOB_LIFESPAN)
                        .setMaxAttempts(TI_Utils.TI_JOB_MAX_ATTEMPTS)
                        .addConstraint(NetworkConstraint.KEY)
                        .build());
+  }
+
+  /**
+   * Makes sure this parameter of the job is serializable for queue key creation.
+   * TODO: Is this reused? should that be somewhere else?
+   */
+  private static @NonNull Set<Long> transformIntroduceeIdSetToLong(@NonNull Set<RecipientId> introduceeIds){
+    Set<Long> result = new HashSet<>();
+    // Can't do this, min API too low
+    //introduceeIds.forEach((id) -> result.add(id.toLong()));
+    for (RecipientId id: introduceeIds) {
+      result.add(id.toLong());
+    }
+    return result;
   }
 
   private TrustedIntroductionSendJob(@NonNull RecipientId introductionRecipientId, @NonNull Set<RecipientId> introduceeIds, @NonNull Parameters parameters) {

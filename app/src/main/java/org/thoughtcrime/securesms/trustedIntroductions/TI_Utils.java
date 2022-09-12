@@ -274,6 +274,10 @@ public class TI_Utils {
     return result;
   }
 
+  /**
+   * @param o Object, must be serializable.
+   * @return A string that can be used for the Job queue key.
+   */
   public static String serializeForQueue(Object o){
     MessageDigest md;
     String        hashtext;
@@ -290,10 +294,12 @@ public class TI_Utils {
       hashtext = no.toString(16);
     } catch (NoSuchAlgorithmException e){
       Log.e(TAG, e.toString());
+      Log.e(TAG, e.getMessage());
       assert false: "No such Algorithm!";
       return "InvalidKey";
     } catch (IOException ioe){
       Log.e(TAG, ioe.toString());
+      Log.e(TAG, ioe.getMessage());
       assert false: "IO exception!";
       return "InvalidKey";
     }
