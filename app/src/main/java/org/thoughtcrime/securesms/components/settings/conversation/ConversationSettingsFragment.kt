@@ -504,6 +504,17 @@ class ConversationSettingsFragment : DSLSettingsFragment(
         )
       }
 
+      // Trusted Introductions
+      if (!state.recipient.isReleaseNotes && !state.recipient.isSelf){
+        clickPref(
+          title = DSLSettingsText.from(R.string.ConversationSettingsFragment__Introductions),
+          icon = DSLSettingsIcon.from(R.drawable.ic_trusted_introduction),
+          onClick = {
+            // TODO: open Activity when there is one.
+          }
+        )
+      }
+
       state.withRecipientSettingsState { recipientState ->
         when (recipientState.contactLinkState) {
           ContactLinkState.OPEN -> {
