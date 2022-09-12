@@ -3946,6 +3946,7 @@
     <string name="CanNotSendPaymentDialog__to_send_a_payment_to_this_user">To send a payment to this user they need to accept a message request from you. Send them a message to create a message request.</string>
     <string name="CanNotSendPaymentDialog__send_a_message">Send a message</string>
 
+    <!-- Trusted Introductions -->
     <!-- CanNotIntroduceDialog -->
     <string name="CanNotIntroduceDialog__Group_not_yet_supported">Trusted introductions for groups are not yet supported.</string>
     <string name="CanNotIntroduceDialog__SMS_contact_not_applicable">Trusted introductions can only happen over a secured conversation. Invite your contact to use Signal and verify them to unlock the feature.</string>
@@ -3954,6 +3955,7 @@
     <string name="CanNotIntroduceDialog__Cant_introduce">Introduction not possible</string>
     <string name="CanNotIntroduceDialog__Identity_record_empty">Could not redirect to the verification screen, please try to navigate there manually.</string>
 
+    <!-- Trusted Introductions -->
     <!-- ClearVerificationDialog -->
     <string name="ClearVerificationDialog__Positive">Clear</string>
     <string name="ClearVerificationDialog__Title">Clear Verification?</string>
@@ -4280,6 +4282,8 @@
     <string name="ConversationSettingsFragment__copied_phone_number_to_clipboard">Copied phone number to clipboard.</string>
     <string name="ConversationSettingsFragment__phone_number">Phone number</string>
     <string name="ConversationSettingsFragment__get_badges">Get badges for your profile by supporting Signal. Tap on a badge to learn more.</string>
+    <!-- Trusted Introductions -->
+    <string name="ConversationSettingsFragment__Introductions">Trusted Introductions</string>
 
     <!-- PermissionsSettingsFragment -->
     <string name="PermissionsSettingsFragment__add_members">Add members</string>
