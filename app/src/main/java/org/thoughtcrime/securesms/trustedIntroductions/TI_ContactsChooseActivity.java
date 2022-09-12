@@ -158,7 +158,6 @@ public final class TI_ContactsChooseActivity extends PassphraseRequiredActivity 
     done.animate().alpha(0.5f);
   }
 
-  
   private void displayAlertMessage(@NonNull TI_ContactsChooseViewModel.IntroduceDialogMessageState state) {
     Recipient recipient = Util.firstNonNull(state.getRecipient(), Recipient.UNKNOWN);
     List<Recipient> selection = state.getToIntroduce();
