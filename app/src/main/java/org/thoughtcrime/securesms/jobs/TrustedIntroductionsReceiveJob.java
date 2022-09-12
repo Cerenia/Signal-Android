@@ -47,6 +47,8 @@ public class TrustedIntroductionsReceiveJob extends BaseJob  {
   private static final String KEY_MESSAGE_BODY = "messageBody";
   private static final String KEY_INTRODUCTIONS = "serialized_remaining_introduction_data";
 
+  // TODO: Set Max attempts to 1 to avoid freezin my app while debugging. Put it back to  TI_Utils.TI_JOB_MAX_ATTEMPTS
+  // when things are working. Same for Lifespan, was TI_Utils.TI_JOB_LIFESPAN.
   public TrustedIntroductionsReceiveJob(@NonNull RecipientId introducerId, @NonNull String messageBody, @NonNull long timestamp){
     this(introducerId,
          messageBody,
@@ -54,8 +56,8 @@ public class TrustedIntroductionsReceiveJob extends BaseJob  {
          null,
          new Parameters.Builder()
                        .setQueue(introducerId.toQueueKey() + TI_Utils.serializeForQueue(messageBody))
-                       .setLifespan(TI_Utils.TI_JOB_LIFESPAN)
-                       .setMaxAttempts(TI_Utils.TI_JOB_MAX_ATTEMPTS)
+                       .setLifespan(5000)
+                       .setMaxAttempts(25)
                        .addConstraint(NetworkConstraint.KEY)
                        .build());
   }
@@ -140,19 +142,22 @@ public class TrustedIntroductionsReceiveJob extends BaseJob  {
       // Deserialize introduction_data if present
       String serialized_introduction_data = data.getString(KEY_INTRODUCTIONS);
       ArrayList<TI_Data> tiData = null;
-      if(!serialized_introduction_data.isEmpty()){
-        try{
+      // TODO: Debugg
+      if (!serialized_introduction_data.isEmpty()) {
+        try {
           ByteArrayInputStream bis = new ByteArrayInputStream(serialized_introduction_data.getBytes());
           ObjectInputStream    ois = new ObjectInputStream(bis);
           tiData = (ArrayList<TI_Data>) ois.readObject();
           ois.close();
           bis.close();
-        } catch (IOException | ClassNotFoundException e){
+        } catch (IOException | ClassNotFoundException e) {
           // TODO: How to fail gracefully?
+          // Right now, list just gets lost.
           e.printStackTrace();
-          assert false: "Deserialization of TI_Data list failed";
+          //assert false : "Deserialization of TI_Data list failed";
         }
       }
+
       // private TrustedIntroductionsReceiveJob(@NonNull RecipientId introducerId, @NonNull String messageBody, @NonNull long timestamp, @Nullable ArrayList<TI_Data> tiData, @NonNull Parameters parameters)
       return new TrustedIntroductionsReceiveJob(RecipientId.from(data.getString(KEY_INTRODUCER_ID)),
                                                 data.getString(KEY_MESSAGE_BODY),

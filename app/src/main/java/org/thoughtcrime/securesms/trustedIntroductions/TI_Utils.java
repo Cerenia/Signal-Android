@@ -248,6 +248,7 @@ public class TI_Utils {
           IdentityKey identityKey = getIdentityKey(introduceeId);
           TI_Data d = new TI_Data(null, null, introducerId, introduceeId, serviceId, name, phone, encodeIdentityKey(identityKey), null, timestamp);
           result.add(d);
+          cursor.moveToNext();
         }
         cursor.close();
       }
