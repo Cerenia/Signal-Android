@@ -32,9 +32,9 @@ import java.util.stream.Collectors;
  * Queries the Contacts Provider for Contacts which match strongly verified contacts in the Signal identity database,
  * and let's the user choose a set of them for the purpose of carrying out a trusted introduction.
  */
-public final class TI_ContactsChooseActivity extends PassphraseRequiredActivity implements TI_ContactsChooseSelectionListFragment.OnContactSelectedListener {
+public final class TI_ContactsSelectionActivity extends PassphraseRequiredActivity implements TI_ContactsSelectionListFragment.OnContactSelectedListener {
 
-  private static final String TAG = Log.tag(TI_ContactsChooseActivity.class);
+  private static final String TAG = Log.tag(TI_ContactsSelectionActivity.class);
 
   public static final String RECIPIENT_ID                 = "recipient_id";
   public static final String SELECTED_CONTACTS_TO_FORWARD = "forwarding_contacts";
@@ -42,9 +42,9 @@ public final class TI_ContactsChooseActivity extends PassphraseRequiredActivity 
   private final DynamicTheme dynamicTheme = new DynamicNoActionBarTheme();
 
   // when done picking contacts (button)
-  private View                                   done;
-  private TI_ContactsChooseSelectionListFragment ti_contacts;
-  private TI_ContactsChooseViewModel             viewModel;
+  private View                             done;
+  private TI_ContactsSelectionListFragment ti_contacts;
+  private TI_ContactsSelectionViewModel    viewModel;
   // Alternative text when no contacts are verified
   private TextView                               no_valid_contacts;
   private ContactFilterView                         contactFilterView;
@@ -52,7 +52,7 @@ public final class TI_ContactsChooseActivity extends PassphraseRequiredActivity 
 
 
   public static @NonNull Intent createIntent(@NonNull Context context, @NonNull RecipientId id){
-    Intent intent = new Intent(context, TI_ContactsChooseActivity.class);
+    Intent intent = new Intent(context, TI_ContactsSelectionActivity.class);
     intent.putExtra(RECIPIENT_ID, id.toLong());
     return intent;
   }
@@ -70,15 +70,15 @@ public final class TI_ContactsChooseActivity extends PassphraseRequiredActivity 
     toolbar           = findViewById(R.id.toolbar);
     contactFilterView = findViewById(R.id.contact_filter_edit_text);
     no_valid_contacts = findViewById(R.id.ti_no_contacts);
-    ti_contacts = (TI_ContactsChooseSelectionListFragment) getSupportFragmentManager().findFragmentById(R.id.trusted_introduction_contacts_fragment);
+    ti_contacts = (TI_ContactsSelectionListFragment) getSupportFragmentManager().findFragmentById(R.id.trusted_introduction_contacts_fragment);
     done = findViewById(R.id.done);
 
     // Initialize
     initializeToolbar();
     initializeContactFilterView();
 
-    TI_ContactsChooseViewModel.Factory factory = new TI_ContactsChooseViewModel.Factory(recipientId);
-    viewModel = new ViewModelProvider(this, factory).get(TI_ContactsChooseViewModel.class);
+    TI_ContactsSelectionViewModel.Factory factory = new TI_ContactsSelectionViewModel.Factory(recipientId);
+    viewModel = new ViewModelProvider(this, factory).get(TI_ContactsSelectionViewModel.class);
 
     // # of valid contacts
     viewModel.getContacts().observe(this, contacts -> {
@@ -155,7 +155,7 @@ public final class TI_ContactsChooseActivity extends PassphraseRequiredActivity 
     done.animate().alpha(0.5f);
   }
 
-  private void displayAlertMessage(@NonNull TI_ContactsChooseViewModel.IntroduceDialogMessageState state) {
+  private void displayAlertMessage(@NonNull TI_ContactsSelectionViewModel.IntroduceDialogMessageState state) {
     Recipient recipient = Util.firstNonNull(state.getRecipient(), Recipient.UNKNOWN);
     List<Recipient> selection = state.getToIntroduce();
     int count = selection.size();
@@ -167,20 +167,20 @@ public final class TI_ContactsChooseActivity extends PassphraseRequiredActivity 
     }
   }
 
-  private void displayAlertForSingleIntroduction(Recipient recipient, Recipient introducee, @NonNull TI_ContactsChooseViewModel.IntroduceDialogMessageState state){
+  private void displayAlertForSingleIntroduction(Recipient recipient, Recipient introducee, @NonNull TI_ContactsSelectionViewModel.IntroduceDialogMessageState state){
     String message = getResources().getQuantityString(R.plurals.PickContactsForTIActivity__introduce_d_contacts_to_s, 1,
                                                       introducee.getDisplayNameOrUsername(getApplicationContext()), recipient.getDisplayName(this));
     displayAlert(message, state);
   }
 
-  private void displayAlertForMultiIntroduction(Recipient recipient, @NonNull TI_ContactsChooseViewModel.IntroduceDialogMessageState state){
+  private void displayAlertForMultiIntroduction(Recipient recipient, @NonNull TI_ContactsSelectionViewModel.IntroduceDialogMessageState state){
     int count = state.getToIntroduce().size();
     String message = getResources().getQuantityString(R.plurals.PickContactsForTIActivity__introduce_d_contacts_to_s, count,
                                                       count, recipient.getDisplayName(this));
     displayAlert(message, state);
   }
 
-  private void displayAlert(String message, @NonNull TI_ContactsChooseViewModel.IntroduceDialogMessageState state){
+  private void displayAlert(String message, @NonNull TI_ContactsSelectionViewModel.IntroduceDialogMessageState state){
     new AlertDialog.Builder(this)
         .setMessage(message)
         .setNegativeButton(android.R.string.cancel, (dialog, which) -> dialog.cancel())
@@ -192,7 +192,7 @@ public final class TI_ContactsChooseActivity extends PassphraseRequiredActivity 
         .show();
   }
 
-  private void onFinishedSelection(@NonNull TI_ContactsChooseViewModel.IntroduceDialogMessageState state) {
+  private void onFinishedSelection(@NonNull TI_ContactsSelectionViewModel.IntroduceDialogMessageState state) {
     Intent           resultIntent = getIntent();
     Set<RecipientId> recipientIds = state.getToIntroduce().stream().map(Recipient::getId).collect(Collectors.toSet());
 

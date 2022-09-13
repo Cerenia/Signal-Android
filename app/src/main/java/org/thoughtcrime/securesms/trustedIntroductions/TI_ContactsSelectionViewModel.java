@@ -16,13 +16,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class TI_ContactsChooseViewModel extends ViewModel {
-  private final TI_ContactsChooseManager            manager;
+public class TI_ContactsSelectionViewModel extends ViewModel {
+  private final TI_ContactsSelectionManager         manager;
   private final ArrayList<SelectedTIContacts.Model> selectedContacts;
   private final MutableLiveData<List<Recipient>>    introducableContacts;
   private final MutableLiveData<String>             filter;
 
-  TI_ContactsChooseViewModel(TI_ContactsChooseManager manager) {
+  TI_ContactsSelectionViewModel(TI_ContactsSelectionManager manager) {
     this.manager         = manager;
     introducableContacts = new MutableLiveData<>();
     selectedContacts     = new ArrayList<>();
@@ -114,15 +114,15 @@ public class TI_ContactsChooseViewModel extends ViewModel {
 
   static class Factory implements ViewModelProvider.Factory {
 
-    private final TI_ContactsChooseManager manager;
+    private final TI_ContactsSelectionManager manager;
 
     Factory(RecipientId id) {
-      this.manager = new TI_ContactsChooseManager(id, SignalDatabase.identities(), SignalDatabase.recipients());
+      this.manager = new TI_ContactsSelectionManager(id, SignalDatabase.identities(), SignalDatabase.recipients());
     }
 
     @Override
     public @NonNull <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
-      return Objects.requireNonNull(modelClass.cast(new TI_ContactsChooseViewModel(manager)));
+      return Objects.requireNonNull(modelClass.cast(new TI_ContactsSelectionViewModel(manager)));
     }
   }
 
