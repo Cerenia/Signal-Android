@@ -6,16 +6,24 @@ import android.content.Context;
 import android.database.Cursor;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
 
 import com.mobilecoin.lib.exceptions.SerializationException;
 
 import org.signal.core.util.SqlUtil;
 import org.signal.core.util.logging.Log;
+import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
+import org.whispersystems.signalservice.api.util.Preconditions;
 
+import java.io.Closeable;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -60,6 +68,21 @@ public class TrustedIntroductionsDatabase extends Database {
       PREDICTED_FINGERPRINT + " TEXT UNIQUE NOT NULL, " +
       TIMESTAMP + " INTEGER NOT NULL, " +
       STATE + " INTEGER NOT NULL);";
+
+  // TODO: eventually, make a few different projections to save some ressources
+  // for now just having one universal one is fine.
+  private static final String[] TI_DATA_PROJECTION = new String[]{
+      ID,
+      INTRODUCING_RECIPIENT_ID,
+      INTRODUCEE_RECIPIENT_ID,
+      INTRODUCEE_SERVICE_ID,
+      INTRODUCEE_PUBLIC_IDENTITY_KEY,
+      INTRODUCEE_NAME,
+      INTRODUCEE_NUMBER,
+      PREDICTED_FINGERPRINT,
+      TIMESTAMP,
+      STATE
+  };
 
   private static final String[] DUPLICATE_SEARCH_PROJECTION = new String[]{
     INTRODUCING_RECIPIENT_ID,
@@ -243,7 +266,7 @@ public class TrustedIntroductionsDatabase extends Database {
 
   /**
    * @param introduceeId Which recipient to look for in the recipient database
-   * @return Cursor pointing to query result
+   * @return Cursor pointing to query result.
    */
   @WorkerThread
   private Cursor fetchRecipientDBCursor(RecipientId introduceeId){
@@ -260,13 +283,12 @@ public class TrustedIntroductionsDatabase extends Database {
   // For this case, having a record of stale introductions could be used to restore the verification state without having to reverify.
 
   /**
-   *
-   *
    * @param id which introduction to modify
    * @param state what state to set, cannot be PENDING
    * @return true if this was successfull, false otherwise (UUID did not exist in the database)
    */
   private boolean setState(int id, @NonNull State state) {
+    Preconditions.checkArgument(state != State.PENDING);
     SQLiteDatabase database = databaseHelper.getSignalWritableDatabase();
     String query = ID + " = ?";
     String[] args = SqlUtil.buildArgs(id);
@@ -289,5 +311,63 @@ public class TrustedIntroductionsDatabase extends Database {
   // TODO: all state transition methods can be public => FSM Logic adhered to this way.
 
   // TODO: Method which returns all non-stale introductions for a given recipient ID
+
+  public class IntroductionReader implements Closeable{
+    private Cursor cursor;
+
+    private boolean checkProjection(Cursor c){
+      String[] projection = TI_DATA_PROJECTION;
+      String[] columns = c.getColumnNames();
+      Arrays.sort(projection);
+      Arrays.sort(columns);
+      for (int i = 0; i < projection.length; i++){
+        if(!projection[i].equals(columns[i])){
+          return false;
+        }
+      }
+      return true;
+    }
+
+    // TODO: Make it slightly more flexible in terms of which data you pass around.
+    // A cursor pointing to the result of a query using TI_DATA_PROJECTION
+    IntroductionReader(Cursor c){
+      Preconditions.checkArgument(checkProjection(c));
+      cursor = c;
+    }
+
+    // This is now has a guarantee w.r.t. calling the constructor
+    @SuppressLint("Range")
+    private @Nullable TI_Data getCurrent(){
+      if(cursor.isAfterLast() || cursor.isBeforeFirst()){
+        return null;
+      }
+      Long introductionId = cursor.getLong(cursor.getColumnIndex(ID));
+      State       state = State.forState(cursor.getInt(cursor.getColumnIndex(STATE)));
+      RecipientId   introducerId = RecipientId.from(cursor.getLong(cursor.getColumnIndex(INTRODUCEE_RECIPIENT_ID)));
+      RecipientId introduceeId = RecipientId.from(cursor.getLong(cursor.getColumnIndex(INTRODUCEE_RECIPIENT_ID)));
+      String serviceId = cursor.getString(cursor.getColumnIndex(INTRODUCEE_SERVICE_ID));
+      // Do I need to hit the Recipient Database to check the name?
+      // TODO: Name changes in introducees should get reflected in database (needs to happen when the name changes, not on query)
+      String introduceeName = cursor.getString(cursor.getColumnIndex(INTRODUCEE_NAME));
+      String introduceeNumber = cursor.getString(cursor.getColumnIndex(INTRODUCEE_NUMBER));
+      String introduceeIdentityKey = cursor.getString(cursor.getColumnIndex(INTRODUCEE_PUBLIC_IDENTITY_KEY));
+      String           securityNr = cursor.getString(cursor.getColumnIndex(PREDICTED_FINGERPRINT));
+      long timestamp = cursor.getLong(cursor.getColumnIndex(TIMESTAMP));
+      return new TI_Data(introductionId, state, introducerId, introduceeId, serviceId, introduceeName, introduceeNumber, introduceeIdentityKey, securityNr, timestamp);
+    }
+
+    public @Nullable TI_Data getNext(){
+      cursor.moveToNext();
+      return getCurrent();
+    }
+
+    public boolean hasNext(){
+      return !cursor.isAfterLast() && !cursor.isLast();
+    }
+
+    @Override public void close() throws IOException {
+      cursor.close();
+    }
+  }
 
 }
