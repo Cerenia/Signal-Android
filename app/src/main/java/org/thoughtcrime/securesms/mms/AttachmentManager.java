@@ -73,9 +73,7 @@ import org.thoughtcrime.securesms.providers.BlobProvider;
 import org.thoughtcrime.securesms.providers.DeprecatedPersistentBlobProvider;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
-import org.thoughtcrime.securesms.trustedIntroductions.TI_ContactsChooseActivity;
-import org.thoughtcrime.securesms.trustedIntroductions.PickContactsForTrustedIntroductionActivity;
-import org.thoughtcrime.securesms.sms.MessageSender;
+import org.thoughtcrime.securesms.trustedIntroductions.TI_ContactsSelectionActivity;
 import org.thoughtcrime.securesms.util.BitmapUtil;
 import org.thoughtcrime.securesms.util.FeatureFlags;
 import org.thoughtcrime.securesms.util.MediaUtil;
@@ -481,7 +479,7 @@ public class AttachmentManager {
   public static void selectTI(@NonNull ConversationParentFragment fragment, @NonNull RecipientId recipientId){
     // Start contact picker activity
     // TODO: Only left here for consistency with the preexisting structure.. But trying to avoid using deprecated code.
-    fragment.tiLaunch.launch(TI_ContactsChooseActivity.createIntent(fragment.requireContext(), recipientId));
+    fragment.tiLaunch.launch(TI_ContactsSelectionActivity.createIntent(fragment.requireContext(), recipientId));
   }
 
   private @Nullable Uri getSlideUri() {

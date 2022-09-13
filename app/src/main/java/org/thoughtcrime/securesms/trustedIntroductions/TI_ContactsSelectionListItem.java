@@ -20,7 +20,7 @@ import org.thoughtcrime.securesms.util.ViewUtil;
 /**
  * Modelled and simplified from contacts.ContactSelectionListItem
  */
-public class TI_ContactsChooseSelectionListItem extends ConstraintLayout {
+public class TI_ContactsSelectionListItem extends ConstraintLayout {
 
   private     AvatarImageView contactPhotoImage;
   private TextView      nameView;
@@ -29,18 +29,18 @@ public class TI_ContactsChooseSelectionListItem extends ConstraintLayout {
   private CheckBox checkbox;
 
 
-  TI_ContactsChooseSelectionListItem(@NonNull Context context, Recipient recipient){
+  TI_ContactsSelectionListItem(@NonNull Context context, Recipient recipient){
     super(context);
     this.recipient = recipient;
   }
 
   // For them tools
-  public TI_ContactsChooseSelectionListItem(Context context, AttributeSet attrs) {
+  public TI_ContactsSelectionListItem(Context context, AttributeSet attrs) {
     super(context, attrs);
   }
 
   // For them tools
-  public TI_ContactsChooseSelectionListItem(Context context) {
+  public TI_ContactsSelectionListItem(Context context) {
     super(context);
   }
 

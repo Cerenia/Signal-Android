@@ -16,17 +16,17 @@ import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.mms.GlideRequests;
 import org.thoughtcrime.securesms.recipients.Recipient;
 
-public class TI_ContactsChooseAdapter extends ListAdapter<Recipient, TI_ContactsChooseAdapter.TIContactViewHolder> {
+public class TI_ContactsSelectionAdapter extends ListAdapter<Recipient, TI_ContactsSelectionAdapter.TIContactViewHolder> {
 
   private final @NonNull Context context;
 
-  private final LayoutInflater                             layoutInflater;
-  private final TI_ContactsChooseAdapter.ItemClickListener clickListener;
-  private final GlideRequests                              glideRequests;
+  private final LayoutInflater                                layoutInflater;
+  private final TI_ContactsSelectionAdapter.ItemClickListener clickListener;
+  private final GlideRequests                                 glideRequests;
 
-  TI_ContactsChooseAdapter(@NonNull Context context,
-                           @NonNull GlideRequests glideRequests,
-                           @Nullable TI_ContactsChooseAdapter.ItemClickListener clickListener)
+  TI_ContactsSelectionAdapter(@NonNull Context context,
+                              @NonNull GlideRequests glideRequests,
+                              @Nullable TI_ContactsSelectionAdapter.ItemClickListener clickListener)
   {
     super(new DiffUtil.ItemCallback<Recipient>() {
       @Override public boolean areItemsTheSame(@NonNull Recipient oldItem, @NonNull Recipient newItem) {
@@ -77,7 +77,7 @@ public class TI_ContactsChooseAdapter extends ListAdapter<Recipient, TI_Contacts
   static class TIContactViewHolder extends RecyclerView.ViewHolder {
 
     TIContactViewHolder(@NonNull final View itemView,
-                        @Nullable final TI_ContactsChooseAdapter.ItemClickListener clickListener)
+                        @Nullable final TI_ContactsSelectionAdapter.ItemClickListener clickListener)
     {
       super(itemView);
       itemView.setOnClickListener(v -> {
@@ -85,8 +85,8 @@ public class TI_ContactsChooseAdapter extends ListAdapter<Recipient, TI_Contacts
       });
     }
 
-    TI_ContactsChooseSelectionListItem getView() {
-      return (TI_ContactsChooseSelectionListItem) itemView;
+    TI_ContactsSelectionListItem getView() {
+      return (TI_ContactsSelectionListItem) itemView;
     }
 
     public void bind(@NonNull GlideRequests glideRequests, Recipient recipient){
@@ -101,6 +101,6 @@ public class TI_ContactsChooseAdapter extends ListAdapter<Recipient, TI_Contacts
   }
 
   public interface ItemClickListener {
-    void onItemClick(TI_ContactsChooseSelectionListItem item);
+    void onItemClick(TI_ContactsSelectionListItem item);
   }
 }
