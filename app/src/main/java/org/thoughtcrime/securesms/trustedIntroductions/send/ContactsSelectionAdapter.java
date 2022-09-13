@@ -96,8 +96,6 @@ public class ContactsSelectionAdapter extends ListAdapter<Recipient, ContactsSel
     public void setEnabled(boolean enabled){
       getView().setEnabled(enabled);
     }
-
-
   }
 
   public interface ItemClickListener {
