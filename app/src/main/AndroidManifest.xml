@@ -605,7 +605,7 @@
             android:theme="@style/TextSecure.LightRegistrationTheme"
             android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize"/>
 
-    <activity android:name=".trustedIntroductions.TI_ContactsSelectionActivity"
+    <activity android:name=".trustedIntroductions.send.ContactsSelectionActivity"
                android:theme="@style/Theme.Signal.DayNight.NoActionBar"/>
 
     <activity android:name=".lock.v2.CreateKbsPinActivity"

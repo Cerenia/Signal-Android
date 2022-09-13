@@ -50,7 +50,7 @@
 
         <fragment
             android:id="@+id/trusted_introduction_contacts_fragment"
-            android:name="org.thoughtcrime.securesms.trustedIntroductions.TI_ContactsSelectionListFragment"
+            android:name="org.thoughtcrime.securesms.trustedIntroductions.send.ContactsSelectionListFragment"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"

@@ -1,4 +1,4 @@
-package org.thoughtcrime.securesms.trustedIntroductions
+package org.thoughtcrime.securesms.trustedIntroductions.send
 
 import android.view.View
 import org.thoughtcrime.securesms.R

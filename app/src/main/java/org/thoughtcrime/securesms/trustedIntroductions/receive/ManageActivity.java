@@ -1,4 +1,4 @@
-package org.thoughtcrime.securesms.trustedIntroductions;
+package org.thoughtcrime.securesms.trustedIntroductions.receive;
 
 import android.content.Context;
 import android.content.Intent;
@@ -12,6 +12,7 @@ import org.thoughtcrime.securesms.PassphraseRequiredActivity;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.components.ContactFilterView;
 import org.thoughtcrime.securesms.recipients.RecipientId;
+import org.thoughtcrime.securesms.trustedIntroductions.send.ContactsSelectionActivity;
 import org.thoughtcrime.securesms.util.DynamicTheme;
 
 /**
@@ -19,9 +20,9 @@ import org.thoughtcrime.securesms.util.DynamicTheme;
  * Will either open just the Introductions made by a specific contact (//TODO: add tab/button for navigating to all?)
  * or all Introductions depending on how you navigated to that screen.
  */
-public class TI_ManageActivity extends PassphraseRequiredActivity {
+public class ManageActivity extends PassphraseRequiredActivity {
 
-  private static final String TAG = Log.tag(TI_ManageActivity.class);
+  private static final String TAG = Log.tag(ManageActivity.class);
 
   // String
   public static final String INTRODUCER_ID                 = "recipient_id";
@@ -32,15 +33,15 @@ public class TI_ManageActivity extends PassphraseRequiredActivity {
   private Toolbar toolbar;
   private ContactFilterView contactFilterView;
   private TextView navigationExplanation;
-  private TextView no_introductions;
+  private TextView        no_introductions;
   // TODO: FRAGMENT
-  private TI_ManageViewModel viewModel;
+  private ManageViewModel viewModel;
 
   // TODO: may want an action bar for button
   private final DynamicTheme dynamicTheme = new DynamicTheme();
 
   public static @NonNull Intent createIntent(@NonNull Context context, @NonNull RecipientId id){
-    Intent intent = new Intent(context, TI_ContactsSelectionActivity.class);
+    Intent intent = new Intent(context, ContactsSelectionActivity.class);
     intent.putExtra(INTRODUCER_ID, id.toString());
     return intent;
   }
