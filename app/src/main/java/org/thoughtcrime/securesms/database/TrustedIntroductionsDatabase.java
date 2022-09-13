@@ -9,11 +9,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
 
-import com.mobilecoin.lib.exceptions.SerializationException;
-
 import org.signal.core.util.SqlUtil;
 import org.signal.core.util.logging.Log;
-import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
@@ -21,12 +18,9 @@ import org.whispersystems.signalservice.api.util.Preconditions;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
 
 /**
  *
@@ -43,9 +37,9 @@ public class TrustedIntroductionsDatabase extends Database {
 
   public static final String TABLE_NAME = "trusted_introductions";
 
-  private static final String ID                             = "_id";
-  private static final String INTRODUCING_RECIPIENT_ID       = "introducer_id";
-  private static final String INTRODUCEE_RECIPIENT_ID        = "introducee_id"; // TODO: Is this really as immutable as I think?...
+  private static final String ID                      = "_id";
+  private static final String INTRODUCER_RECIPIENT_ID = "introducer_id";
+  private static final String INTRODUCEE_RECIPIENT_ID = "introducee_id"; // TODO: Is this really as immutable as I think?...
   private static final String INTRODUCEE_SERVICE_ID          = "introducee_service_id";
   private static final String INTRODUCEE_PUBLIC_IDENTITY_KEY = "introducee_identity_key"; // The one contained in the Introduction
   private static final String INTRODUCEE_NAME                = "introducee_name"; // TODO: snapshot when introduction happened. Necessary? Or wrong approach?
@@ -59,7 +53,7 @@ public class TrustedIntroductionsDatabase extends Database {
 
   public static final String CREATE_TABLE =
       "CREATE TABLE " + TABLE_NAME + " (" + ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-      INTRODUCING_RECIPIENT_ID + " INTEGER NOT NULL, " + // TODO: Do I need to mark RecipientId as UNIQUE?
+      INTRODUCER_RECIPIENT_ID + " INTEGER NOT NULL, " + // TODO: Do I need to mark RecipientId as UNIQUE?
       INTRODUCEE_RECIPIENT_ID + " INTEGER DEFAULT " + UNINITIALIZED_INTRODUCEE_RECIPIENT_ID + ", " +
       INTRODUCEE_SERVICE_ID + " TEXT UNIQUE NOT NULL, " +
       INTRODUCEE_PUBLIC_IDENTITY_KEY + " TEXT NOT NULL, " +
@@ -71,9 +65,9 @@ public class TrustedIntroductionsDatabase extends Database {
 
   // TODO: eventually, make a few different projections to save some ressources
   // for now just having one universal one is fine.
-  private static final String[] TI_DATA_PROJECTION = new String[]{
+  private static final String[] TI_ALL_PROJECTION = new String[]{
       ID,
-      INTRODUCING_RECIPIENT_ID,
+      INTRODUCER_RECIPIENT_ID,
       INTRODUCEE_RECIPIENT_ID,
       INTRODUCEE_SERVICE_ID,
       INTRODUCEE_PUBLIC_IDENTITY_KEY,
@@ -85,11 +79,11 @@ public class TrustedIntroductionsDatabase extends Database {
   };
 
   private static final String[] DUPLICATE_SEARCH_PROJECTION = new String[]{
-    INTRODUCING_RECIPIENT_ID,
-    INTRODUCEE_RECIPIENT_ID,
-    INTRODUCEE_SERVICE_ID,
-    INTRODUCEE_PUBLIC_IDENTITY_KEY,
-    STATE
+      INTRODUCER_RECIPIENT_ID,
+      INTRODUCEE_RECIPIENT_ID,
+      INTRODUCEE_SERVICE_ID,
+      INTRODUCEE_PUBLIC_IDENTITY_KEY,
+      STATE
     };
 
 
@@ -165,7 +159,7 @@ public class TrustedIntroductionsDatabase extends Database {
 
     // Fetch Data out of database where everything is identical but timestamp.
     StringBuilder selectionBuilder = new StringBuilder();
-    selectionBuilder.append(String.format("%s=?", INTRODUCING_RECIPIENT_ID)); // if ID was purged, duplicate detection no longer possible // TODO: issue for, e.g., count if pure distance-1 case (future problem)
+    selectionBuilder.append(String.format("%s=?", INTRODUCER_RECIPIENT_ID)); // if ID was purged, duplicate detection no longer possible // TODO: issue for, e.g., count if pure distance-1 case (future problem)
     String andAppend = " AND %s=?";
     selectionBuilder.append(String.format(andAppend, INTRODUCEE_RECIPIENT_ID));
     selectionBuilder.append(String.format(andAppend, INTRODUCEE_SERVICE_ID));
@@ -210,7 +204,7 @@ public class TrustedIntroductionsDatabase extends Database {
       }
     }
 
-    values.put(INTRODUCING_RECIPIENT_ID, data.getIntroducerId().toLong());
+    values.put(INTRODUCER_RECIPIENT_ID, data.getIntroducerId().toLong());
     values.put(INTRODUCEE_SERVICE_ID, data.getIntroduceeServiceId());
     values.put(INTRODUCEE_PUBLIC_IDENTITY_KEY, data.getIntroduceeIdentityKey());
     values.put(INTRODUCEE_NAME, data.getIntroduceeName());
@@ -227,12 +221,34 @@ public class TrustedIntroductionsDatabase extends Database {
   // TODO: Just pass a TI_Data object instead?
   @WorkerThread
   public boolean acceptIntroduction(int id, RecipientId introduceeId){
-    Cursor c = fetchRecipientDBCursor(introduceeId);
-    if(c.getCount() <= 0){
+    Cursor rdc = fetchRecipientDBCursor(introduceeId);
+    if(rdc.getCount() <= 0){
       // TODO: Add introducee if not present in the database
     }
     // TODO: Statechange, pending -> accepted
     return true;
+  }
+
+  @WorkerThread
+  /**
+   *
+   * Fetches Introduction data by Introducer. Pass null or unknown to get all the data.
+   *
+   * @introducerId If an Id != UNKNOWN is specified, selects only introductions made by this contact. Fetches all Introductions otherwise.
+   * @return true if success, false otherwise
+   */
+  public IntroductionReader getIntroductions(@Nullable RecipientId introducerId){
+    String query;
+    SQLiteDatabase db = databaseHelper.getSignalReadableDatabase();
+    if(introducerId == null || introducerId.isUnknown()){
+      query = "SELECT  * FROM " + TABLE_NAME;
+      return new IntroductionReader(db.rawQuery(query, null));
+    } else {
+      // query only the Introductions made by introducerId
+      query = INTRODUCER_RECIPIENT_ID + " = ?";
+      String[] arg = SqlUtil.buildArgs(introducerId.toLong());
+      return new IntroductionReader(db.query(TABLE_NAME, TI_ALL_PROJECTION, query, arg, null, null, null));
+    }
   }
 
 
@@ -249,7 +265,7 @@ public class TrustedIntroductionsDatabase extends Database {
    String[] args = SqlUtil.buildArgs(introductionId);
 
    ContentValues values = new ContentValues(1);
-   values.put(INTRODUCING_RECIPIENT_ID, CLEARED_INTRODUCING_RECIPIENT_ID);
+   values.put(INTRODUCER_RECIPIENT_ID, CLEARED_INTRODUCING_RECIPIENT_ID);
 
    int update = database.update(TABLE_NAME, values, query, args);
 
@@ -312,11 +328,11 @@ public class TrustedIntroductionsDatabase extends Database {
 
   // TODO: Method which returns all non-stale introductions for a given recipient ID
 
-  public class IntroductionReader implements Closeable{
+  private class IntroductionReader implements Closeable{
     private Cursor cursor;
 
     private boolean checkProjection(Cursor c){
-      String[] projection = TI_DATA_PROJECTION;
+      String[] projection = TI_ALL_PROJECTION;
       String[] columns = c.getColumnNames();
       Arrays.sort(projection);
       Arrays.sort(columns);
