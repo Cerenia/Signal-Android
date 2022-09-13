@@ -25,7 +25,7 @@ public class TI_ContactsSelectionManager {
   private final IdentityDatabase  idb;
   private final RecipientDatabase rdb;
 
-  TI_ContactsSelectionManager(RecipientId recipientId, IdentityDatabase idb, RecipientDatabase rdb){
+  TI_ContactsSelectionManager(@NonNull RecipientId recipientId, @NonNull IdentityDatabase idb, @NonNull RecipientDatabase rdb){
     this.recipientId = recipientId;
     this.idb = idb;
     this.rdb = rdb;
@@ -33,23 +33,22 @@ public class TI_ContactsSelectionManager {
 
   void getValidContacts(@NonNull Consumer<List<Recipient>> introducableContacts){
     SignalExecutors.BOUNDED.execute(() -> {
-      try(RecipientDatabase.RecipientReader reader = rdb.getReaderForValidTI_Candidates(idb.getCursorForTIUnlocked())){
-        int count = reader.getCount();
-        if (count == 0){
-          introducableContacts.accept(Collections.emptyList());
-        } else {
-          List<Recipient> contacts = new ArrayList<>();
-          while(reader.getNext() != null){
-            Recipient current = reader.getCurrent();
-            RecipientId id = current.getId();
-            if(!current.isSelf() && id.compareTo(recipientId)!=0){
-              contacts.add(current);
-            }
+      RecipientDatabase.RecipientReader reader = rdb.getReaderForValidTI_Candidates(idb.getCursorForTIUnlocked());
+      int count = reader.getCount();
+      if (count == 0){
+        introducableContacts.accept(Collections.emptyList());
+      } else {
+        List<Recipient> contacts = new ArrayList<>();
+        while(reader.getNext() != null){
+          Recipient current = reader.getCurrent();
+          RecipientId id = current.getId();
+          if(!current.isSelf() && id.compareTo(recipientId)!=0){
+            contacts.add(current);
           }
-          // sort ascending
-          Collections.sort(contacts, Comparator.comparing((Recipient recipient) -> recipient.getProfileName().toString()));
-          introducableContacts.accept(contacts);
         }
+        // sort ascending
+        Collections.sort(contacts, Comparator.comparing((Recipient recipient) -> recipient.getProfileName().toString()));
+        introducableContacts.accept(contacts);
       }
     });
   }
