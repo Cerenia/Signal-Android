@@ -3963,6 +3963,20 @@
     <string name="ClearVerificationDialog__Clear_introduced">Are you sure you want to clear the introduction of this contact? Restoring this state will necessitate a fresh introduction of this contact by a verified third party.</string>
     <string name="ClearVerificationDialog__Clear_duplex">Are you sure you want to clear the double verification status of this contact? Restoring this state will necessitate both a rescann of your contact\'s QR code *and* a fresh introduction of this contact by a verified third party. </string>
 
+    <!-- Trusted Introductions -->
+    <!-- ManageIntroductionsActivity -->
+    <string name="ManageIntroductionsActivity__Explanation">Accept an introduction by flipping the switch. Long press the list item to delete the introduction, short press to clear introducer information.</string>
+    <string name="ManageIntroductionsActivity__No_Introductions_from">%s has not made any introductions yet.</string>
+    <string name="ManageIntroductionsActivity__Title_Introductions_from">%s\'s Introductions:</string>
+    <string name="ManageIntroductionsActivity__Title_Introductions_all">All Introductions:</string>
+    <!-- ManageIntroductionsFragment -->
+    <!-- ManageIntroductionsListItem -->
+    <string name="ManageIntroductionsListItem__Pending">"Pending"</string>
+    <string name="ManageIntroductionsListItem__Rejected">"Rejected"</string>
+    <string name="ManageIntroductionsListItem__Accepted">"Accepted"</string>
+    <string name="ManageIntroductionsListItem__Conflicting">"Conflicting"</string>
+
+
     <!-- GroupsInCommonMessageRequest -->
     <string name="GroupsInCommonMessageRequest__you_have_no_groups_in_common_with_this_person">You have no groups in common with this person. Review requests carefully before accepting to avoid unwanted messages.</string>
     <string name="GroupsInCommonMessageRequest__none_of_your_contacts_or_people_you_chat_with_are_in_this_group">None of your contacts or people you chat with are in this group. Review requests carefully before accepting to avoid unwanted messages.</string>
