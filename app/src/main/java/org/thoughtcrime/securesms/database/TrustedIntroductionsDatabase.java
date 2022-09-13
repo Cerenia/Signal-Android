@@ -328,8 +328,8 @@ public class TrustedIntroductionsDatabase extends Database {
 
   // TODO: Method which returns all non-stale introductions for a given recipient ID
 
-  private class IntroductionReader implements Closeable{
-    private Cursor cursor;
+  public class IntroductionReader implements Closeable{
+    private final Cursor cursor;
 
     private boolean checkProjection(Cursor c){
       String[] projection = TI_ALL_PROJECTION;

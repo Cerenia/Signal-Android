@@ -12,6 +12,9 @@ import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class TI_ManageManager {
@@ -23,21 +26,23 @@ public class TI_ManageManager {
 
   // Dependency injection
   private final TrustedIntroductionsDatabase tdb;
-  // We change verification status based on the users choice to accept an introduction.
-  private final IdentityDatabase idb;
-  // In case an introduction for an unknown recipient gets accepted
-  private final RecipientDatabase rdb;
 
-  TI_ManageManager(@NonNull RecipientId rid, @NonNull TrustedIntroductionsDatabase tdb, @NonNull IdentityDatabase idb, @NonNull RecipientDatabase rdb){
+  TI_ManageManager(@NonNull RecipientId rid, @NonNull TrustedIntroductionsDatabase tdb){
     recipientId = rid;
     this.tdb = tdb;
-    this.idb = idb;
-    this.rdb = rdb;
   }
 
-  void getIntroductions(@NonNull Consumer<List<TI_Data>> introductions){
+  void getIntroductions(@NonNull Consumer<List<TI_Data>> listConsumer){
     SignalExecutors.BOUNDED.execute(() -> {
       // Pull introductions out of the database
+      TrustedIntroductionsDatabase.IntroductionReader reader = tdb.getIntroductions(recipientId);
+      ArrayList<TI_Data> introductions = new ArrayList<>();
+      while(reader.hasNext()){
+        introductions.add(reader.getNext());
+      }
+      // sort by date
+      Collections.sort(introductions, Comparator.comparing(TI_Data::getTimestamp));
+      listConsumer.accept(introductions);
     });
   }
 
