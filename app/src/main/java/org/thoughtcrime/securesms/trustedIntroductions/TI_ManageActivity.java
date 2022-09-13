@@ -2,6 +2,7 @@ package org.thoughtcrime.securesms.trustedIntroductions;
 
 import android.content.Context;
 import android.content.Intent;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
@@ -9,6 +10,7 @@ import androidx.appcompat.widget.Toolbar;
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.PassphraseRequiredActivity;
 import org.thoughtcrime.securesms.R;
+import org.thoughtcrime.securesms.components.ContactFilterView;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.util.DynamicTheme;
 
@@ -28,7 +30,11 @@ public class TI_ManageActivity extends PassphraseRequiredActivity {
 
   // TODO: Define all the views
   private Toolbar toolbar;
-
+  private ContactFilterView contactFilterView;
+  private TextView navigationExplanation;
+  private TextView no_introductions;
+  // TODO: FRAGMENT
+  private TI_ManageViewModel viewModel;
 
   // TODO: may want an action bar for button
   private final DynamicTheme dynamicTheme = new DynamicTheme();
