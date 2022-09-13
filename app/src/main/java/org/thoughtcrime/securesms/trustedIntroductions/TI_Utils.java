@@ -236,6 +236,7 @@ public class TI_Utils {
       }
       Cursor cursor = SignalDatabase.recipients().getCursorForReceivingTI(serviceIds);
       // Construct TI Data & rebuild serviceId List to only contain the ones present in the database, freeing some memory
+      // TODO could this be simplified with ServiceId.known?
       serviceIds = new ArrayList<>();
       if(cursor.getCount() > 0) {
         cursor.moveToFirst();
