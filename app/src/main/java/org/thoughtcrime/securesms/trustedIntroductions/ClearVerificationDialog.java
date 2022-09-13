@@ -3,17 +3,12 @@ package org.thoughtcrime.securesms.trustedIntroductions;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import org.thoughtcrime.securesms.R;
-import org.thoughtcrime.securesms.verify.VerifyIdentityActivity;
 import org.thoughtcrime.securesms.database.IdentityDatabase;
-import org.thoughtcrime.securesms.database.model.IdentityRecord;
-import org.thoughtcrime.securesms.trustedIntroductions.CanNotIntroduceDialog;
+
 /**
  * Dialog is displayed if a user wants to clear a verification status that is higher than 'manually' verified,
  * since this is an operation that is not trivially undone.

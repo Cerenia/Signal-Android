@@ -1,4 +1,4 @@
-package org.thoughtcrime.securesms.trustedIntroductions;
+package org.thoughtcrime.securesms.trustedIntroductions.send;
 
 import androidx.core.util.Consumer;
 
@@ -15,7 +15,7 @@ import java.util.List;
 
 import io.reactivex.rxjava3.annotations.NonNull;
 
-public class TI_ContactsSelectionManager {
+public class ContactsSelectionManager {
 
   // This is the person which will receive the security numbers of the selected contacts through
   //  a secure introduction.
@@ -25,7 +25,7 @@ public class TI_ContactsSelectionManager {
   private final IdentityDatabase  idb;
   private final RecipientDatabase rdb;
 
-  TI_ContactsSelectionManager(@NonNull RecipientId recipientId, @NonNull IdentityDatabase idb, @NonNull RecipientDatabase rdb){
+  ContactsSelectionManager(@NonNull RecipientId recipientId, @NonNull IdentityDatabase idb, @NonNull RecipientDatabase rdb){
     this.recipientId = recipientId;
     this.idb = idb;
     this.rdb = rdb;

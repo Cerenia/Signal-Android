@@ -1,4 +1,4 @@
-package org.thoughtcrime.securesms.trustedIntroductions;
+package org.thoughtcrime.securesms.trustedIntroductions.send;
 
 import androidx.annotation.NonNull;
 import androidx.core.util.Consumer;
@@ -16,13 +16,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class TI_ContactsSelectionViewModel extends ViewModel {
-  private final TI_ContactsSelectionManager         manager;
+public class ContactsSelectionViewModel extends ViewModel {
+  private final ContactsSelectionManager            manager;
   private final ArrayList<SelectedTIContacts.Model> selectedContacts;
   private final MutableLiveData<List<Recipient>>    introducableContacts;
   private final MutableLiveData<String>             filter;
 
-  TI_ContactsSelectionViewModel(TI_ContactsSelectionManager manager) {
+  ContactsSelectionViewModel(ContactsSelectionManager manager) {
     this.manager         = manager;
     introducableContacts = new MutableLiveData<>();
     selectedContacts     = new ArrayList<>();
@@ -114,15 +114,15 @@ public class TI_ContactsSelectionViewModel extends ViewModel {
 
   static class Factory implements ViewModelProvider.Factory {
 
-    private final TI_ContactsSelectionManager manager;
+    private final ContactsSelectionManager manager;
 
     Factory(RecipientId id) {
-      this.manager = new TI_ContactsSelectionManager(id, SignalDatabase.identities(), SignalDatabase.recipients());
+      this.manager = new ContactsSelectionManager(id, SignalDatabase.identities(), SignalDatabase.recipients());
     }
 
     @Override
     public @NonNull <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
-      return Objects.requireNonNull(modelClass.cast(new TI_ContactsSelectionViewModel(manager)));
+      return Objects.requireNonNull(modelClass.cast(new ContactsSelectionViewModel(manager)));
     }
   }
 

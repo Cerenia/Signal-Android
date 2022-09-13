@@ -1,4 +1,4 @@
-package org.thoughtcrime.securesms.trustedIntroductions;
+package org.thoughtcrime.securesms.trustedIntroductions.send;
 
 import android.app.AlertDialog;
 import android.content.Context;

@@ -1,4 +1,4 @@
-package org.thoughtcrime.securesms.trustedIntroductions;
+package org.thoughtcrime.securesms.trustedIntroductions.receive;
 
 import androidx.annotation.NonNull;
 import androidx.core.util.Consumer;
@@ -11,13 +11,14 @@ import org.thoughtcrime.securesms.database.RecipientDatabase;
 import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
+import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-public class TI_ManageManager {
+public class ManageManager {
 
   // Introducer ID, or special iff all.
   private final RecipientId recipientId;
@@ -27,7 +28,7 @@ public class TI_ManageManager {
   // Dependency injection
   private final TrustedIntroductionsDatabase tdb;
 
-  TI_ManageManager(@NonNull RecipientId rid, @NonNull TrustedIntroductionsDatabase tdb){
+  ManageManager(@NonNull RecipientId rid, @NonNull TrustedIntroductionsDatabase tdb){
     recipientId = rid;
     this.tdb = tdb;
   }

@@ -1,4 +1,4 @@
-package org.thoughtcrime.securesms.trustedIntroductions;
+package org.thoughtcrime.securesms.trustedIntroductions.send;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -40,14 +40,14 @@ import kotlin.Unit;
  * This is an adaptation of ContactSelectionListFragment, but it's always a multiselect and the data is loaded from an external cursor
  * instead of using DisplayMode.
  */
-public class TI_ContactsSelectionListFragment extends Fragment implements ContactFilterView.OnFilterChangedListener {
+public class ContactsSelectionListFragment extends Fragment implements ContactFilterView.OnFilterChangedListener {
 
-  private static final String TAG = Log.tag(TI_ContactsSelectionListFragment.class);
+  private static final String TAG = Log.tag(ContactsSelectionListFragment.class);
 
   // TODO: have a progress wheel for more substantial data? (cosmetic, not super important)
-  private ProgressWheel                 showContactsProgress;
-  private TI_ContactsSelectionViewModel viewModel;
-  private TI_ContactsSelectionAdapter   TIRecyclerViewAdapter;
+  private ProgressWheel              showContactsProgress;
+  private ContactsSelectionViewModel viewModel;
+  private ContactsSelectionAdapter   TIRecyclerViewAdapter;
   private RecyclerView                  TIContactsRecycler;
   private RecyclerView                                           chipRecycler;
   private MappingAdapter contactChipAdapter;
@@ -82,7 +82,7 @@ public class TI_ContactsSelectionListFragment extends Fragment implements Contac
    * Called by activity containing the Fragment.
    * @param viewModel The underlying persistent data storage (throughout Activity and Fragment Lifecycle).
    */
-  public void setViewModel(TI_ContactsSelectionViewModel viewModel){
+  public void setViewModel(ContactsSelectionViewModel viewModel){
     this.viewModel = viewModel;
     initializeAdapter();
     this.viewModel.getContacts().observe(getViewLifecycleOwner(), users -> {
@@ -98,7 +98,7 @@ public class TI_ContactsSelectionListFragment extends Fragment implements Contac
   private void initializeAdapter() {
     GlideRequests glideRequests = GlideApp.with(this);
     // Not directly passing a cursor, instead submitting a list to ContactsAdapter
-    TIRecyclerViewAdapter = new TI_ContactsSelectionAdapter(requireContext(), glideRequests, new ContactClickListener());
+    TIRecyclerViewAdapter = new ContactsSelectionAdapter(requireContext(), glideRequests, new ContactClickListener());
 
     TIContactsRecycler.setAdapter(TIRecyclerViewAdapter);
     TIContactsRecycler.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -132,7 +132,7 @@ public class TI_ContactsSelectionListFragment extends Fragment implements Contac
     for (SelectedTIContacts.Model model : this.viewModel.listSelectedContactModels()) {
       RecipientId selected = model.getRecipientId();
       for (int i = 0; i < TIContactsRecycler.getChildCount(); i++) {
-        TI_ContactsSelectionListItem item = ((TI_ContactsSelectionAdapter.TIContactViewHolder) TIContactsRecycler.getChildViewHolder(TIContactsRecycler.getChildAt(i))).getView();
+        ContactsSelectionListItem item = ((ContactsSelectionAdapter.TIContactViewHolder) TIContactsRecycler.getChildViewHolder(TIContactsRecycler.getChildAt(i))).getView();
         if (item.getRecipientId().equals(selected)) {
           item.setCheckboxChecked(true);
           break;
@@ -162,9 +162,9 @@ public class TI_ContactsSelectionListFragment extends Fragment implements Contac
     TIRecyclerViewAdapter.submitList(getFiltered(viewModel.getContacts().getValue(), filter));
   }
 
-  private class ContactClickListener implements TI_ContactsSelectionAdapter.ItemClickListener {
+  private class ContactClickListener implements ContactsSelectionAdapter.ItemClickListener {
 
-    @Override public void onItemClick(TI_ContactsSelectionListItem item) {
+    @Override public void onItemClick(ContactsSelectionListItem item) {
       if (viewModel.isSelectedContact(item.getRecipient())) {
         markContactUnselected(item.getRecipient());
         item.setCheckboxChecked(false);

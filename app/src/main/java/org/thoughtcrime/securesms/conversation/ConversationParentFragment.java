@@ -254,7 +254,7 @@ import org.thoughtcrime.securesms.mms.StickerSlide;
 import org.thoughtcrime.securesms.mms.VideoSlide;
 import org.thoughtcrime.securesms.notifications.NotificationChannels;
 import org.thoughtcrime.securesms.payments.CanNotSendPaymentDialog;
-import org.thoughtcrime.securesms.trustedIntroductions.CanNotIntroduceDialog;
+import org.thoughtcrime.securesms.trustedIntroductions.send.CanNotIntroduceDialog;
 import org.thoughtcrime.securesms.permissions.Permissions;
 import org.thoughtcrime.securesms.profiles.spoofing.ReviewBannerView;
 import org.thoughtcrime.securesms.profiles.spoofing.ReviewCardDialogFragment;
@@ -282,7 +282,7 @@ import org.thoughtcrime.securesms.stickers.StickerPackInstallEvent;
 import org.thoughtcrime.securesms.stickers.StickerSearchRepository;
 import org.thoughtcrime.securesms.stories.StoryViewerArgs;
 import org.thoughtcrime.securesms.stories.viewer.StoryViewerActivity;
-import org.thoughtcrime.securesms.trustedIntroductions.TI_ContactsSelectionActivity;
+import org.thoughtcrime.securesms.trustedIntroductions.send.ContactsSelectionActivity;
 import org.thoughtcrime.securesms.util.AsynchronousCallback;
 import org.thoughtcrime.securesms.util.BitmapUtil;
 import org.thoughtcrime.securesms.util.BubbleUtil;
@@ -493,8 +493,8 @@ public class ConversationParentFragment extends Fragment
         Intent intent = result.getData();
         assert intent != null; // Programming error.
         // Start TI Job with the id arrayList
-        RecipientId            recipientId   = RecipientId.from(intent.getLongExtra(TI_ContactsSelectionActivity.RECIPIENT_ID, -1));
-        ArrayList<RecipientId> introduceeIds = intent.getParcelableArrayListExtra(TI_ContactsSelectionActivity.SELECTED_CONTACTS_TO_FORWARD);
+        RecipientId            recipientId   = RecipientId.from(intent.getLongExtra(ContactsSelectionActivity.RECIPIENT_ID, -1));
+        ArrayList<RecipientId> introduceeIds = intent.getParcelableArrayListExtra(ContactsSelectionActivity.SELECTED_CONTACTS_TO_FORWARD);
         HashSet<RecipientId>   idSet         = new HashSet<>(introduceeIds);
         ApplicationDependencies.getJobManager().add(new TrustedIntroductionSendJob(recipientId, idSet));
       } else{
