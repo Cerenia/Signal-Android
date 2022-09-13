@@ -6,9 +6,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 
-import org.json.JSONException;
 import org.signal.core.util.logging.Log;
-import org.signal.libsignal.protocol.InvalidKeyException;
 import org.thoughtcrime.securesms.PassphraseRequiredActivity;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.components.ContactFilterView;
@@ -24,7 +22,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.ViewModelProvider;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -65,7 +62,7 @@ public final class TI_ContactsChooseActivity extends PassphraseRequiredActivity 
 
     dynamicTheme.onCreate(this);
 
-    setContentView(R.layout.trusted_introduction_contacts_picker_activity);
+    setContentView(R.layout.ti_contacts_selection_activity);
 
     RecipientId recipientId = getRecipientID();
 
