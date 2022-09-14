@@ -4018,10 +4018,11 @@
     <string name="ManageIntroductionsActivity__Title_Introductions_all">All Introductions:</string>
     <!-- ManageIntroductionsFragment -->
     <!-- ManageIntroductionsListItem -->
-    <string name="ManageIntroductionsListItem__Pending">"Pending"</string>
-    <string name="ManageIntroductionsListItem__Rejected">"Rejected"</string>
-    <string name="ManageIntroductionsListItem__Accepted">"Accepted"</string>
-    <string name="ManageIntroductionsListItem__Conflicting">"Conflicting"</string>
+    <string name="ManageIntroductionsListItem__Pending">Pending</string>
+    <string name="ManageIntroductionsListItem__Rejected">Rejected</string>
+    <string name="ManageIntroductionsListItem__Accepted">Accepted</string>
+    <string name="ManageIntroductionsListItem__Conflicting">Conflicting</string>
+    <string name="ManageIntroductionsListItem__Stale">Stale</string>
 
 
     <!-- GroupsInCommonMessageRequest -->
