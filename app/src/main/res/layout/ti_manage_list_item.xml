@@ -1,9 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<org.thoughtcrime.securesms.trustedIntroductions.receive.ManageListItem
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content"
+    android:background="@drawable/rounded_inset_ripple_background"
+    android:focusable="true"
+    android:minHeight="@dimen/contact_selection_item_height"
+    android:paddingStart="@dimen/dsl_settings_gutter"
+    android:paddingEnd="@dimen/dsl_settings_gutter">
 
     <org.thoughtcrime.securesms.components.FromTextView
         android:id="@+id/date"
@@ -11,7 +17,6 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
-        android:checkMark="?android:attr/listChoiceIndicatorMultiple"
         android:drawablePadding="4dp"
         android:ellipsize="marquee"
         android:singleLine="true"
@@ -19,10 +24,17 @@
         android:textColor="@color/signal_text_primary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.switchmaterial.SwitchMaterial
+        android:id="@+id/yes_no"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="@style/Signal.Text.BodyLarge"
+        android:textColor="@color/signal_text_primary"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:drawableStart="@drawable/ic_bell_24"
-        tools:drawableTint="@color/signal_icon_tint_secondary"
-        tools:text="@sample/contacts.json/data/name" />
+        app:layout_constraintBottom_toBottomOf="parent" />
 
     <org.thoughtcrime.securesms.components.FromTextView
         android:id="@+id/introduceeName"
@@ -30,31 +42,38 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
-        android:checkMark="?android:attr/listChoiceIndicatorMultiple"
         android:drawablePadding="4dp"
         android:ellipsize="marquee"
         android:singleLine="true"
         android:textAppearance="@style/Signal.Text.BodyLarge"
         android:textColor="@color/signal_text_primary"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/introduceeNumber"
         app:layout_constraintStart_toEndOf="@id/date"
         app:layout_constraintTop_toTopOf="parent"
-        tools:drawableStart="@drawable/ic_bell_24"
-        tools:drawableTint="@color/signal_icon_tint_secondary"
+        app:layout_constraintVertical_chainStyle="packed"
+        app:layout_constraintEnd_toStartOf="@id/yes_no"
         tools:text="@sample/contacts.json/data/name" />
 
-    <com.google.android.material.switchmaterial.SwitchMaterial
-        android:id="@+id/yes_no"
-        android:layout_width="wrap_content"
+    <org.thoughtcrime.securesms.components.FromTextView
+        android:id="@+id/introduceeNumber"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:checked="false"
-        android:textAppearance="@style/Signal.Text.BodyLarge"
-        android:textColor="@color/signal_text_primary"
-        android:text="@string/ManageIntroductionsListItem__Pending"
-        app:layout_constraintStart_toEndOf="@id/introduceeName"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:drawablePadding="4dp"
+        android:ellipsize="marquee"
+        android:singleLine="true"
+        android:textAppearance="@style/Signal.Text.BodyMedium"
+        android:textColor="@color/signal_text_secondary"
+        android:textDirection="ltr"
+        app:layout_constrainedWidth="true"
+        app:layout_constraintTop_toBottomOf="@id/introduceeName"
         app:layout_constraintBottom_toBottomOf="parent"
-        tools:drawableTint="@color/signal_icon_tint_secondary"/>
+        app:layout_constraintStart_toEndOf="@id/date"
+        app:layout_constraintHorizontal_chainStyle="packed"
+        app:layout_constraintEnd_toStartOf="@id/yes_no"
+        tools:text="@sample/contacts.json/data/number" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+
+
+</org.thoughtcrime.securesms.trustedIntroductions.receive.ManageListItem>

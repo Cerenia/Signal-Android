@@ -21,6 +21,7 @@ public class ManageListItem extends ConstraintLayout {
   private TextView dateView;
   private TI_Data        data;
   private TextView       nameView;
+  private TextView numberView;
   // TODO: also add number
   private                                   SwitchMaterial   yn;
   @SuppressLint("SimpleDateFormat") private final SimpleDateFormat datePattern = new SimpleDateFormat("yyyy/MM/dd h:mm:ss");
@@ -34,7 +35,8 @@ public class ManageListItem extends ConstraintLayout {
   protected void onFinishInflate() {
     super.onFinishInflate();
     this.dateView = findViewById(R.id.date);
-    this.nameView = findViewById(R.id.name);
+    this.nameView = findViewById(R.id.introduceeName);
+    this.numberView = findViewById(R.id.introduceeNumber);
     this.yn = findViewById(R.id.yes_no);
 
     ViewUtil.setTextViewGravityStart(this.dateView, getContext());
@@ -44,8 +46,9 @@ public class ManageListItem extends ConstraintLayout {
     this.data = data;
     Date d = new Date(data.getTimestamp());
     dateView.setText(datePattern.format(d));
+    // This will duplicate number in case there is no name, but that's just cosmetics.
     nameView.setText(data.getIntroduceeName());
-    // TODO: Continue here!
+    numberView.setText(data.getIntroduceeNumber());
   }
 
 
