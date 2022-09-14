@@ -29,11 +29,6 @@ public class ContactsSelectionListItem extends ConstraintLayout {
   private CheckBox checkbox;
 
 
-  ContactsSelectionListItem(@NonNull Context context, Recipient recipient){
-    super(context);
-    this.recipient = recipient;
-  }
-
   // For them tools
   public ContactsSelectionListItem(Context context, AttributeSet attrs) {
     super(context, attrs);

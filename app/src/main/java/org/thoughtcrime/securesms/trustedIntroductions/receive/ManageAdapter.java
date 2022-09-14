@@ -1,18 +1,17 @@
 package org.thoughtcrime.securesms.trustedIntroductions.receive;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ListView;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
-import org.thoughtcrime.securesms.trustedIntroductions.send.ContactsSelectionListItem;
 
 public class ManageAdapter extends ListAdapter<TI_Data, ManageAdapter.IntroductionViewHolder> {
 
@@ -20,7 +19,7 @@ public class ManageAdapter extends ListAdapter<TI_Data, ManageAdapter.Introducti
   private final ManageAdapter.ItemClickListener clickListener;
 
 
-  ManageAdapter(ManageAdapter.ItemClickListener clickListener){
+  ManageAdapter(@NonNull Context context, ManageAdapter.ItemClickListener clickListener){
     super(new DiffUtil.ItemCallback<TI_Data>() {
       @Override public boolean areItemsTheSame(@NonNull TI_Data oldItem, @NonNull TI_Data newItem) {
         return oldItem.getId().compareTo(newItem.getId()) == 0;
@@ -39,18 +38,19 @@ public class ManageAdapter extends ListAdapter<TI_Data, ManageAdapter.Introducti
                oldItem.getTimestamp() == newItem.getTimestamp();
       }
     });
-
+    this.layoutInflater = LayoutInflater.from(context);
+    this.clickListener = clickListener;
   }
 
+  // TODO: in case you want to fancify this by adding header list items, add int viewType here
   @NonNull @Override public IntroductionViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-    return null;
+    return new IntroductionViewHolder(layoutInflater.inflate(R.layout.ti_manage_list_item, parent, false), clickListener);
   }
-
 
   @Override public void onBindViewHolder(@NonNull IntroductionViewHolder holder, int position) {
-
+    TI_Data current = getItem(position);
+    holder.bind(current);
   }
-
 
   static class IntroductionViewHolder extends RecyclerView.ViewHolder {
 
@@ -63,6 +63,14 @@ public class ManageAdapter extends ListAdapter<TI_Data, ManageAdapter.Introducti
 
     ManageListItem getView() {
       return (ManageListItem) itemView;
+    }
+
+    public void bind(@NonNull TI_Data d){
+      getView().set(d);
+    }
+
+    public void setEnabled(boolean enabled){
+      getView().setEnabled(enabled);
     }
   }
 
