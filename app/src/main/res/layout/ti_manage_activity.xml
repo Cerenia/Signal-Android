@@ -21,7 +21,7 @@
         app:title="@string/PickContactsForTIActivity_title" />
 
     <org.thoughtcrime.securesms.components.ContactFilterView
-        android:id="@+id/filter_edit_text"
+        android:id="@+id/introduction_filter_edit_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="@dimen/dsl_settings_gutter"
