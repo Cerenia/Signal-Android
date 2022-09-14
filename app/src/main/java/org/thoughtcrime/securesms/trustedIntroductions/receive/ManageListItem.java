@@ -2,6 +2,7 @@ package org.thoughtcrime.securesms.trustedIntroductions.receive;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.util.AttributeSet;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -28,9 +29,12 @@ public class ManageListItem extends ConstraintLayout {
   private                                   SwitchMaterial   yn;
   @SuppressLint("SimpleDateFormat") private final SimpleDateFormat datePattern = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss");
 
-  ManageListItem(@NonNull Context context, @NonNull TI_Data d){
+  ManageListItem(@NonNull Context context){
     super(context);
-    data = d;
+  }
+
+  ManageListItem(Context context, AttributeSet attrs) {
+    super(context, attrs);
   }
 
   @Override
