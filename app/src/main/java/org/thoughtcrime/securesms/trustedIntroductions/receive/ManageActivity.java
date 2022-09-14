@@ -47,7 +47,7 @@ public class ManageActivity extends PassphraseRequiredActivity{
    * @param id Pass unknown to get the view for all introductions.
    */
   public static @NonNull Intent createIntent(@NonNull Context context, @NonNull RecipientId id){
-    Intent intent = new Intent(context, ContactsSelectionActivity.class);
+    Intent intent = new Intent(context, ManageActivity.class);
     intent.putExtra(INTRODUCER_ID, id.toString());
     return intent;
   }
