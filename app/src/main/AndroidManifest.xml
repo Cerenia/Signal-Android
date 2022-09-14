@@ -590,6 +590,9 @@
     <activity android:name=".trustedIntroductions.send.ContactsSelectionActivity"
                android:theme="@style/Theme.Signal.DayNight.NoActionBar"/>
 
+        <activity android:name=".trustedIntroductions.receive.ManageActivity"
+            android:theme="@style/Theme.Signal.DayNight.NoActionBar"/>
+
     <activity android:name=".lock.v2.CreateKbsPinActivity"
             android:theme="@style/TextSecure.LightRegistrationTheme"
             android:windowSoftInputMode="adjustResize"
