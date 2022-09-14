@@ -30,6 +30,7 @@ import java.io.ObjectOutputStream;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -79,6 +80,9 @@ public class TI_Utils {
   // Job constants
   public static final long TI_JOB_LIFESPAN = TimeUnit.DAYS.toMillis(1);
   public static final int TI_JOB_MAX_ATTEMPTS = Job.Parameters.UNLIMITED;
+
+  // How to format dates in introductions:
+  @SuppressLint("SimpleDateFormat") public static final SimpleDateFormat INTRODUCTION_DATE_PATTERN = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss");
 
   //copied from @see VerifyDisplayFragment
   private static @NonNull String getFormattedSafetyNumbers(@NonNull Fingerprint fingerprint, int segmentCount) {

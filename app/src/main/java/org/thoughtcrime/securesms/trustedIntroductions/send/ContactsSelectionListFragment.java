@@ -142,7 +142,6 @@ public class ContactsSelectionListFragment extends Fragment implements ContactFi
     return true;
   }
 
-  // TODO: Slightly unhappy that this is here and not in the Viewmodel. But the display or username is context dependant so not sure how/if to decouple.
   private List<Recipient> getFiltered(List<Recipient> contacts, @Nullable String filter){
     List<Recipient> filtered = new ArrayList<>(contacts);
     filter = (filter==null)? Objects.requireNonNull(viewModel.getFilter().getValue()): filter;

@@ -1,6 +1,5 @@
 package org.thoughtcrime.securesms.trustedIntroductions.receive;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.TextView;
@@ -16,8 +15,9 @@ import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.util.ViewUtil;
 
-import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.INTRODUCTION_DATE_PATTERN;
 
 public class ManageListItem extends ConstraintLayout {
 
@@ -27,7 +27,6 @@ public class ManageListItem extends ConstraintLayout {
   private TextView       nameView;
   private TextView numberView;
   private                                   SwitchMaterial   yn;
-  @SuppressLint("SimpleDateFormat") private final SimpleDateFormat datePattern = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss");
 
   ManageListItem(@NonNull Context context){
     super(context);
@@ -51,7 +50,7 @@ public class ManageListItem extends ConstraintLayout {
   public void set(@NonNull TI_Data data){
     this.data = data;
     Date d = new Date(data.getTimestamp());
-    dateView.setText(datePattern.format(d));
+    dateView.setText(INTRODUCTION_DATE_PATTERN.format(d));
     // This will duplicate number in case there is no name, but that's just cosmetics.
     nameView.setText(data.getIntroduceeName());
     numberView.setText(data.getIntroduceeNumber());
