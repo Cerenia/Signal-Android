@@ -131,7 +131,4 @@ public class ManageListItem extends ConstraintLayout {
         break;
     }
   }
-
-  // TODO: Listener Interface for long press and short press (delete) which triggers actions in viewModel
-
 }

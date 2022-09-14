@@ -18,8 +18,6 @@ import org.thoughtcrime.securesms.recipients.Recipient;
 
 public class ContactsSelectionAdapter extends ListAdapter<Recipient, ContactsSelectionAdapter.TIContactViewHolder> {
 
-  private final @NonNull Context context;
-
   private final LayoutInflater                             layoutInflater;
   private final ContactsSelectionAdapter.ItemClickListener clickListener;
   private final GlideRequests                              glideRequests;
@@ -37,7 +35,6 @@ public class ContactsSelectionAdapter extends ListAdapter<Recipient, ContactsSel
         return oldItem.equals(newItem);
       }
     });
-    this.context = context;
     this.layoutInflater  = LayoutInflater.from(context);
     this.glideRequests   = glideRequests;
     this.clickListener   = clickListener;
