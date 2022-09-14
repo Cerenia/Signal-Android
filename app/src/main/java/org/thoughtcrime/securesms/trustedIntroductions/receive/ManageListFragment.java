@@ -10,10 +10,14 @@ public class ManageListFragment {
   // TODO: Will probably need that for all screen
   private ProgressWheel showIntroductionsProgress;
 
-  private class IntroductionClickListener implements ContactsSelectionAdapter.ItemClickListener {
+  private class IntroductionClickListener implements ManageAdapter.ItemClickListener {
 
-    @Override public void onItemClick(ContactsSelectionListItem item) {
-      // TODO:
+    @Override public void onItemClick(ManageListItem item) {
+
+    }
+
+    @Override public void onItemLongClick(ManageListItem item) {
+
     }
   }
 }
