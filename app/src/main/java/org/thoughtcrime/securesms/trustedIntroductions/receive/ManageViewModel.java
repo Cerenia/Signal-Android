@@ -35,6 +35,10 @@ public class ManageViewModel extends ViewModel {
     this.filter.setValue(filter);
   }
 
+  public LiveData<String> getFilter(){
+    return this.filter;
+  }
+
   public LiveData<List<TI_Data>> getIntroductions() {
     return introductions;
   }
