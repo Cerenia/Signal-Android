@@ -126,7 +126,6 @@ public final class ContactsSelectionActivity extends PassphraseRequiredActivity 
     this.contactFilterView = findViewById(R.id.contact_filter_edit_text);
   }
 
-
   @Override
   public void onContactSelected(Optional<RecipientId> recipientId, @Nullable String number){
     int selectedContactsCount = viewModel.getSelectedContactsCount();

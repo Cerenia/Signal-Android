@@ -3969,6 +3969,7 @@
     <string name="ManageIntroductionsActivity__No_Introductions_from">%s has not made any introductions yet.</string>
     <string name="ManageIntroductionsActivity__Title_Introductions_from">%s\'s Introductions:</string>
     <string name="ManageIntroductionsActivity__Title_Introductions_all">All Introductions:</string>
+    <string name="ManageIntroductionsActivity__Filter_hint">Search Introductions</string>
     <!-- ManageIntroductionsFragment -->
     <!-- ManageIntroductionsListItem -->
     <string name="ManageIntroductionsListItem__Pending">Pending</string>
