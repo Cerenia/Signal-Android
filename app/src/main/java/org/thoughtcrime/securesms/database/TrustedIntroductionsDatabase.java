@@ -7,6 +7,7 @@ import android.database.Cursor;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 import androidx.annotation.WorkerThread;
 
 import org.signal.core.util.SqlUtil;
@@ -62,6 +63,14 @@ public class TrustedIntroductionsDatabase extends Database {
       PREDICTED_FINGERPRINT + " TEXT UNIQUE NOT NULL, " +
       TIMESTAMP + " INTEGER NOT NULL, " +
       STATE + " INTEGER NOT NULL);";
+
+  private static final String CLEAR_TABLE = "DELETE FROM " + TABLE_NAME + ";";
+
+  @VisibleForTesting
+  public void clearTable(){
+    SQLiteDatabase db = databaseHelper.getSignalWritableDatabase();
+    int res = db.delete(TABLE_NAME, "", new String[]{});
+  }
 
   // TODO: eventually, make a few different projections to save some ressources
   // for now just having one universal one is fine.
@@ -166,12 +175,14 @@ public class TrustedIntroductionsDatabase extends Database {
     selectionBuilder.append(String.format(andAppend, INTRODUCEE_PUBLIC_IDENTITY_KEY));
     selectionBuilder.append(String.format(andAppend, STATE));
 
+    int s = State.PENDING.toInt();
+
     // TODO: if this works well, use in other dbs where you build queries
     String[] args = SqlUtil.buildArgs(data.getIntroducerId().serialize(),
                                       data.getIntroduceeId() == null ? "NULL" : data.getIntroduceeId().serialize(),
                                       data.getIntroduceeServiceId(),
                                       data.getIntroduceeIdentityKey(),
-                                      State.PENDING.toInt()); // for now checking for pending state TODO: does that make sense?
+                                      s); // for now checking for pending state TODO: does that make sense?
 
     SQLiteDatabase writeableDatabase = databaseHelper.getSignalWritableDatabase();
     Cursor c = writeableDatabase.query(TABLE_NAME, DUPLICATE_SEARCH_PROJECTION, selectionBuilder.toString(), args, null, null, null);
@@ -196,7 +207,7 @@ public class TrustedIntroductionsDatabase extends Database {
       // TODO: How to fetch a recipient based on ServiceID? Should compare in any case...
     } else {
       values = new ContentValues(9);
-      values.put(INTRODUCEE_RECIPIENT_ID, data.getIntroduceeId().toLong());
+      values.put(INTRODUCEE_RECIPIENT_ID, introduceeId.toLong());
       if (TI_Utils.encodedIdentityKeysEqual(introduceeId, data.getIntroduceeIdentityKey())){
         values.put(STATE, State.PENDING.toInt());
       } else {
@@ -358,7 +369,8 @@ public class TrustedIntroductionsDatabase extends Database {
         return null;
       }
       Long introductionId = cursor.getLong(cursor.getColumnIndex(ID));
-      State       state = State.forState(cursor.getInt(cursor.getColumnIndex(STATE)));
+      int s = cursor.getInt(cursor.getColumnIndex(STATE));
+      State       state = State.forState(s);
       RecipientId   introducerId = RecipientId.from(cursor.getLong(cursor.getColumnIndex(INTRODUCEE_RECIPIENT_ID)));
       RecipientId introduceeId = RecipientId.from(cursor.getLong(cursor.getColumnIndex(INTRODUCEE_RECIPIENT_ID)));
       String serviceId = cursor.getString(cursor.getColumnIndex(INTRODUCEE_SERVICE_ID));

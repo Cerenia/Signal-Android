@@ -10,6 +10,8 @@ import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.PassphraseRequiredActivity;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.components.ContactFilterView;
+import org.thoughtcrime.securesms.database.SignalDatabase;
+import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.util.DynamicNoActionBarTheme;
@@ -59,6 +61,9 @@ public final class ContactsSelectionActivity extends PassphraseRequiredActivity 
 
   @Override protected void onCreate(Bundle savedInstanceState, boolean ready) {
     super.onCreate(savedInstanceState, ready);
+
+    // TODO: DEBUGGING
+    SignalDatabase.getInstance().getTrustedIntroductionsDatabase().clearTable();
 
     dynamicTheme.onCreate(this);
 
