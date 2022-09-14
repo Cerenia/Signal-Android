@@ -84,6 +84,7 @@ import org.thoughtcrime.securesms.stories.StoryViewerArgs
 import org.thoughtcrime.securesms.stories.dialogs.StoryDialogs
 import org.thoughtcrime.securesms.stories.viewer.AddToGroupStoryDelegate
 import org.thoughtcrime.securesms.stories.viewer.StoryViewerActivity
+import org.thoughtcrime.securesms.trustedIntroductions.receive.ManageActivity
 import org.thoughtcrime.securesms.util.CommunicationActions
 import org.thoughtcrime.securesms.util.ContextUtil
 import org.thoughtcrime.securesms.util.DateUtils
@@ -95,6 +96,7 @@ import org.thoughtcrime.securesms.util.navigation.safeNavigate
 import org.thoughtcrime.securesms.util.views.SimpleProgressDialog
 import org.thoughtcrime.securesms.verify.VerifyIdentityActivity
 import org.thoughtcrime.securesms.wallpaper.ChatWallpaperActivity
+import org.webrtc.ContextUtils.getApplicationContext
 import java.util.Locale
 
 private const val REQUEST_CODE_VIEW_CONTACT = 1
@@ -510,7 +512,7 @@ class ConversationSettingsFragment : DSLSettingsFragment(
           title = DSLSettingsText.from(R.string.ConversationSettingsFragment__Introductions),
           icon = DSLSettingsIcon.from(R.drawable.ic_trusted_introduction),
           onClick = {
-            // TODO: open Activity when there is one.
+            startActivity(ManageActivity.createIntent(requireContext(), state.recipient.id))
           }
         )
       }
