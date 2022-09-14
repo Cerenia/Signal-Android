@@ -39,6 +39,7 @@ import org.thoughtcrime.securesms.database.MessageTable;
 import org.thoughtcrime.securesms.database.PushTable;
 import org.thoughtcrime.securesms.database.RecipientTable;
 import org.thoughtcrime.securesms.database.ThreadTable;
+import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.groups.GroupId;
 import org.thoughtcrime.securesms.migrations.LegacyMigrationJob;
@@ -137,6 +138,7 @@ public class ClassicOpenHelper extends SQLiteOpenHelper {
     db.execSQL(GroupTable.CREATE_TABLE);
     db.execSQL(RecipientTable.CREATE_TABLE);
     db.execSQL(GroupReceiptTable.CREATE_TABLE);
+    db.execSQL(TrustedIntroductionsDatabase.CREATE_TABLE);
 
     executeStatements(db, MessageTable.CREATE_INDEXS);
     executeStatements(db, AttachmentTable.CREATE_INDEXS);
