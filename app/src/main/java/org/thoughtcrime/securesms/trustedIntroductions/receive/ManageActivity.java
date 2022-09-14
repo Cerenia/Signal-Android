@@ -31,7 +31,7 @@ public class ManageActivity extends PassphraseRequiredActivity{
   // String
   public static final String INTRODUCER_ID                 = "recipient_id";
   // Instead of passing the RecipientID of the introducer as a string.
-  public static final String ALL_INTRODUCTIONS = RecipientId.UNKNOWN.toString();
+  public static final long ALL_INTRODUCTIONS = RecipientId.UNKNOWN.toLong();
 
   private ManageViewModel viewModel;
   private ManageListFragment introductions;
@@ -48,7 +48,7 @@ public class ManageActivity extends PassphraseRequiredActivity{
    */
   public static @NonNull Intent createIntent(@NonNull Context context, @NonNull RecipientId id){
     Intent intent = new Intent(context, ManageActivity.class);
-    intent.putExtra(INTRODUCER_ID, id.toString());
+    intent.putExtra(INTRODUCER_ID, id.toLong());
     return intent;
   }
 
@@ -65,6 +65,7 @@ public class ManageActivity extends PassphraseRequiredActivity{
     contactFilterView = findViewById(R.id.introduction_filter_edit_text);
     no_introductions = findViewById(R.id.no_introductions_found);
     navigationExplanation = findViewById(R.id.navigation_explanation);
+    // TODO: CONTINUE HERE, what's up with the fragment?
     introductions = (ManageListFragment) getSupportFragmentManager().findFragmentById(R.id.trusted_introduction_manage_fragment);
 
     // Initialize
@@ -96,7 +97,7 @@ public class ManageActivity extends PassphraseRequiredActivity{
   }
 
   private RecipientId getIntroducerId(){
-    return RecipientId.from(getIntent().getStringExtra(INTRODUCER_ID));
+    return RecipientId.from(getIntent().getLongExtra(INTRODUCER_ID, ALL_INTRODUCTIONS));
   }
 
   private void initializeToolbar() {
