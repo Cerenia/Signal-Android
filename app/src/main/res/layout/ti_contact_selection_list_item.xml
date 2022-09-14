@@ -51,7 +51,6 @@
         android:textAppearance="@style/Signal.Text.BodyLarge"
         android:textColor="@color/signal_text_primary"
         app:layout_constraintBottom_toTopOf="@id/number"
-        app:layout_constraintEnd_toStartOf="@id/sms_tag"
         app:layout_constraintStart_toEndOf="@id/contact_photo_image"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_chainStyle="packed"
