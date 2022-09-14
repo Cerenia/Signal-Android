@@ -17,6 +17,7 @@ import org.thoughtcrime.securesms.components.ContactFilterView;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.send.ContactsSelectionActivity;
+import org.thoughtcrime.securesms.util.DynamicNoActionBarTheme;
 import org.thoughtcrime.securesms.util.DynamicTheme;
 
 /**
@@ -39,9 +40,8 @@ public class ManageActivity extends PassphraseRequiredActivity{
   private ContactFilterView contactFilterView;
   private TextView navigationExplanation;
   private TextView        no_introductions;
-
-  // TODO: may want an action bar for button
-  private final DynamicTheme dynamicTheme = new DynamicTheme();
+  
+  private final DynamicTheme dynamicTheme = new DynamicNoActionBarTheme();
 
   /**
    * @param id Pass unknown to get the view for all introductions.
