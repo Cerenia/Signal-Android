@@ -40,7 +40,7 @@ public class ManageActivity extends PassphraseRequiredActivity{
   private ContactFilterView contactFilterView;
   private TextView navigationExplanation;
   private TextView        no_introductions;
-  
+
   private final DynamicTheme dynamicTheme = new DynamicNoActionBarTheme();
 
   /**
