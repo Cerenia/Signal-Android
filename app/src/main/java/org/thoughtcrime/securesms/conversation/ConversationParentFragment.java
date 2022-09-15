@@ -1259,7 +1259,7 @@ public class ConversationParentFragment extends Fragment
         } else if (!isSingleConversation()){
           // Dialogue for Group (at some point this can be implemented)
           conversationType = CanNotIntroduceDialog.ConversationType.GROUP;
-        } else if (!(recipientRecord.isPresent() && VerifiedStatus.tiUnlocked(recipientRecord.get().getVerifiedStatus()))){
+        } else if (!(recipientRecord.isPresent() && VerifiedStatus.ti_recipientUnlocked(recipientRecord.get().getVerifiedStatus()))){
           // Unverified signal contact
           // Guaranteed to have a recipient Record at this point and be unverified
           conversationType = CanNotIntroduceDialog.ConversationType.SINGLE_SECURE_TEXT;
