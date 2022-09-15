@@ -205,6 +205,7 @@ public class TrustedIntroductionsDatabase extends Database {
       values = new ContentValues(8);
       values.put(STATE, State.PENDING.toInt()); // if recipient does not exist, we have nothing to compare against.
       // TODO: How to fetch a recipient based on ServiceID? Should compare in any case...
+      // TODO: Have a look at Retrieve Profile Job! => Add a callback in the database?
     } else {
       values = new ContentValues(9);
       values.put(INTRODUCEE_RECIPIENT_ID, introduceeId.toLong());

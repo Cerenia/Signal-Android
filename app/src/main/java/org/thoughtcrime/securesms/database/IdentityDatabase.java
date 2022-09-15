@@ -41,7 +41,6 @@ import org.whispersystems.signalservice.api.util.UuidUtil;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 public class IdentityDatabase extends Database {
@@ -124,13 +123,14 @@ public class IdentityDatabase extends Database {
 
     /**
      * Adding this in order to be able to change my mind easily on what should unlock a TI.
-     * For now, only direct verification unlocks it, in order not to propagate malicious verifications
-     * further than one connection.
+     * For now, only direct verification unlocks forwarding a contact's public key,
+     * in order not to propagate malicious verifications further than one connection.
      *
      * @param verifiedStatus the verification status to be checked
-     * @return true if strongly enough verified to unlock trusted introduction, false otherwise
+     * @return true if strongly enough verified to unlock forwarding this contact as a
+     * trusted introduction, false otherwise
      */
-    public static boolean tiUnlocked(VerifiedStatus verifiedStatus){
+    public static boolean ti_forwardUnlocked(VerifiedStatus verifiedStatus){
       switch (verifiedStatus) {
         case DIRECTLY_VERIFIED:
         case DUPLEX_VERIFIED:
@@ -141,8 +141,27 @@ public class IdentityDatabase extends Database {
     }
 
     /**
+     * A recipient can only receive TrustedIntroductions iff they have previously been strongly verified.
+     * This function exists as it's own thing to allow for flexible changes.
+     *
+     * @param verifiedStatus The verification status of the recipient.
+     * @return True if this recipient can receive trusted introductions.
+     */
+    public static boolean ti_recipientUnlocked(VerifiedStatus verifiedStatus){
+      switch (verifiedStatus) {
+        case DIRECTLY_VERIFIED:
+        case DUPLEX_VERIFIED:
+        case INTRODUCED:
+          return true;
+        default:
+          return false;
+      }
+    }
+
+    /**
      * Returns true for any non-trivial positive verification status.
-     * Used to promt user when clearing a verification status that is not trivially recoverable.
+     * Used to promt user when clearing a verification status that is not trivially recoverable and to decide
+     * if a channel is secure enough to forward an introduction over.
      */
     public static boolean stronglyVerified(VerifiedStatus verifiedStatus){
       switch (verifiedStatus){
@@ -255,7 +274,7 @@ public class IdentityDatabase extends Database {
     ArrayList<String> validStates = new ArrayList<>();
     // dynamically compute the valid states and query the Signal database for these contacts
     for(VerifiedStatus e: VerifiedStatus.values()){
-      if(VerifiedStatus.tiUnlocked(e)){
+      if(VerifiedStatus.ti_forwardUnlocked(e)){
         validStates.add(String.valueOf(e.toInt()));
       }
     }
