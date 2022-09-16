@@ -68,6 +68,7 @@ public class TrustedIntroductionsDatabase extends Database {
 
   @VisibleForTesting
   public void clearTable(){
+    // TODO: remove call once debugging done
     //SQLiteDatabase db = databaseHelper.getSignalWritableDatabase();
     //int res = db.delete(TABLE_NAME, "", new String[]{});
   }
@@ -88,6 +89,7 @@ public class TrustedIntroductionsDatabase extends Database {
   };
 
   private static final String[] DUPLICATE_SEARCH_PROJECTION = new String[]{
+      ID,
       INTRODUCER_RECIPIENT_ID,
       INTRODUCEE_RECIPIENT_ID,
       INTRODUCEE_SERVICE_ID,
