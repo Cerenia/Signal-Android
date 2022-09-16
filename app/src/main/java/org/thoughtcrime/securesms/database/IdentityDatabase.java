@@ -151,7 +151,8 @@ public class IdentityDatabase extends Database {
       switch (verifiedStatus) {
         case DIRECTLY_VERIFIED:
         case DUPLEX_VERIFIED:
-        case INTRODUCED:
+        //case INTRODUCED: (if someone is being MiTmed, an introduction could be sensitive data. So you should be sure who you are talking to before you forward)
+          // TODO: Both versions of this have their own pros and cons... Which one should it be?
           return true;
         default:
           return false;
