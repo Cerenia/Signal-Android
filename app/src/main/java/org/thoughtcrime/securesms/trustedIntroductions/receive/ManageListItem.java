@@ -28,12 +28,12 @@ public class ManageListItem extends ConstraintLayout {
   private TextView numberView;
   private                                   SwitchMaterial   yn;
 
-  ManageListItem(@NonNull Context context){
-    super(context);
+  public ManageListItem(Context context, AttributeSet attrs) {
+    super(context, attrs);
   }
 
-  ManageListItem(Context context, AttributeSet attrs) {
-    super(context, attrs);
+  public ManageListItem(Context context){
+    super(context);
   }
 
   @Override
