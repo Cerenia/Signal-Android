@@ -68,8 +68,8 @@ public class TrustedIntroductionsDatabase extends Database {
 
   @VisibleForTesting
   public void clearTable(){
-    SQLiteDatabase db = databaseHelper.getSignalWritableDatabase();
-    int res = db.delete(TABLE_NAME, "", new String[]{});
+    //SQLiteDatabase db = databaseHelper.getSignalWritableDatabase();
+    //int res = db.delete(TABLE_NAME, "", new String[]{});
   }
 
   // TODO: eventually, make a few different projections to save some ressources
