@@ -123,7 +123,7 @@ public class TI_Utils {
    * @param introduceeServiceId, fetched if null and needed
    * @param introduceeE164, phone nr., fetched if null and needed
    * @param introduceeIdentityKey fetched if null
-   * @return The expected safety number as a String, formated into segments identical to the VerifyDisplayFragment
+   * @return The expected safety number as a String, formated into segments identical to the VerifyDisplayFragment TODO: fix whacky formatting (some whitespaces missing)
    */
   public static String predictFingerprint(@NonNull RecipientId introductionRecipientId, @NonNull RecipientId introduceeId, @Nullable String introduceeServiceId, @Nullable String introduceeE164, @Nullable IdentityKey introduceeIdentityKey){
     if(introduceeServiceId == null && introduceeE164 == null && introduceeIdentityKey == null){

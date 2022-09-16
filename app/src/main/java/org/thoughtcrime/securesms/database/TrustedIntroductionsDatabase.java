@@ -149,7 +149,9 @@ public class TrustedIntroductionsDatabase extends Database {
         case 7:
           return STALE_CONFLICTING;
         default:
-          throw new AssertionError("No such state: " + state);
+          // TODO: add back when you know what's up
+          //throw new AssertionError("No such state: " + state);
+          return CONFLICTING;
       }
     }
   }
