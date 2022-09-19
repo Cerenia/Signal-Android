@@ -5,21 +5,24 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/rounded_inset_ripple_background"
+    android:background="@drawable/ti_listview_border"
     android:focusable="true"
     android:minHeight="@dimen/contact_selection_item_height"
     android:paddingStart="@dimen/dsl_settings_gutter"
     android:paddingEnd="@dimen/dsl_settings_gutter">
 
     <View
-        android:id="@+id/border"
+        android:id="@+id/item_background"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#0000"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        android:background="@color/white"
+        android:padding="@dimen/TI_border_visibility_padding"
+        android:layout_margin="@dimen/TI_background_margin"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
 
     <org.thoughtcrime.securesms.components.FromTextView
         android:id="@+id/timestamp_date"
@@ -27,10 +30,8 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
-        android:layout_marginBottom="10dp"
+        android:layout_marginBottom="2dp"
         android:drawablePadding="4dp"
-        android:paddingStart="@dimen/TI_border_visibility_padding"
-        android:paddingTop="@dimen/TI_border_visibility_padding"
         android:ellipsize="marquee"
         android:singleLine="true"
         android:textAppearance="@style/Signal.Text.BodyMedium"
@@ -46,9 +47,8 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
+        android:layout_marginTop="2dp"
         android:drawablePadding="4dp"
-        android:paddingStart="@dimen/TI_border_visibility_padding"
-        android:paddingBottom="@dimen/TI_border_visibility_padding"
         android:ellipsize="marquee"
         android:singleLine="true"
         android:textAppearance="@style/Signal.Text.BodyMedium"
@@ -65,7 +65,6 @@
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:drawablePadding="4dp"
-        android:paddingBottom="@dimen/TI_border_visibility_padding"
         android:ellipsize="marquee"
         android:singleLine="true"
         android:textAppearance="@style/Signal.Text.BodyLarge"
@@ -85,7 +84,6 @@
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:drawablePadding="4dp"
-        android:paddingBottom="@dimen/TI_border_visibility_padding"
         android:ellipsize="marquee"
         android:singleLine="true"
         android:textAppearance="@style/Signal.Text.BodyMedium"
@@ -107,16 +105,13 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
-        android:layout_marginBottom="20dp"
         android:drawablePadding="4dp"
-        android:paddingEnd="@dimen/TI_border_visibility_padding"
-        android:paddingTop="@dimen/TI_border_visibility_padding"
         android:ellipsize="marquee"
         android:singleLine="true"
         android:textAppearance="@style/Signal.Text.BodyMedium"
         android:textColor="@color/signal_text_primary"
         android:gravity="top|end"
-        app:layout_constraintBottom_toBottomOf="@id/switch_yn"
+        app:layout_constraintBottom_toTopOf="@id/switch_yn"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
@@ -124,13 +119,11 @@
         android:id="@+id/switch_yn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingEnd="@dimen/TI_border_visibility_padding"
-        android:paddingBottom="@dimen/TI_border_visibility_padding"
         android:textAppearance="@style/Signal.Text.BodyLarge"
         android:textColor="@color/signal_text_primary"
         android:gravity="bottom|end"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/switch_label"
+        app:layout_constraintTop_toBottomOf="@id/switch_label"
         app:layout_constraintBottom_toBottomOf="parent" />
 
 </org.thoughtcrime.securesms.trustedIntroductions.receive.ManageListItem>
