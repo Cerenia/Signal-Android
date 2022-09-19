@@ -1,11 +1,15 @@
 package org.thoughtcrime.securesms.trustedIntroductions.receive;
 
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.google.android.material.switchmaterial.SwitchMaterial;
@@ -20,7 +24,7 @@ import java.util.Date;
 
 import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.INTRODUCTION_DATE_PATTERN;
 
-public class ManageListItem extends ConstraintLayout {
+@RequiresApi(api = Build.VERSION_CODES.O) public class ManageListItem extends ConstraintLayout {
 
   private TI_Data        data;
   private TextView timestampDate;
@@ -29,7 +33,17 @@ public class ManageListItem extends ConstraintLayout {
   private TextView numberView;
   private                                   SwitchMaterial   yn;
   private TextView yn_label;
-  private View     border;
+  // TODO: Try GradientDrawable?
+  // https://www.codegrepper.com/code-examples/java/add+border+around+any+view+android
+  private Drawable border;
+  private View background;
+
+  // TODO: simplify such that api version back down to 19
+  private Color  conflictingBorderColour = Color.valueOf(0xFF0000);
+  private Color normalBorderColour      = Color.valueOf(0x000000);
+  private Color greyedOutItemColour =  Color.valueOf(0x828282);
+  private Color normalItemColour = Color.valueOf(0xffffff);
+
 
   public ManageListItem(Context context, AttributeSet attrs) {
     super(context, attrs);
@@ -48,7 +62,8 @@ public class ManageListItem extends ConstraintLayout {
     this.numberView = findViewById(R.id.introduceeNumber);
     this.yn = findViewById(R.id.switch_yn);
     this.yn_label = findViewById(R.id.switch_label);
-    this.border = findViewById(R.id.border);
+    this.background = findViewById(R.id.background);
+    this.border = this.getBackground();
   }
 
   public void set(@NonNull TI_Data data){
@@ -68,7 +83,7 @@ public class ManageListItem extends ConstraintLayout {
   public long getIntroductionId(){
     return data.getId();
   }
-
+  
   public TI_Data toggleSwitch(){
     TI_Data newIntro;
     TrustedIntroductionsDatabase.State newState;
@@ -96,6 +111,10 @@ public class ManageListItem extends ConstraintLayout {
     return new TI_Data(d.getId(), s, d.getIntroducerId(), d.getIntroduceeId(), d.getIntroduceeServiceId(), d.getIntroduceeName(), d.getIntroduceeNumber(), d.getIntroduceeIdentityKey(), d.getPredictedSecurityNumber(), d.getTimestamp());
   }
 
+  /**
+   * Also changes the border/background colour and positioning accordingly.
+   * @return
+   */
   private void setSwitchByState(TrustedIntroductionsDatabase.State s){
     // TODO: add "grey out" of complete list item to Stale states
     // TODO: some visual indication of conflicting??
@@ -104,6 +123,8 @@ public class ManageListItem extends ConstraintLayout {
         yn_label.setText(R.string.ManageIntroductionsListItem__Pending);
         yn.setChecked(false);
         yn.setClickable(true);
+        //background.bringToFront();
+        //background.setBackgroundColor();
         break;
       case ACCEPTED:
         yn_label.setText(R.string.ManageIntroductionsListItem__Accepted);
