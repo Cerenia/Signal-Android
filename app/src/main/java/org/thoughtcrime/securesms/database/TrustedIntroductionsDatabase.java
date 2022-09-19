@@ -88,15 +88,6 @@ public class TrustedIntroductionsDatabase extends Database {
       STATE
   };
 
-  private static final String[] DUPLICATE_SEARCH_PROJECTION = new String[]{
-      ID,
-      INTRODUCER_RECIPIENT_ID,
-      INTRODUCEE_RECIPIENT_ID,
-      INTRODUCEE_SERVICE_ID,
-      INTRODUCEE_PUBLIC_IDENTITY_KEY,
-      STATE
-    };
-
 
   /**
    * An Introduction can either be waiting for a decision from the user (PENDING),
@@ -185,6 +176,23 @@ public class TrustedIntroductionsDatabase extends Database {
     cv.put(PREDICTED_FINGERPRINT, predictedFingerprint);
     cv.put(TIMESTAMP, timestamp);
     return cv;
+  }
+
+  /**
+   * @param c a cursor pointing to a fully populated query result in the database.
+   * @param timestamp the new timestamp to insert.
+   */
+  @SuppressLint("Range") private @NonNull ContentValues buildContentValuesForTimestampUpdate(Cursor c, long timestamp){
+    return buildContentValuesForUpdate(c.getString(c.getColumnIndex(ID)),
+                                       c.getString(c.getColumnIndex(STATE)),
+                                       c.getString(c.getColumnIndex(INTRODUCER_RECIPIENT_ID)),
+                                       c.getString(c.getColumnIndex(INTRODUCEE_RECIPIENT_ID)),
+                                       c.getString(c.getColumnIndex(INTRODUCEE_SERVICE_ID)),
+                                       c.getString(c.getColumnIndex(INTRODUCEE_NAME)),
+                                       c.getString(c.getColumnIndex(INTRODUCEE_NUMBER)),
+                                       c.getString(c.getColumnIndex(INTRODUCEE_PUBLIC_IDENTITY_KEY)),
+                                       c.getString(c.getColumnIndex(PREDICTED_FINGERPRINT)),
+                                       String.valueOf(timestamp));
   }
 
   /**
@@ -294,12 +302,10 @@ public class TrustedIntroductionsDatabase extends Database {
                                       s); // for now checking for pending state TODO: does that make sense?
 
     SQLiteDatabase writeableDatabase = databaseHelper.getSignalWritableDatabase();
-    Cursor c = writeableDatabase.query(TABLE_NAME, DUPLICATE_SEARCH_PROJECTION, selectionBuilder.toString(), args, null, null, null);
+    Cursor c = writeableDatabase.query(TABLE_NAME, TI_ALL_PROJECTION, selectionBuilder.toString(), args, null, null, null);
     if (c.getCount() == 1){
       c.moveToFirst();
-      ContentValues value = new ContentValues(1);
-      value.put(TIMESTAMP, data.getTimestamp());
-      long result = writeableDatabase.update(TABLE_NAME, value, ID + " = ?", SqlUtil.buildArgs(c.getInt(c.getColumnIndex(ID))));
+      long result = writeableDatabase.update(TABLE_NAME, buildContentValuesForTimestampUpdate(c, data.getTimestamp()), ID + " = ?", SqlUtil.buildArgs(c.getInt(c.getColumnIndex(ID))));
       // TODO testing
       Log.e(TAG, "Updated timestamp of introduction " + result + " to: " + data.getTimestamp());
       c.close();
