@@ -163,6 +163,111 @@ public class TrustedIntroductionsDatabase extends Database {
   }
 
 
+  private @NonNull ContentValues buildContentValuesForUpdate(@NonNull Long introductionId,
+                                                    @NonNull State state,
+                                                    @NonNull Long introducerId,
+                                                    @NonNull Long introduceeId,
+                                                    @NonNull String serviceId,
+                                                    @NonNull String name,
+                                                    @NonNull String number,
+                                                    @NonNull String identityKey,
+                                                    @NonNull String predictedFingerprint,
+                                                    @NonNull Long timestamp){
+    ContentValues cv = new ContentValues();
+    cv.put(ID, introductionId);
+    cv.put(STATE, state.toInt());
+    cv.put(INTRODUCER_RECIPIENT_ID, introducerId);
+    cv.put(INTRODUCEE_RECIPIENT_ID, introduceeId);
+    cv.put(INTRODUCEE_SERVICE_ID, serviceId);
+    cv.put(INTRODUCEE_NAME, name);
+    cv.put(INTRODUCEE_NUMBER, number);
+    cv.put(INTRODUCEE_PUBLIC_IDENTITY_KEY, identityKey);
+    cv.put(PREDICTED_FINGERPRINT, predictedFingerprint);
+    cv.put(TIMESTAMP, timestamp);
+    return cv;
+  }
+
+  /**
+   * Meant for values pulled directly from the Database through a Query.
+   * PRE: None of the Strings may be empty or Null.
+   *
+   * @param introductionId Expected to represent a Long > 0.
+   * @param state Expected to represent an Int between 0 and 7 (inclusive).
+   * @param introducerId Expected to represent a Long > 0.
+   * @param introduceeId Expected to represent a Long > 0.
+   * @param serviceId
+   * @param name
+   * @param number
+   * @param identityKey
+   * @param predictedFingerprint
+   * @param timestamp Expected to represent a Long.
+   * @return Propperly populated content values, NumberFormatException/AssertionError if a value was invalid.
+   */
+  private @NonNull ContentValues buildContentValuesForUpdate(@NonNull String introductionId,
+                                                             @NonNull String state,
+                                                             @NonNull String introducerId,
+                                                             @NonNull String introduceeId,
+                                                             @NonNull String serviceId,
+                                                             @NonNull String name,
+                                                             @NonNull String number,
+                                                             @NonNull String identityKey,
+                                                             @NonNull String predictedFingerprint,
+                                                             @NonNull String timestamp) throws NumberFormatException{
+    Preconditions.checkArgument(!introductionId.isEmpty() &&
+                                !state.isEmpty() &&
+                                !introducerId.isEmpty() &&
+                                !introduceeId.isEmpty() &&
+                                !serviceId.isEmpty() &&
+                                !name.isEmpty() &&
+                                !number.isEmpty() &&
+                                !identityKey.isEmpty() &&
+                                !predictedFingerprint.isEmpty() &&
+                                !timestamp.isEmpty());
+    long introId = Long.parseLong(introductionId);
+    Preconditions.checkArgument(introId > 0);
+    int s = Integer.parseInt(state);
+    Preconditions.checkArgument(s >= 0 && s <= 7);
+    long introducerIdLong = Long.parseLong(introducerId);
+    Preconditions.checkArgument(introducerIdLong > 0);
+    long introduceeIdLong = Long.parseLong(introduceeId);
+    Preconditions.checkArgument(introduceeIdLong > 0);
+    long timestampLong = Long.parseLong(timestamp);
+    Preconditions.checkArgument(timestampLong > 0);
+    return buildContentValuesForUpdate(introId,
+                                       State.forState(s),
+                                       introducerIdLong,
+                                       introduceeIdLong,
+                                       serviceId,
+                                       name,
+                                       number,
+                                       identityKey,
+                                       predictedFingerprint,
+                                       timestampLong);
+  }
+
+  /**
+   *
+   * @param introduction PRE: none of it's fields may be null.
+   * @return A populated contentValues object, to use for updates.
+   */
+  private @NonNull ContentValues buildContentValuesForUpdate(@NonNull TI_Data introduction){
+    Preconditions.checkNotNull(introduction.getId());
+    Preconditions.checkNotNull(introduction.getState());
+    Preconditions.checkNotNull(introduction.getIntroduceeId());
+    Preconditions.checkNotNull(introduction.getIntroducerId());
+    Preconditions.checkNotNull(introduction.getPredictedSecurityNumber());
+    return buildContentValuesForUpdate(introduction.getId(),
+                                       introduction.getState(),
+                                       introduction.getIntroducerId().toLong(),
+                                       introduction.getIntroduceeId().toLong(),
+                                       introduction.getIntroduceeServiceId(),
+                                       introduction.getIntroduceeName(),
+                                       introduction.getIntroduceeNumber(),
+                                       introduction.getIntroduceeIdentityKey(),
+                                       introduction.getPredictedSecurityNumber(),
+                                       introduction.getTimestamp());
+  }
+
   /**
    *
    * @return -1 -> conflict occured on insert, else id of introduction.
@@ -376,7 +481,7 @@ public class TrustedIntroductionsDatabase extends Database {
       Long introductionId = cursor.getLong(cursor.getColumnIndex(ID));
       int s = cursor.getInt(cursor.getColumnIndex(STATE));
       State       state = State.forState(s);
-      RecipientId   introducerId = RecipientId.from(cursor.getLong(cursor.getColumnIndex(INTRODUCEE_RECIPIENT_ID)));
+      RecipientId   introducerId = RecipientId.from(cursor.getLong(cursor.getColumnIndex(INTRODUCER_RECIPIENT_ID)));
       RecipientId introduceeId = RecipientId.from(cursor.getLong(cursor.getColumnIndex(INTRODUCEE_RECIPIENT_ID)));
       String serviceId = cursor.getString(cursor.getColumnIndex(INTRODUCEE_SERVICE_ID));
       // Do I need to hit the Recipient Database to check the name?
