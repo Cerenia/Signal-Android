@@ -71,7 +71,8 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
       for (TI_Data d: introductions){
         if (!INTRODUCTION_DATE_PATTERN.format(d.getTimestamp()).contains(filter) &&
             !d.getIntroduceeName().contains(filter) &&
-            !d.getIntroduceeNumber().contains(filter)){
+            !d.getIntroduceeNumber().contains(filter) &&
+            !d.getState().toString().contains(filter)){
           filtered.remove(d);
         }
       }

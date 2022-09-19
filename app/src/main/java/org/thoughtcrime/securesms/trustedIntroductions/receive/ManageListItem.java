@@ -28,6 +28,7 @@ public class ManageListItem extends ConstraintLayout {
   private TextView       nameView;
   private TextView numberView;
   private                                   SwitchMaterial   yn;
+  private TextView yn_label;
 
   public ManageListItem(Context context, AttributeSet attrs) {
     super(context, attrs);
@@ -44,7 +45,8 @@ public class ManageListItem extends ConstraintLayout {
     this.timestampTime = findViewById(R.id.timestamp_time);
     this.nameView = findViewById(R.id.introduceeName);
     this.numberView = findViewById(R.id.introduceeNumber);
-    this.yn = findViewById(R.id.yes_no);
+    this.yn = findViewById(R.id.switch_yn);
+    this.yn_label = findViewById(R.id.switch_label);
 
     ViewUtil.setTextViewGravityStart(this.timestampDate, getContext());
     ViewUtil.setTextViewGravityStart(this.timestampTime, getContext());
@@ -60,7 +62,7 @@ public class ManageListItem extends ConstraintLayout {
     // This will duplicate number in case there is no name, but that's just cosmetics.
     nameView.setText(data.getIntroduceeName());
     numberView.setText(data.getIntroduceeNumber());
-    yn.setText(data.getState().toString());
+    setSwitchByState(data.getState());
     // TODO: how to gray out whole thing if state is stale?
   }
 
@@ -100,43 +102,43 @@ public class ManageListItem extends ConstraintLayout {
     // TODO: some visual indication of conflicting??
     switch(s){
       case PENDING:
-        yn.setText(R.string.ManageIntroductionsListItem__Pending);
+        yn_label.setText(R.string.ManageIntroductionsListItem__Pending);
         yn.setChecked(false);
         yn.setClickable(true);
         break;
       case ACCEPTED:
-        yn.setText(R.string.ManageIntroductionsListItem__Accepted);
+        yn_label.setText(R.string.ManageIntroductionsListItem__Accepted);
         yn.setChecked(true);
         yn.setClickable(true);
         break;
       case REJECTED:
-        yn.setText(R.string.ManageIntroductionsListItem__Rejected);
+        yn_label.setText(R.string.ManageIntroductionsListItem__Rejected);
         yn.setChecked(false);
         yn.setClickable(true);
         break;
       case CONFLICTING:
-        yn.setText(R.string.ManageIntroductionsListItem__Conflicting);
+        yn_label.setText(R.string.ManageIntroductionsListItem__Conflicting);
         yn.setChecked(false);
         yn.setClickable(false);
         break;
       case STALE_ACCEPTED:
         yn.setChecked(true);
-        yn.setText(R.string.ManageIntroductionsListItem__Accepted);
+        yn_label.setText(R.string.ManageIntroductionsListItem__Accepted);
         yn.setClickable(false);
         break;
       case STALE_REJECTED:
         yn.setChecked(false);
-        yn.setText(R.string.ManageIntroductionsListItem__Rejected);
+        yn_label.setText(R.string.ManageIntroductionsListItem__Rejected);
         yn.setClickable(false);
         break;
       case STALE_PENDING:
         yn.setChecked(false);
-        yn.setText(R.string.ManageIntroductionsListItem__Stale);
+        yn_label.setText(R.string.ManageIntroductionsListItem__Stale);
         yn.setClickable(false);
         break;
       case STALE_CONFLICTING:
         yn.setChecked(false);
-        yn.setText(R.string.ManageIntroductionsListItem__Conflicting);
+        yn_label.setText(R.string.ManageIntroductionsListItem__Conflicting);
         yn.setClickable(false);
         break;
     }
