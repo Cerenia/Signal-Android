@@ -12,7 +12,22 @@
     android:paddingEnd="@dimen/dsl_settings_gutter">
 
     <org.thoughtcrime.securesms.components.FromTextView
-        android:id="@+id/date"
+        android:id="@+id/timestamp_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:drawablePadding="4dp"
+        android:ellipsize="marquee"
+        android:singleLine="true"
+        android:textAppearance="@style/Signal.Text.BodyLarge"
+        android:textColor="@color/signal_text_primary"
+        app:layout_constraintBottom_toBottomOf="@id/timestamp_time"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <org.thoughtcrime.securesms.components.FromTextView
+        android:id="@+id/timestamp_time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
@@ -24,7 +39,7 @@
         android:textColor="@color/signal_text_primary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="@id/timestamp_date" />
 
     <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/yes_no"
