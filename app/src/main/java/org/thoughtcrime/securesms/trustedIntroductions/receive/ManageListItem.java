@@ -60,6 +60,7 @@ public class ManageListItem extends ConstraintLayout {
     // This will duplicate number in case there is no name, but that's just cosmetics.
     nameView.setText(data.getIntroduceeName());
     numberView.setText(data.getIntroduceeNumber());
+    yn.setText(data.getState().toString());
     // TODO: how to gray out whole thing if state is stale?
   }
 
