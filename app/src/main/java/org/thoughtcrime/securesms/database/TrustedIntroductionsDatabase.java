@@ -50,12 +50,12 @@ public class TrustedIntroductionsDatabase extends Database {
   private static final String STATE                          = "state";
 
   public static final long CLEARED_INTRODUCING_RECIPIENT_ID = -1; // See RecipientId.UNKNOWN
-  public static final long UNINITIALIZED_INTRODUCEE_RECIPIENT_ID = -1;
+  public static final long UNKNOWN_INTRODUCEE_RECIPIENT_ID  = -1; //TODO: need to search through database for serviceID when new recipient is added in order to initialize.
 
   public static final String CREATE_TABLE =
       "CREATE TABLE " + TABLE_NAME + " (" + ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
       INTRODUCER_RECIPIENT_ID + " INTEGER NOT NULL, " + // TODO: Do I need to mark RecipientId as UNIQUE?
-      INTRODUCEE_RECIPIENT_ID + " INTEGER DEFAULT " + UNINITIALIZED_INTRODUCEE_RECIPIENT_ID + ", " +
+      INTRODUCEE_RECIPIENT_ID + " INTEGER DEFAULT " + UNKNOWN_INTRODUCEE_RECIPIENT_ID + ", " +
       INTRODUCEE_SERVICE_ID + " TEXT UNIQUE NOT NULL, " +
       INTRODUCEE_PUBLIC_IDENTITY_KEY + " TEXT NOT NULL, " +
       INTRODUCEE_NAME + " TEXT NOT NULL, " +
@@ -73,7 +73,7 @@ public class TrustedIntroductionsDatabase extends Database {
     //int res = db.delete(TABLE_NAME, "", new String[]{});
   }
 
-  // TODO: eventually, make a few different projections to save some ressources
+  // TODO: (optional) eventually, make a few different projections to save some ressources
   // for now just having one universal one is fine.
   private static final String[] TI_ALL_PROJECTION = new String[]{
       ID,
@@ -314,15 +314,17 @@ public class TrustedIntroductionsDatabase extends Database {
     assert c.getCount() == 0: TAG + " Either there is one entry or none, nothing else valid.";
     c.close();
 
-    ContentValues values;
+    ContentValues values = new ContentValues(9);
     RecipientId introduceeId = data.getIntroduceeId();
     if(introduceeId == null){
-      values = new ContentValues(8);
       values.put(STATE, State.PENDING.toInt()); // if recipient does not exist, we have nothing to compare against.
       // TODO: How to fetch a recipient based on ServiceID? Should compare in any case...
       // TODO: Have a look at Retrieve Profile Job! => Add a callback in the database?
+      // TODO: After doing this, the recipient Id will no longer be null. Is this generally a problem because of leaking state?
+      // TODO: After this is devd, simplify this function by calling helpers to build content values.
+      // for now, adding unknown recipient id
+      values.put(INTRODUCEE_RECIPIENT_ID, UNKNOWN_INTRODUCEE_RECIPIENT_ID);
     } else {
-      values = new ContentValues(9);
       values.put(INTRODUCEE_RECIPIENT_ID, introduceeId.toLong());
       if (TI_Utils.encodedIdentityKeysEqual(introduceeId, data.getIntroduceeIdentityKey())){
         values.put(STATE, State.PENDING.toInt());
@@ -362,7 +364,7 @@ public class TrustedIntroductionsDatabase extends Database {
    * Fetches Introduction data by Introducer. Pass null or unknown to get all the data.
    *
    * @introducerId If an Id != UNKNOWN is specified, selects only introductions made by this contact. Fetches all Introductions otherwise.
-   * @return true if success, false otherwise
+   * @return IntroductionReader which can be used to iterate through the rows.
    */
   public IntroductionReader getIntroductions(@Nullable RecipientId introducerId){
     String query;
