@@ -2,6 +2,7 @@ package org.thoughtcrime.securesms.trustedIntroductions.receive;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.View;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -22,13 +23,13 @@ import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.INTRODUCT
 public class ManageListItem extends ConstraintLayout {
 
   private TI_Data        data;
-
   private TextView timestampDate;
   private TextView timestampTime;
   private TextView       nameView;
   private TextView numberView;
   private                                   SwitchMaterial   yn;
   private TextView yn_label;
+  private View     border;
 
   public ManageListItem(Context context, AttributeSet attrs) {
     super(context, attrs);
@@ -47,9 +48,7 @@ public class ManageListItem extends ConstraintLayout {
     this.numberView = findViewById(R.id.introduceeNumber);
     this.yn = findViewById(R.id.switch_yn);
     this.yn_label = findViewById(R.id.switch_label);
-
-    ViewUtil.setTextViewGravityStart(this.timestampDate, getContext());
-    ViewUtil.setTextViewGravityStart(this.timestampTime, getContext());
+    this.border = findViewById(R.id.border);
   }
 
   public void set(@NonNull TI_Data data){
