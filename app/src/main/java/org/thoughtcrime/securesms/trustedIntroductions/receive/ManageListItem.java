@@ -23,7 +23,8 @@ public class ManageListItem extends ConstraintLayout {
 
   private TI_Data        data;
 
-  private TextView dateView;
+  private TextView timestampDate;
+  private TextView timestampTime;
   private TextView       nameView;
   private TextView numberView;
   private                                   SwitchMaterial   yn;
@@ -39,18 +40,23 @@ public class ManageListItem extends ConstraintLayout {
   @Override
   protected void onFinishInflate() {
     super.onFinishInflate();
-    this.dateView = findViewById(R.id.date);
+    this.timestampDate = findViewById(R.id.timestamp_date);
+    this.timestampTime = findViewById(R.id.timestamp_time);
     this.nameView = findViewById(R.id.introduceeName);
     this.numberView = findViewById(R.id.introduceeNumber);
     this.yn = findViewById(R.id.yes_no);
 
-    ViewUtil.setTextViewGravityStart(this.dateView, getContext());
+    ViewUtil.setTextViewGravityStart(this.timestampDate, getContext());
+    ViewUtil.setTextViewGravityStart(this.timestampTime, getContext());
   }
 
   public void set(@NonNull TI_Data data){
     this.data = data;
     Date d = new Date(data.getTimestamp());
-    dateView.setText(INTRODUCTION_DATE_PATTERN.format(d));
+    String dString = INTRODUCTION_DATE_PATTERN.format(d);
+
+    timestampDate.setText(dString.split(" ")[0]);
+    timestampTime.setText(dString.split(" ")[1]);
     // This will duplicate number in case there is no name, but that's just cosmetics.
     nameView.setText(data.getIntroduceeName());
     numberView.setText(data.getIntroduceeNumber());
