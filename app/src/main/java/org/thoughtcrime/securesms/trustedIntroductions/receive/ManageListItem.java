@@ -6,6 +6,7 @@ import android.util.AttributeSet;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 
@@ -13,8 +14,10 @@ import com.google.android.material.switchmaterial.SwitchMaterial;
 
 import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
 import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase.State;
+import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.R;
+import org.whispersystems.signalservice.api.util.Preconditions;
 
 import java.util.Date;
 
@@ -64,9 +67,31 @@ public class ManageListItem extends ConstraintLayout {
     changeByState(data.getState());
   }
 
-  public long getIntroductionId(){
+  /**
+   * PRE: data.id may not be null (should never happen once it was written to the database.)
+   */
+  long getIntroductionId(){
+    Preconditions.checkArgument(data.getId() != null);
     return data.getId();
   }
+
+  @Nullable String getIntroducerName(Context c){
+    if(data.getIntroducerId() == null){
+      return null;
+    }
+    // TODO: problematic in terms of work on UI thread?
+    Recipient r = Recipient.live(data.getIntroducerId()).resolve();
+    return r.getDisplayNameOrUsername(c);
+  }
+
+  String getIntroduceeName(){
+    return data.getIntroduceeName();
+  }
+
+  Date getDate(){
+    return new Date(data.getTimestamp());
+  }
+
   
   public TI_Data toggleSwitch(){
     TI_Data newIntro;

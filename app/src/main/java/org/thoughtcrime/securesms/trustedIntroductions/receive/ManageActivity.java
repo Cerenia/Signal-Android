@@ -16,7 +16,6 @@ import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.components.ContactFilterView;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
-import org.thoughtcrime.securesms.trustedIntroductions.send.ContactsSelectionActivity;
 import org.thoughtcrime.securesms.util.DynamicNoActionBarTheme;
 import org.thoughtcrime.securesms.util.DynamicTheme;
 
@@ -28,6 +27,12 @@ import org.thoughtcrime.securesms.util.DynamicTheme;
 public class ManageActivity extends PassphraseRequiredActivity{
 
   private static final String TAG = Log.tag(ManageActivity.class);
+
+  public enum IntroductionScreenType {
+    ALL,
+    RECIPIENT_SPECIFIC;
+  }
+
 
   // String
   public static final String INTRODUCER_ID                 = "recipient_id";
@@ -72,7 +77,7 @@ public class ManageActivity extends PassphraseRequiredActivity{
     initializeToolbar();
     ManageViewModel.Factory factory = new ManageViewModel.Factory(introducerId);
     viewModel = new ViewModelProvider(this, factory).get(ManageViewModel.class);
-    introductions.setViewModel(viewModel);
+    introductions.setScreenState(viewModel);
 
     // Observers
     viewModel.getIntroductions().observe(this, introductions -> {

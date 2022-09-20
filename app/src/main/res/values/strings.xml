@@ -4002,6 +4002,10 @@
     <string name="CanNotIntroduceDialog__Cant_introduce">Introduction not possible</string>
     <string name="CanNotIntroduceDialog__Identity_record_empty">Could not redirect to the verification screen, please try to navigate there manually.</string>
 
+    <!-- DeleteIntroductionDialog -->
+    <string name="DeleteIntroductionDialog__Title">Delete Introduction:</string>
+    <string name="DeleteIntroductionDialog__Delete_Introduction">Are you sure that you want to delete %s\'s introduction of %s from the %s? This action is not reversible!</string>
+
     <!-- Trusted Introductions -->
     <!-- ClearVerificationDialog -->
     <string name="ClearVerificationDialog__Positive">Clear</string>
