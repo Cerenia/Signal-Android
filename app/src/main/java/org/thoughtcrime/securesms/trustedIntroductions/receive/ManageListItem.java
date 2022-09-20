@@ -7,6 +7,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.content.ContextCompat;
 
 import com.google.android.material.switchmaterial.SwitchMaterial;
 
@@ -28,15 +29,7 @@ public class ManageListItem extends ConstraintLayout {
   private TextView numberView;
   private                                   SwitchMaterial   yn;
   private TextView yn_label;
-  // TODO: Try GradientDrawable?
-  // https://www.codegrepper.com/code-examples/java/add+border+around+any+view+android
-  private Drawable backgroundDrawable;
 
-  // TODO: simplify such that api version back down to 19
-  private static int CONFLICTING_BORDER_C = 0xFFFF0000;
-  private static int NORMAL_BORDER_C      = 0xFF000000;
-  private static int GREYED_OUT_C =  0xFF828282;
-  private static int NORMAL_BACKGROUND_C = 0xFFFFFFFF;
 
 
   public ManageListItem(Context context, AttributeSet attrs) {
@@ -56,7 +49,6 @@ public class ManageListItem extends ConstraintLayout {
     this.numberView = findViewById(R.id.introduceeNumber);
     this.yn = findViewById(R.id.switch_yn);
     this.yn_label = findViewById(R.id.switch_label);
-    this.backgroundDrawable = this.getBackground();
   }
 
   public void set(@NonNull TI_Data data){
@@ -113,42 +105,49 @@ public class ManageListItem extends ConstraintLayout {
         yn_label.setText(R.string.ManageIntroductionsListItem__Pending);
         yn.setChecked(false);
         yn.setClickable(true);
-        this.setBackground(R.drawable.);
+        this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_default));
         break;
       case ACCEPTED:
         yn_label.setText(R.string.ManageIntroductionsListItem__Accepted);
         yn.setChecked(true);
         yn.setClickable(true);
+        this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_default));
         break;
       case REJECTED:
         yn_label.setText(R.string.ManageIntroductionsListItem__Rejected);
         yn.setChecked(false);
         yn.setClickable(true);
+        this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_default));
         break;
       case CONFLICTING:
         yn_label.setText(R.string.ManageIntroductionsListItem__Conflicting);
         yn.setChecked(false);
         yn.setClickable(false);
+        this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_conflicting));
         break;
       case STALE_ACCEPTED:
         yn.setChecked(true);
         yn_label.setText(R.string.ManageIntroductionsListItem__Accepted);
         yn.setClickable(false);
+        this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_stale));
         break;
       case STALE_REJECTED:
         yn.setChecked(false);
         yn_label.setText(R.string.ManageIntroductionsListItem__Rejected);
         yn.setClickable(false);
+        this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_stale));
         break;
       case STALE_PENDING:
         yn.setChecked(false);
         yn_label.setText(R.string.ManageIntroductionsListItem__Stale);
         yn.setClickable(false);
+        this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_stale));
         break;
       case STALE_CONFLICTING:
         yn.setChecked(false);
         yn_label.setText(R.string.ManageIntroductionsListItem__Conflicting);
         yn.setClickable(false);
+        this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_stale_conflicting));
         break;
     }
   }
