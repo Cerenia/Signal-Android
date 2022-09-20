@@ -31,6 +31,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import kotlin.Unit;
 
@@ -148,7 +150,9 @@ public class ContactsSelectionListFragment extends Fragment implements ContactFi
     if (!filter.isEmpty() && filter.compareTo("") != 0){
       for (Recipient c: contacts) {
         // Choose appropriate string representation
-        if(!c.getDisplayNameOrUsername(requireContext()).contains(filter)){
+        Pattern filterPattern = Pattern.compile(Pattern.quote(filter), Pattern.CASE_INSENSITIVE);
+        if(!filterPattern.matcher(c.getDisplayNameOrUsername(requireContext())).find() &&
+           !filterPattern.matcher(c.getE164().orElse("")).find()){
           filtered.remove(c);
         }
       }
