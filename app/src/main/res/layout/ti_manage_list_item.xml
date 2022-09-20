@@ -5,23 +5,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/ti_manage_listview_background_conflicting"
+    android:background="@drawable/ti_manage_listview_background_default"
     android:focusable="true"
     android:minHeight="@dimen/contact_selection_item_height"
     android:paddingStart="@dimen/dsl_settings_gutter"
     android:paddingEnd="@dimen/dsl_settings_gutter">
 
-    <View
-        android:id="@+id/item_background"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/white"
-        android:padding="@dimen/TI_border_visibility_padding"
-        android:layout_margin="@dimen/TI_background_margin"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
 
 
     <org.thoughtcrime.securesms.components.FromTextView
