@@ -20,6 +20,7 @@ import org.thoughtcrime.securesms.R;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 public class ManageListFragment extends Fragment implements ContactFilterView.OnFilterChangedListener {
 
@@ -68,11 +69,12 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
     List<TI_Data> filtered = new ArrayList<>(introductions);
     filter = (filter==null) ? Objects.requireNonNull(viewModel.getFilter().getValue()) : filter;
     if(!filter.isEmpty() && filter.compareTo("") != 0){
+      Pattern filterPattern = Pattern.compile(Pattern.quote(filter), Pattern.CASE_INSENSITIVE);
       for (TI_Data d: introductions){
-        if (!INTRODUCTION_DATE_PATTERN.format(d.getTimestamp()).contains(filter) &&
-            !d.getIntroduceeName().contains(filter) &&
-            !d.getIntroduceeNumber().contains(filter) &&
-            !d.getState().toString().contains(filter)){
+        if (!filterPattern.matcher(INTRODUCTION_DATE_PATTERN.format(d.getTimestamp())).find() &&
+            !filterPattern.matcher(d.getIntroduceeName()).find() &&
+            !filterPattern.matcher(d.getIntroduceeNumber()).find() &&
+            !filterPattern.matcher(d.getState().toString()).find()){
           filtered.remove(d);
         }
       }
