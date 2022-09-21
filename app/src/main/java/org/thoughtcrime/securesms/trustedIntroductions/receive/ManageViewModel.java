@@ -62,6 +62,7 @@ public class ManageViewModel extends ViewModel {
     while(curr.getId() != introductionId && i < all.size()){
       curr = all.get(i++);
     }
+    i--;
     if(curr.getId() != introductionId){
       throw new AssertionError(TAG +": the introduction id was not present in the viewModels List");
     }
