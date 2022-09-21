@@ -24,13 +24,13 @@ public class ManageViewModel extends ViewModel {
   private final ManageManager           manager;
   private final MutableLiveData<String> filter;
   private final MutableLiveData<List<TI_Data>> introductions;
-  // TODO: Do I need a container which holds a diff, such that I can apply everything at once when leaving the activity?
-  // iff there are performance issues.
+  private final ManageActivity.IntroductionScreenType type;
 
-  ManageViewModel(ManageManager manager){
+  ManageViewModel(ManageManager manager, ManageActivity.IntroductionScreenType t){
     this.manager = manager;
     filter = new MutableLiveData<>("");
     introductions = new MutableLiveData<>();
+    type = t;
     loadIntroductions();
   }
 
@@ -62,11 +62,19 @@ public class ManageViewModel extends ViewModel {
     while(curr.getId() != introductionId && i < all.size()){
       curr = all.get(i++);
     }
-    if(curr.getIntroducerId().toLong() != introductionId){
+    if(curr.getId() != introductionId){
       throw new AssertionError(TAG +": the introduction id was not present in the viewModels List");
     }
-    // data class TI_Data (val id: Long?, val state: TrustedIntroductionsDatabase.State?, val introducerId: RecipientId?, val introduceeId: RecipientId?, val introduceeServiceId: String, val introduceeName: String, val introduceeNumber: String, val introduceeIdentityKey: String, var predictedSecurityNumber: String?, val timestamp: Long) : Serializable
     curr = new TI_Data(curr.getId(), curr.getState(), RecipientId.UNKNOWN, curr.getIntroduceeId(), curr.getIntroduceeServiceId(), curr.getIntroduceeName(), curr.getIntroduceeNumber(), curr.getIntroduceeIdentityKey(), curr.getPredictedSecurityNumber(), curr.getTimestamp());
+    all.remove(i);
+    if(type.equals(ManageActivity.IntroductionScreenType.ALL)){
+      all.add(curr);
+    }
+    introductions.postValue(all);
+    final TI_Data finalCurr = curr;
+    SignalExecutors.BOUNDED.execute(() -> {
+      SignalDatabase.trustedIntroductions().clearIntroducer(finalCurr);
+    });
   }
 
   public void setQueryFilter(String filter) {
@@ -87,14 +95,16 @@ public class ManageViewModel extends ViewModel {
   static class Factory implements ViewModelProvider.Factory {
 
     private final ManageManager manager;
+    private final ManageActivity.IntroductionScreenType t;
 
-    Factory(RecipientId id) {
+    Factory(RecipientId id, ManageActivity.IntroductionScreenType t) {
+      this.t = t;
       this.manager = new ManageManager(id, SignalDatabase.trustedIntroductions());
     }
 
     @Override
     public @NonNull <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
-      return Objects.requireNonNull(modelClass.cast(new ManageViewModel(manager)));
+      return Objects.requireNonNull(modelClass.cast(new ManageViewModel(manager, t)));
     }
   }
 
