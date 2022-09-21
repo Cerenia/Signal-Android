@@ -38,9 +38,9 @@ public class ManageActivity extends PassphraseRequiredActivity{
   // Instead of passing the RecipientID of the introducer as a string.
   public static final long ALL_INTRODUCTIONS = RecipientId.UNKNOWN.toLong();
 
-  private ManageViewModel viewModel;
-  private ManageListFragment introductions;
-  private Toolbar toolbar;
+  private ManageViewModel    viewModel;
+  private ManageListFragment introductionsFragment;
+  private Toolbar            toolbar;
   private ContactFilterView contactFilterView;
   private TextView navigationExplanation;
   private TextView        no_introductions;
@@ -70,7 +70,7 @@ public class ManageActivity extends PassphraseRequiredActivity{
     no_introductions = findViewById(R.id.no_introductions_found);
     navigationExplanation = findViewById(R.id.navigation_explanation);
     // TODO: CONTINUE HERE, what's up with the fragment?
-    introductions = (ManageListFragment) getSupportFragmentManager().findFragmentById(R.id.trusted_introduction_manage_fragment);
+    introductionsFragment = (ManageListFragment) getSupportFragmentManager().findFragmentById(R.id.trusted_introduction_manage_fragment);
 
     // Initialize
     initializeToolbar();
@@ -84,13 +84,14 @@ public class ManageActivity extends PassphraseRequiredActivity{
       t = IntroductionScreenType.RECIPIENT_SPECIFIC;
       introducerName = Recipient.live(introducerId).resolve().getDisplayNameOrUsername(this);
     }
-    introductions.setScreenState(viewModel, t, introducerName);
+    introductionsFragment.setScreenState(viewModel, t, introducerName);
 
     // Observers
     final String finalIntroducerName = introducerName;
     viewModel.getIntroductions().observe(this, introductions -> {
       if(introductions.size() > 0){
         no_introductions.setVisibility(View.GONE);
+        introductionsFragment.refreshList();
       } else {
         no_introductions.setVisibility(View.VISIBLE);
         if(finalIntroducerName == null){
@@ -100,7 +101,7 @@ public class ManageActivity extends PassphraseRequiredActivity{
         }
       }
     });
-    contactFilterView.setOnFilterChangedListener(introductions);
+    contactFilterView.setOnFilterChangedListener(introductionsFragment);
     contactFilterView.setHint(R.string.ManageIntroductionsActivity__Filter_hint);
 
     getSupportFragmentManager().addOnBackStackChangedListener(() -> {

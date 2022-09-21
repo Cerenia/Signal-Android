@@ -77,19 +77,24 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
 
   private List<TI_Data> getFiltered(List<TI_Data> introductions, @Nullable String filter){
     List<TI_Data> filtered = new ArrayList<>(introductions);
-    filter = (filter==null) ? Objects.requireNonNull(viewModel.getFilter().getValue()) : filter;
-    if(!filter.isEmpty() && filter.compareTo("") != 0){
-      Pattern filterPattern = Pattern.compile(Pattern.quote(filter), Pattern.CASE_INSENSITIVE);
-      for (TI_Data d: introductions){
-        if (!filterPattern.matcher(INTRODUCTION_DATE_PATTERN.format(d.getTimestamp())).find() &&
-            !filterPattern.matcher(d.getIntroduceeName()).find() &&
-            !filterPattern.matcher(d.getIntroduceeNumber()).find() &&
-            !filterPattern.matcher(d.getState().toString()).find()){
-          filtered.remove(d);
+    if(filter != null){
+      if(!filter.isEmpty() && filter.compareTo("") != 0){
+        Pattern filterPattern = Pattern.compile(Pattern.quote(filter), Pattern.CASE_INSENSITIVE);
+        for (TI_Data d: introductions){
+          if (!filterPattern.matcher(INTRODUCTION_DATE_PATTERN.format(d.getTimestamp())).find() &&
+              !filterPattern.matcher(d.getIntroduceeName()).find() &&
+              !filterPattern.matcher(d.getIntroduceeNumber()).find() &&
+              !filterPattern.matcher(d.getState().toString()).find()){
+            filtered.remove(d);
+          }
         }
       }
     }
     return filtered;
+  }
+
+  void refreshList(){
+    adapter.submitList(getFiltered(viewModel.getIntroductions().getValue(), viewModel.getFilter().getValue()));
   }
 
   @Override public void onFilterChanged(String filter) {
