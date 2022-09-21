@@ -60,7 +60,7 @@ public class TrustedIntroductionsDatabase extends Database {
       INTRODUCEE_PUBLIC_IDENTITY_KEY + " TEXT NOT NULL, " +
       INTRODUCEE_NAME + " TEXT NOT NULL, " +
       INTRODUCEE_NUMBER + " TEXT UNIQUE NOT NULL, " +
-      PREDICTED_FINGERPRINT + " TEXT UNIQUE NOT NULL, " +
+      PREDICTED_FINGERPRINT + " TEXT NOT NULL, " +
       TIMESTAMP + " INTEGER NOT NULL, " +
       STATE + " INTEGER NOT NULL);";
 
