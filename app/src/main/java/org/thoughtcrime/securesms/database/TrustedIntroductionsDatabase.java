@@ -49,8 +49,8 @@ public class TrustedIntroductionsDatabase extends Database {
   private static final String TIMESTAMP             = "timestamp";
   private static final String STATE                          = "state";
 
-  public static final long CLEARED_INTRODUCING_RECIPIENT_ID = -1; // See RecipientId.UNKNOWN
-  public static final long UNKNOWN_INTRODUCEE_RECIPIENT_ID  = -1; //TODO: need to search through database for serviceID when new recipient is added in order to initialize.
+  public static final long CLEARED_INTRODUCER_RECIPIENT_ID = -1; // See RecipientId.UNKNOWN
+  public static final long UNKNOWN_INTRODUCEE_RECIPIENT_ID = -1; //TODO: need to search through database for serviceID when new recipient is added in order to initialize.
 
   public static final String CREATE_TABLE =
       "CREATE TABLE " + TABLE_NAME + " (" + ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -193,6 +193,29 @@ public class TrustedIntroductionsDatabase extends Database {
                                        c.getString(c.getColumnIndex(INTRODUCEE_PUBLIC_IDENTITY_KEY)),
                                        c.getString(c.getColumnIndex(PREDICTED_FINGERPRINT)),
                                        String.valueOf(timestamp));
+  }
+
+  /**
+   *
+   * @param introduction PRE: none of it's fields may be null.
+   * @return A populated contentValues object, to use for updates.
+   */
+  private @NonNull ContentValues buildContentValuesToClearIntrducer(@NonNull TI_Data introduction){
+    Preconditions.checkNotNull(introduction.getId());
+    Preconditions.checkNotNull(introduction.getState());
+    Preconditions.checkNotNull(introduction.getIntroduceeId());
+    Preconditions.checkNotNull(introduction.getIntroducerId());
+    Preconditions.checkNotNull(introduction.getPredictedSecurityNumber());
+    return buildContentValuesForUpdate(introduction.getId(),
+                                       introduction.getState(),
+                                       CLEARED_INTRODUCER_RECIPIENT_ID,
+                                       introduction.getIntroduceeId().toLong(),
+                                       introduction.getIntroduceeServiceId(),
+                                       introduction.getIntroduceeName(),
+                                       introduction.getIntroduceeNumber(),
+                                       introduction.getIntroduceeIdentityKey(),
+                                       introduction.getPredictedSecurityNumber(),
+                                       introduction.getTimestamp());
   }
 
   /**
@@ -380,21 +403,21 @@ public class TrustedIntroductionsDatabase extends Database {
     }
   }
 
-
  @WorkerThread
  /**
+  * PRE: introductionId may not be null
   * Replaces the introducer Recipient Id with a placeholder value.
   * Effectively "forget" who did this introduction.
   *
   * @return true if success, false otherwise
   */
- public boolean clearIntroducer(int introductionId){
+ public boolean clearIntroducer(TI_Data introduction){
+   Preconditions.checkArgument(introduction.getId() != null);
    SQLiteDatabase database = databaseHelper.getSignalWritableDatabase();
    String query = ID + " = ?";
-   String[] args = SqlUtil.buildArgs(introductionId);
+   String[] args = SqlUtil.buildArgs(introduction.getId());
 
-   ContentValues values = new ContentValues(1);
-   values.put(INTRODUCER_RECIPIENT_ID, CLEARED_INTRODUCING_RECIPIENT_ID);
+   ContentValues values = buildContentValuesToClearIntrducer(introduction);
 
    int update = database.update(TABLE_NAME, values, query, args);
 
@@ -404,6 +427,32 @@ public class TrustedIntroductionsDatabase extends Database {
    }
    return false;
  }
+
+  @WorkerThread
+  /**
+   * PRE: introductionId must be > 0
+   * Deletes an introduction out of the database.
+   *
+   * @return true if success, false otherwise
+   */
+  public boolean deleteIntroduction(long introductionId){
+    Preconditions.checkArgument(introductionId > 0);
+    SQLiteDatabase database = databaseHelper.getSignalWritableDatabase();
+    String query = ID + " = ?";
+    String[] args = SqlUtil.buildArgs(introductionId);
+
+    int count = database.delete(TABLE_NAME, query, args);
+
+    if(count == 1){
+      Log.e(TAG, String.format("Deleted introduction with id: %d from the database.", introductionId));
+      return true;
+    } else if(count > 1){
+      // matching with id, which must be unique
+      throw new AssertionError();
+    } else {
+      return false;
+    }
+  }
 
   /*
     General Utilities
