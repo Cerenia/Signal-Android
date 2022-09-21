@@ -59,6 +59,11 @@ public class ManageAdapter extends ListAdapter<TI_Data, ManageAdapter.Introducti
       itemView.setOnClickListener(v -> {
         clickListener.onItemClick(getView());
       });
+      itemView.setOnLongClickListener(v -> {
+        clickListener.onItemLongClick(getView());
+        return true; // TODO: what does it mean, 'has consumed the long click'? does it need to be a boolean return? Not sure what would go wrong..
+        // https://developer.android.com/reference/android/view/View.OnLongClickListener
+      });
     }
 
     ManageListItem getView() {
