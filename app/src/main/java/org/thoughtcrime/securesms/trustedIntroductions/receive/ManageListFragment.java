@@ -109,19 +109,15 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
 
     DeleteIntroductionDialog.DeleteIntroduction deleteHandler;
     ForgetIntroducerDialog.ForgetIntroducer     forgetHandler;
+    Context c;
 
     public IntroductionClickListener(DeleteIntroductionDialog.DeleteIntroduction d, ForgetIntroducerDialog.ForgetIntroducer f){
       this.deleteHandler = d;
       this.forgetHandler = f;
+      c = requireContext();
     }
 
-    // TODO
-    @Override public void onItemClick(ManageListItem item) {
-
-    }
-
-    @Override public void onItemLongClick(ManageListItem item) {
-      Context c = requireContext();
+    private String getIntroducerName(ManageListItem item){
       String itemIntroducerName;
       if(introducerName == null){
         // All screen
@@ -131,7 +127,16 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
       } else {
         itemIntroducerName = introducerName;
       }
-      DeleteIntroductionDialog.show(c, item.getIntroductionId(), item.getIntroduceeName(), itemIntroducerName, item.getDate(), deleteHandler);
+      return introducerName;
+    }
+
+    // TODO
+    @Override public void onItemClick(ManageListItem item) {
+      ForgetIntroducerDialog.show(c, item.getIntroductionId(), item.getIntroduceeName(), getIntroducerName(item), item.getDate(), forgetHandler, type);
+    }
+
+    @Override public void onItemLongClick(ManageListItem item) {
+      DeleteIntroductionDialog.show(c, item.getIntroductionId(), item.getIntroduceeName(), getIntroducerName(item), item.getDate(), deleteHandler);
     }
   }
 }
