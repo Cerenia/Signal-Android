@@ -76,7 +76,7 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
   }
 
   private List<TI_Data> getFiltered(List<TI_Data> introductions, @Nullable String filter){
-    List<TI_Data> filtered = new ArrayList<>(introductions);
+    List<TI_Data> filtered = introductions != null ? new ArrayList<>(introductions) : new ArrayList<>();
     if(filter != null){
       if(!filter.isEmpty() && filter.compareTo("") != 0){
         Pattern filterPattern = Pattern.compile(Pattern.quote(filter), Pattern.CASE_INSENSITIVE);
