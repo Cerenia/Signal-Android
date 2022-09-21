@@ -383,8 +383,9 @@ public class TrustedIntroductionsDatabase extends Database {
 
  @WorkerThread
  /**
+  *
   * PRE: introductionId may not be null, introducerId must be UNKNOWN
-  * Replaces the introducer Recipient Id with a placeholder value.
+  * Updates the entry in the database accordingly.
   * Effectively "forget" who did this introduction.
   *
   * @return true if success, false otherwise

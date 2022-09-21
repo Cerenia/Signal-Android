@@ -72,10 +72,6 @@ public class ManageActivity extends PassphraseRequiredActivity{
     // TODO: CONTINUE HERE, what's up with the fragment?
     introductionsFragment = (ManageListFragment) getSupportFragmentManager().findFragmentById(R.id.trusted_introduction_manage_fragment);
 
-    // Initialize
-    initializeToolbar();
-    ManageViewModel.Factory factory = new ManageViewModel.Factory(introducerId);
-    viewModel = new ViewModelProvider(this, factory).get(ManageViewModel.class);
     IntroductionScreenType t;
     String introducerName = null;
     if (introducerId.equals(RecipientId.UNKNOWN)){
@@ -84,6 +80,11 @@ public class ManageActivity extends PassphraseRequiredActivity{
       t = IntroductionScreenType.RECIPIENT_SPECIFIC;
       introducerName = Recipient.live(introducerId).resolve().getDisplayNameOrUsername(this);
     }
+
+    // Initialize
+    initializeToolbar();
+    ManageViewModel.Factory factory = new ManageViewModel.Factory(introducerId, t);
+    viewModel = new ViewModelProvider(this, factory).get(ManageViewModel.class);
     introductionsFragment.setScreenState(viewModel, t, introducerName);
 
     // Observers
