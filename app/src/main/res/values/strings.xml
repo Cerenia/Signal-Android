@@ -4004,7 +4004,7 @@
 
     <!-- DeleteIntroductionDialog -->
     <string name="DeleteIntroductionDialog__Title">Delete Introduction:</string>
-    <string name="DeleteIntroductionDialog__Delete_Introduction">Are you sure that you want to delete %s\'s introduction of %s from the %s? This action is not reversible!</string>
+    <string name="DeleteIntroductionDialog__Delete_Introduction">Are you sure that you want to delete %1$s\'s introduction of %2$s from the %3$s? This action is not reversible!</string>
 
     <!-- Trusted Introductions -->
     <!-- ClearVerificationDialog -->
@@ -4017,8 +4017,9 @@
     <!-- Trusted Introductions -->
     <!-- ManageIntroductionsActivity -->
     <string name="ManageIntroductionsActivity__Explanation">Accept an introduction by flipping the switch. Long press the list item to delete the introduction, short press to clear introducer information.</string>
-    <string name="ManageIntroductionsActivity__No_Introductions_from">%s has not made any introductions yet.</string>
-    <string name="ManageIntroductionsActivity__Title_Introductions_from">%s\'s Introductions:</string>
+    <string name="ManageIntroductionsActivity__No_Introductions_from">%1$s has not made any introductions yet.</string>
+    <string name="ManageIntroductionsActivity__No_Introductions_all">Noone has introduces anybody to you yet. Try asking your friends for introductions and introduce some people back to them!</string>
+    <string name="ManageIntroductionsActivity__Title_Introductions_from">%1$s\'s Introductions:</string>
     <string name="ManageIntroductionsActivity__Title_Introductions_all">All Introductions:</string>
     <string name="ManageIntroductionsActivity__Filter_hint">Search Introductions</string>
     <!-- ManageIntroductionsFragment -->

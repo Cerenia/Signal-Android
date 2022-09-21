@@ -87,11 +87,17 @@ public class ManageActivity extends PassphraseRequiredActivity{
     introductions.setScreenState(viewModel, t, introducerName);
 
     // Observers
+    final String finalIntroducerName = introducerName;
     viewModel.getIntroductions().observe(this, introductions -> {
       if(introductions.size() > 0){
         no_introductions.setVisibility(View.GONE);
       } else {
         no_introductions.setVisibility(View.VISIBLE);
+        if(finalIntroducerName == null){
+          no_introductions.setText(R.string.ManageIntroductionsActivity__No_Introductions_all);
+        } else {
+          no_introductions.setText(this.getString(R.string.ManageIntroductionsActivity__No_Introductions_from, finalIntroducerName));
+        }
       }
     });
     contactFilterView.setOnFilterChangedListener(introductions);
@@ -117,7 +123,8 @@ public class ManageActivity extends PassphraseRequiredActivity{
     if(introducer.toString().equals(ALL_INTRODUCTIONS)){
       toolbar.setTitle(R.string.ManageIntroductionsActivity__Title_Introductions_all);
     } else {
-      toolbar.setTitle(Recipient.live(introducer).resolve().getDisplayNameOrUsername(getApplicationContext()));
+      String name = Recipient.live(introducer).resolve().getDisplayNameOrUsername(this);
+      toolbar.setTitle(this.getString(R.string.ManageIntroductionsActivity__Title_Introductions_from, name));
     }
     getSupportActionBar().setDisplayHomeAsUpEnabled(false);
     getSupportActionBar().setIcon(null);

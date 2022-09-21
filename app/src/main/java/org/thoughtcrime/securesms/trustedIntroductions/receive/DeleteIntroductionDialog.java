@@ -8,6 +8,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.database.model.IdentityRecord;
 import org.thoughtcrime.securesms.verify.VerifyIdentityActivity;
@@ -22,6 +23,7 @@ import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.INTRODUCT
  */
 public final class DeleteIntroductionDialog {
 
+    private static final String TAG = Log.tag(DeleteIntroductionDialog.class);
 
     public interface DeleteIntroduction {
         void deleteIntroduction(@NonNull Long introductionId);
@@ -37,8 +39,8 @@ public final class DeleteIntroductionDialog {
                 // TODO
                 break;
             case RECIPIENT_SPECIFIC:
-                // TODO
-                String text = String.format(String.valueOf(R.string.DeleteIntroductionDialog__Delete_Introduction), introducerName, introduceeName, INTRODUCTION_DATE_PATTERN.format(date));
+                String text = context.getString(R.string.DeleteIntroductionDialog__Delete_Introduction, introducerName, introduceeName, INTRODUCTION_DATE_PATTERN.format(date));
+                Log.e(TAG, text);
                 builder.setMessage(text);
                 builder.setNegativeButton(android.R.string.no, (dialog, which) -> dialog.dismiss())
                         .setPositiveButton(android.R.string.yes, (dialog, which) -> {
