@@ -32,25 +32,16 @@ public final class DeleteIntroductionDialog {
     private DeleteIntroductionDialog() {
     }
 
-    public static void show(@NonNull Context context, @NonNull Long introductionId, @NonNull String introduceeName, @NonNull String introducerName, @NonNull Date date, @NonNull ManageActivity.IntroductionScreenType introductionScreenType, DeleteIntroduction f) {
+    public static void show(@NonNull Context context, @NonNull Long introductionId, @NonNull String introduceeName, @NonNull String introducerName, @NonNull Date date, DeleteIntroduction f) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context).setTitle(R.string.DeleteIntroductionDialog__Title);
-        switch (introductionScreenType){
-            case ALL:
-                // TODO
-                break;
-            case RECIPIENT_SPECIFIC:
-                String text = context.getString(R.string.DeleteIntroductionDialog__Delete_Introduction, introducerName, introduceeName, INTRODUCTION_DATE_PATTERN.format(date));
-                Log.e(TAG, text);
-                builder.setMessage(text);
-                builder.setNegativeButton(android.R.string.no, (dialog, which) -> dialog.dismiss())
-                        .setPositiveButton(android.R.string.yes, (dialog, which) -> {
-                            dialog.dismiss();
-                            f.deleteIntroduction(introductionId);
-                        });
-                break;
-            default:
-                throw new AssertionError("Invalid Introduction Screen Type in Delete Introduction Dialogue.");
-        }
+        String text = context.getString(R.string.DeleteIntroductionDialog__Delete_Introduction, introducerName, introduceeName, INTRODUCTION_DATE_PATTERN.format(date));
+        Log.e(TAG, text);
+        builder.setMessage(text);
+        builder.setNegativeButton(android.R.string.no, (dialog, which) -> dialog.dismiss())
+               .setPositiveButton(R.string.delete, (dialog, which) -> {
+                   dialog.dismiss();
+                   f.deleteIntroduction(introductionId);
+               });
         builder.show();
     }
 }
