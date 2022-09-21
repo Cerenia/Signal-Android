@@ -127,7 +127,7 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
       } else {
         itemIntroducerName = introducerName;
       }
-      DeleteIntroductionDialog.show(c, item.getIntroductionId(), item.getIntroduceeName(), itemIntroducerName, item.getDate(), type, f);
+      DeleteIntroductionDialog.show(c, item.getIntroductionId(), item.getIntroduceeName(), itemIntroducerName, item.getDate(), f);
     }
   }
 }
