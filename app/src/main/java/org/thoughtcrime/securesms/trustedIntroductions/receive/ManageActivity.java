@@ -85,6 +85,7 @@ public class ManageActivity extends PassphraseRequiredActivity{
     initializeToolbar();
     ManageViewModel.Factory factory = new ManageViewModel.Factory(introducerId, t);
     viewModel = new ViewModelProvider(this, factory).get(ManageViewModel.class);
+    viewModel.loadIntroductions();
     introductionsFragment.setScreenState(viewModel, t, introducerName);
 
     // Observers

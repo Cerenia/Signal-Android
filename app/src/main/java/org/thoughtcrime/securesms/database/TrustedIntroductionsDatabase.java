@@ -531,6 +531,9 @@ public class TrustedIntroductionsDatabase extends Database {
       return new TI_Data(introductionId, state, introducerId, introduceeId, serviceId, introduceeName, introduceeNumber, introduceeIdentityKey, securityNr, timestamp);
     }
 
+    /**
+     * advances one row and returns it.
+     */
     public @Nullable TI_Data getNext(){
       cursor.moveToNext();
       return getCurrent();

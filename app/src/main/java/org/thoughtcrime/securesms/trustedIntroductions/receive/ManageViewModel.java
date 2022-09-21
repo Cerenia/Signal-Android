@@ -31,10 +31,9 @@ public class ManageViewModel extends ViewModel {
     filter = new MutableLiveData<>("");
     introductions = new MutableLiveData<>();
     type = t;
-    loadIntroductions();
   }
 
-  private void loadIntroductions(){
+  public void loadIntroductions(){
     manager.getIntroductions(introductions::postValue);
   }
 
