@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
-public class ManageListFragment extends Fragment implements ContactFilterView.OnFilterChangedListener, DeleteIntroductionDialog.DeleteIntroduction {
+public class ManageListFragment extends Fragment implements ContactFilterView.OnFilterChangedListener, DeleteIntroductionDialog.DeleteIntroduction{
 
   // TODO: Will probably need that for all screen
   private ProgressWheel showIntroductionsProgress;
@@ -98,7 +98,7 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
   }
 
   @Override public void deleteIntroduction(@NonNull Long introductionId) {
-    // TODO: CONTINUE HERE
+    viewModel.deleteIntroduction(introductionId);
   }
 
   private class IntroductionClickListener implements ManageAdapter.ItemClickListener {
@@ -123,7 +123,7 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
         // All screen
         itemIntroducerName = item.getIntroducerName(c);
         // could still be null after iff this introducer information has been cleared.
-        itemIntroducerName = (itemIntroducerName == null) ? "UNKNOWN": itemIntroducerName;
+        itemIntroducerName = (itemIntroducerName == null) ? "forgotten introducer": itemIntroducerName;
       } else {
         itemIntroducerName = introducerName;
       }

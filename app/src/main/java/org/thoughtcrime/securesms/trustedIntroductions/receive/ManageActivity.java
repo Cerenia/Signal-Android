@@ -33,7 +33,6 @@ public class ManageActivity extends PassphraseRequiredActivity{
     RECIPIENT_SPECIFIC;
   }
 
-
   // String
   public static final String INTRODUCER_ID                 = "recipient_id";
   // Instead of passing the RecipientID of the introducer as a string.
@@ -77,7 +76,15 @@ public class ManageActivity extends PassphraseRequiredActivity{
     initializeToolbar();
     ManageViewModel.Factory factory = new ManageViewModel.Factory(introducerId);
     viewModel = new ViewModelProvider(this, factory).get(ManageViewModel.class);
-    introductions.setScreenState(viewModel);
+    IntroductionScreenType t;
+    String introducerName = null;
+    if (introducerId.equals(RecipientId.UNKNOWN)){
+      t = IntroductionScreenType.ALL;
+    } else {
+      t = IntroductionScreenType.RECIPIENT_SPECIFIC;
+      introducerName = Recipient.live(introducerId).resolve().getDisplayNameOrUsername(this);
+    }
+    introductions.setScreenState(viewModel, t, introducerName);
 
     // Observers
     viewModel.getIntroductions().observe(this, introductions -> {
@@ -98,7 +105,6 @@ public class ManageActivity extends PassphraseRequiredActivity{
         contactFilterView.setVisibility(View.GONE);
       }
     });
-
   }
 
   private RecipientId getIntroducerId(){

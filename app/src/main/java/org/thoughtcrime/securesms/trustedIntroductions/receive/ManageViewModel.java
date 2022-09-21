@@ -6,14 +6,20 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
+import org.signal.core.util.concurrent.SignalExecutors;
+import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 public class ManageViewModel extends ViewModel {
+
+  private final String TAG = Log.tag(ManageViewModel.class);
+
   private final ManageManager           manager;
   private final MutableLiveData<String> filter;
   private final MutableLiveData<List<TI_Data>> introductions;
@@ -29,6 +35,23 @@ public class ManageViewModel extends ViewModel {
 
   private void loadIntroductions(){
     manager.getIntroductions(introductions::postValue);
+  }
+
+  void deleteIntroduction(@NonNull Long introductionId){
+    List <TI_Data>     oldIntros = introductions.getValue();
+    ArrayList<TI_Data> newIntros = new ArrayList<>();
+    for (TI_Data i : oldIntros){
+      if (!i.getIntroducerId().equals(RecipientId.from(introductionId))){
+        newIntros.add(i);
+      }
+    }
+    introductions.postValue(newIntros);
+    SignalExecutors.BOUNDED.execute(() -> {
+      boolean res = SignalDatabase.trustedIntroductions().deleteIntroduction(introductionId);
+      if(!res){
+        Log.e(TAG, String.format("Deleting Introduction with id %d failed. Was it already deleted?", introductionId));
+      }
+    });
   }
 
   public void setQueryFilter(String filter) {
