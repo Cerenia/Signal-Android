@@ -60,7 +60,7 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
 
   private void initializeAdapter(ManageActivity.IntroductionScreenType t){
     if(t == ManageActivity.IntroductionScreenType.RECIPIENT_SPECIFIC){
-      adapter = new ManageAdapter(requireContext(), new IntroductionClickListener(this::deleteIntroduction));
+      adapter = new ManageAdapter(requireContext(), new IntroductionClickListener(this, this));
     } else {
       // TODO: all adapter has different list item layouts + a sticky header.
     }
@@ -102,22 +102,22 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
   }
 
   @Override public void forgetIntroducer(@NonNull Long introductionId) {
-
+    viewModel.forgetIntroducer(introductionId);
   }
 
   private class IntroductionClickListener implements ManageAdapter.ItemClickListener {
 
-    DeleteIntroductionDialog.DeleteIntroduction f;
+    DeleteIntroductionDialog.DeleteIntroduction deleteHandler;
+    ForgetIntroducerDialog.ForgetIntroducer     forgetHandler;
 
-    public IntroductionClickListener(DeleteIntroductionDialog.DeleteIntroduction f){
-      this.f = f;
+    public IntroductionClickListener(DeleteIntroductionDialog.DeleteIntroduction d, ForgetIntroducerDialog.ForgetIntroducer f){
+      this.deleteHandler = d;
+      this.forgetHandler = f;
     }
 
     // TODO
     @Override public void onItemClick(ManageListItem item) {
-      // Forget Introducer Dialogue
-      // cancel, ok
-      // -> triggers callback in fragment which forwards task to viewModel (calls Database delete in a different thread)
+
     }
 
     @Override public void onItemLongClick(ManageListItem item) {
@@ -131,7 +131,7 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
       } else {
         itemIntroducerName = introducerName;
       }
-      DeleteIntroductionDialog.show(c, item.getIntroductionId(), item.getIntroduceeName(), itemIntroducerName, item.getDate(), f);
+      DeleteIntroductionDialog.show(c, item.getIntroductionId(), item.getIntroduceeName(), itemIntroducerName, item.getDate(), deleteHandler);
     }
   }
 }
