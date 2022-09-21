@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
-public class ManageListFragment extends Fragment implements ContactFilterView.OnFilterChangedListener, DeleteIntroductionDialog.DeleteIntroduction{
+public class ManageListFragment extends Fragment implements ContactFilterView.OnFilterChangedListener, DeleteIntroductionDialog.DeleteIntroduction, ForgetIntroducerDialog.ForgetIntroducer {
 
   // TODO: Will probably need that for all screen
   private ProgressWheel showIntroductionsProgress;
@@ -99,6 +99,10 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
 
   @Override public void deleteIntroduction(@NonNull Long introductionId) {
     viewModel.deleteIntroduction(introductionId);
+  }
+
+  @Override public void forgetIntroducer(@NonNull Long introductionId) {
+
   }
 
   private class IntroductionClickListener implements ManageAdapter.ItemClickListener {
