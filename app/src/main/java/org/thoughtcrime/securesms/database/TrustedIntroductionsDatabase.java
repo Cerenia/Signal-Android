@@ -195,28 +195,6 @@ public class TrustedIntroductionsDatabase extends Database {
                                        String.valueOf(timestamp));
   }
 
-  /**
-   *
-   * @param introduction PRE: none of it's fields may be null.
-   * @return A populated contentValues object, to use for updates.
-   */
-  private @NonNull ContentValues buildContentValuesToClearIntrducer(@NonNull TI_Data introduction){
-    Preconditions.checkNotNull(introduction.getId());
-    Preconditions.checkNotNull(introduction.getState());
-    Preconditions.checkNotNull(introduction.getIntroduceeId());
-    Preconditions.checkNotNull(introduction.getIntroducerId());
-    Preconditions.checkNotNull(introduction.getPredictedSecurityNumber());
-    return buildContentValuesForUpdate(introduction.getId(),
-                                       introduction.getState(),
-                                       CLEARED_INTRODUCER_RECIPIENT_ID,
-                                       introduction.getIntroduceeId().toLong(),
-                                       introduction.getIntroduceeServiceId(),
-                                       introduction.getIntroduceeName(),
-                                       introduction.getIntroduceeNumber(),
-                                       introduction.getIntroduceeIdentityKey(),
-                                       introduction.getPredictedSecurityNumber(),
-                                       introduction.getTimestamp());
-  }
 
   /**
    * Meant for values pulled directly from the Database through a Query.
@@ -405,22 +383,23 @@ public class TrustedIntroductionsDatabase extends Database {
 
  @WorkerThread
  /**
-  * PRE: introductionId may not be null
+  * PRE: introductionId may not be null, introducerId must be UNKNOWN
   * Replaces the introducer Recipient Id with a placeholder value.
   * Effectively "forget" who did this introduction.
   *
   * @return true if success, false otherwise
   */
  public boolean clearIntroducer(TI_Data introduction){
+   Preconditions.checkArgument(introduction.getIntroducerId().equals(RecipientId.UNKNOWN));
    Preconditions.checkArgument(introduction.getId() != null);
    SQLiteDatabase database = databaseHelper.getSignalWritableDatabase();
    String query = ID + " = ?";
    String[] args = SqlUtil.buildArgs(introduction.getId());
 
-   ContentValues values = buildContentValuesToClearIntrducer(introduction);
+   ContentValues values = buildContentValuesForUpdate(introduction);
 
    int update = database.update(TABLE_NAME, values, query, args);
-
+   Log.d(TAG, "Forgot introducer for introduction with id: " + introduction.getId());
    if ( update > 0 ){
      // TODO: For multidevice, syncing would be handled here
      return true;

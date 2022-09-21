@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModelProvider;
 import org.signal.core.util.concurrent.SignalExecutors;
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.database.SignalDatabase;
+import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 
@@ -52,6 +53,20 @@ public class ManageViewModel extends ViewModel {
         Log.e(TAG, String.format("Deleting Introduction with id %d failed. Was it already deleted?", introductionId));
       }
     });
+  }
+
+  void forgetIntroducer(@NonNull Long introductionId){
+    List<TI_Data> all = introductions.getValue();
+    TI_Data curr = all.get(0);
+    int i = 1;
+    while(curr.getIntroducerId().toLong() != introductionId && i < all.size()){
+      curr = all.get(i++);
+    }
+    if(curr.getIntroducerId().toLong() != introductionId){
+      throw new AssertionError(TAG +": the introduction id was not present in the viewModels List");
+    }
+    // data class TI_Data (val id: Long?, val state: TrustedIntroductionsDatabase.State?, val introducerId: RecipientId?, val introduceeId: RecipientId?, val introduceeServiceId: String, val introduceeName: String, val introduceeNumber: String, val introduceeIdentityKey: String, var predictedSecurityNumber: String?, val timestamp: Long) : Serializable
+    curr = new TI_Data(curr.getId(), curr.getState(), RecipientId.UNKNOWN, curr.getIntroduceeId(), curr.getIntroduceeServiceId(), curr.getIntroduceeName(), curr.getIntroduceeNumber(), curr.getIntroduceeIdentityKey(), curr.getPredictedSecurityNumber(), curr.getTimestamp());
   }
 
   public void setQueryFilter(String filter) {
