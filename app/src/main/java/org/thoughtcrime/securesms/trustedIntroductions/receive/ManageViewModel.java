@@ -59,7 +59,7 @@ public class ManageViewModel extends ViewModel {
     List<TI_Data> all = introductions.getValue();
     TI_Data curr = all.get(0);
     int i = 1;
-    while(curr.getIntroducerId().toLong() != introductionId && i < all.size()){
+    while(curr.getId() != introductionId && i < all.size()){
       curr = all.get(i++);
     }
     if(curr.getIntroducerId().toLong() != introductionId){
