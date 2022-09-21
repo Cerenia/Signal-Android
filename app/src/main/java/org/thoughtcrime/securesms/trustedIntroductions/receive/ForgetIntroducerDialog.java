@@ -13,7 +13,7 @@ import java.util.Date;
 import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.INTRODUCTION_DATE_PATTERN;
 
 /**
- * Asks user if they really want to delete the introduction.
+ * Asks user if they really want to forget who made an introduction.
  */
 public final class ForgetIntroducerDialog {
 

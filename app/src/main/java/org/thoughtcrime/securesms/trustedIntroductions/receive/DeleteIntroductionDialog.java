@@ -19,7 +19,7 @@ import java.util.Date;
 import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.INTRODUCTION_DATE_PATTERN;
 
 /**
- * Asks user if they really want to delete the introduction.
+ * Asks user if they really want to delete the introduction. Text changes depending on which management screen the user is on.
  */
 public final class DeleteIntroductionDialog {
 
