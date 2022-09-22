@@ -71,7 +71,6 @@ public class ManageActivity extends PassphraseRequiredActivity{
     contactFilterView = findViewById(R.id.introduction_filter_edit_text);
     no_introductions = findViewById(R.id.no_introductions_found);
     navigationExplanation = findViewById(R.id.navigation_explanation);
-    // TODO: CONTINUE HERE, what's up with the fragment?
     introductionsFragment = (ManageListFragment) getSupportFragmentManager().findFragmentById(R.id.trusted_introduction_manage_fragment);
 
     IntroductionScreenType t;
