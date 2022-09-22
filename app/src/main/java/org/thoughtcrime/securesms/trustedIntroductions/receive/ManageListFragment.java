@@ -132,7 +132,7 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
       } else {
         itemIntroducerName = introducerName;
       }
-      return introducerName;
+      return itemIntroducerName;
     }
 
     // TODO
