@@ -3961,7 +3961,7 @@
 
     <!-- ForgetIntroucerDialog -->
     <string name="ForgetIntroucerDialog__Title">Forget Introducer:</string>
-    <string name="ForgetIntroucerDialog__Forget_Introducer_RECIPIENT_SPECIFIC">Are you sure that you want to forget that %1$s introduced you to %2$s on the %3$s? This action is not reversible! The introduction will disapear from this screen but will still be listed with all introductions, without the information about where the introduction came from.</string>
+    <string name="ForgetIntroucerDialog__Forget_Introducer_RECIPIENT_SPECIFIC">Are you sure that you want to forget that %1$s introduced you to %2$s on the %3$s? This action is not reversible! The introduction will disappear from this screen but will still be listed with all introductions, with an unknown introducer.</string>
     <string name="ForgetIntroucerDialog__Forget_Introducer_ALL">Are you sure that you want to forget that %1$s introduced you to %2$s on the %3$s? This action is not reversible!</string>
     <string name ="ForgetIntroucerDialog__forget">Forget</string>
 
