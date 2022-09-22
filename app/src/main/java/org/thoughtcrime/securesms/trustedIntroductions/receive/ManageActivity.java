@@ -13,6 +13,7 @@ import androidx.lifecycle.ViewModelProvider;
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.PassphraseRequiredActivity;
 import org.thoughtcrime.securesms.R;
+import org.thoughtcrime.securesms.components.ButtonStripItemView;
 import org.thoughtcrime.securesms.components.ContactFilterView;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
@@ -43,7 +44,8 @@ public class ManageActivity extends PassphraseRequiredActivity{
   private Toolbar            toolbar;
   private ContactFilterView contactFilterView;
   private TextView navigationExplanation;
-  private TextView        no_introductions;
+  private TextView            no_introductions;
+  private ButtonStripItemView button;
 
   private final DynamicTheme dynamicTheme = new DynamicNoActionBarTheme();
 
@@ -83,6 +85,7 @@ public class ManageActivity extends PassphraseRequiredActivity{
 
     // Initialize
     initializeToolbar();
+    initializeNavigationButton(t);
     ManageViewModel.Factory factory = new ManageViewModel.Factory(introducerId, t);
     viewModel = new ViewModelProvider(this, factory).get(ManageViewModel.class);
     viewModel.loadIntroductions();
@@ -115,6 +118,22 @@ public class ManageActivity extends PassphraseRequiredActivity{
       }
     });
   }
+
+  private void initializeNavigationButton(ManageActivity.IntroductionScreenType t){
+    button = findViewById(R.id.navigate_all_button);
+    switch(t){
+      case RECIPIENT_SPECIFIC:
+        button.setVisibility(View.VISIBLE);
+        break;
+      case ALL:
+        button.setVisibility(View.GONE);
+        break;
+      default:
+        throw new AssertionError(TAG + "No such screenType!");
+    }
+    // TODO: Restart Activity with ALL with ClickListener
+  }
+
 
   private RecipientId getIntroducerId(){
     return RecipientId.from(getIntent().getLongExtra(INTRODUCER_ID, ALL_INTRODUCTIONS));
