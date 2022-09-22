@@ -14,6 +14,8 @@ import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.INTRODUCT
 
 import com.pnikosis.materialishprogress.ProgressWheel;
 
+import org.signal.core.util.logging.Log;
+import org.thoughtcrime.securesms.components.ButtonStripItemView;
 import org.thoughtcrime.securesms.components.ContactFilterView;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.R;
@@ -25,8 +27,11 @@ import java.util.regex.Pattern;
 
 public class ManageListFragment extends Fragment implements ContactFilterView.OnFilterChangedListener, DeleteIntroductionDialog.DeleteIntroduction, ForgetIntroducerDialog.ForgetIntroducer {
 
+  private String TAG = Log.tag(ManageListFragment.class);
+
   // TODO: Will probably need that for all screen
   private ProgressWheel showIntroductionsProgress;
+  private View layout;
   private ManageViewModel viewModel;
   private ManageAdapter adapter;
   private RecyclerView introductionList;
@@ -38,12 +43,14 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
     View view = inflater.inflate(R.layout.ti_manage_fragment, container, false);
     introductionList = view.findViewById(R.id.recycler_view);
     introductionList.setClipToPadding(true);
+    layout = view;
     // Iff some state restauration is necessary, add an onPreDrawListener to the recycle view @see ContactsSelectionListFragment
     return view;
   }
 
   /**
    * Called by activity containing the Fragment.
+   * Sets fields used by dialogs and RecyclerView, and initializes navigation button accordingly.
    * @param viewModel The underlying persistent data storage (throughout Activity and Fragment Lifecycle).
    * @param t which type of management screen this fragment was created from.
    */

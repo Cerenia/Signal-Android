@@ -3982,6 +3982,7 @@
     <string name="ManageIntroductionsActivity__Title_Introductions_all">All Introductions:</string>
     <string name="ManageIntroductionsActivity__Filter_hint">Search Introductions</string>
     <!-- ManageIntroductionsFragment -->
+    <string name="ManageIntroductionsFragment__navigate_text">Show all introductions</string>
     <!-- ManageIntroductionsListItem -->
     <string name="ManageIntroductionsListItem__Pending">Pending</string>
     <string name="ManageIntroductionsListItem__Rejected">Rejected</string>
