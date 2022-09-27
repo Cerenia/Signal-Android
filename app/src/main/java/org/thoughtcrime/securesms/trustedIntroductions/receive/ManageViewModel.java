@@ -1,6 +1,7 @@
 package org.thoughtcrime.securesms.trustedIntroductions.receive;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
@@ -25,16 +26,26 @@ public class ManageViewModel extends ViewModel {
   private final MutableLiveData<String> filter;
   private final MutableLiveData<List<TI_Data>> introductions;
   private final ManageActivity.IntroductionScreenType type;
+  private final String introducerName;
 
-  ManageViewModel(ManageManager manager, ManageActivity.IntroductionScreenType t){
+  ManageViewModel(ManageManager manager, ManageActivity.IntroductionScreenType t, @Nullable String iN){
     this.manager = manager;
     filter = new MutableLiveData<>("");
     introductions = new MutableLiveData<>();
     type = t;
+    introducerName = iN;
   }
 
   public void loadIntroductions(){
     manager.getIntroductions(introductions::postValue);
+  }
+
+  public @Nullable String getIntroducerName(){
+    return introducerName;
+  }
+
+  public @NonNull ManageActivity.IntroductionScreenType getScreenType(){
+    return type;
   }
 
   void deleteIntroduction(@NonNull Long introductionId){
@@ -96,15 +107,17 @@ public class ManageViewModel extends ViewModel {
 
     private final ManageManager manager;
     private final ManageActivity.IntroductionScreenType t;
+    private final String introducer;
 
-    Factory(RecipientId id, ManageActivity.IntroductionScreenType t) {
+    Factory(RecipientId id, ManageActivity.IntroductionScreenType t, @Nullable String introducerName) {
       this.t = t;
       this.manager = new ManageManager(id, SignalDatabase.trustedIntroductions());
+      introducer = introducerName;
     }
 
     @Override
     public @NonNull <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
-      return Objects.requireNonNull(modelClass.cast(new ManageViewModel(manager, t)));
+      return Objects.requireNonNull(modelClass.cast(new ManageViewModel(manager, t, introducer)));
     }
   }
 

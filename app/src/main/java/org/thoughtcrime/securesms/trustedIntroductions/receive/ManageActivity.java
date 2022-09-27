@@ -8,6 +8,8 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 
 import org.signal.core.util.logging.Log;
@@ -71,7 +73,8 @@ public class ManageActivity extends PassphraseRequiredActivity{
     contactFilterView = findViewById(R.id.introduction_filter_edit_text);
     no_introductions = findViewById(R.id.no_introductions_found);
     navigationExplanation = findViewById(R.id.navigation_explanation);
-    introductionsFragment = (ManageListFragment) getSupportFragmentManager().findFragmentById(R.id.trusted_introduction_manage_fragment);
+    FragmentManager fragmentManager = getSupportFragmentManager();
+    introductionsFragment = (ManageListFragment) fragmentManager.findFragmentById(R.id.trusted_introduction_manage_fragment);
 
     IntroductionScreenType t;
     String introducerName = null;
@@ -85,10 +88,10 @@ public class ManageActivity extends PassphraseRequiredActivity{
     // Initialize
     initializeToolbar();
     initializeNavigationButton(t);
-    ManageViewModel.Factory factory = new ManageViewModel.Factory(introducerId, t);
+    ManageViewModel.Factory factory = new ManageViewModel.Factory(introducerId, t, introducerName);
     viewModel = new ViewModelProvider(this, factory).get(ManageViewModel.class);
     viewModel.loadIntroductions();
-    introductionsFragment.setScreenState(viewModel, t, introducerName);
+    introductionsFragment.setViewModel(viewModel);
 
     // Observers
     final String finalIntroducerName = introducerName;

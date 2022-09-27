@@ -15,14 +15,13 @@ import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.INTRODUCT
 import com.pnikosis.materialishprogress.ProgressWheel;
 
 import org.signal.core.util.logging.Log;
-import org.thoughtcrime.securesms.components.ButtonStripItemView;
 import org.thoughtcrime.securesms.components.ContactFilterView;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.R;
+import org.whispersystems.signalservice.api.util.Preconditions;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.regex.Pattern;
 
 public class ManageListFragment extends Fragment implements ContactFilterView.OnFilterChangedListener, DeleteIntroductionDialog.DeleteIntroduction, ForgetIntroducerDialog.ForgetIntroducer {
@@ -44,6 +43,15 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
     introductionList = view.findViewById(R.id.recycler_view);
     introductionList.setClipToPadding(true);
     layout = view;
+    introductionList.setAdapter(adapter);
+    introductionList.addOnScrollListener(new RecyclerView.OnScrollListener() {
+      @Override
+      public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+        if (newState == RecyclerView.SCROLL_STATE_DRAGGING) {
+          // TODO: Add scrollCallback if needed, determined during Integration testing
+        }
+      }
+    });
     // Iff some state restauration is necessary, add an onPreDrawListener to the recycle view @see ContactsSelectionListFragment
     return view;
   }
@@ -52,25 +60,26 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
    * Called by activity containing the Fragment.
    * Sets fields used by dialogs and RecyclerView, and initializes navigation button accordingly.
    * @param viewModel The underlying persistent data storage (throughout Activity and Fragment Lifecycle).
-   * @param t which type of management screen this fragment was created from.
    */
-  public void setScreenState(@NonNull ManageViewModel viewModel, @NonNull ManageActivity.IntroductionScreenType t, @Nullable String introducerName){
-    this.introducerName = introducerName;
-    type = t;
+  public void setViewModel(@NonNull ManageViewModel viewModel){
+    this.introducerName = viewModel.getIntroducerName();
+    this.type = viewModel.getScreenType();
     this.viewModel = viewModel;
-    initializeAdapter(t);
+    initializeAdapter(type);
     this.viewModel.getIntroductions().observe(getViewLifecycleOwner(), users -> {
       List<TI_Data> filtered = getFiltered(users, null);
       adapter.submitList(new ArrayList<>(filtered));
     });
   }
 
+  // Make sure the Fragment has been inflated before calling this!
   private void initializeAdapter(ManageActivity.IntroductionScreenType t){
     if(t == ManageActivity.IntroductionScreenType.RECIPIENT_SPECIFIC){
       adapter = new ManageAdapter(requireContext(), new IntroductionClickListener(this, this));
     } else {
       // TODO: all adapter has different list item layouts + a sticky header.
     }
+    // TODO: Race condition? Iff not, at least factor out.
     introductionList.setAdapter(adapter);
     introductionList.addOnScrollListener(new RecyclerView.OnScrollListener() {
       @Override
@@ -129,7 +138,9 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
       c = requireContext();
     }
 
+    // PRE: Only called on ALL screen
     private String getIntroducerName(ManageListItem item){
+      Preconditions.checkArgument(viewModel.getScreenType().equals(ManageActivity.IntroductionScreenType.ALL));
       String itemIntroducerName;
       if(introducerName == null){
         // All screen
