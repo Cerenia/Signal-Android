@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.core.util.Pair;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
@@ -13,19 +14,22 @@ import androidx.recyclerview.widget.RecyclerView;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 
-public class ManageAdapter extends ListAdapter<TI_Data, ManageAdapter.IntroductionViewHolder> {
+public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.IntroducerInformation>, ManageAdapter.IntroductionViewHolder> {
 
   private final LayoutInflater layoutInflater;
   private final ManageAdapter.ItemClickListener clickListener;
+  private final ManageActivity.IntroductionScreenType type;
 
 
-  ManageAdapter(@NonNull Context context, ManageAdapter.ItemClickListener clickListener){
-    super(new DiffUtil.ItemCallback<TI_Data>() {
-      @Override public boolean areItemsTheSame(@NonNull TI_Data oldItem, @NonNull TI_Data newItem) {
-        return oldItem.getId().compareTo(newItem.getId()) == 0;
+  ManageAdapter(@NonNull Context context, ManageAdapter.ItemClickListener clickListener, ManageActivity.IntroductionScreenType t){
+    super(new DiffUtil.ItemCallback<Pair<TI_Data, ManageViewModel.IntroducerInformation>>() {
+      @Override public boolean areItemsTheSame(@NonNull Pair<TI_Data, ManageViewModel.IntroducerInformation> oldItem, @NonNull Pair<TI_Data, ManageViewModel.IntroducerInformation> newItem) {
+        return oldItem.first.getId().compareTo(newItem.first.getId()) == 0;
       }
 
-      @Override public boolean areContentsTheSame(@NonNull TI_Data oldItem, @NonNull TI_Data newItem) {
+      @Override public boolean areContentsTheSame(@NonNull Pair<TI_Data, ManageViewModel.IntroducerInformation> oldPair, @NonNull Pair<TI_Data, ManageViewModel.IntroducerInformation> newPair) {
+        TI_Data oldItem = oldPair.first;
+        TI_Data newItem = newPair.first;
         // Ignoring Identity key, since this is already covered by public Key
         return oldItem.getId().equals(newItem.getId()) &&
                (oldItem.getIntroducerId() == null || newItem.getIntroducerId() == null || oldItem.getIntroducerId().equals(newItem.getIntroducerId())) &&
@@ -40,6 +44,7 @@ public class ManageAdapter extends ListAdapter<TI_Data, ManageAdapter.Introducti
     });
     this.layoutInflater = LayoutInflater.from(context);
     this.clickListener = clickListener;
+    this.type = t;
   }
 
   // TODO: in case you want to fancify this by adding header list items, add int viewType here
@@ -48,8 +53,8 @@ public class ManageAdapter extends ListAdapter<TI_Data, ManageAdapter.Introducti
   }
 
   @Override public void onBindViewHolder(@NonNull IntroductionViewHolder holder, int position) {
-    TI_Data current = getItem(position);
-    holder.bind(current);
+    Pair<TI_Data, ManageViewModel.IntroducerInformation> current = getItem(position);
+    holder.bind(current.first, current.second, type);
   }
 
   static class IntroductionViewHolder extends RecyclerView.ViewHolder {
@@ -71,8 +76,8 @@ public class ManageAdapter extends ListAdapter<TI_Data, ManageAdapter.Introducti
       return (ManageListItem) itemView;
     }
 
-    public void bind(@NonNull TI_Data d){
-      getView().set(d);
+    public void bind(@NonNull TI_Data d, @NonNull ManageViewModel.IntroducerInformation i, @NonNull ManageActivity.IntroductionScreenType t){
+      getView().set(d, i, t);
     }
 
     public void setEnabled(boolean enabled){
