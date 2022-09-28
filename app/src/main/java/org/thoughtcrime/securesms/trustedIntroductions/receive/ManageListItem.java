@@ -58,7 +58,7 @@ public class ManageListItem extends ConstraintLayout {
     this.yn_label = findViewById(R.id.switch_label);
   }
 
-  public void set(@NonNull TI_Data data, ManageActivity.IntroductionScreenType t){
+  public void set(@NonNull TI_Data data, @NonNull ManageViewModel.IntroducerInformation introducerInformation, ManageActivity.IntroductionScreenType t){
     this.data = data;
     Date d = new Date(data.getTimestamp());
     String dString = INTRODUCTION_DATE_PATTERN.format(d);
@@ -69,7 +69,10 @@ public class ManageListItem extends ConstraintLayout {
     introduceeName.setText(data.getIntroduceeName());
     introduceeNumber.setText(data.getIntroduceeNumber());
     if(t.equals(ManageActivity.IntroductionScreenType.ALL)){
-      introducerNumber.setText(data.getIn);
+      introducerNumber.setText(introducerInformation.number);
+      introducerName.setText(introducerInformation.name);
+      introducerNumber.setVisibility(View.VISIBLE);
+      introducerName.setVisibility(View.VISIBLE);
     } else {
       introducerName.setVisibility(View.GONE);
       introducerNumber.setVisibility(View.GONE);
