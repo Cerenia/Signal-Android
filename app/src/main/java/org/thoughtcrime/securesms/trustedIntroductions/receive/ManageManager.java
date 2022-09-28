@@ -55,7 +55,7 @@ public class ManageManager {
       ArrayList<Pair<TI_Data, ManageViewModel.IntroducerInformation>> result = new ArrayList<>();
       for (TI_Data d: introductions) {
         ManageViewModel.IntroducerInformation i;
-        if(d.getIntroducerId().equals(RecipientId.UNKNOWN)){
+        if(d.getIntroducerId().equals(RecipientId.UNKNOWN) || d.getIntroducerId().toLong() > 10000){ // TODO: uggly hack until I figure out the bug, remove after
           i = new ManageViewModel.IntroducerInformation(FORGOTTEN, FORGOTTEN);
         } else {
           Recipient r = Recipient.live(d.getIntroducerId()).resolve();
