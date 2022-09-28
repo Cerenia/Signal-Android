@@ -52,6 +52,12 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
         }
       }
     });
+    initializeAdapter(type);
+    // TODO: Race condition w.r.t. viewModel?
+    this.viewModel.getIntroductions().observe(getViewLifecycleOwner(), users -> {
+      List<TI_Data> filtered = getFiltered(users, null);
+      adapter.submitList(new ArrayList<>(filtered));
+    });
     // Iff some state restauration is necessary, add an onPreDrawListener to the recycle view @see ContactsSelectionListFragment
     return view;
   }
@@ -65,11 +71,6 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
     this.introducerName = viewModel.getIntroducerName();
     this.type = viewModel.getScreenType();
     this.viewModel = viewModel;
-    initializeAdapter(type);
-    this.viewModel.getIntroductions().observe(getViewLifecycleOwner(), users -> {
-      List<TI_Data> filtered = getFiltered(users, null);
-      adapter.submitList(new ArrayList<>(filtered));
-    });
   }
 
   // Make sure the Fragment has been inflated before calling this!
