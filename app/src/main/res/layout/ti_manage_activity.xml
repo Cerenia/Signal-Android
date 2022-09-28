@@ -35,7 +35,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/ManageIntroductionsActivity__Explanation"
-        app:layout_constraintTop_toBottomOf="@id/contact_filter_edit_text"
+        app:layout_constraintTop_toBottomOf="@id/introduction_filter_edit_text"
         app:layout_constraintEnd_toStartOf="@id/navigate_all_button"
         app:layout_constraintHorizontal_chainStyle="packed"
         app:layout_constraintStart_toStartOf="parent"
@@ -47,7 +47,7 @@
         android:layout_height="wrap_content"
         android:text="@string/ManageIntroductionsActivity__No_Introductions_from"
         android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/contact_filter_edit_text"
+        app:layout_constraintTop_toBottomOf="@id/introduction_filter_edit_text"
         app:layout_constraintEnd_toStartOf="@id/navigate_all_button"
         app:layout_constraintHorizontal_chainStyle="packed"
         app:titleTextAppearance="@style/TextSecure.TitleTextStyle"
@@ -57,8 +57,9 @@
         android:id="@+id/navigate_all_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        app:layout_constraintHorizontal_chainStyle="packed"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/contact_filter_edit_text"
+        app:layout_constraintTop_toBottomOf="@id/introduction_filter_edit_text"
         app:bsiv_icon="@drawable/ic_arrow_right"
         app:bsiv_label="@string/ManageIntroductionsFragment__navigate_text"
         tools:ignore="NotSibling" />
@@ -71,7 +72,7 @@
         android:layout_height="wrap_content"
         android:gravity="top"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/navigation_explanation" />
+        app:layout_constraintTop_toBottomOf="@id/navigate_all_button" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
