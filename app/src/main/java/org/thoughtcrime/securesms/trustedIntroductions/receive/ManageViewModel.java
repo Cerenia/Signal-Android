@@ -1,5 +1,7 @@
 package org.thoughtcrime.securesms.trustedIntroductions.receive;
 
+import android.util.Pair;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
@@ -18,13 +20,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import static org.thoughtcrime.securesms.trustedIntroductions.receive.ManageActivity.FORGOTTEN;
+
 public class ManageViewModel extends ViewModel {
 
   private final String TAG = Log.tag(ManageViewModel.class);
 
-  private final ManageManager           manager;
-  private final MutableLiveData<String> filter;
-  private final MutableLiveData<List<TI_Data>> introductions;
+  private final ManageManager             manager;
+  private final MutableLiveData<String>   filter;
+  private final MutableLiveData<List<Pair<TI_Data, IntroducerInformation>>> introductions;
   private final ManageActivity.IntroductionScreenType type;
   private final String introducerName;
 
@@ -49,11 +53,12 @@ public class ManageViewModel extends ViewModel {
   }
 
   void deleteIntroduction(@NonNull Long introductionId){
-    List <TI_Data>     oldIntros = introductions.getValue();
-    ArrayList<TI_Data> newIntros = new ArrayList<>();
-    for (TI_Data i : oldIntros){
+    List <Pair<TI_Data, IntroducerInformation>>     oldIntros = introductions.getValue();
+    ArrayList<Pair<TI_Data, IntroducerInformation>> newIntros = new ArrayList<>();
+    for (Pair<TI_Data, IntroducerInformation> p : oldIntros){
+      TI_Data i = p.first;
       if (!i.getIntroducerId().equals(RecipientId.from(introductionId))){
-        newIntros.add(i);
+        newIntros.add(p);
       }
     }
     introductions.postValue(newIntros);
@@ -66,11 +71,11 @@ public class ManageViewModel extends ViewModel {
   }
 
   void forgetIntroducer(@NonNull Long introductionId){
-    List<TI_Data> all = introductions.getValue();
-    TI_Data curr = all.get(0);
+    List<Pair<TI_Data, IntroducerInformation>> all = introductions.getValue();
+    TI_Data curr = all.get(0).first;
     int i = 1;
     while(curr.getId() != introductionId && i < all.size()){
-      curr = all.get(i++);
+      curr = all.get(i++).first;
     }
     i--;
     if(curr.getId() != introductionId){
@@ -79,7 +84,7 @@ public class ManageViewModel extends ViewModel {
     curr = new TI_Data(curr.getId(), curr.getState(), RecipientId.UNKNOWN, curr.getIntroduceeId(), curr.getIntroduceeServiceId(), curr.getIntroduceeName(), curr.getIntroduceeNumber(), curr.getIntroduceeIdentityKey(), curr.getPredictedSecurityNumber(), curr.getTimestamp());
     all.remove(i);
     if(type.equals(ManageActivity.IntroductionScreenType.ALL)){
-      all.add(curr);
+      all.add(new Pair<>(curr, new IntroducerInformation(FORGOTTEN, FORGOTTEN)));
     }
     introductions.postValue(all);
     final TI_Data finalCurr = curr;
@@ -102,6 +107,16 @@ public class ManageViewModel extends ViewModel {
 
   //TODO:
   // accept, reject etc...
+
+  static class IntroducerInformation {
+    String name;
+    String number;
+
+    public IntroducerInformation(String name, String number){
+      this.name = name;
+      this.number = number;
+    }
+  }
 
   static class Factory implements ViewModelProvider.Factory {
 
