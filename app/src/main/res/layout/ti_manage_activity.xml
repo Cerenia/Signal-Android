@@ -2,7 +2,6 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/linearLayout2"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:layout_gravity="center"
@@ -14,6 +13,7 @@
         android:layout_height="wrap_content"
         android:minHeight="@dimen/signal_m3_toolbar_height"
         android:theme="?attr/settingsToolbarStyle"
+        android:layout_gravity="start"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -29,10 +29,9 @@
         app:layout_constraintTop_toBottomOf="@id/toolbar"
         app:layout_constraintStart_toStartOf="parent"/>
 
-
     <TextView
         android:id="@+id/navigation_explanation"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="@string/ManageIntroductionsActivity__Explanation"
         android:layout_marginStart="16dp"
@@ -43,6 +42,7 @@
         app:layout_constraintEnd_toStartOf="@id/navigate_all_button"
         app:layout_constraintHorizontal_chainStyle="spread_inside"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/navigate_all_button"
         app:titleTextAppearance="@style/TextSecure.TitleTextStyle" />
 
     <TextView
@@ -58,6 +58,7 @@
         app:layout_constraintTop_toBottomOf="@id/introduction_filter_edit_text"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@id/navigate_all_button"
+        app:layout_constraintBottom_toBottomOf="@id/navigate_all_button"
         app:layout_constraintHorizontal_chainStyle="spread_inside"
         app:titleTextAppearance="@style/TextSecure.TitleTextStyle"
         tools:ignore="NotSibling" />
@@ -66,7 +67,7 @@
         android:id="@+id/navigate_all_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="2dp"
+        android:layout_margin="8dp"
         android:drawablePadding="2dp"
         app:layout_constraintHorizontal_chainStyle="spread_inside"
         app:layout_constraintEnd_toEndOf="parent"
@@ -74,7 +75,6 @@
         app:bsiv_icon="@drawable/ic_arrow_right"
         app:bsiv_label="@string/ManageIntroductionsFragment__navigate_text"
         tools:ignore="NotSibling" />
-
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/trusted_introduction_manage_fragment"
@@ -84,6 +84,5 @@
         android:gravity="top"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@id/navigate_all_button" />
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>
