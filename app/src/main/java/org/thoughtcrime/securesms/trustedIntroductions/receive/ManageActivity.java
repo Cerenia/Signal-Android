@@ -31,6 +31,8 @@ public class ManageActivity extends PassphraseRequiredActivity{
 
   private static final String TAG = Log.tag(ManageActivity.class);
 
+  public static final String FORGOTTEN = "unknown";
+
   public enum IntroductionScreenType {
     ALL,
     RECIPIENT_SPECIFIC;

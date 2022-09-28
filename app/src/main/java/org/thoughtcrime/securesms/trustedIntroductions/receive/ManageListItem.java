@@ -1,8 +1,8 @@
 package org.thoughtcrime.securesms.trustedIntroductions.receive;
 
 import android.content.Context;
-import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.view.View;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -28,9 +28,11 @@ public class ManageListItem extends ConstraintLayout {
   private TI_Data        data;
   private TextView timestampDate;
   private TextView timestampTime;
-  private TextView       nameView;
-  private TextView numberView;
-  private                                   SwitchMaterial   yn;
+  private TextView introducerName;
+  private TextView introducerNumber;
+  private TextView                                         introduceeName;
+  private TextView                                         introduceeNumber;
+  private                                   SwitchMaterial yn;
   private TextView yn_label;
 
 
@@ -47,14 +49,16 @@ public class ManageListItem extends ConstraintLayout {
   protected void onFinishInflate() {
     super.onFinishInflate();
     this.timestampDate = findViewById(R.id.timestamp_date);
-    this.timestampTime = findViewById(R.id.timestamp_time);
-    this.nameView = findViewById(R.id.introduceeName);
-    this.numberView = findViewById(R.id.introduceeNumber);
-    this.yn = findViewById(R.id.switch_yn);
+    this.timestampTime  = findViewById(R.id.timestamp_time);
+    this.introducerName = findViewById(R.id.introducerName);
+    this.introducerNumber = findViewById(R.id.introducerNumber);
+    this.introduceeName   = findViewById(R.id.introduceeName);
+    this.introduceeNumber = findViewById(R.id.introduceeNumber);
+    this.yn               = findViewById(R.id.switch_yn);
     this.yn_label = findViewById(R.id.switch_label);
   }
 
-  public void set(@NonNull TI_Data data){
+  public void set(@NonNull TI_Data data, ManageActivity.IntroductionScreenType t){
     this.data = data;
     Date d = new Date(data.getTimestamp());
     String dString = INTRODUCTION_DATE_PATTERN.format(d);
@@ -62,8 +66,14 @@ public class ManageListItem extends ConstraintLayout {
     timestampDate.setText(dString.split(" ")[0]);
     timestampTime.setText(dString.split(" ")[1]);
     // This will duplicate number in case there is no name, but that's just cosmetics.
-    nameView.setText(data.getIntroduceeName());
-    numberView.setText(data.getIntroduceeNumber());
+    introduceeName.setText(data.getIntroduceeName());
+    introduceeNumber.setText(data.getIntroduceeNumber());
+    if(t.equals(ManageActivity.IntroductionScreenType.ALL)){
+      introducerNumber.setText(data.getIn);
+    } else {
+      introducerName.setVisibility(View.GONE);
+      introducerNumber.setVisibility(View.GONE);
+    }
     changeByState(data.getState());
   }
 
