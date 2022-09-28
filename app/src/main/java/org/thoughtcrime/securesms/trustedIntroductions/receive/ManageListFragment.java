@@ -76,7 +76,7 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
   // Make sure the Fragment has been inflated before calling this!
   private void initializeAdapter(ManageActivity.IntroductionScreenType t){
     if(t == ManageActivity.IntroductionScreenType.RECIPIENT_SPECIFIC){
-      adapter = new ManageAdapter(requireContext(), new IntroductionClickListener(this, this));
+      adapter = new ManageAdapter(requireContext(), new IntroductionClickListener(this, this), t);
     } else {
       // TODO: all adapter has different list item layouts + a sticky header.
     }
