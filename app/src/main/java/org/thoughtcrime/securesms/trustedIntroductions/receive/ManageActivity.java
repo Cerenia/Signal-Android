@@ -98,9 +98,11 @@ public class ManageActivity extends PassphraseRequiredActivity{
     viewModel.getIntroductions().observe(this, introductions -> {
       if(introductions.size() > 0){
         no_introductions.setVisibility(View.GONE);
+        navigationExplanation.setVisibility(View.VISIBLE);
         introductionsFragment.refreshList();
       } else {
         no_introductions.setVisibility(View.VISIBLE);
+        navigationExplanation.setVisibility(View.GONE);
         if(finalIntroducerName == null){
           no_introductions.setText(R.string.ManageIntroductionsActivity__No_Introductions_all);
         } else {
