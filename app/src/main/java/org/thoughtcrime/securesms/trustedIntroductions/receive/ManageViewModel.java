@@ -1,5 +1,6 @@
 package org.thoughtcrime.securesms.trustedIntroductions.receive;
 
+import android.content.Context;
 import android.util.Pair;
 
 import androidx.annotation.NonNull;
@@ -101,7 +102,7 @@ public class ManageViewModel extends ViewModel {
     return this.filter;
   }
 
-  public LiveData<List<TI_Data>> getIntroductions() {
+  public LiveData<List<Pair<TI_Data, IntroducerInformation>>> getIntroductions() {
     return introductions;
   }
 
@@ -124,9 +125,9 @@ public class ManageViewModel extends ViewModel {
     private final ManageActivity.IntroductionScreenType t;
     private final String introducer;
 
-    Factory(RecipientId id, ManageActivity.IntroductionScreenType t, @Nullable String introducerName) {
+    Factory(RecipientId id, ManageActivity.IntroductionScreenType t, @Nullable String introducerName, Context context) {
       this.t = t;
-      this.manager = new ManageManager(id, SignalDatabase.trustedIntroductions());
+      this.manager = new ManageManager(id, SignalDatabase.trustedIntroductions(), context);
       introducer = introducerName;
     }
 
