@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.INTRODUCTION_DATE_PATTERN;
@@ -55,7 +56,7 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
     initializeAdapter(type);
     // TODO: Race condition w.r.t. viewModel?
     this.viewModel.getIntroductions().observe(getViewLifecycleOwner(), users -> {
-      List<TI_Data> filtered = getFiltered(users, null);
+      List<Pair<TI_Data, ManageViewModel.IntroducerInformation>> filtered = getFiltered(users, null);
       adapter.submitList(new ArrayList<>(filtered));
     });
     // Iff some state restauration is necessary, add an onPreDrawListener to the recycle view @see ContactsSelectionListFragment
@@ -92,17 +93,18 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
     });
   }
 
-  private List<TI_Data> getFiltered(List<TI_Data> introductions, @Nullable String filter){
-    List<TI_Data> filtered = introductions != null ? new ArrayList<>(introductions) : new ArrayList<>();
+  private List<Pair<TI_Data, ManageViewModel.IntroducerInformation>> getFiltered(List<Pair<TI_Data, ManageViewModel.IntroducerInformation>> introductions, @Nullable String filter){
+    List<Pair<TI_Data, ManageViewModel.IntroducerInformation>> filtered = introductions != null ? new ArrayList<>(introductions) : new ArrayList<>();
     if(filter != null){
       if(!filter.isEmpty() && filter.compareTo("") != 0){
         Pattern filterPattern = Pattern.compile(Pattern.quote(filter), Pattern.CASE_INSENSITIVE);
-        for (TI_Data d: introductions){
+        for (Pair<TI_Data, ManageViewModel.IntroducerInformation> p: introductions){
+          TI_Data d = p.first;
           if (!filterPattern.matcher(INTRODUCTION_DATE_PATTERN.format(d.getTimestamp())).find() &&
               !filterPattern.matcher(d.getIntroduceeName()).find() &&
               !filterPattern.matcher(d.getIntroduceeNumber()).find() &&
               !filterPattern.matcher(d.getState().toString()).find()){
-            filtered.remove(d);
+            filtered.remove(p);
           }
         }
       }
