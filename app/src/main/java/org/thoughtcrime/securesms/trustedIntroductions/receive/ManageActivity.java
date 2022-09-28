@@ -22,6 +22,9 @@ import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.util.DynamicNoActionBarTheme;
 import org.thoughtcrime.securesms.util.DynamicTheme;
 
+import kotlin.Unit;
+import kotlin.jvm.functions.Function0;
+
 /**
  * Opens an Activity for Managing Trusted Introductions.
  * Will either open just the Introductions made by a specific contact (//TODO: add tab/button for navigating to all?)
@@ -31,6 +34,7 @@ public class ManageActivity extends PassphraseRequiredActivity{
 
   private static final String TAG = Log.tag(ManageActivity.class);
 
+  // Used instead of name & number in introductions where introducer information was cleared.
   public static final String FORGOTTEN = "unknown";
 
   public enum IntroductionScreenType {
@@ -51,7 +55,9 @@ public class ManageActivity extends PassphraseRequiredActivity{
   private TextView            no_introductions;
   private ButtonStripItemView button;
 
+
   private final DynamicTheme dynamicTheme = new DynamicNoActionBarTheme();
+  private final Context context = this;
 
   /**
    * @param id Pass unknown to get the view for all introductions.
@@ -137,7 +143,12 @@ public class ManageActivity extends PassphraseRequiredActivity{
       default:
         throw new AssertionError(TAG + "No such screenType!");
     }
-    // TODO: Restart Activity with ALL with ClickListener
+    button.setOnIconClickedListener(new Function0<Unit>() {
+      @Override public Unit invoke() {
+        startActivity(ManageActivity.createIntent(context, RecipientId.UNKNOWN));
+        return null;
+      }
+    });
   }
 
 
