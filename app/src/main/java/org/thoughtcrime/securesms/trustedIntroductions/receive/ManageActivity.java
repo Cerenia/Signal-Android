@@ -84,30 +84,35 @@ public class ManageActivity extends PassphraseRequiredActivity{
     FragmentManager fragmentManager = getSupportFragmentManager();
     introductionsFragment = (ManageListFragment) fragmentManager.findFragmentById(R.id.trusted_introduction_manage_fragment);
 
+
+    // Initialize
     IntroductionScreenType t;
     String introducerName = null;
     if (introducerId.equals(RecipientId.UNKNOWN)){
       t = IntroductionScreenType.ALL;
+      ManageViewModelAll.Factory factory = new ManageViewModelAll.Factory(introducerId, t, introducerName, this);
+      viewModel = new ViewModelProvider(this, factory).get(ManageViewModelAll.class);
     } else {
       t = IntroductionScreenType.RECIPIENT_SPECIFIC;
       introducerName = Recipient.live(introducerId).resolve().getDisplayNameOrUsername(this);
+      ManageViewModelSingle.Factory factory = new ManageViewModelSingle.Factory(introducerId, t, introducerName, this);
+      viewModel = new ViewModelProvider(this, factory).get(ManageViewModelSingle.class);
     }
-
-    // Initialize
+    viewModel.loadIntroductions();
     initializeToolbar();
     initializeNavigationButton(t);
-    ManageViewModel.Factory factory = new ManageViewModel.Factory(introducerId, t, introducerName, this);
-    viewModel = new ViewModelProvider(this, factory).get(ManageViewModel.class);
-    viewModel.loadIntroductions();
     introductionsFragment.setViewModel(viewModel);
 
     // Observers
     final String finalIntroducerName = introducerName;
+    contactFilterView.setOnFilterChangedListener(introductionsFragment);
+    contactFilterView.setHint(R.string.ManageIntroductionsActivity__Filter_hint);
+
     viewModel.getIntroductions().observe(this, introductions -> {
       if(introductions.size() > 0){
         no_introductions.setVisibility(View.GONE);
         navigationExplanation.setVisibility(View.VISIBLE);
-        introductionsFragment.refreshList();
+        //introductionsFragment.refreshList(); //May cause NullptrException
       } else {
         no_introductions.setVisibility(View.VISIBLE);
         navigationExplanation.setVisibility(View.GONE);
@@ -118,8 +123,6 @@ public class ManageActivity extends PassphraseRequiredActivity{
         }
       }
     });
-    contactFilterView.setOnFilterChangedListener(introductionsFragment);
-    contactFilterView.setHint(R.string.ManageIntroductionsActivity__Filter_hint);
 
     getSupportFragmentManager().addOnBackStackChangedListener(() -> {
       if (getSupportFragmentManager().getBackStackEntryCount() == 1) {
@@ -145,12 +148,12 @@ public class ManageActivity extends PassphraseRequiredActivity{
     }
     button.setOnIconClickedListener(new Function0<Unit>() {
       @Override public Unit invoke() {
+        finish(); // Make sure the ViewModel is not reused. TODO: There is most likely a more idiomatic way..
         startActivity(ManageActivity.createIntent(context, RecipientId.UNKNOWN));
         return null;
       }
     });
   }
-
 
   private RecipientId getIntroducerId(){
     return RecipientId.from(getIntent().getLongExtra(INTRODUCER_ID, ALL_INTRODUCTIONS));
