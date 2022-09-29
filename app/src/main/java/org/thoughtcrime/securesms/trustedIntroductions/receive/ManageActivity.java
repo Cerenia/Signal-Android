@@ -79,8 +79,7 @@ public class ManageActivity extends PassphraseRequiredActivity implements Manage
     // Bind views
     toolbar = findViewById(R.id.toolbar);
     contactFilterView = findViewById(R.id.introduction_filter_edit_text);
-    no_introductions = findViewById(R.id.no_introductions_found);
-    navigationExplanation = findViewById(R.id.navigation_explanation);
+
 
     // Initialize
     FragmentManager fragmentManager = getSupportFragmentManager();
@@ -115,33 +114,17 @@ public class ManageActivity extends PassphraseRequiredActivity implements Manage
     }
 
     initializeToolbar();
-    initializeNavigationButton(t);
 
     // Initialize
     initializeToolbar();
-    initializeNavigationButton(t);
     ManageViewModel.Factory factory = new ManageViewModel.Factory(introducerId, t, introducerName, this);
     viewModel = new ViewModelProvider(this, factory).get(ManageViewModel.class);
     viewModel.loadIntroductions();
     introductionsFragment.setViewModel(viewModel);
 
     // Observers
-    final String finalIntroducerName = introducerName;
-    viewModel.getIntroductions().observe(this, introductions -> {
-      if(introductions.size() > 0){
-        no_introductions.setVisibility(View.GONE);
-        navigationExplanation.setVisibility(View.VISIBLE);
-        introductionsFragment.refreshList();
-      } else {
-        no_introductions.setVisibility(View.VISIBLE);
-        navigationExplanation.setVisibility(View.GONE);
-        if(finalIntroducerName == null){
-          no_introductions.setText(R.string.ManageIntroductionsActivity__No_Introductions_all);
-        } else {
-          no_introductions.setText(this.getString(R.string.ManageIntroductionsActivity__No_Introductions_from, finalIntroducerName));
-        }
-      }
-    });
+
+
     contactFilterView.setOnFilterChangedListener(introductionsFragment);
     contactFilterView.setHint(R.string.ManageIntroductionsActivity__Filter_hint);
 
@@ -154,7 +137,6 @@ public class ManageActivity extends PassphraseRequiredActivity implements Manage
       }
     });
   }
-
 
   private RecipientId getIntroducerId(){
     return RecipientId.from(getIntent().getLongExtra(INTRODUCER_ID, ALL_INTRODUCTIONS));
