@@ -40,9 +40,9 @@ public class ManageActivity extends PassphraseRequiredActivity implements Manage
   // Instead of passing the RecipientID of the introducer as a string.
   public static final long ALL_INTRODUCTIONS = RecipientId.UNKNOWN.toLong();
 
-  private ManageListFragment introductionsFragment;
   private Toolbar            toolbar;
   private ContactFilterView contactFilterView;
+  private ManageListFragment fragment;
 
 
   private final DynamicTheme dynamicTheme = new DynamicNoActionBarTheme();
@@ -77,10 +77,11 @@ public class ManageActivity extends PassphraseRequiredActivity implements Manage
       t = IntroductionScreenType.RECIPIENT_SPECIFIC;
       introducerName = Recipient.live(introducerId).resolve().getDisplayNameOrUsername(this);
     }
+    ManageListFragment fragment = new ManageListFragment(introducerId, t, introducerName, this);
     if(savedInstanceState == null){
+      this.fragment = fragment;
       FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
       fragmentTransaction.setReorderingAllowed(true);
-      ManageListFragment fragment = new ManageListFragment(introducerId, t, introducerName, this);
       fragmentTransaction.add(R.id.trusted_introduction_manage_fragment, fragment, t.toString());
       fragmentTransaction.addToBackStack(null);
       fragmentTransaction.commit();
@@ -88,7 +89,7 @@ public class ManageActivity extends PassphraseRequiredActivity implements Manage
     initializeToolbar();
 
     // Observers
-    contactFilterView.setOnFilterChangedListener(introductionsFragment);
+    contactFilterView.setOnFilterChangedListener(this.fragment);
     contactFilterView.setHint(R.string.ManageIntroductionsActivity__Filter_hint);
 
   }
@@ -99,7 +100,7 @@ public class ManageActivity extends PassphraseRequiredActivity implements Manage
     ManageListFragment fragment = new ManageListFragment(RecipientId.UNKNOWN,  t,null, this);
     FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
     fragmentTransaction.setReorderingAllowed(true);
-    fragmentTransaction.add(R.id.trusted_introduction_manage_fragment, fragment, t.toString());
+    fragmentTransaction.replace(R.id.trusted_introduction_manage_fragment, fragment, t.toString());
     fragmentTransaction.addToBackStack(null);
     fragmentTransaction.commit();
   }
