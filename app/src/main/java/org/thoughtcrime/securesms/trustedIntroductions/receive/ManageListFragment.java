@@ -47,10 +47,12 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
   private String introducerName;
   private TextView no_introductions;
   private TextView navigationExplanation;
+  private TextView from_title_view;
 
   public ManageListFragment(@NonNull ManageViewModel viewModel){
     super(R.layout.ti_manage_fragment);
     setViewModel(viewModel);
+    introducerName = viewModel.getIntroducerName();
   }
 
   @Override
@@ -91,6 +93,13 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
         }
       }
     });
+    from_title_view = view.findViewById(R.id.introduction_title_view);
+    if (introducerName == null){
+      from_title_view.setVisibility(View.GONE);
+    } else {
+      from_title_view.setText(String.format(getString(R.string.ManageIntroductionsActivity__Title_Introductions_from), introducerName));
+      from_title_view.setVisibility(View.VISIBLE);
+    }
   }
 
   /**
