@@ -101,6 +101,7 @@ public class ManageActivity extends PassphraseRequiredActivity implements Manage
     // Observers
     contactFilterView.setOnFilterChangedListener(introductionsFragment);
     contactFilterView.setHint(R.string.ManageIntroductionsActivity__Filter_hint);
+
   }
 
   @Override public void goToAll() {
