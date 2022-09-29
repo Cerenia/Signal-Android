@@ -44,27 +44,34 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
   private ManageViewModel viewModel;
   private ManageAdapter adapter;
   private RecyclerView introductionList;
-  private ManageActivity.IntroductionScreenType type;
-  private String introducerName;
   private TextView no_introductions;
   private TextView navigationExplanation;
   private TextView from_title_view;
+  private final RecipientId recipient;
+  private final ManageActivity.IntroductionScreenType type;
+  private final String name;
+  private final Context managerContext;
 
+  /**
   public ManageListFragment(){
 
-  }
+  }**/
 
   public ManageListFragment(RecipientId id, ManageActivity.IntroductionScreenType t, @Nullable String introducerName, Context context){
     super(R.layout.ti_manage_fragment);
-    ManageViewModel.Factory factory = new ManageViewModel.Factory(id, t, introducerName, context);
-    viewModel = new ViewModelProvider(this, factory).get(ManageViewModel.class);
-    viewModel.loadIntroductions();
-    // TODO: get rid of function
-    setViewModel(viewModel);
+    recipient = id;
+    type = t;
+    name = introducerName;
+    managerContext = context;
   }
 
   @Override
   public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState){
+    ManageViewModel.Factory factory = new ManageViewModel.Factory(recipient, type, name, managerContext);
+    viewModel = new ViewModelProvider(this, factory).get(ManageViewModel.class);
+    viewModel.loadIntroductions();
+    // TODO: get rid of function
+    this.viewModel = viewModel;
     introductionList = view.findViewById(R.id.recycler_view);
     introductionList.setClipToPadding(true);
     introductionList.setAdapter(adapter);
@@ -85,7 +92,7 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
     no_introductions = view.findViewById(R.id.no_introductions_found);
     navigationExplanation = view.findViewById(R.id.navigation_explanation);
     // Observer
-    final String finalIntroducerName = introducerName;
+    final String finalIntroducerName = name;
     viewModel.getIntroductions().observe(getViewLifecycleOwner(), introductions -> {
       if(introductions.size() > 0){
         no_introductions.setVisibility(View.GONE);
@@ -104,49 +111,14 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
       }
     });
     from_title_view = view.findViewById(R.id.introduction_title_view);
-    if (introducerName == null){
+    if (name == null){
       from_title_view.setVisibility(View.GONE);
     } else {
-      from_title_view.setText(String.format(getString(R.string.ManageIntroductionsActivity__Title_Introductions_from), introducerName));
+      from_title_view.setText(String.format(getString(R.string.ManageIntroductionsActivity__Title_Introductions_from), name));
       from_title_view.setVisibility(View.VISIBLE);
     }
   }
 
-  /**
-  @Override
-  public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
-    // TODO: Inflater needed?
-    introductionList = requireViewById(R.id.recycler_view);
-    introductionList.setClipToPadding(true);
-    introductionList.setAdapter(adapter);
-    introductionList.addOnScrollListener(new RecyclerView.OnScrollListener() {
-      @Override
-      public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
-        if (newState == RecyclerView.SCROLL_STATE_DRAGGING) {
-          // TODO: Add scrollCallback if needed, determined during Integration testing
-        }
-      }
-    });
-    initializeAdapter(type);
-    // TODO: Race condition w.r.t. viewModel?
-    this.viewModel.getIntroductions().observe(getViewLifecycleOwner(), users -> {
-      List<Pair<TI_Data, ManageViewModel.IntroducerInformation>> filtered = getFiltered(users, null);
-      adapter.submitList(new ArrayList<>(filtered));
-    });
-    // Iff some state restauration is necessary, add an onPreDrawListener to the recycle view @see ContactsSelectionListFragment
-    return view;
-  }
-**/
-  /**
-   * Called by activity containing the Fragment.
-   * Sets fields used by dialogs and RecyclerView, and initializes navigation button accordingly.
-   * @param viewModel The underlying persistent data storage (throughout Activity and Fragment Lifecycle).
-   */
-  private void setViewModel(@NonNull ManageViewModel viewModel){
-    this.introducerName = viewModel.getIntroducerName();
-    this.type = viewModel.getScreenType();
-    this.viewModel = viewModel;
-  }
 
   // Make sure the Fragment has been inflated before calling this!
   private void initializeAdapter(ManageActivity.IntroductionScreenType t){
@@ -240,13 +212,13 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
     private String getIntroducerName(ManageListItem item){
       Preconditions.checkArgument(viewModel.getScreenType().equals(ALL));
       String itemIntroducerName;
-      if(introducerName == null){
+      if(name == null){
         // All screen
         itemIntroducerName = item.getIntroducerName(c);
         // could still be null after iff this introducer information has been cleared.
         itemIntroducerName = (itemIntroducerName == null) ? "forgotten introducer": itemIntroducerName;
       } else {
-        itemIntroducerName = introducerName;
+        itemIntroducerName = name;
       }
       return itemIntroducerName;
     }
