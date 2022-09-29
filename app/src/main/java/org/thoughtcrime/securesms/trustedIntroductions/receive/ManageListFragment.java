@@ -31,7 +31,6 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
 
   // TODO: Will probably need that for all screen
   private ProgressWheel showIntroductionsProgress;
-  private View layout;
   private ManageViewModel viewModel;
   private ManageAdapter adapter;
   private RecyclerView introductionList;
@@ -43,12 +42,32 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
   }
 
   @Override
-  public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
-    // TODO: Inflater needed?
-    View view = inflater.inflate(R.layout.ti_manage_fragment, container, false);
+  public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState){
     introductionList = view.findViewById(R.id.recycler_view);
     introductionList.setClipToPadding(true);
-    layout = view;
+    introductionList.setAdapter(adapter);
+    introductionList.addOnScrollListener(new RecyclerView.OnScrollListener() {
+      @Override
+      public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+        if (newState == RecyclerView.SCROLL_STATE_DRAGGING) {
+          // TODO: Add scrollCallback if needed, determined during Integration testing
+        }
+      }
+    });
+    initializeAdapter(type);
+    // TODO: Race condition w.r.t. viewModel?
+    this.viewModel.getIntroductions().observe(getViewLifecycleOwner(), users -> {
+      List<Pair<TI_Data, ManageViewModel.IntroducerInformation>> filtered = getFiltered(users, null);
+      adapter.submitList(new ArrayList<>(filtered));
+    });
+  }
+
+  /**
+  @Override
+  public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
+    // TODO: Inflater needed?
+    introductionList = requireViewById(R.id.recycler_view);
+    introductionList.setClipToPadding(true);
     introductionList.setAdapter(adapter);
     introductionList.addOnScrollListener(new RecyclerView.OnScrollListener() {
       @Override
@@ -67,7 +86,7 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
     // Iff some state restauration is necessary, add an onPreDrawListener to the recycle view @see ContactsSelectionListFragment
     return view;
   }
-
+**/
   /**
    * Called by activity containing the Fragment.
    * Sets fields used by dialogs and RecyclerView, and initializes navigation button accordingly.
