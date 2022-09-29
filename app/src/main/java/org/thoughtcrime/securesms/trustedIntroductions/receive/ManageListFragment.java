@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -44,6 +45,8 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
   private RecyclerView introductionList;
   private ManageActivity.IntroductionScreenType type;
   private String introducerName;
+  private TextView no_introductions;
+  private TextView navigationExplanation;
 
   public ManageListFragment(@NonNull ManageViewModel viewModel){
     super(R.layout.ti_manage_fragment);
@@ -69,6 +72,25 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
       adapter.submitList(new ArrayList<>(filtered));
     });
     initializeNavigationButton(view);
+    no_introductions = view.findViewById(R.id.no_introductions_found);
+    navigationExplanation = view.findViewById(R.id.navigation_explanation);
+    // Observer
+    final String finalIntroducerName = introducerName;
+    viewModel.getIntroductions().observe(getViewLifecycleOwner(), introductions -> {
+      if(introductions.size() > 0){
+        no_introductions.setVisibility(View.GONE);
+        navigationExplanation.setVisibility(View.VISIBLE);
+        refreshList();
+      } else {
+        no_introductions.setVisibility(View.VISIBLE);
+        navigationExplanation.setVisibility(View.GONE);
+        if(finalIntroducerName == null){
+          no_introductions.setText(R.string.ManageIntroductionsActivity__No_Introductions_all);
+        } else {
+          no_introductions.setText(this.getString(R.string.ManageIntroductionsActivity__No_Introductions_from, finalIntroducerName));
+        }
+      }
+    });
   }
 
   /**
