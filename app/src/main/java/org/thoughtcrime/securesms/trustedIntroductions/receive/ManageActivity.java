@@ -73,58 +73,35 @@ public class ManageActivity extends PassphraseRequiredActivity implements Manage
 
     dynamicTheme.onCreate(this);
     setContentView(R.layout.ti_manage_activity);
-
     RecipientId introducerId = getIntroducerId();
 
     // Bind views
     toolbar = findViewById(R.id.toolbar);
     contactFilterView = findViewById(R.id.introduction_filter_edit_text);
 
-
     // Initialize
-    FragmentManager fragmentManager = getSupportFragmentManager();
-    introductionsFragment = (ManageListFragment) fragmentManager.findFragmentById(R.id.trusted_introduction_manage_fragment);
-
     IntroductionScreenType t;
     String introducerName = null;
     if (introducerId.equals(RecipientId.UNKNOWN)){
       t = IntroductionScreenType.ALL;
-
     } else {
       t = IntroductionScreenType.RECIPIENT_SPECIFIC;
       introducerName = Recipient.live(introducerId).resolve().getDisplayNameOrUsername(this);
-      // Ordering important. ViewModel must be set before the Fragment is inflated!
-      introductionsFragment.setViewModel(viewModel);
     }
+    ManageViewModel.Factory factory = new ManageViewModel.Factory(introducerId, t, introducerName, this);
+    ManageViewModel viewModel = new ViewModelProvider(this, factory).get(ManageViewModel.class);
     viewModel.loadIntroductions();
     if(savedInstanceState == null){
       FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
       fragmentTransaction.setReorderingAllowed(true);
-      //introductionsFragment = (ManageListFragment) fragmentManager.findFragmentById(R.id.trusted_introduction_manage_fragment);
-      // TODO: don't do that...
-      introductionsFragment = new ManageListFragment();
-      // Ordering important. ViewModel must be set before the Fragment is inflated! TODO: when?
-      introductionsFragment.setViewModel(viewModel);
-      if(t.equals(IntroductionScreenType.ALL)){
-        fragmentTransaction.add(R.id.trusted_introduction_manage_fragment, introductionsFragment, IntroductionScreenType.ALL.toString());
-      } else {
-        fragmentTransaction.add(R.id.trusted_introduction_manage_fragment, introductionsFragment, IntroductionScreenType.RECIPIENT_SPECIFIC.toString());
-      }
+      ManageListFragment fragment = new ManageListFragment(viewModel);
+      fragmentTransaction.add(R.id.trusted_introduction_manage_fragment, fragment);
+      fragmentTransaction.addToBackStack(null);
       fragmentTransaction.commit();
     }
-
     initializeToolbar();
-
-    // Initialize
-    initializeToolbar();
-    ManageViewModel.Factory factory = new ManageViewModel.Factory(introducerId, t, introducerName, this);
-    viewModel = new ViewModelProvider(this, factory).get(ManageViewModel.class);
-    viewModel.loadIntroductions();
-    introductionsFragment.setViewModel(viewModel);
 
     // Observers
-
-
     contactFilterView.setOnFilterChangedListener(introductionsFragment);
     contactFilterView.setHint(R.string.ManageIntroductionsActivity__Filter_hint);
 
