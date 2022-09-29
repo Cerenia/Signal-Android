@@ -52,10 +52,12 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
   private final String name;
   private final Context managerContext;
 
-  /**
   public ManageListFragment(){
-
-  }**/
+    recipient = RecipientId.UNKNOWN;
+    type = ALL;
+    name = null;
+    managerContext = getActivity();
+  }
 
   public ManageListFragment(RecipientId id, ManageActivity.IntroductionScreenType t, @Nullable String introducerName, Context context){
     super(R.layout.ti_manage_fragment);
@@ -70,8 +72,6 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
     ManageViewModel.Factory factory = new ManageViewModel.Factory(recipient, type, name, managerContext);
     viewModel = new ViewModelProvider(this, factory).get(ManageViewModel.class);
     viewModel.loadIntroductions();
-    // TODO: get rid of function
-    this.viewModel = viewModel;
     introductionList = view.findViewById(R.id.recycler_view);
     introductionList.setClipToPadding(true);
     introductionList.setAdapter(adapter);
@@ -86,7 +86,9 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
     initializeAdapter(type);
     this.viewModel.getIntroductions().observe(getViewLifecycleOwner(), users -> {
       List<Pair<TI_Data, ManageViewModel.IntroducerInformation>> filtered = getFiltered(users, null);
-      adapter.submitList(new ArrayList<>(filtered));
+      if(adapter != null){
+        adapter.submitList(new ArrayList<>(filtered));
+      }
     });
     initializeNavigationButton(view);
     no_introductions = view.findViewById(R.id.no_introductions_found);
@@ -180,7 +182,9 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
   }
 
   void refreshList(){
-    adapter.submitList(getFiltered(viewModel.getIntroductions().getValue(), viewModel.getFilter().getValue()));
+    if(adapter != null){
+      adapter.submitList(getFiltered(viewModel.getIntroductions().getValue(), viewModel.getFilter().getValue()));
+    }
   }
 
   @Override public void onFilterChanged(String filter) {
