@@ -49,6 +49,10 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
   private TextView navigationExplanation;
   private TextView from_title_view;
 
+  public ManageListFragment(){
+    
+  }
+
   public ManageListFragment(@NonNull ManageViewModel viewModel){
     super(R.layout.ti_manage_fragment);
     setViewModel(viewModel);
