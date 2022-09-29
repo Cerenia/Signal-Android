@@ -12,11 +12,16 @@ import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.INTRODUCTION_DATE_PATTERN;
+import static org.thoughtcrime.securesms.trustedIntroductions.receive.ManageActivity.IntroductionScreenType.ALL;
+import static org.thoughtcrime.securesms.trustedIntroductions.receive.ManageActivity.IntroductionScreenType.RECIPIENT_SPECIFIC;
 
 import com.pnikosis.materialishprogress.ProgressWheel;
 
 import org.signal.core.util.logging.Log;
+import org.thoughtcrime.securesms.components.ButtonStripItemView;
 import org.thoughtcrime.securesms.components.ContactFilterView;
+import org.thoughtcrime.securesms.components.settings.models.Button;
+import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.R;
 import org.whispersystems.signalservice.api.util.Preconditions;
@@ -24,6 +29,9 @@ import org.whispersystems.signalservice.api.util.Preconditions;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
+
+import kotlin.Unit;
+import kotlin.jvm.functions.Function0;
 
 public class ManageListFragment extends Fragment implements ContactFilterView.OnFilterChangedListener, DeleteIntroductionDialog.DeleteIntroduction, ForgetIntroducerDialog.ForgetIntroducer {
 
@@ -56,11 +64,11 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
       }
     });
     initializeAdapter(type);
-    // TODO: Race condition w.r.t. viewModel?
     this.viewModel.getIntroductions().observe(getViewLifecycleOwner(), users -> {
       List<Pair<TI_Data, ManageViewModel.IntroducerInformation>> filtered = getFiltered(users, null);
       adapter.submitList(new ArrayList<>(filtered));
     });
+    initializeNavigationButton(view);
   }
 
   /**
@@ -101,7 +109,7 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
 
   // Make sure the Fragment has been inflated before calling this!
   private void initializeAdapter(ManageActivity.IntroductionScreenType t){
-    if(t == ManageActivity.IntroductionScreenType.RECIPIENT_SPECIFIC){
+    if(t == RECIPIENT_SPECIFIC){
       adapter = new ManageAdapter(requireContext(), new IntroductionClickListener(this, this), t);
     } else {
       // TODO: all adapter has different list item layouts + a sticky header.
@@ -114,6 +122,27 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
         if (newState == RecyclerView.SCROLL_STATE_DRAGGING) {
           // TODO: Add scrollCallback if needed, determined during Integration testing
         }
+      }
+    });
+  }
+
+  private void initializeNavigationButton(@NonNull View view){
+    ButtonStripItemView                   button = view.findViewById(R.id.navigate_all_button);
+    ManageActivity.IntroductionScreenType t      = viewModel.getScreenType();
+    switch(t){
+      case RECIPIENT_SPECIFIC:
+        button.setVisibility(View.VISIBLE);
+        break;
+      case ALL:
+        button.setVisibility(View.GONE);
+        break;
+      default:
+        throw new AssertionError(TAG + "No such screenType!");
+    }
+    button.setOnIconClickedListener(new Function0<Unit>() {
+      @Override public Unit invoke() {
+        ((ManageActivity) getActivity()).goToAll();
+        return null;
       }
     });
   }
@@ -168,7 +197,7 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
 
     // PRE: Only called on ALL screen
     private String getIntroducerName(ManageListItem item){
-      Preconditions.checkArgument(viewModel.getScreenType().equals(ManageActivity.IntroductionScreenType.ALL));
+      Preconditions.checkArgument(viewModel.getScreenType().equals(ALL));
       String itemIntroducerName;
       if(introducerName == null){
         // All screen
@@ -189,5 +218,9 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
     @Override public void onItemLongClick(ManageListItem item) {
       DeleteIntroductionDialog.show(c, item.getIntroductionId(), item.getIntroduceeName(), getIntroducerName(item), item.getDate(), deleteHandler);
     }
+  }
+
+  public interface onAllNavigationClicked{
+    public void goToAll();
   }
 }
