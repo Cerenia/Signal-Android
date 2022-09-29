@@ -81,23 +81,26 @@ public class ManageActivity extends PassphraseRequiredActivity{
     contactFilterView = findViewById(R.id.introduction_filter_edit_text);
     no_introductions = findViewById(R.id.no_introductions_found);
     navigationExplanation = findViewById(R.id.navigation_explanation);
-    FragmentManager fragmentManager = getSupportFragmentManager();
-    introductionsFragment = (ManageListFragment) fragmentManager.findFragmentById(R.id.trusted_introduction_manage_fragment);
-
 
     // Initialize
     IntroductionScreenType t;
     String introducerName = null;
+    FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+    //introductionsFragment = (ManageListFragment) fragmentManager.findFragmentById(R.id.trusted_introduction_manage_fragment);
+    introductionsFragment = new ManageListFragment();
     if (introducerId.equals(RecipientId.UNKNOWN)){
       t = IntroductionScreenType.ALL;
       ManageViewModelAll.Factory factory = new ManageViewModelAll.Factory(introducerId, t, introducerName, this);
       viewModel = new ViewModelProvider(this, factory).get(ManageViewModelAll.class);
+      fragmentTransaction.add(R.id.trusted_introduction_manage_fragment, introductionsFragment, IntroductionScreenType.ALL.toString());
     } else {
       t = IntroductionScreenType.RECIPIENT_SPECIFIC;
       introducerName = Recipient.live(introducerId).resolve().getDisplayNameOrUsername(this);
       ManageViewModelSingle.Factory factory = new ManageViewModelSingle.Factory(introducerId, t, introducerName, this);
       viewModel = new ViewModelProvider(this, factory).get(ManageViewModelSingle.class);
+      fragmentTransaction.add(R.id.trusted_introduction_manage_fragment, introductionsFragment, IntroductionScreenType.RECIPIENT_SPECIFIC.toString());
     }
+    fragmentTransaction.commit();
     viewModel.loadIntroductions();
     initializeToolbar();
     initializeNavigationButton(t);
