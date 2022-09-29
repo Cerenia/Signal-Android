@@ -37,9 +37,6 @@ public class ManageActivity extends PassphraseRequiredActivity implements Manage
   // Used instead of name & number in introductions where introducer information was cleared.
   public static final String FORGOTTEN = "unknown";
 
-  @Override public void goToAll() {
-    // TODO
-  }
 
   public enum IntroductionScreenType {
     ALL,
@@ -113,6 +110,19 @@ public class ManageActivity extends PassphraseRequiredActivity implements Manage
         contactFilterView.setVisibility(View.GONE);
       }
     });
+  }
+
+  @Override public void goToAll() {
+    // New all Fragment & Viewmodel
+    ManageViewModel.Factory factory = new ManageViewModel.Factory(RecipientId.UNKNOWN, IntroductionScreenType.ALL, null, this);
+    ManageViewModel viewModel = new ViewModelProvider(this, factory).get(ManageViewModel.class);
+    viewModel.loadIntroductions();
+    ManageListFragment fragment = new ManageListFragment(viewModel);
+    FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+    fragmentTransaction.setReorderingAllowed(true);
+    fragmentTransaction.replace(R.id.trusted_introduction_manage_fragment, fragment);
+    fragmentTransaction.addToBackStack(null);
+    fragmentTransaction.commit();
   }
 
   private RecipientId getIntroducerId(){
