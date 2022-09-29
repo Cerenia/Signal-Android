@@ -4,6 +4,7 @@ import android.content.Context;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.util.Preconditions;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
@@ -22,7 +23,7 @@ import java.util.Objects;
 
 import static org.thoughtcrime.securesms.trustedIntroductions.receive.ManageActivity.FORGOTTEN;
 
-public class ManageViewModel extends ViewModel {
+public abstract class ManageViewModel extends ViewModel {
 
   private final String TAG = Log.tag(ManageViewModel.class);
 
@@ -117,6 +118,20 @@ public class ManageViewModel extends ViewModel {
       this.number = number;
     }
   }
+}
+
+// Seperating all and single ViewModels to have two seperate classes instantiated by the activity depending on screen type.
+// TODO: Seems slightly hacky.. is this the right approach?
+// Iff yes, introducer Name should probably only exist in Single class instead of abstract parent?
+class ManageViewModelSingle extends ManageViewModel{
+
+  private final String TAG = Log.tag(ManageViewModelSingle.class);
+
+  // Instantiated to hold Introductions from a single recipient
+  ManageViewModelSingle(ManageManager manager, ManageActivity.IntroductionScreenType t, @Nullable String iN){
+    super(manager, t, iN);
+    assert t.equals(ManageActivity.IntroductionScreenType.RECIPIENT_SPECIFIC) : "ViewModel Instantiatied for wrong screen type!";
+  }
 
   static class Factory implements ViewModelProvider.Factory {
 
@@ -132,8 +147,35 @@ public class ManageViewModel extends ViewModel {
 
     @Override
     public @NonNull <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
-      return Objects.requireNonNull(modelClass.cast(new ManageViewModel(manager, t, introducer)));
+      return Objects.requireNonNull(modelClass.cast(new ManageViewModelSingle(manager, t, introducer)));
     }
   }
+}
 
+class ManageViewModelAll extends ManageViewModel{
+  private final String TAG = Log.tag(ManageViewModelAll.class);
+
+  // Instantiated to hold all Introductions
+  ManageViewModelAll(ManageManager manager, ManageActivity.IntroductionScreenType t, @Nullable String iN){
+    super(manager, t, iN);
+    assert t.equals(ManageActivity.IntroductionScreenType.ALL) : "ViewModel Instantiatied for wrong screen type!";
+  }
+
+  static class Factory implements ViewModelProvider.Factory {
+
+    private final ManageManager manager;
+    private final ManageActivity.IntroductionScreenType t;
+    private final String introducer;
+
+    Factory(RecipientId id, ManageActivity.IntroductionScreenType t, @Nullable String introducerName, Context context) {
+      this.t = t;
+      this.manager = new ManageManager(id, SignalDatabase.trustedIntroductions(), context);
+      introducer = introducerName;
+    }
+
+    @Override
+    public @NonNull <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
+      return Objects.requireNonNull(modelClass.cast(new ManageViewModelAll(manager, t, introducer)));
+    }
+  }
 }
