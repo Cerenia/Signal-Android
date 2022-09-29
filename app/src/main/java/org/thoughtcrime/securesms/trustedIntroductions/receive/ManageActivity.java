@@ -3,27 +3,19 @@ package org.thoughtcrime.securesms.trustedIntroductions.receive;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
-import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.lifecycle.ViewModelProvider;
 
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.PassphraseRequiredActivity;
 import org.thoughtcrime.securesms.R;
-import org.thoughtcrime.securesms.components.ButtonStripItemView;
 import org.thoughtcrime.securesms.components.ContactFilterView;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.util.DynamicNoActionBarTheme;
 import org.thoughtcrime.securesms.util.DynamicTheme;
-
-import kotlin.Unit;
-import kotlin.jvm.functions.Function0;
 
 /**
  * Opens an Activity for Managing Trusted Introductions.
@@ -89,7 +81,7 @@ public class ManageActivity extends PassphraseRequiredActivity implements Manage
       FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
       fragmentTransaction.setReorderingAllowed(true);
       ManageListFragment fragment = new ManageListFragment(introducerId, t, introducerName, this);
-      fragmentTransaction.add(R.id.trusted_introduction_manage_fragment, fragment);
+      fragmentTransaction.add(R.id.trusted_introduction_manage_fragment, fragment, t.toString());
       fragmentTransaction.addToBackStack(null);
       fragmentTransaction.commit();
     }
@@ -103,10 +95,11 @@ public class ManageActivity extends PassphraseRequiredActivity implements Manage
 
   @Override public void goToAll() {
     // New all Fragment
-    ManageListFragment fragment = new ManageListFragment();
+    IntroductionScreenType t = IntroductionScreenType.ALL;
+    ManageListFragment fragment = new ManageListFragment(RecipientId.UNKNOWN,  t,null, this);
     FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
     fragmentTransaction.setReorderingAllowed(true);
-    fragmentTransaction.replace(R.id.trusted_introduction_manage_fragment, fragment);
+    fragmentTransaction.replace(R.id.trusted_introduction_manage_fragment, fragment, t.toString());
     fragmentTransaction.addToBackStack(null);
     fragmentTransaction.commit();
   }
