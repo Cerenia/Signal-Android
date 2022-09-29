@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.INTRODUCTION_DATE_PATTERN;
 import static org.thoughtcrime.securesms.trustedIntroductions.receive.ManageActivity.IntroductionScreenType.ALL;
@@ -53,10 +54,12 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
 
   }
 
-  public ManageListFragment(@NonNull ManageViewModel viewModel){
+  public ManageListFragment(RecipientId id, ManageActivity.IntroductionScreenType t, @Nullable String introducerName, Context context){
     super(R.layout.ti_manage_fragment);
+    ManageViewModel.Factory factory = new ManageViewModel.Factory(id, t, introducerName, context);
+    viewModel = new ViewModelProvider(this, factory).get(ManageViewModel.class);
+    viewModel.loadIntroductions();
     setViewModel(viewModel);
-    introducerName = viewModel.getIntroducerName();
   }
 
   @Override

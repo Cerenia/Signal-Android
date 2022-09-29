@@ -85,13 +85,10 @@ public class ManageActivity extends PassphraseRequiredActivity implements Manage
       t = IntroductionScreenType.RECIPIENT_SPECIFIC;
       introducerName = Recipient.live(introducerId).resolve().getDisplayNameOrUsername(this);
     }
-    ManageViewModel.Factory factory = new ManageViewModel.Factory(introducerId, t, introducerName, this);
-    ManageViewModel viewModel = new ViewModelProvider(this, factory).get(ManageViewModel.class);
-    viewModel.loadIntroductions();
     if(savedInstanceState == null){
       FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
       fragmentTransaction.setReorderingAllowed(true);
-      ManageListFragment fragment = new ManageListFragment(viewModel);
+      ManageListFragment fragment = new ManageListFragment(introducerId, t, introducerName, this);
       fragmentTransaction.add(R.id.trusted_introduction_manage_fragment, fragment);
       fragmentTransaction.addToBackStack(null);
       fragmentTransaction.commit();
@@ -105,11 +102,8 @@ public class ManageActivity extends PassphraseRequiredActivity implements Manage
   }
 
   @Override public void goToAll() {
-    // New all Fragment & Viewmodel
-    ManageViewModel.Factory factory = new ManageViewModel.Factory(RecipientId.UNKNOWN, IntroductionScreenType.ALL, null, this);
-    ManageViewModel viewModel = new ViewModelProvider(this, factory).get(ManageViewModel.class);
-    viewModel.loadIntroductions();
-    ManageListFragment fragment = new ManageListFragment(viewModel);
+    // New all Fragment
+    ManageListFragment fragment = new ManageListFragment();
     FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
     fragmentTransaction.setReorderingAllowed(true);
     fragmentTransaction.replace(R.id.trusted_introduction_manage_fragment, fragment);
