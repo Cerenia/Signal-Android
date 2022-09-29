@@ -101,15 +101,6 @@ public class ManageActivity extends PassphraseRequiredActivity implements Manage
     // Observers
     contactFilterView.setOnFilterChangedListener(introductionsFragment);
     contactFilterView.setHint(R.string.ManageIntroductionsActivity__Filter_hint);
-
-    getSupportFragmentManager().addOnBackStackChangedListener(() -> {
-      if (getSupportFragmentManager().getBackStackEntryCount() == 1) {
-        contactFilterView.setVisibility(View.VISIBLE);
-        contactFilterView.focusAndShowKeyboard();
-      } else {
-        contactFilterView.setVisibility(View.GONE);
-      }
-    });
   }
 
   @Override public void goToAll() {
