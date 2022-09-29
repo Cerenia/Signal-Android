@@ -30,12 +30,16 @@ import kotlin.jvm.functions.Function0;
  * Will either open just the Introductions made by a specific contact (//TODO: add tab/button for navigating to all?)
  * or all Introductions depending on how you navigated to that screen.
  */
-public class ManageActivity extends PassphraseRequiredActivity{
+public class ManageActivity extends PassphraseRequiredActivity implements ManageListFragment.onAllNavigationClicked {
 
   private static final String TAG = Log.tag(ManageActivity.class);
 
   // Used instead of name & number in introductions where introducer information was cleared.
   public static final String FORGOTTEN = "unknown";
+
+  @Override public void goToAll() {
+    // TODO
+  }
 
   public enum IntroductionScreenType {
     ALL,
@@ -47,13 +51,9 @@ public class ManageActivity extends PassphraseRequiredActivity{
   // Instead of passing the RecipientID of the introducer as a string.
   public static final long ALL_INTRODUCTIONS = RecipientId.UNKNOWN.toLong();
 
-  private ManageViewModel    viewModel;
   private ManageListFragment introductionsFragment;
   private Toolbar            toolbar;
   private ContactFilterView contactFilterView;
-  private TextView navigationExplanation;
-  private TextView            no_introductions;
-  private ButtonStripItemView button;
 
 
   private final DynamicTheme dynamicTheme = new DynamicNoActionBarTheme();
@@ -155,26 +155,6 @@ public class ManageActivity extends PassphraseRequiredActivity{
     });
   }
 
-  private void initializeNavigationButton(ManageActivity.IntroductionScreenType t){
-    button = findViewById(R.id.navigate_all_button);
-    switch(t){
-      case RECIPIENT_SPECIFIC:
-        button.setVisibility(View.VISIBLE);
-        break;
-      case ALL:
-        button.setVisibility(View.GONE);
-        break;
-      default:
-        throw new AssertionError(TAG + "No such screenType!");
-    }
-    button.setOnIconClickedListener(new Function0<Unit>() {
-      @Override public Unit invoke() {
-        startActivity(ManageActivity.createIntent(context, RecipientId.UNKNOWN));
-        return null;
-      }
-    });
-  }
-
 
   private RecipientId getIntroducerId(){
     return RecipientId.from(getIntent().getLongExtra(INTRODUCER_ID, ALL_INTRODUCTIONS));
@@ -182,13 +162,7 @@ public class ManageActivity extends PassphraseRequiredActivity{
 
   private void initializeToolbar() {
     setSupportActionBar(toolbar);
-    RecipientId introducer = getIntroducerId();
-    if(introducer.toString().equals(ALL_INTRODUCTIONS)){
-      toolbar.setTitle(R.string.ManageIntroductionsActivity__Title_Introductions_all);
-    } else {
-      String name = Recipient.live(introducer).resolve().getDisplayNameOrUsername(this);
-      toolbar.setTitle(this.getString(R.string.ManageIntroductionsActivity__Title_Introductions_from, name));
-    }
+    toolbar.setTitle(R.string.ManageIntroductionsActivity__Toolbar_Title);
     getSupportActionBar().setDisplayHomeAsUpEnabled(false);
     getSupportActionBar().setIcon(null);
     getSupportActionBar().setLogo(null);
