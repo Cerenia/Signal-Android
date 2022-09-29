@@ -59,6 +59,7 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
     ManageViewModel.Factory factory = new ManageViewModel.Factory(id, t, introducerName, context);
     viewModel = new ViewModelProvider(this, factory).get(ManageViewModel.class);
     viewModel.loadIntroductions();
+    // TODO: get rid of function
     setViewModel(viewModel);
   }
 
