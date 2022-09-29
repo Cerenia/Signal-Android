@@ -38,8 +38,13 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
   private ManageActivity.IntroductionScreenType type;
   private String introducerName;
 
+  public ManageListFragment(){
+    super(R.layout.ti_manage_fragment);
+  }
+
   @Override
   public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
+    // TODO: Inflater needed?
     View view = inflater.inflate(R.layout.ti_manage_fragment, container, false);
     introductionList = view.findViewById(R.id.recycler_view);
     introductionList.setClipToPadding(true);

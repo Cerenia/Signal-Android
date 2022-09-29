@@ -85,26 +85,38 @@ public class ManageActivity extends PassphraseRequiredActivity{
     // Initialize
     IntroductionScreenType t;
     String introducerName = null;
-    FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-    //introductionsFragment = (ManageListFragment) fragmentManager.findFragmentById(R.id.trusted_introduction_manage_fragment);
-    introductionsFragment = new ManageListFragment();
     if (introducerId.equals(RecipientId.UNKNOWN)){
       t = IntroductionScreenType.ALL;
       ManageViewModelAll.Factory factory = new ManageViewModelAll.Factory(introducerId, t, introducerName, this);
       viewModel = new ViewModelProvider(this, factory).get(ManageViewModelAll.class);
-      fragmentTransaction.add(R.id.trusted_introduction_manage_fragment, introductionsFragment, IntroductionScreenType.ALL.toString());
+
     } else {
       t = IntroductionScreenType.RECIPIENT_SPECIFIC;
       introducerName = Recipient.live(introducerId).resolve().getDisplayNameOrUsername(this);
       ManageViewModelSingle.Factory factory = new ManageViewModelSingle.Factory(introducerId, t, introducerName, this);
       viewModel = new ViewModelProvider(this, factory).get(ManageViewModelSingle.class);
-      fragmentTransaction.add(R.id.trusted_introduction_manage_fragment, introductionsFragment, IntroductionScreenType.RECIPIENT_SPECIFIC.toString());
+      // Ordering important. ViewModel must be set before the Fragment is inflated!
+      introductionsFragment.setViewModel(viewModel);
     }
-    fragmentTransaction.commit();
     viewModel.loadIntroductions();
+    if(savedInstanceState == null){
+      FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+      fragmentTransaction.setReorderingAllowed(true);
+      //introductionsFragment = (ManageListFragment) fragmentManager.findFragmentById(R.id.trusted_introduction_manage_fragment);
+      // TODO: don't do that...
+      introductionsFragment = new ManageListFragment();
+      // Ordering important. ViewModel must be set before the Fragment is inflated! TODO: when?
+      introductionsFragment.setViewModel(viewModel);
+      if(t.equals(IntroductionScreenType.ALL)){
+        fragmentTransaction.add(R.id.trusted_introduction_manage_fragment, introductionsFragment, IntroductionScreenType.ALL.toString());
+      } else {
+        fragmentTransaction.add(R.id.trusted_introduction_manage_fragment, introductionsFragment, IntroductionScreenType.RECIPIENT_SPECIFIC.toString());
+      }
+      fragmentTransaction.commit();
+    }
+
     initializeToolbar();
     initializeNavigationButton(t);
-    introductionsFragment.setViewModel(viewModel);
 
     // Observers
     final String finalIntroducerName = introducerName;
