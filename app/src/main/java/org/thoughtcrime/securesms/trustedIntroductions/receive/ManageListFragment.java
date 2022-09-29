@@ -37,8 +37,9 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
   private ManageActivity.IntroductionScreenType type;
   private String introducerName;
 
-  public ManageListFragment(){
+  public ManageListFragment(@NonNull ManageViewModel viewModel){
     super(R.layout.ti_manage_fragment);
+    setViewModel(viewModel);
   }
 
   @Override
@@ -92,7 +93,7 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
    * Sets fields used by dialogs and RecyclerView, and initializes navigation button accordingly.
    * @param viewModel The underlying persistent data storage (throughout Activity and Fragment Lifecycle).
    */
-  public void setViewModel(@NonNull ManageViewModel viewModel){
+  private void setViewModel(@NonNull ManageViewModel viewModel){
     this.introducerName = viewModel.getIntroducerName();
     this.type = viewModel.getScreenType();
     this.viewModel = viewModel;
