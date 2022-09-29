@@ -61,6 +61,7 @@
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="2dp"
+        app:layout_constraintVertical_bias="1"
         app:titleTextAppearance="@style/TextSecure.TitleTextStyle"
         app:layout_constraintBottom_toTopOf="@id/recycler_view"
         app:layout_constraintTop_toBottomOf="@id/navigate_all_button" />
@@ -73,7 +74,6 @@
         android:scrollbarThumbVertical="@drawable/contact_selection_scrollbar_thumb"
         android:scrollbars="vertical"
         android:visibility="visible"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@id/introduction_title_view"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         tools:listitem="@layout/ti_manage_list_item" />
