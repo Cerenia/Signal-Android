@@ -212,9 +212,7 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
       c = requireContext();
     }
 
-    // PRE: Only called on ALL screen
     private String getIntroducerName(ManageListItem item){
-      Preconditions.checkArgument(viewModel.getScreenType().equals(ALL));
       String itemIntroducerName;
       if(name == null){
         // All screen
