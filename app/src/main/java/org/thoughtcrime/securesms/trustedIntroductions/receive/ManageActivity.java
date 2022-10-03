@@ -16,6 +16,7 @@ import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.components.ContactFilterView;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
+import org.thoughtcrime.securesms.trustedIntroductions.send.ContactsSelectionListFragment;
 import org.thoughtcrime.securesms.util.DynamicNoActionBarTheme;
 import org.thoughtcrime.securesms.util.DynamicTheme;
 
@@ -45,7 +46,6 @@ public class ManageActivity extends PassphraseRequiredActivity implements Manage
 
   private Toolbar            toolbar;
   private ContactFilterView contactFilterView;
-  private ManageListFragment fragment;
 
 
 
@@ -62,17 +62,8 @@ public class ManageActivity extends PassphraseRequiredActivity implements Manage
   }
 
   @Override protected void onCreate(Bundle savedInstanceState, boolean ready){
-    super.onCreate(savedInstanceState, ready);
-
-    dynamicTheme.onCreate(this);
-    setContentView(R.layout.ti_manage_activity);
+    //Decide what kind of screen must be instantiated
     RecipientId introducerId = setIntroducerId(savedInstanceState);
-
-    // Bind views
-    toolbar = findViewById(R.id.toolbar);
-    contactFilterView = findViewById(R.id.introduction_filter_edit_text);
-
-    // Initialize
     IntroductionScreenType t;
     String introducerName = null;
     if (introducerId.equals(RecipientId.UNKNOWN)){
@@ -81,23 +72,22 @@ public class ManageActivity extends PassphraseRequiredActivity implements Manage
       t = IntroductionScreenType.RECIPIENT_SPECIFIC;
       introducerName = Recipient.live(introducerId).resolve().getDisplayNameOrUsername(this);
     }
-    ManageListFragment fragment;
-    if(savedInstanceState == null){
-      fragment = new ManageListFragment(introducerId, t, introducerName);
-      FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-      fragmentTransaction.setReorderingAllowed(true);
-      // TODO: no back stack?
-      fragmentTransaction.add(R.id.trusted_introduction_manage_fragment, fragment, t.toString());
-      fragmentTransaction.commit();
-    } else {
-      fragment = (ManageListFragment) getSupportFragmentManager().findFragmentByTag(t.toString());
-      fragment.setViewModel();
-    }
-    this.fragment = fragment;
+    getSupportFragmentManager().setFragmentFactory(new ManageFragmentFactory(introducerId, t, introducerName));
+    super.onCreate(savedInstanceState, ready);
+
+    dynamicTheme.onCreate(this);
+    setContentView(R.layout.ti_manage_activity);
+
+    // Bind views
+    toolbar = findViewById(R.id.toolbar);
+    contactFilterView = findViewById(R.id.introduction_filter_edit_text);
+
+    // Initialize
+    ManageListFragment fragment = (ManageListFragment) getSupportFragmentManager().findFragmentById(R.id.trusted_introduction_manage_fragment);
     initializeToolbar();
 
     // Observers
-    contactFilterView.setOnFilterChangedListener(this.fragment);
+    contactFilterView.setOnFilterChangedListener(fragment);
     contactFilterView.setHint(R.string.ManageIntroductionsActivity__Filter_hint);
   }
 

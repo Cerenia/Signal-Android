@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentFactory;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.INTRODUCTION_DATE_PATTERN;
@@ -51,12 +52,6 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
   private final ManageActivity.IntroductionScreenType type;
   private final String name;
 
-  public ManageListFragment(){
-    recipient = RecipientId.UNKNOWN;
-    type = ALL;
-    name = null;
-  }
-
   public ManageListFragment(RecipientId id, ManageActivity.IntroductionScreenType t, @Nullable String introducerName){
     super(R.layout.ti_manage_fragment);
     recipient = id;
@@ -66,7 +61,7 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
 
   public void setViewModel(){
     ManageViewModel.Factory factory = new ManageViewModel.Factory(recipient, type, name);
-    viewModel = new ViewModelProvider(this, factory).get(ManageViewModel.class);;
+    viewModel = new ViewModelProvider(getActivity(), factory).get(ManageViewModel.class);;
   }
 
   @Override
@@ -228,5 +223,26 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
 
   public interface onAllNavigationClicked{
     public void goToAll();
+  }
+}
+
+class ManageFragmentFactory extends FragmentFactory{
+
+  private RecipientId id;
+  private ManageActivity.IntroductionScreenType type;
+  private String introducerName;
+
+  public ManageFragmentFactory(RecipientId id, ManageActivity.IntroductionScreenType t, @Nullable String introducerName){
+    this.id = id;
+    this.type = t;
+    this.introducerName = introducerName;
+  }
+
+  @Override
+  public Fragment instantiate(@NonNull ClassLoader classLoader, @NonNull String className){
+    if(className.compareTo(ManageListFragment.class.getName()) == 0){
+      return new ManageListFragment(id, type, introducerName);
+    }
+    return super.instantiate(classLoader, className);
   }
 }
