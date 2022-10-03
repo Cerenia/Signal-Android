@@ -64,11 +64,21 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
     name = introducerName;
   }
 
+  public void setViewModel(){
+    ManageViewModel.Factory factory = new ManageViewModel.Factory(recipient, type, name);
+    viewModel = new ViewModelProvider(this, factory).get(ManageViewModel.class);;
+  }
+
   @Override
   public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState){
-    ManageViewModel.Factory factory = new ManageViewModel.Factory(recipient, type, name);
-    viewModel = new ViewModelProvider(this, factory).get(ManageViewModel.class);
+    setViewModel();
     viewModel.loadIntroductions();
+    ManageActivity.IntroductionScreenType t = viewModel.getScreenType();
+    if(t == RECIPIENT_SPECIFIC){
+      adapter = new ManageAdapter(requireContext(), new IntroductionClickListener(this, this), t);
+    } else {
+      // TODO: all adapter has different list item layouts + a sticky header.
+    }
     introductionList = view.findViewById(R.id.recycler_view);
     introductionList.setClipToPadding(true);
     introductionList.setAdapter(adapter);
@@ -80,7 +90,6 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
         }
       }
     });
-    initializeAdapter(type);
     this.viewModel.getIntroductions().observe(getViewLifecycleOwner(), users -> {
       List<Pair<TI_Data, ManageViewModel.IntroducerInformation>> filtered = getFiltered(users, null);
       if(adapter != null){
@@ -119,26 +128,6 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
     }
   }
 
-
-  // Make sure the Fragment has been inflated before calling this!
-  private void initializeAdapter(ManageActivity.IntroductionScreenType t){
-    if(t == RECIPIENT_SPECIFIC){
-      adapter = new ManageAdapter(requireContext(), new IntroductionClickListener(this, this), t);
-    } else {
-      // TODO: all adapter has different list item layouts + a sticky header.
-    }
-    // TODO: Race condition? Iff not, at least factor out.
-    introductionList.setAdapter(adapter);
-    introductionList.addOnScrollListener(new RecyclerView.OnScrollListener() {
-      @Override
-      public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
-        if (newState == RecyclerView.SCROLL_STATE_DRAGGING) {
-          // TODO: Add scrollCallback if needed, determined during Integration testing
-        }
-      }
-    });
-  }
-
   private void initializeNavigationButton(@NonNull View view){
     ButtonStripItemView                   button = view.findViewById(R.id.navigate_all_button);
     switch(type){
@@ -159,6 +148,7 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
     });
   }
 
+  // TODO: Move to asynchroneous background thread eventually if performance becomes a problem
   private List<Pair<TI_Data, ManageViewModel.IntroducerInformation>> getFiltered(List<Pair<TI_Data, ManageViewModel.IntroducerInformation>> introductions, @Nullable String filter){
     List<Pair<TI_Data, ManageViewModel.IntroducerInformation>> filtered = introductions != null ? new ArrayList<>(introductions) : new ArrayList<>();
     if(filter != null){
@@ -185,8 +175,10 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
   }
 
   @Override public void onFilterChanged(String filter) {
-    viewModel.setQueryFilter(filter);
-    adapter.submitList(getFiltered(viewModel.getIntroductions().getValue(), filter));
+    if(!filter.isEmpty() && adapter != null){
+      viewModel.setQueryFilter(filter);
+      adapter.submitList(getFiltered(viewModel.getIntroductions().getValue(), filter));
+    }
   }
 
   @Override public void deleteIntroduction(@NonNull Long introductionId) {

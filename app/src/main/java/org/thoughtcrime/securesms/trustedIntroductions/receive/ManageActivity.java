@@ -3,8 +3,10 @@ package org.thoughtcrime.securesms.trustedIntroductions.receive;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.PersistableBundle;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -29,6 +31,7 @@ public class ManageActivity extends PassphraseRequiredActivity implements Manage
   // Used instead of name & number in introductions where introducer information was cleared.
   public static final String FORGOTTEN = "unknown";
 
+  private long introducerId;
 
   public enum IntroductionScreenType {
     ALL,
@@ -43,6 +46,7 @@ public class ManageActivity extends PassphraseRequiredActivity implements Manage
   private Toolbar            toolbar;
   private ContactFilterView contactFilterView;
   private ManageListFragment fragment;
+
 
 
   private final DynamicTheme dynamicTheme = new DynamicNoActionBarTheme();
@@ -62,7 +66,7 @@ public class ManageActivity extends PassphraseRequiredActivity implements Manage
 
     dynamicTheme.onCreate(this);
     setContentView(R.layout.ti_manage_activity);
-    RecipientId introducerId = getIntroducerId();
+    RecipientId introducerId = setIntroducerId(savedInstanceState);
 
     // Bind views
     toolbar = findViewById(R.id.toolbar);
@@ -77,15 +81,19 @@ public class ManageActivity extends PassphraseRequiredActivity implements Manage
       t = IntroductionScreenType.RECIPIENT_SPECIFIC;
       introducerName = Recipient.live(introducerId).resolve().getDisplayNameOrUsername(this);
     }
-    ManageListFragment fragment = new ManageListFragment(introducerId, t, introducerName);
+    ManageListFragment fragment;
     if(savedInstanceState == null){
-      this.fragment = fragment;
+      fragment = new ManageListFragment(introducerId, t, introducerName);
       FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
       fragmentTransaction.setReorderingAllowed(true);
       // TODO: no back stack?
       fragmentTransaction.add(R.id.trusted_introduction_manage_fragment, fragment, t.toString());
       fragmentTransaction.commit();
+    } else {
+      fragment = (ManageListFragment) getSupportFragmentManager().findFragmentByTag(t.toString());
+      fragment.setViewModel();
     }
+    this.fragment = fragment;
     initializeToolbar();
 
     // Observers
@@ -93,7 +101,10 @@ public class ManageActivity extends PassphraseRequiredActivity implements Manage
     contactFilterView.setHint(R.string.ManageIntroductionsActivity__Filter_hint);
   }
 
-
+  @Override public void onSaveInstanceState(@NonNull Bundle outState) {
+    outState.putLong(INTRODUCER_ID, introducerId);
+    super.onSaveInstanceState(outState);
+  }
 
   @Override public void goToAll() {
     // New all Fragment
@@ -106,8 +117,17 @@ public class ManageActivity extends PassphraseRequiredActivity implements Manage
     fragmentTransaction.commit();
   }
 
-  private RecipientId getIntroducerId(){
-    return RecipientId.from(getIntent().getLongExtra(INTRODUCER_ID, ALL_INTRODUCTIONS));
+  /**
+   * @param savedInstanceState bundle that may hold instance state.
+   * @return resolved introducerId
+   */
+  private RecipientId setIntroducerId(@Nullable Bundle savedInstanceState){
+    if(savedInstanceState == null){
+      introducerId = getIntent().getLongExtra(INTRODUCER_ID, ALL_INTRODUCTIONS);
+    } else{
+      introducerId = savedInstanceState.getLong(INTRODUCER_ID);
+    }
+    return RecipientId.from(introducerId);
   }
 
   private void initializeToolbar() {
