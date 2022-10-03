@@ -77,11 +77,12 @@ public class ManageActivity extends PassphraseRequiredActivity implements Manage
       t = IntroductionScreenType.RECIPIENT_SPECIFIC;
       introducerName = Recipient.live(introducerId).resolve().getDisplayNameOrUsername(this);
     }
-    ManageListFragment fragment = new ManageListFragment(introducerId, t, introducerName, this);
+    ManageListFragment fragment = new ManageListFragment(introducerId, t, introducerName);
     if(savedInstanceState == null){
       this.fragment = fragment;
       FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
       fragmentTransaction.setReorderingAllowed(true);
+      // TODO: no back stack?
       fragmentTransaction.add(R.id.trusted_introduction_manage_fragment, fragment, t.toString());
       fragmentTransaction.commit();
     }
@@ -90,13 +91,14 @@ public class ManageActivity extends PassphraseRequiredActivity implements Manage
     // Observers
     contactFilterView.setOnFilterChangedListener(this.fragment);
     contactFilterView.setHint(R.string.ManageIntroductionsActivity__Filter_hint);
-
   }
+
+
 
   @Override public void goToAll() {
     // New all Fragment
     IntroductionScreenType t = IntroductionScreenType.ALL;
-    ManageListFragment fragment = new ManageListFragment(RecipientId.UNKNOWN,  t,null, this);
+    ManageListFragment fragment = new ManageListFragment(RecipientId.UNKNOWN,  t,null);
     FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
     fragmentTransaction.setReorderingAllowed(true);
     fragmentTransaction.replace(R.id.trusted_introduction_manage_fragment, fragment, t.toString());

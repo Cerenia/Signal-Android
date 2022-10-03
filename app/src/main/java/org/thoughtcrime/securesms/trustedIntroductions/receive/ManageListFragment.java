@@ -50,26 +50,23 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
   private final RecipientId recipient;
   private final ManageActivity.IntroductionScreenType type;
   private final String name;
-  private final Context managerContext;
 
   public ManageListFragment(){
     recipient = RecipientId.UNKNOWN;
     type = ALL;
     name = null;
-    managerContext = getActivity();
   }
 
-  public ManageListFragment(RecipientId id, ManageActivity.IntroductionScreenType t, @Nullable String introducerName, Context context){
+  public ManageListFragment(RecipientId id, ManageActivity.IntroductionScreenType t, @Nullable String introducerName){
     super(R.layout.ti_manage_fragment);
     recipient = id;
     type = t;
     name = introducerName;
-    managerContext = context;
   }
 
   @Override
   public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState){
-    ManageViewModel.Factory factory = new ManageViewModel.Factory(recipient, type, name, managerContext);
+    ManageViewModel.Factory factory = new ManageViewModel.Factory(recipient, type, name);
     viewModel = new ViewModelProvider(this, factory).get(ManageViewModel.class);
     viewModel.loadIntroductions();
     introductionList = view.findViewById(R.id.recycler_view);
@@ -113,7 +110,8 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
       }
     });
     from_title_view = view.findViewById(R.id.introduction_title_view);
-    if (name == null){
+    if (type == ALL){
+      from_title_view.clearAnimation();
       from_title_view.setVisibility(View.GONE);
     } else {
       from_title_view.setText(String.format(getString(R.string.ManageIntroductionsActivity__Title_Introductions_from), name));
@@ -143,8 +141,7 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
 
   private void initializeNavigationButton(@NonNull View view){
     ButtonStripItemView                   button = view.findViewById(R.id.navigate_all_button);
-    ManageActivity.IntroductionScreenType t      = viewModel.getScreenType();
-    switch(t){
+    switch(type){
       case RECIPIENT_SPECIFIC:
         button.setVisibility(View.VISIBLE);
         break;
@@ -214,12 +211,14 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
 
     private String getIntroducerName(ManageListItem item){
       String itemIntroducerName;
-      if(name == null){
-        // All screen
+      if(type == ALL){
         itemIntroducerName = item.getIntroducerName(c);
         // could still be null after iff this introducer information has been cleared.
         itemIntroducerName = (itemIntroducerName == null) ? "forgotten introducer": itemIntroducerName;
       } else {
+        if(name == null){
+          throw new AssertionError("Expected name not to be null for Recipient Specific introductions!");
+        }
         itemIntroducerName = name;
       }
       return itemIntroducerName;
