@@ -19,7 +19,7 @@
         app:layout_constraintEnd_toStartOf="@id/navigate_all_button"
         app:layout_constraintHorizontal_chainStyle="spread_inside"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toBottomOf="@id/navigate_all_button"
+        app:layout_constraintBottom_toBottomOf="@id/barrier_title"
         app:titleTextAppearance="@style/TextSecure.TitleTextStyle" />
 
     <TextView
@@ -35,7 +35,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@id/navigate_all_button"
-        app:layout_constraintBottom_toBottomOf="@id/navigate_all_button"
+        app:layout_constraintBottom_toBottomOf="@id/barrier_title"
         app:layout_constraintHorizontal_chainStyle="spread_inside"
         app:titleTextAppearance="@style/TextSecure.TitleTextStyle"
         tools:ignore="NotSibling" />
@@ -53,6 +53,13 @@
         app:bsiv_label="@string/ManageIntroductionsFragment__navigate_text"
         tools:ignore="NotSibling" />
 
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/barrier_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:barrierDirection="bottom"
+        app:constraint_referenced_ids="navigate_all_button,no_introductions_found,navigation_explanation"/>
+
     <TextView
         android:id="@+id/introduction_title_view"
         android:layout_width="match_parent"
@@ -61,11 +68,17 @@
         android:textStyle="bold"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
-        android:layout_marginBottom="2dp"
+        android:layout_marginBottom="16dp"
         app:layout_constraintVertical_bias="1"
         app:titleTextAppearance="@style/TextSecure.TitleTextStyle"
-        app:layout_constraintBottom_toTopOf="@id/recycler_view"
-        app:layout_constraintTop_toBottomOf="@id/navigate_all_button" />
+        app:layout_constraintTop_toBottomOf="@id/barrier_title" />
+
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/barrier_recycle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:barrierDirection="bottom"
+        app:constraint_referenced_ids="introduction_title_view,navigate_all_button,no_introductions_found,navigation_explanation"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view"
@@ -75,7 +88,7 @@
         android:scrollbarThumbVertical="@drawable/contact_selection_scrollbar_thumb"
         android:scrollbars="vertical"
         android:visibility="visible"
-        app:layout_constraintTop_toBottomOf="@id/introduction_title_view"
+        app:layout_constraintTop_toBottomOf="@id/barrier_recycle"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         tools:listitem="@layout/ti_manage_list_item" />
 
