@@ -124,9 +124,9 @@ public class ManageViewModel extends ViewModel {
     private final ManageActivity.IntroductionScreenType t;
     private final String introducer;
 
-    Factory(RecipientId id, ManageActivity.IntroductionScreenType t, @Nullable String introducerName, Context context) {
+    Factory(RecipientId id, ManageActivity.IntroductionScreenType t, @Nullable String introducerName) {
       this.t = t;
-      this.manager = new ManageManager(id, SignalDatabase.trustedIntroductions(), context);
+      this.manager = new ManageManager(id, SignalDatabase.trustedIntroductions());
       introducer = introducerName;
     }
 

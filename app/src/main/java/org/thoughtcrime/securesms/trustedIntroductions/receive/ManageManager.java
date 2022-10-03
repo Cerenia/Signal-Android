@@ -29,17 +29,15 @@ public class ManageManager {
 
   // Introducer ID, or special iff all.
   private final RecipientId recipientId;
-  private final Context context;
   // TODO: Does this cause problems?
   public final RecipientId ALL_INTRODUCERS = RecipientId.UNKNOWN;
 
   // Dependency injection
   private final TrustedIntroductionsDatabase tdb;
 
-  ManageManager(@NonNull RecipientId rid, @NonNull TrustedIntroductionsDatabase tdb, Context c){
+  ManageManager(@NonNull RecipientId rid, @NonNull TrustedIntroductionsDatabase tdb){
     recipientId = rid;
     this.tdb = tdb;
-    context = c;
   }
 
   void getIntroductions(@NonNull Consumer<List<Pair<TI_Data, ManageViewModel.IntroducerInformation>>> listConsumer){
@@ -59,7 +57,8 @@ public class ManageManager {
           i = new ManageViewModel.IntroducerInformation(FORGOTTEN, FORGOTTEN);
         } else {
           Recipient r = Recipient.live(d.getIntroducerId()).resolve();
-          i = new ManageViewModel.IntroducerInformation(r.getDisplayNameOrUsername(context), r.getE164().orElse(""));
+          String number = r.getE164().orElse("");
+          i = new ManageViewModel.IntroducerInformation(r.getUsername().orElse(number), number);
         }
         result.add(new Pair<>(d, i));
       }
