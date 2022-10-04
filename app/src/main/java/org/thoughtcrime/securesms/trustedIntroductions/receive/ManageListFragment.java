@@ -87,7 +87,9 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
     if(viewModel == null){
       setViewModel(getArguments(), this);
     }
-    viewModel.loadIntroductions();
+    if(!viewModel.contactsLoaded()){
+      viewModel.loadIntroductions();
+    }
     ManageActivity.IntroductionScreenType t = viewModel.getScreenType();
     if(t == RECIPIENT_SPECIFIC){
       adapter = new ManageAdapter(requireContext(), new IntroductionClickListener(this, this), t);
