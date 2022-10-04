@@ -31,6 +31,7 @@ public class ManageViewModel extends ViewModel {
   private final MutableLiveData<List<Pair<TI_Data, IntroducerInformation>>> introductions;
   private final ManageActivity.IntroductionScreenType type;
   private final String introducerName;
+  private boolean contactsLoaded;
 
   ManageViewModel(ManageManager manager, ManageActivity.IntroductionScreenType t, @Nullable String iN){
     this.manager = manager;
@@ -38,10 +39,16 @@ public class ManageViewModel extends ViewModel {
     introductions = new MutableLiveData<>();
     type = t;
     introducerName = iN;
+    contactsLoaded = false;
   }
 
   public void loadIntroductions(){
     manager.getIntroductions(introductions::postValue);
+    contactsLoaded = true;
+  }
+
+  public boolean contactsLoaded(){
+    return contactsLoaded;
   }
 
   public @Nullable String getIntroducerName(){
