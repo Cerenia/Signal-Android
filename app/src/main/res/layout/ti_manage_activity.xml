@@ -36,7 +36,6 @@
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/trusted_introduction_manage_fragment"
-        android:name="org.thoughtcrime.securesms.trustedIntroductions.receive.ManageListFragment"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:gravity="top"

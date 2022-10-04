@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.INTRODUCTION_DATE_PATTERN;
 import static org.thoughtcrime.securesms.trustedIntroductions.receive.ManageActivity.IntroductionScreenType.ALL;
 import static org.thoughtcrime.securesms.trustedIntroductions.receive.ManageActivity.IntroductionScreenType.RECIPIENT_SPECIFIC;
+import static org.thoughtcrime.securesms.trustedIntroductions.receive.ManageActivity.IntroductionScreenType.fromString;
 
 import com.pnikosis.materialishprogress.ProgressWheel;
 
@@ -24,6 +25,7 @@ import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.components.ButtonStripItemView;
 import org.thoughtcrime.securesms.components.ContactFilterView;
 import org.thoughtcrime.securesms.components.settings.models.Button;
+import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.R;
@@ -48,25 +50,40 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
   private TextView no_introductions;
   private TextView navigationExplanation;
   private TextView from_title_view;
-  private final RecipientId recipient;
-  private final ManageActivity.IntroductionScreenType type;
-  private final String name;
 
-  public ManageListFragment(RecipientId id, ManageActivity.IntroductionScreenType t, @Nullable String introducerName){
+  // Because final onCreate in AppCompat dissalows me from using a Fragment Factory, I need to use a Bundle for Arguments.
+  static String TYPE_KEY = "type_key";
+  static String NAME_KEY = "name_key";
+  static String ID_KEY = "id_key";
+
+
+  // TODO: Because onCreate in AppCompatActivity is final, we must use a default constructor without args..
+  public ManageListFragment(){
     super(R.layout.ti_manage_fragment);
-    recipient = id;
-    type = t;
-    name = introducerName;
   }
 
-  public void setViewModel(){
+  public void setViewModel(@NonNull Bundle args){
+    long l = args.getLong(ID_KEY);
+    RecipientId recipient = RecipientId.from(l);
+    ManageActivity.IntroductionScreenType type = fromString(args.getString(TYPE_KEY));
+    String name = args.getString(NAME_KEY);
     ManageViewModel.Factory factory = new ManageViewModel.Factory(recipient, type, name);
     viewModel = new ViewModelProvider(getActivity(), factory).get(ManageViewModel.class);;
   }
 
   @Override
+  public void onCreate(Bundle b){
+    Bundle args = getArguments();
+    if(args == null){
+      throw new AssertionError("ManageFragment cannot be created without Args!");
+    }
+    setViewModel(args);
+    super.onCreate(b);
+  }
+
+  @Override
   public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState){
-    setViewModel();
+    super.onViewCreated(view, savedInstanceState);
     viewModel.loadIntroductions();
     ManageActivity.IntroductionScreenType t = viewModel.getScreenType();
     if(t == RECIPIENT_SPECIFIC){
@@ -95,7 +112,7 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
     no_introductions = view.findViewById(R.id.no_introductions_found);
     navigationExplanation = view.findViewById(R.id.navigation_explanation);
     // Observer
-    final String finalIntroducerName = name;
+    final String finalIntroducerName = viewModel.getIntroducerName();
     viewModel.getIntroductions().observe(getViewLifecycleOwner(), introductions -> {
       if(introductions.size() > 0){
         no_introductions.setVisibility(View.GONE);
@@ -114,18 +131,18 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
       }
     });
     from_title_view = view.findViewById(R.id.introduction_title_view);
-    if (type == ALL){
+    if (viewModel.getScreenType() == ALL){
       from_title_view.clearAnimation();
       from_title_view.setVisibility(View.GONE);
     } else {
-      from_title_view.setText(String.format(getString(R.string.ManageIntroductionsActivity__Title_Introductions_from), name));
+      from_title_view.setText(String.format(getString(R.string.ManageIntroductionsActivity__Title_Introductions_from), viewModel.getIntroducerName()));
       from_title_view.setVisibility(View.VISIBLE);
     }
   }
 
   private void initializeNavigationButton(@NonNull View view){
     ButtonStripItemView                   button = view.findViewById(R.id.navigate_all_button);
-    switch(type){
+    switch(viewModel.getScreenType()){
       case RECIPIENT_SPECIFIC:
         button.setVisibility(View.VISIBLE);
         break;
@@ -198,22 +215,22 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
 
     private String getIntroducerName(ManageListItem item){
       String itemIntroducerName;
-      if(type == ALL){
+      if(viewModel.getScreenType() == ALL){
         itemIntroducerName = item.getIntroducerName(c);
         // could still be null after iff this introducer information has been cleared.
         itemIntroducerName = (itemIntroducerName == null) ? "forgotten introducer": itemIntroducerName;
       } else {
-        if(name == null){
+        if(viewModel.getIntroducerName() == null){
           throw new AssertionError("Expected name not to be null for Recipient Specific introductions!");
         }
-        itemIntroducerName = name;
+        itemIntroducerName = viewModel.getIntroducerName();
       }
       return itemIntroducerName;
     }
 
     // TODO
     @Override public void onItemClick(ManageListItem item) {
-      ForgetIntroducerDialog.show(c, item.getIntroductionId(), item.getIntroduceeName(), getIntroducerName(item), item.getDate(), forgetHandler, type);
+      ForgetIntroducerDialog.show(c, item.getIntroductionId(), item.getIntroduceeName(), getIntroducerName(item), item.getDate(), forgetHandler, viewModel.getScreenType());
     }
 
     @Override public void onItemLongClick(ManageListItem item) {
@@ -223,26 +240,5 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
 
   public interface onAllNavigationClicked{
     public void goToAll();
-  }
-}
-
-class ManageFragmentFactory extends FragmentFactory{
-
-  private RecipientId id;
-  private ManageActivity.IntroductionScreenType type;
-  private String introducerName;
-
-  public ManageFragmentFactory(RecipientId id, ManageActivity.IntroductionScreenType t, @Nullable String introducerName){
-    this.id = id;
-    this.type = t;
-    this.introducerName = introducerName;
-  }
-
-  @Override
-  public Fragment instantiate(@NonNull ClassLoader classLoader, @NonNull String className){
-    if(className.compareTo(ManageListFragment.class.getName()) == 0){
-      return new ManageListFragment(id, type, introducerName);
-    }
-    return super.instantiate(classLoader, className);
   }
 }

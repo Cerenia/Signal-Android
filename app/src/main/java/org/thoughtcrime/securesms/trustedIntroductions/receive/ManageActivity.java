@@ -14,11 +14,16 @@ import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.PassphraseRequiredActivity;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.components.ContactFilterView;
+import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.send.ContactsSelectionListFragment;
 import org.thoughtcrime.securesms.util.DynamicNoActionBarTheme;
 import org.thoughtcrime.securesms.util.DynamicTheme;
+
+import static org.thoughtcrime.securesms.trustedIntroductions.receive.ManageListFragment.ID_KEY;
+import static org.thoughtcrime.securesms.trustedIntroductions.receive.ManageListFragment.NAME_KEY;
+import static org.thoughtcrime.securesms.trustedIntroductions.receive.ManageListFragment.TYPE_KEY;
 
 /**
  * Opens an Activity for Managing Trusted Introductions.
@@ -37,6 +42,14 @@ public class ManageActivity extends PassphraseRequiredActivity implements Manage
   public enum IntroductionScreenType {
     ALL,
     RECIPIENT_SPECIFIC;
+
+    public static IntroductionScreenType fromString(String state) {
+      if(state.equals(ALL.toString())) return ALL;
+      if(state.equals(RECIPIENT_SPECIFIC.toString())) return RECIPIENT_SPECIFIC;
+      else{
+        throw new AssertionError("No such screen state!");
+      }
+    }
   }
 
   // String
@@ -50,7 +63,7 @@ public class ManageActivity extends PassphraseRequiredActivity implements Manage
 
 
   private final DynamicTheme dynamicTheme = new DynamicNoActionBarTheme();
-  private final Context context = this;
+  private String introducerName = null;
 
   /**
    * @param id Pass unknown to get the view for all introductions.
@@ -61,18 +74,18 @@ public class ManageActivity extends PassphraseRequiredActivity implements Manage
     return intent;
   }
 
+
+  // TODO: You are probably overriding the wrong function... onCreate(Bundle savedInstanceState) is final..
   @Override protected void onCreate(Bundle savedInstanceState, boolean ready){
     //Decide what kind of screen must be instantiated
     RecipientId introducerId = setIntroducerId(savedInstanceState);
     IntroductionScreenType t;
-    String introducerName = null;
     if (introducerId.equals(RecipientId.UNKNOWN)){
       t = IntroductionScreenType.ALL;
     } else {
       t = IntroductionScreenType.RECIPIENT_SPECIFIC;
       introducerName = Recipient.live(introducerId).resolve().getDisplayNameOrUsername(this);
     }
-    getSupportFragmentManager().setFragmentFactory(new ManageFragmentFactory(introducerId, t, introducerName));
     super.onCreate(savedInstanceState, ready);
 
     dynamicTheme.onCreate(this);
@@ -83,7 +96,22 @@ public class ManageActivity extends PassphraseRequiredActivity implements Manage
     contactFilterView = findViewById(R.id.introduction_filter_edit_text);
 
     // Initialize
-    ManageListFragment fragment = (ManageListFragment) getSupportFragmentManager().findFragmentById(R.id.trusted_introduction_manage_fragment);
+    ManageListFragment fragment;
+    if(savedInstanceState == null){
+      fragment = new ManageListFragment();
+      Bundle fragmentBundle = new Bundle();
+      fragmentBundle.putString(NAME_KEY, introducerName);
+      fragmentBundle.putLong(ID_KEY, introducerId.toLong());
+      fragmentBundle.putString(TYPE_KEY, t.toString());
+      fragment.setArguments(fragmentBundle);
+      FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+      fragmentTransaction.setReorderingAllowed(true);
+      fragmentTransaction.addToBackStack(t.toString());
+      fragmentTransaction.add(R.id.trusted_introduction_manage_fragment, fragment, t.toString());
+      fragmentTransaction.commit();
+    } else {
+      fragment = (ManageListFragment) getSupportFragmentManager().findFragmentByTag(t.toString());
+    }
     initializeToolbar();
 
     // Observers
@@ -99,12 +127,18 @@ public class ManageActivity extends PassphraseRequiredActivity implements Manage
   @Override public void goToAll() {
     // New all Fragment
     IntroductionScreenType t = IntroductionScreenType.ALL;
-    ManageListFragment fragment = new ManageListFragment(RecipientId.UNKNOWN,  t,null);
+    ManageListFragment fragment = new ManageListFragment();
+    Bundle fragmentBundle = new Bundle();
+    fragmentBundle.putString(NAME_KEY, introducerName);
+    fragmentBundle.putLong(ID_KEY, introducerId);
+    fragmentBundle.putString(TYPE_KEY, t.toString());
+    fragment.setArguments(fragmentBundle);
     FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
     fragmentTransaction.setReorderingAllowed(true);
-    fragmentTransaction.replace(R.id.trusted_introduction_manage_fragment, fragment, t.toString());
-    fragmentTransaction.addToBackStack(null);
+    fragmentTransaction.addToBackStack(t.toString());
+    fragmentTransaction.add(R.id.trusted_introduction_manage_fragment, fragment, t.toString());
     fragmentTransaction.commit();
+    contactFilterView.setOnFilterChangedListener(fragment);
   }
 
   /**
