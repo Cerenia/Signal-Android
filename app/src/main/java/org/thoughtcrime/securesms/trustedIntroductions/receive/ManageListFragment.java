@@ -85,11 +85,7 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
       viewModel.loadIntroductions();
     }
     ManageActivity.IntroductionScreenType t = viewModel.getScreenType();
-    if(t == RECIPIENT_SPECIFIC){
-      adapter = new ManageAdapter(requireContext(), new IntroductionClickListener(this, this), t);
-    } else {
-      // TODO: all adapter has different list item layouts + a sticky header.
-    }
+    adapter = new ManageAdapter(requireContext(), new IntroductionClickListener(this, this), t);
     introductionList = view.findViewById(R.id.recycler_view);
     introductionList.setClipToPadding(true);
     introductionList.setAdapter(adapter);
@@ -133,7 +129,6 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
     });
     from_title_view = view.findViewById(R.id.introduction_title_view);
     if (viewModel.getScreenType() == ALL){
-      from_title_view.clearAnimation();
       from_title_view.setVisibility(View.GONE);
     } else {
       from_title_view.setText(String.format(getString(R.string.ManageIntroductionsActivity__Title_Introductions_from), viewModel.getIntroducerName()));

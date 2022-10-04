@@ -489,23 +489,9 @@ public class TrustedIntroductionsDatabase extends Database {
   public class IntroductionReader implements Closeable{
     private final Cursor cursor;
 
-    private boolean checkProjection(Cursor c){
-      String[] projection = TI_ALL_PROJECTION;
-      String[] columns = c.getColumnNames();
-      Arrays.sort(projection);
-      Arrays.sort(columns);
-      for (int i = 0; i < projection.length; i++){
-        if(!projection[i].equals(columns[i])){
-          return false;
-        }
-      }
-      return true;
-    }
-
     // TODO: Make it slightly more flexible in terms of which data you pass around.
     // A cursor pointing to the result of a query using TI_DATA_PROJECTION
     IntroductionReader(Cursor c){
-      Preconditions.checkArgument(checkProjection(c));
       cursor = c;
     }
 
