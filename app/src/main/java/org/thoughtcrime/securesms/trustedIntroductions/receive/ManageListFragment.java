@@ -13,6 +13,7 @@ import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentFactory;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.lifecycle.ViewModelStoreOwner;
 import androidx.recyclerview.widget.RecyclerView;
 import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.INTRODUCTION_DATE_PATTERN;
 import static org.thoughtcrime.securesms.trustedIntroductions.receive.ManageActivity.IntroductionScreenType.ALL;
@@ -56,19 +57,18 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
   static String NAME_KEY = "name_key";
   static String ID_KEY = "id_key";
 
-
   // TODO: Because onCreate in AppCompatActivity is final, we must use a default constructor without args..
   public ManageListFragment(){
     super(R.layout.ti_manage_fragment);
   }
 
-  public void setViewModel(@NonNull Bundle args){
+  public void setViewModel(@NonNull Bundle args, @NonNull ViewModelStoreOwner owner){
     long l = args.getLong(ID_KEY);
     RecipientId recipient = RecipientId.from(l);
     ManageActivity.IntroductionScreenType type = fromString(args.getString(TYPE_KEY));
     String name = args.getString(NAME_KEY);
     ManageViewModel.Factory factory = new ManageViewModel.Factory(recipient, type, name);
-    viewModel = new ViewModelProvider(getActivity(), factory).get(ManageViewModel.class);;
+    viewModel = new ViewModelProvider(owner, factory).get(ManageViewModel.class);
   }
 
   @Override
@@ -77,7 +77,7 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
     if(args == null){
       throw new AssertionError("ManageFragment cannot be created without Args!");
     }
-    setViewModel(args);
+    setViewModel(args, getActivity());
     super.onCreate(b);
   }
 

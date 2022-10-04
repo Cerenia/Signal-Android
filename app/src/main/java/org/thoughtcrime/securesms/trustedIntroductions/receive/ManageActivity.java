@@ -80,7 +80,7 @@ public class ManageActivity extends PassphraseRequiredActivity implements Manage
     //Decide what kind of screen must be instantiated
     RecipientId introducerId = setIntroducerId(savedInstanceState);
     IntroductionScreenType t;
-    if (introducerId.equals(RecipientId.UNKNOWN)){
+    if (introducerId.equals(ALL_INTRODUCTIONS)){
       t = IntroductionScreenType.ALL;
     } else {
       t = IntroductionScreenType.RECIPIENT_SPECIFIC;
@@ -130,13 +130,14 @@ public class ManageActivity extends PassphraseRequiredActivity implements Manage
     ManageListFragment fragment = new ManageListFragment();
     Bundle fragmentBundle = new Bundle();
     fragmentBundle.putString(NAME_KEY, introducerName);
-    fragmentBundle.putLong(ID_KEY, introducerId);
+    fragmentBundle.putLong(ID_KEY, ALL_INTRODUCTIONS);
     fragmentBundle.putString(TYPE_KEY, t.toString());
     fragment.setArguments(fragmentBundle);
+    fragment.setViewModel(fragmentBundle, this);
     FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
     fragmentTransaction.setReorderingAllowed(true);
     fragmentTransaction.addToBackStack(t.toString());
-    fragmentTransaction.replace(R.id.trusted_introduction_manage_fragment, fragment, t.toString());
+    fragmentTransaction.add(R.id.trusted_introduction_manage_fragment, fragment, t.toString());
     fragmentTransaction.commit();
     contactFilterView.setOnFilterChangedListener(fragment);
   }
