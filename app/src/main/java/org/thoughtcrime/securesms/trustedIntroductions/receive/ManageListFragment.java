@@ -62,7 +62,7 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
     super(R.layout.ti_manage_fragment);
   }
 
-  public void setViewModel(@NonNull Bundle args, @NonNull ViewModelStoreOwner owner){
+  private void setViewModel(@NonNull Bundle args, @NonNull ViewModelStoreOwner owner){
     long l = args.getLong(ID_KEY);
     RecipientId recipient = RecipientId.from(l);
     ManageActivity.IntroductionScreenType type = fromString(args.getString(TYPE_KEY));
@@ -77,13 +77,16 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
     if(args == null){
       throw new AssertionError("ManageFragment cannot be created without Args!");
     }
-    setViewModel(args, getActivity());
+    setViewModel(args, this);
     super.onCreate(b);
   }
 
   @Override
   public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState){
     super.onViewCreated(view, savedInstanceState);
+    if(viewModel == null){
+      setViewModel(getArguments(), this);
+    }
     viewModel.loadIntroductions();
     ManageActivity.IntroductionScreenType t = viewModel.getScreenType();
     if(t == RECIPIENT_SPECIFIC){
