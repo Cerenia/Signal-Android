@@ -133,10 +133,10 @@ public class ManageActivity extends PassphraseRequiredActivity implements Manage
     fragmentBundle.putLong(ID_KEY, ALL_INTRODUCTIONS);
     fragmentBundle.putString(TYPE_KEY, t.toString());
     fragment.setArguments(fragmentBundle);
-    fragment.setViewModel(fragmentBundle, this);
     FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
     fragmentTransaction.setReorderingAllowed(true);
     fragmentTransaction.addToBackStack(t.toString());
+    fragmentTransaction.detach((ManageListFragment) getSupportFragmentManager().findFragmentByTag(IntroductionScreenType.RECIPIENT_SPECIFIC.toString()));
     fragmentTransaction.add(R.id.trusted_introduction_manage_fragment, fragment, t.toString());
     fragmentTransaction.commit();
     contactFilterView.setOnFilterChangedListener(fragment);
