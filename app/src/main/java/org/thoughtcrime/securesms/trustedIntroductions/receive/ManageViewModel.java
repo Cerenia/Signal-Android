@@ -1,7 +1,5 @@
 package org.thoughtcrime.securesms.trustedIntroductions.receive;
 
-import android.content.Context;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
@@ -31,24 +29,24 @@ public class ManageViewModel extends ViewModel {
   private final MutableLiveData<List<Pair<TI_Data, IntroducerInformation>>> introductions;
   private final ManageActivity.IntroductionScreenType type;
   private final String introducerName;
-  private boolean contactsLoaded;
+  private boolean      introductionsLoaded;
 
   ManageViewModel(ManageManager manager, ManageActivity.IntroductionScreenType t, @Nullable String iN){
     this.manager = manager;
     filter = new MutableLiveData<>("");
     introductions = new MutableLiveData<>();
     type = t;
-    introducerName = iN;
-    contactsLoaded = false;
+    introducerName      = iN;
+    introductionsLoaded = false;
   }
 
   public void loadIntroductions(){
     manager.getIntroductions(introductions::postValue);
-    contactsLoaded = true;
+    introductionsLoaded = true;
   }
 
-  public boolean contactsLoaded(){
-    return contactsLoaded;
+  public boolean introductionsLoaded(){
+    return introductionsLoaded;
   }
 
   public @Nullable String getIntroducerName(){
