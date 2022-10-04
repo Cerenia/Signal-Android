@@ -30,7 +30,7 @@ public class ManageManager {
   // Introducer ID, or special iff all.
   private final RecipientId recipientId;
   // TODO: Does this cause problems?
-  public final RecipientId ALL_INTRODUCERS = RecipientId.UNKNOWN;
+  private final RecipientId ALL_INTRODUCERS = RecipientId.from(ManageActivity.ALL_INTRODUCTIONS);
 
   // Dependency injection
   private final TrustedIntroductionsDatabase tdb;
