@@ -2,16 +2,13 @@ package org.thoughtcrime.securesms.trustedIntroductions.receive;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentFactory;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelStoreOwner;
 import androidx.recyclerview.widget.RecyclerView;
@@ -25,12 +22,9 @@ import com.pnikosis.materialishprogress.ProgressWheel;
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.components.ButtonStripItemView;
 import org.thoughtcrime.securesms.components.ContactFilterView;
-import org.thoughtcrime.securesms.components.settings.models.Button;
-import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.R;
-import org.whispersystems.signalservice.api.util.Preconditions;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -87,7 +81,7 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
     if(viewModel == null){
       setViewModel(getArguments(), this);
     }
-    if(!viewModel.contactsLoaded()){
+    if(!viewModel.introductionsLoaded()){
       viewModel.loadIntroductions();
     }
     ManageActivity.IntroductionScreenType t = viewModel.getScreenType();
@@ -122,7 +116,9 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
       if(introductions.size() > 0){
         no_introductions.setVisibility(View.GONE);
         navigationExplanation.setVisibility(View.VISIBLE);
-        from_title_view.setVisibility(View.VISIBLE);
+        if(viewModel.getScreenType() == RECIPIENT_SPECIFIC){
+          from_title_view.setVisibility(View.VISIBLE);
+        }
         refreshList();
       } else {
         no_introductions.setVisibility(View.VISIBLE);
