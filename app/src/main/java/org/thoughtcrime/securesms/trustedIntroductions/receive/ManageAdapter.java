@@ -93,8 +93,8 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
      * @param t screen type @See ManageActivity.IntroductionScreenType
      */
     @SuppressLint("RestrictedApi") public void bind(@Nullable TI_Data d, @Nullable ManageViewModel.IntroducerInformation i, @NonNull ManageActivity.IntroductionScreenType t){
-      Preconditions.checkArgument((d == null && i == null && t.equals(ALL))
-                                  | (d != null && i != null && t.equals(ManageActivity.IntroductionScreenType.RECIPIENT_SPECIFIC)));
+      //Preconditions.checkArgument((d == null && i == null && t.equals(ALL))
+        //                          | (d != null && i != null && t.equals(ManageActivity.IntroductionScreenType.RECIPIENT_SPECIFIC)));
       getView().set(d, i, t);
     }
 
