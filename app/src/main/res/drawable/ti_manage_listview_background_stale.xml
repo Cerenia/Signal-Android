@@ -3,7 +3,7 @@
     <padding android:left="@dimen/TI_border_visibility_padding" android:right="@dimen/TI_border_visibility_padding" android:top="@dimen/TI_border_visibility_padding" android:bottom="@dimen/TI_border_visibility_padding"/>
     <solid android:color="@color/signal_colorSurfaceVariant_38"/>
     <stroke
-        android:width="@dimen/TI_border_visibility_padding"
+        android:width="@dimen/TI_listview_border_thickness"
         android:color="#000000" />
     <corners android:radius="@dimen/TI_listview_corner_radius"/>
 </shape>
