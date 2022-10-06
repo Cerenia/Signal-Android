@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="TI_border_visibility_padding">3dp</dimen>
+    <dimen name="TI_border_visibility_padding">5dp</dimen>
     <dimen name="TI_background_margin">5dp</dimen>
-    <dimen name="TI_listview_corner_radius">30dp</dimen>
+    <dimen name="TI_listview_corner_radius">18dp</dimen>
+    <dimen name="TI_listview_border_thickness">2dp</dimen>
     <dimen name="signal_m3_toolbar_height">64dp</dimen>
 
     <dimen name="min_keyboard_size">60dp</dimen>
