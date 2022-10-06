@@ -52,6 +52,8 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
   static String NAME_KEY = "name_key";
   static String ID_KEY = "id_key";
 
+  static String FORGOTTEN_INTRODUCER;
+
   // TODO: Because onCreate in AppCompatActivity is final, we must use a default constructor without args..
   public ManageListFragment(){
     super(R.layout.ti_manage_fragment);
@@ -72,6 +74,7 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
     if(args == null){
       throw new AssertionError("ManageFragment cannot be created without Args!");
     }
+    FORGOTTEN_INTRODUCER = getString(R.string.ManageIntroductionsListItem__Forgotten_Introducer);
     setViewModel(args, this);
     super.onCreate(b);
   }
