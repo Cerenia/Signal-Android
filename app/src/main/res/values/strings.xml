@@ -3959,12 +3959,6 @@
     <string name="DeleteIntroductionDialog__Title">Delete Introduction:</string>
     <string name="DeleteIntroductionDialog__Delete_Introduction">Are you sure that you want to delete %1$s\'s introduction of %2$s from the %3$s? This action is not reversible!</string>
 
-    <!-- ForgetIntroucerDialog -->
-    <string name="ForgetIntroucerDialog__Title">Erase Introducer:</string>
-    <string name="ForgetIntroucerDialog__Forget_Introducer_RECIPIENT_SPECIFIC">Are you sure that you want to forget that %1$s introduced you to %2$s on the %3$s? This action is not reversible! The introduction will disappear from this screen but will still be listed as an introduction.</string>
-    <string name="ForgetIntroucerDialog__Forget_Introducer_ALL">Are you sure that you want to forget that %1$s introduced you to %2$s on the %3$s? This action is not reversible!</string>
-    <string name="ForgetIntroucerDialog__forget">Erase</string>
-
     <!-- Trusted Introductions -->
     <!-- ClearVerificationDialog -->
     <string name="ClearVerificationDialog__Positive">Clear</string>
@@ -3984,6 +3978,7 @@
     <string name="ManageIntroductionsFragment__No_Introductions_all">Nobody has introduced anyone to you yet. Try asking your contacts for introductions or start by introducing someone to them!</string>
     <string name="ManageIntroductionsFragment__Title_Introductions_from">From %1$s\:</string>
     <string name="ManageIntroductionsFragment__navigate_text">Show all</string>
+    <string name="ManageIntroductionsFragment__already_erased_toast">You already erased the introducer information of this introduction.</string>
     <!-- ManageIntroductionsListItem -->
     <string name="ManageIntroductionsListItem__Pending">Pending</string>
     <string name="ManageIntroductionsListItem__Rejected">Rejected</string>
@@ -3992,6 +3987,11 @@
     <string name="ManageIntroductionsListItem__Stale">Stale</string>
     <string name="ManageIntroductionsListItem__Forgotten_Introducer">erased</string>
 
+    <!-- ForgetIntroucerDialog -->
+    <string name="ForgetIntroucerDialog__Title">Erase Introducer:</string>
+    <string name="ForgetIntroucerDialog__Forget_Introducer_RECIPIENT_SPECIFIC">Are you sure that you want to forget that %1$s introduced you to %2$s on the %3$s? This action is not reversible! The introduction will disappear from this screen but will still be listed as an introduction.</string>
+    <string name="ForgetIntroucerDialog__Forget_Introducer_ALL">Are you sure that you want to forget that %1$s introduced you to %2$s on the %3$s? This action is not reversible!</string>
+    <string name="ForgetIntroucerDialog__forget">Erase</string>
 
     <!-- GroupsInCommonMessageRequest -->
     <string name="GroupsInCommonMessageRequest__you_have_no_groups_in_common_with_this_person">You have no groups in common with this person. Review requests carefully before accepting to avoid unwanted messages.</string>
