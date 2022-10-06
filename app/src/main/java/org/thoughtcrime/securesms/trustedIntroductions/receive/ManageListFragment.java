@@ -64,7 +64,7 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
     RecipientId recipient = RecipientId.from(l);
     ManageActivity.IntroductionScreenType type = fromString(args.getString(TYPE_KEY));
     String name = args.getString(NAME_KEY);
-    ManageViewModel.Factory factory = new ManageViewModel.Factory(recipient, type, name);
+    ManageViewModel.Factory factory = new ManageViewModel.Factory(recipient, type, name, FORGOTTEN_INTRODUCER);
     viewModel = new ViewModelProvider(owner, factory).get(ManageViewModel.class);
   }
 
