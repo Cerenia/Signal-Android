@@ -518,7 +518,7 @@ public class TrustedIntroductionsDatabase extends Database {
     }
 
     /**
-     * advances one row and returns it.
+     * advances one row and returns it, null if empty, or cursor after last.
      */
     public @Nullable TI_Data getNext(){
       cursor.moveToNext();

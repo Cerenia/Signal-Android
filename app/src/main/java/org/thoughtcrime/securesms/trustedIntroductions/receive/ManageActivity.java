@@ -3,7 +3,6 @@ package org.thoughtcrime.securesms.trustedIntroductions.receive;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.PersistableBundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -14,10 +13,8 @@ import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.PassphraseRequiredActivity;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.components.ContactFilterView;
-import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
-import org.thoughtcrime.securesms.trustedIntroductions.send.ContactsSelectionListFragment;
 import org.thoughtcrime.securesms.util.DynamicNoActionBarTheme;
 import org.thoughtcrime.securesms.util.DynamicTheme;
 
@@ -157,7 +154,7 @@ public class ManageActivity extends PassphraseRequiredActivity implements Manage
 
   private void initializeToolbar() {
     setSupportActionBar(toolbar);
-    toolbar.setTitle(R.string.ManageIntroductionsActivity__Toolbar_Title);
+    toolbar.setTitle(R.string.ManageIntroductionsActivity__Toolbar_Title_Recipient);
     getSupportActionBar().setDisplayHomeAsUpEnabled(false);
     getSupportActionBar().setIcon(null);
     getSupportActionBar().setLogo(null);

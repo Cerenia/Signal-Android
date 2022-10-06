@@ -120,10 +120,10 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
         no_introductions.setVisibility(View.VISIBLE);
         navigationExplanation.setVisibility(View.GONE);
         from_title_view.setVisibility(View.GONE);
-        if(finalIntroducerName == null){
-          no_introductions.setText(R.string.ManageIntroductionsActivity__No_Introductions_all);
+        if(viewModel.getScreenType() == ALL){
+          no_introductions.setText(R.string.ManageIntroductionsFragment__No_Introductions_all);
         } else {
-          no_introductions.setText(this.getString(R.string.ManageIntroductionsActivity__No_Introductions_from, finalIntroducerName));
+          no_introductions.setText(this.getString(R.string.ManageIntroductionsFragment__No_Introductions_from, finalIntroducerName));
         }
       }
     });
@@ -131,7 +131,7 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
     if (viewModel.getScreenType() == ALL){
       from_title_view.setVisibility(View.GONE);
     } else {
-      from_title_view.setText(String.format(getString(R.string.ManageIntroductionsActivity__Title_Introductions_from), viewModel.getIntroducerName()));
+      from_title_view.setText(String.format(getString(R.string.ManageIntroductionsFragment__Title_Introductions_from), viewModel.getIntroducerName()));
       from_title_view.setVisibility(View.VISIBLE);
     }
   }
