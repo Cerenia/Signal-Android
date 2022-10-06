@@ -3986,6 +3986,10 @@
     <string name="ManageIntroductionsListItem__Conflicting">Conflicting</string>
     <string name="ManageIntroductionsListItem__Stale">Stale</string>
     <string name="ManageIntroductionsListItem__Forgotten_Introducer">erased</string>
+    <!-- ManageIntroductionsListItemHeader -->
+    <string name="ManageIntroductionsListItemHeader__Date">Date</string>
+    <string name="ManageIntroductionsListItemHeader__Introducee">Introducee</string>
+    <string name="ManageIntroductionsListItemHeader__Introducer">Introducer</string>
 
     <!-- ForgetIntroucerDialog -->
     <string name="ForgetIntroucerDialog__Title">Erase Introducer:</string>
