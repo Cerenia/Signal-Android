@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -214,7 +215,7 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
       if(viewModel.getScreenType() == ALL){
         itemIntroducerName = item.getIntroducerName(c);
         // could still be null after iff this introducer information has been cleared.
-        itemIntroducerName = (itemIntroducerName == null) ? "forgotten introducer": itemIntroducerName;
+        itemIntroducerName = (itemIntroducerName == null) ? getString(R.string.ManageIntroductionsListItem__Forgotten_Introducer): itemIntroducerName;
       } else {
         if(viewModel.getIntroducerName() == null){
           throw new AssertionError("Expected name not to be null for Recipient Specific introductions!");
@@ -226,7 +227,11 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
 
     // TODO
     @Override public void onItemClick(ManageListItem item) {
-      ForgetIntroducerDialog.show(c, item.getIntroductionId(), item.getIntroduceeName(), getIntroducerName(item), item.getDate(), forgetHandler, viewModel.getScreenType());
+      String name = getIntroducerName(item);
+      if(!name.equals(getString(R.string.ManageIntroductionsListItem__Forgotten_Introducer))){
+        ForgetIntroducerDialog.show(c, item.getIntroductionId(), item.getIntroduceeName(), getIntroducerName(item), item.getDate(), forgetHandler, viewModel.getScreenType());
+      }
+      Toast.makeText(c, R.string.ManageIntroductionsFragment__already_erased_toast, Toast.LENGTH_SHORT).show();
     }
 
     @Override public void onItemLongClick(ManageListItem item) {
