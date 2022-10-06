@@ -3960,10 +3960,10 @@
     <string name="DeleteIntroductionDialog__Delete_Introduction">Are you sure that you want to delete %1$s\'s introduction of %2$s from the %3$s? This action is not reversible!</string>
 
     <!-- ForgetIntroucerDialog -->
-    <string name="ForgetIntroucerDialog__Title">Forget Introducer:</string>
-    <string name="ForgetIntroucerDialog__Forget_Introducer_RECIPIENT_SPECIFIC">Are you sure that you want to forget that %1$s introduced you to %2$s on the %3$s? This action is not reversible! The introduction will disappear from this screen but will still be listed with all introductions, with an unknown introducer.</string>
+    <string name="ForgetIntroucerDialog__Title">Erase Introducer:</string>
+    <string name="ForgetIntroucerDialog__Forget_Introducer_RECIPIENT_SPECIFIC">Are you sure that you want to forget that %1$s introduced you to %2$s on the %3$s? This action is not reversible! The introduction will disappear from this screen but will still be listed as an introduction.</string>
     <string name="ForgetIntroucerDialog__Forget_Introducer_ALL">Are you sure that you want to forget that %1$s introduced you to %2$s on the %3$s? This action is not reversible!</string>
-    <string name ="ForgetIntroucerDialog__forget">Forget</string>
+    <string name="ForgetIntroucerDialog__forget">Erase</string>
 
     <!-- Trusted Introductions -->
     <!-- ClearVerificationDialog -->
@@ -3990,6 +3990,7 @@
     <string name="ManageIntroductionsListItem__Accepted">Accepted</string>
     <string name="ManageIntroductionsListItem__Conflicting">Conflicting</string>
     <string name="ManageIntroductionsListItem__Stale">Stale</string>
+    <string name="ManageIntroductionsListItem__Forgotten_Introducer">erased</string>
 
 
     <!-- GroupsInCommonMessageRequest -->

@@ -31,9 +31,6 @@ public class ManageActivity extends PassphraseRequiredActivity implements Manage
 
   private static final String TAG = Log.tag(ManageActivity.class);
 
-  // Used instead of name & number in introductions where introducer information was cleared.
-  public static final String FORGOTTEN = "unknown";
-
   private long introducerId;
 
   public enum IntroductionScreenType {
