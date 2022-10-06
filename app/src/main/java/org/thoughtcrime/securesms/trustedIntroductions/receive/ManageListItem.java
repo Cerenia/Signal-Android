@@ -8,6 +8,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.constraintlayout.widget.Guideline;
 import androidx.core.content.ContextCompat;
 
 import com.google.android.material.switchmaterial.SwitchMaterial;
@@ -33,7 +34,8 @@ public class ManageListItem extends ConstraintLayout {
   private TextView                                         introduceeName;
   private TextView                                         introduceeNumber;
   private                                   SwitchMaterial yn;
-  private TextView yn_label;
+  private TextView  yn_label;
+  private Guideline guideline;
 
 
 
@@ -56,6 +58,7 @@ public class ManageListItem extends ConstraintLayout {
     this.introduceeNumber = findViewById(R.id.introduceeNumber);
     this.yn               = findViewById(R.id.switch_yn);
     this.yn_label = findViewById(R.id.switch_label);
+    this.guideline = findViewById(R.id.half_guide);
   }
 
   public void set(@NonNull TI_Data data, @NonNull ManageViewModel.IntroducerInformation introducerInformation, ManageActivity.IntroductionScreenType t){
@@ -73,9 +76,11 @@ public class ManageListItem extends ConstraintLayout {
       introducerName.setText(introducerInformation.name);
       introducerNumber.setVisibility(View.VISIBLE);
       introducerName.setVisibility(View.VISIBLE);
+      guideline.setGuidelinePercent(0.5f);
     } else {
       introducerName.setVisibility(View.GONE);
       introducerNumber.setVisibility(View.GONE);
+      guideline.setGuidelinePercent(0.75f);
     }
     changeByState(data.getState());
   }

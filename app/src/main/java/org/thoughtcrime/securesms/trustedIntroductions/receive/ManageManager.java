@@ -58,7 +58,9 @@ public class ManageManager {
         } else {
           Recipient r = Recipient.live(d.getIntroducerId()).resolve();
           String number = r.getE164().orElse("");
-          i = new ManageViewModel.IntroducerInformation(r.getUsername().orElse(number), number);
+          // TODO: using getApplication context because the context doesn't matter... (22-10-06)
+          // It just circularly gets passed around between methods in the Recipient but is never used for anything.
+          i = new ManageViewModel.IntroducerInformation(r.getDisplayNameOrUsername(getApplicationContext()), number);
         }
         result.add(new Pair<>(d, i));
       }
