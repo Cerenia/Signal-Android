@@ -11,12 +11,11 @@
     android:paddingStart="@dimen/dsl_settings_gutter"
     android:paddingEnd="@dimen/dsl_settings_gutter">
 
-
     <org.thoughtcrime.securesms.components.FromTextView
         android:id="@+id/timestamp_date"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
+        android:layout_marginStart="8dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="2dp"
         android:drawablePadding="4dp"
@@ -25,6 +24,7 @@
         android:textAppearance="@style/Signal.Text.BodyMedium"
         android:textColor="@color/signal_text_primary"
         android:gravity="start|top"
+        app:layout_constraintHorizontal_bias="0"
         app:layout_constraintBottom_toBottomOf="@id/timestamp_time"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -33,7 +33,7 @@
         android:id="@+id/timestamp_time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
+        android:layout_marginStart="8dp"
         android:layout_marginEnd="16dp"
         android:layout_marginTop="2dp"
         android:drawablePadding="4dp"
@@ -42,9 +42,59 @@
         android:textAppearance="@style/Signal.Text.BodyMedium"
         android:textColor="@color/signal_text_primary"
         android:gravity="start|bottom"
+        app:layout_constraintHorizontal_bias="0"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@id/timestamp_date" />
+
+
+    <org.thoughtcrime.securesms.components.FromTextView
+        android:id="@+id/introduceeName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:drawablePadding="4dp"
+        android:ellipsize="marquee"
+        android:singleLine="true"
+        android:textAppearance="@style/Signal.Text.BodyLarge"
+        android:textColor="@color/signal_text_primary"
+        android:gravity="start|top"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintBottom_toTopOf="@id/introduceeNumber"
+        app:layout_constraintStart_toEndOf="@id/timestamp_date"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="packed"
+        app:layout_constraintEnd_toStartOf="@id/half_guide"
+        tools:text="@sample/contacts.json/data/name" />
+
+    <org.thoughtcrime.securesms.components.FromTextView
+        android:id="@+id/introduceeNumber"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:drawablePadding="4dp"
+        android:ellipsize="marquee"
+        android:singleLine="true"
+        android:textAppearance="@style/Signal.Text.BodyMedium"
+        android:textColor="@color/signal_text_secondary"
+        android:textDirection="ltr"
+        android:gravity="start|bottom"
+        app:layout_constraintTop_toBottomOf="@id/introduceeName"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@id/timestamp_date"
+        app:layout_constraintEnd_toStartOf="@id/half_guide"
+        app:layout_constraintVertical_chainStyle="packed"
+        app:layout_constraintHorizontal_bias="0"
+        tools:text="@sample/contacts.json/data/number" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/half_guide"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.5" />
 
     <org.thoughtcrime.securesms.components.FromTextView
         android:id="@+id/introducerName"
@@ -60,15 +110,16 @@
         android:gravity="start|top"
         android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@id/introduceeNumber"
-        app:layout_constraintStart_toEndOf="@id/timestamp_date"
+        app:layout_constraintEnd_toStartOf="@id/switch_label"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_chainStyle="packed"
-        app:layout_constraintEnd_toStartOf="@id/introduceeName"
+        app:layout_constraintStart_toStartOf="@id/half_guide"
+        app:layout_constraintHorizontal_bias="0"
         tools:text="@sample/contacts.json/data/name" />
 
     <org.thoughtcrime.securesms.components.FromTextView
         android:id="@+id/introducerNumber"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
@@ -83,65 +134,26 @@
         app:layout_constrainedWidth="true"
         app:layout_constraintTop_toBottomOf="@id/introducerName"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@id/timestamp_date"
-        app:layout_constraintHorizontal_chainStyle="packed"
-        app:layout_constraintHorizontal_bias="0"
-        app:layout_constraintEnd_toStartOf="@id/introduceeName"
-        tools:text="@sample/contacts.json/data/number" />
-
-    <org.thoughtcrime.securesms.components.FromTextView
-        android:id="@+id/introduceeName"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:drawablePadding="4dp"
-        android:ellipsize="marquee"
-        android:singleLine="true"
-        android:textAppearance="@style/Signal.Text.BodyLarge"
-        android:textColor="@color/signal_text_primary"
-        android:gravity="start|top"
-        app:layout_constraintBottom_toTopOf="@id/introduceeNumber"
-        app:layout_constraintStart_toEndOf="@id/introducerName"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/switch_label"
+        app:layout_constraintStart_toEndOf="@id/half_guide"
         app:layout_constraintVertical_chainStyle="packed"
-        app:layout_constraintEnd_toStartOf="@id/switch_label"
-        tools:text="@sample/contacts.json/data/name" />
-
-    <org.thoughtcrime.securesms.components.FromTextView
-        android:id="@+id/introduceeNumber"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:drawablePadding="4dp"
-        android:ellipsize="marquee"
-        android:singleLine="true"
-        android:textAppearance="@style/Signal.Text.BodyMedium"
-        android:textColor="@color/signal_text_secondary"
-        android:textDirection="ltr"
-        android:gravity="start|bottom"
-        app:layout_constrainedWidth="true"
-        app:layout_constraintTop_toBottomOf="@id/introduceeName"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@id/introducerName"
-        app:layout_constraintHorizontal_chainStyle="packed"
         app:layout_constraintHorizontal_bias="0"
-        app:layout_constraintEnd_toStartOf="@id/switch_label"
         tools:text="@sample/contacts.json/data/number" />
+
 
     <org.thoughtcrime.securesms.components.FromTextView
         android:id="@+id/switch_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
+        android:layout_marginEnd="8dp"
         android:drawablePadding="4dp"
         android:ellipsize="marquee"
         android:singleLine="true"
         android:textAppearance="@style/Signal.Text.BodyMedium"
         android:textColor="@color/signal_text_primary"
         android:gravity="top|end"
+        app:layout_constraintHorizontal_bias="1"
         app:layout_constraintBottom_toTopOf="@id/switch_yn"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
@@ -153,6 +165,7 @@
         android:textAppearance="@style/Signal.Text.BodyLarge"
         android:textColor="@color/signal_text_primary"
         android:gravity="bottom|end"
+        app:layout_constraintHorizontal_bias="1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/switch_label"
         app:layout_constraintBottom_toBottomOf="parent" />
