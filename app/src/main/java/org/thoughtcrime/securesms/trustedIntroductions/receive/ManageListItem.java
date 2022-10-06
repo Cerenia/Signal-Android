@@ -1,11 +1,11 @@
 package org.thoughtcrime.securesms.trustedIntroductions.receive;
 
 import android.content.Context;
+import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.Guideline;
@@ -33,11 +33,9 @@ public class ManageListItem extends ConstraintLayout {
   private TextView introducerNumber;
   private TextView                                         introduceeName;
   private TextView                                         introduceeNumber;
-  private                                   SwitchMaterial yn;
-  private TextView  yn_label;
-  private Guideline guideline;
-
-
+  private                                   SwitchMaterial toggleSwitch;
+  private TextView                                         switchLabel;
+  private Guideline                                        guideline;
 
   public ManageListItem(Context context, AttributeSet attrs) {
     super(context, attrs);
@@ -56,12 +54,42 @@ public class ManageListItem extends ConstraintLayout {
     this.introducerNumber = findViewById(R.id.introducerNumber);
     this.introduceeName   = findViewById(R.id.introduceeName);
     this.introduceeNumber = findViewById(R.id.introduceeNumber);
-    this.yn               = findViewById(R.id.switch_yn);
-    this.yn_label = findViewById(R.id.switch_label);
-    this.guideline = findViewById(R.id.half_guide);
+    this.toggleSwitch = findViewById(R.id.switch_yn);
+    this.switchLabel  = findViewById(R.id.switch_label);
+    this.guideline    = findViewById(R.id.half_guide);
   }
 
-  public void set(@NonNull TI_Data data, @NonNull ManageViewModel.IntroducerInformation introducerInformation, ManageActivity.IntroductionScreenType t){
+  public void set(@Nullable TI_Data data, @Nullable ManageViewModel.IntroducerInformation introducerInformation, ManageActivity.IntroductionScreenType t){
+    if(data == null && introducerInformation == null){
+      // Populate as header
+      int headerTypeface = Typeface.BOLD_ITALIC;
+      int invisible = View.INVISIBLE;
+
+      this.timestampTime.setVisibility(invisible);
+      this.timestampDate.setText(getResources().getString(R.string.ManageIntroductionsListItemHeader__Date));
+      this.timestampDate.setTypeface(null, headerTypeface);
+
+      this.introduceeNumber.setVisibility(invisible);
+      this.introduceeName.setText(getResources().getString(R.string.ManageIntroductionsListItemHeader__Introducee));
+      this.introduceeName.setTypeface(null, headerTypeface);
+
+      this.introducerNumber.setVisibility(invisible);
+      this.introducerName.setText(getResources().getString(R.string.ManageIntroductionsListItemHeader__Introducer));
+      this.introducerName.setTypeface(null, headerTypeface);
+
+      this.switchLabel.setVisibility(invisible);
+      this.toggleSwitch.setVisibility(invisible);
+      return;
+    } else {
+      // make everything visible again that may have been hidden
+      int visible = View.VISIBLE;
+      this.timestampTime.setVisibility(visible);
+      this.introduceeNumber.setVisibility(visible);
+      this.introduceeNumber.setVisibility(visible);
+      this.switchLabel.setVisibility(visible);
+      this.toggleSwitch.setVisibility(visible);
+    }
+
     this.data = data;
     Date d = new Date(data.getTimestamp());
     String dString = INTRODUCTION_DATE_PATTERN.format(d);
@@ -145,51 +173,51 @@ public class ManageListItem extends ConstraintLayout {
   private void changeByState(TrustedIntroductionsDatabase.State s){
     switch(s){
       case PENDING:
-        yn_label.setText(R.string.ManageIntroductionsListItem__Pending);
-        yn.setChecked(false);
-        yn.setClickable(true);
+        switchLabel.setText(R.string.ManageIntroductionsListItem__Pending);
+        toggleSwitch.setChecked(false);
+        toggleSwitch.setClickable(true);
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_default));
         break;
       case ACCEPTED:
-        yn_label.setText(R.string.ManageIntroductionsListItem__Accepted);
-        yn.setChecked(true);
-        yn.setClickable(true);
+        switchLabel.setText(R.string.ManageIntroductionsListItem__Accepted);
+        toggleSwitch.setChecked(true);
+        toggleSwitch.setClickable(true);
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_default));
         break;
       case REJECTED:
-        yn_label.setText(R.string.ManageIntroductionsListItem__Rejected);
-        yn.setChecked(false);
-        yn.setClickable(true);
+        switchLabel.setText(R.string.ManageIntroductionsListItem__Rejected);
+        toggleSwitch.setChecked(false);
+        toggleSwitch.setClickable(true);
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_default));
         break;
       case CONFLICTING:
-        yn_label.setText(R.string.ManageIntroductionsListItem__Conflicting);
-        yn.setChecked(false);
-        yn.setClickable(false);
+        switchLabel.setText(R.string.ManageIntroductionsListItem__Conflicting);
+        toggleSwitch.setChecked(false);
+        toggleSwitch.setClickable(false);
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_conflicting));
         break;
       case STALE_ACCEPTED:
-        yn.setChecked(true);
-        yn_label.setText(R.string.ManageIntroductionsListItem__Accepted);
-        yn.setClickable(false);
+        toggleSwitch.setChecked(true);
+        switchLabel.setText(R.string.ManageIntroductionsListItem__Accepted);
+        toggleSwitch.setClickable(false);
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_stale));
         break;
       case STALE_REJECTED:
-        yn.setChecked(false);
-        yn_label.setText(R.string.ManageIntroductionsListItem__Rejected);
-        yn.setClickable(false);
+        toggleSwitch.setChecked(false);
+        switchLabel.setText(R.string.ManageIntroductionsListItem__Rejected);
+        toggleSwitch.setClickable(false);
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_stale));
         break;
       case STALE_PENDING:
-        yn.setChecked(false);
-        yn_label.setText(R.string.ManageIntroductionsListItem__Stale);
-        yn.setClickable(false);
+        toggleSwitch.setChecked(false);
+        switchLabel.setText(R.string.ManageIntroductionsListItem__Stale);
+        toggleSwitch.setClickable(false);
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_stale));
         break;
       case STALE_CONFLICTING:
-        yn.setChecked(false);
-        yn_label.setText(R.string.ManageIntroductionsListItem__Conflicting);
-        yn.setClickable(false);
+        toggleSwitch.setChecked(false);
+        switchLabel.setText(R.string.ManageIntroductionsListItem__Conflicting);
+        toggleSwitch.setClickable(false);
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_stale_conflicting));
         break;
     }

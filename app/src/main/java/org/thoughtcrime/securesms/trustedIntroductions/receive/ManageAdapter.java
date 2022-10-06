@@ -1,20 +1,26 @@
 package org.thoughtcrime.securesms.trustedIntroductions.receive;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Canvas;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
+import androidx.core.util.Preconditions;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
+import org.thoughtcrime.securesms.util.StickyHeaderDecoration;
 
-public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.IntroducerInformation>, ManageAdapter.IntroductionViewHolder> {
+public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.IntroducerInformation>, ManageAdapter.IntroductionViewHolder> implements StickyHeaderDecoration.StickyHeaderAdapter<ManageAdapter.IntroductionViewHolder> {
 
   private final LayoutInflater layoutInflater;
   private final ManageAdapter.ItemClickListener clickListener;
@@ -57,6 +63,44 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
     holder.bind(current.first, current.second, type);
   }
 
+  /**
+   * Returns the header id for the item at the given position.
+   * <p>
+   * Return {@link #NO_HEADER_ID} if it does not have one.
+   *
+   * @param position the item position
+   * @return the header id
+   */
+  @Override public long getHeaderId(int position) {
+    return 0;
+  }
+
+  /**
+   * Creates a new header ViewHolder.
+   * <p>
+   * Only called if getHeaderId returns {@link #NO_HEADER_ID}.
+   *
+   * @param parent   the header's view parent
+   * @param position position in the adapter
+   * @param type
+   * @return a view holder for the created view
+   */
+  @Override public IntroductionViewHolder onCreateHeaderViewHolder(ViewGroup parent, int position, int type) {
+    return null;
+  }
+
+
+  /**
+   * Updates the header view to reflect the header data for the given position.
+   *
+   * @param viewHolder the header view holder
+   * @param position   the header's item position
+   * @param type
+   */
+  @Override public void onBindHeaderViewHolder(IntroductionViewHolder viewHolder, int position, int type) {
+
+  }
+
   static class IntroductionViewHolder extends RecyclerView.ViewHolder {
 
     public IntroductionViewHolder(@NonNull View itemView, @NonNull final ManageAdapter.ItemClickListener clickListener) {
@@ -76,7 +120,15 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
       return (ManageListItem) itemView;
     }
 
-    public void bind(@NonNull TI_Data d, @NonNull ManageViewModel.IntroducerInformation i, @NonNull ManageActivity.IntroductionScreenType t){
+    /**
+     *
+     * @param d introduction information, iff null, a header will be drawn.
+     * @param i introducer information, iff null, a header will be drawn.
+     * @param t screen type @See ManageActivity.IntroductionScreenType
+     */
+    @SuppressLint("RestrictedApi") public void bind(@Nullable TI_Data d, @Nullable ManageViewModel.IntroducerInformation i, @NonNull ManageActivity.IntroductionScreenType t){
+      Preconditions.checkArgument((d == null && i == null && t.equals(ManageActivity.IntroductionScreenType.ALL))
+                                  | (d != null && i != null && t.equals(ManageActivity.IntroductionScreenType.RECIPIENT_SPECIFIC)));
       getView().set(d, i, t);
     }
 
@@ -91,4 +143,69 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
     // Delete Introduction?
     void onItemLongClick(ManageListItem item);
   }
-}
+
+
+  static class ManageAllListHeader extends RecyclerView.ItemDecoration{
+
+    private ManageAdapter adapter;
+    private ManageListFragment fragment;
+    private View headerView;
+    // TODO. where do I inflate?
+
+    public ManageAllListHeader(ManageAdapter adapter, ManageListFragment fragment){
+      this.adapter = adapter;
+      this.fragment = fragment;
+      // TODO: Problems here cause of null root?
+      headerView = adapter.layoutInflater.inflate(R.layout.ti_manage_list_item, null);
+    }
+
+    @Override
+    public void onDrawOver(Canvas canvas, RecyclerView parent, RecyclerView.State state){
+      super.onDrawOver(canvas, parent, state);
+      @Nullable View first = parent.getChildAt(0);
+      @Nullable View second = parent.getChildAt(1);
+
+      if(first != null){
+        // only draw header if there is an introduction
+        int pos = parent.getChildAdapterPosition(first);
+        if(canvas instanceof CustomCanvas){
+         headerView.measure(
+             View.MeasureSpec.makeMeasureSpec(first.getWidth(), View.MeasureSpec.EXACTLY),
+             View.MeasureSpec.makeMeasureSpec(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED)
+         );
+         headerView.layout(first.getLeft(), 0, first.getRight(), headerView.getMeasuredHeight());
+          ((CustomCanvas) canvas).drawHeaderView(first, second);
+        }
+
+      }
+    }
+
+    public float calculateHeaderTop(@Nullable View top, @Nullable View second){
+      if(second != null){
+        float threshold = headerView.getBottom();
+        int i = 8; // TODO: other value?
+        Context c = headerView.getRootView().getContext();
+        threshold += (int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, i, c.getResources().getDisplayMetrics());
+        // TODO: was this simplification correct=
+        if(second.getTop() <= threshold){
+          return second.getTop() - threshold;
+        }
+      }
+      return Math.max(top!=null ? top.getTop() : 0, 0);
+    }
+    // Utils for sticky header
+    // TODO: Not sure how to link this into the adapter...
+    class CustomCanvas extends Canvas{
+      void drawHeaderView(View top, @Nullable View second){
+        save();
+        translate(0f, calculateHeaderTop(top, second));
+        // TODO, not passing this??
+        drawHeaderView(top, second);
+        restore();
+      }
+    }
+    }
+  }
+
+
+
