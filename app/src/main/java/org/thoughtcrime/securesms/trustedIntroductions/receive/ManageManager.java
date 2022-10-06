@@ -21,8 +21,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import static androidx.camera.core.CameraX.getContext;
-import static org.thoughtcrime.securesms.trustedIntroductions.receive.ManageActivity.FORGOTTEN;
 import static org.webrtc.ContextUtils.getApplicationContext;
 
 public class ManageManager {
@@ -31,13 +29,14 @@ public class ManageManager {
   private final RecipientId recipientId;
   // TODO: Does this cause problems?
   private final RecipientId ALL_INTRODUCERS = RecipientId.from(ManageActivity.ALL_INTRODUCTIONS);
-
+  @NonNull private final String forgottenPlaceholder;
   // Dependency injection
   private final TrustedIntroductionsDatabase tdb;
 
-  ManageManager(@NonNull RecipientId rid, @NonNull TrustedIntroductionsDatabase tdb){
+  ManageManager(@NonNull RecipientId rid, @NonNull TrustedIntroductionsDatabase tdb, @NonNull String forgottenPlaceholder){
     recipientId = rid;
     this.tdb = tdb;
+    this.forgottenPlaceholder = forgottenPlaceholder;
   }
 
   void getIntroductions(@NonNull Consumer<List<Pair<TI_Data, ManageViewModel.IntroducerInformation>>> listConsumer){
@@ -53,8 +52,8 @@ public class ManageManager {
       ArrayList<Pair<TI_Data, ManageViewModel.IntroducerInformation>> result = new ArrayList<>();
       for (TI_Data d: introductions) {
         ManageViewModel.IntroducerInformation i;
-        if(d.getIntroducerId().equals(RecipientId.UNKNOWN) || d.getIntroducerId().toLong() > 10000){ // TODO: uggly hack until I figure out the bug, remove after
-          i = new ManageViewModel.IntroducerInformation(FORGOTTEN, FORGOTTEN);
+        if(d.getIntroducerId().equals(RecipientId.UNKNOWN)){
+          i = new ManageViewModel.IntroducerInformation(forgottenPlaceholder, forgottenPlaceholder);
         } else {
           Recipient r = Recipient.live(d.getIntroducerId()).resolve();
           String number = r.getE164().orElse("");

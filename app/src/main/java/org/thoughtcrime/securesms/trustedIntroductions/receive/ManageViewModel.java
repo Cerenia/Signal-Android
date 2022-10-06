@@ -134,7 +134,7 @@ public class ManageViewModel extends ViewModel {
 
     Factory(RecipientId id, ManageActivity.IntroductionScreenType t, @Nullable String introducerName, @NonNull String forgottenPlaceholder) {
       this.t = t;
-      this.manager = new ManageManager(id, SignalDatabase.trustedIntroductions());
+      this.manager = new ManageManager(id, SignalDatabase.trustedIntroductions(), forgottenPlaceholder);
       introducer = introducerName;
       this.forgottenPlaceholder = forgottenPlaceholder;
     }
