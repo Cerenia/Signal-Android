@@ -10,6 +10,7 @@ import androidx.core.util.Pair;
 
 import org.signal.core.util.concurrent.SignalExecutors;
 import org.signal.core.util.logging.Log;
+import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
@@ -18,7 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import static org.thoughtcrime.securesms.trustedIntroductions.receive.ManageActivity.FORGOTTEN;
 
 public class ManageViewModel extends ViewModel {
 
@@ -28,16 +28,18 @@ public class ManageViewModel extends ViewModel {
   private final MutableLiveData<String>   filter;
   private final MutableLiveData<List<Pair<TI_Data, IntroducerInformation>>> introductions;
   private final ManageActivity.IntroductionScreenType type;
+  @NonNull String forgottenPlaceholder;
   private final String introducerName;
   private boolean      introductionsLoaded;
 
-  ManageViewModel(ManageManager manager, ManageActivity.IntroductionScreenType t, @Nullable String iN){
+  ManageViewModel(ManageManager manager, ManageActivity.IntroductionScreenType t, @Nullable String introducerName, @NonNull String forgottenPlaceholder){
     this.manager = manager;
     filter = new MutableLiveData<>("");
     introductions = new MutableLiveData<>();
-    type = t;
-    introducerName      = iN;
+    type                = t;
+    this.introducerName = introducerName;
     introductionsLoaded = false;
+    this.forgottenPlaceholder = forgottenPlaceholder;
   }
 
   public void loadIntroductions(){
@@ -89,7 +91,7 @@ public class ManageViewModel extends ViewModel {
     curr = new TI_Data(curr.getId(), curr.getState(), RecipientId.UNKNOWN, curr.getIntroduceeId(), curr.getIntroduceeServiceId(), curr.getIntroduceeName(), curr.getIntroduceeNumber(), curr.getIntroduceeIdentityKey(), curr.getPredictedSecurityNumber(), curr.getTimestamp());
     all.remove(i);
     if(type.equals(ManageActivity.IntroductionScreenType.ALL)){
-      all.add(new Pair<>(curr, new IntroducerInformation(FORGOTTEN, FORGOTTEN)));
+      all.add(new Pair<>(curr, new IntroducerInformation(forgottenPlaceholder, forgottenPlaceholder)));
     }
     introductions.postValue(all);
     final TI_Data finalCurr = curr;
@@ -128,16 +130,18 @@ public class ManageViewModel extends ViewModel {
     private final ManageManager manager;
     private final ManageActivity.IntroductionScreenType t;
     private final String introducer;
+    private final String forgottenPlaceholder;
 
-    Factory(RecipientId id, ManageActivity.IntroductionScreenType t, @Nullable String introducerName) {
+    Factory(RecipientId id, ManageActivity.IntroductionScreenType t, @Nullable String introducerName, @NonNull String forgottenPlaceholder) {
       this.t = t;
       this.manager = new ManageManager(id, SignalDatabase.trustedIntroductions());
       introducer = introducerName;
+      this.forgottenPlaceholder = forgottenPlaceholder;
     }
 
     @Override
     public @NonNull <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
-      return Objects.requireNonNull(modelClass.cast(new ManageViewModel(manager, t, introducer)));
+      return Objects.requireNonNull(modelClass.cast(new ManageViewModel(manager, t, introducer, forgottenPlaceholder)));
     }
   }
 
