@@ -20,7 +20,9 @@ import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.util.StickyHeaderDecoration;
 
-public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.IntroducerInformation>, ManageAdapter.IntroductionViewHolder> implements StickyHeaderDecoration.StickyHeaderAdapter<ManageAdapter.IntroductionViewHolder> {
+import static org.thoughtcrime.securesms.trustedIntroductions.receive.ManageActivity.IntroductionScreenType.ALL;
+
+public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.IntroducerInformation>, ManageAdapter.IntroductionViewHolder> {
 
   private final LayoutInflater layoutInflater;
   private final ManageAdapter.ItemClickListener clickListener;
@@ -63,43 +65,7 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
     holder.bind(current.first, current.second, type);
   }
 
-  /**
-   * Returns the header id for the item at the given position.
-   * <p>
-   * Return {@link #NO_HEADER_ID} if it does not have one.
-   *
-   * @param position the item position
-   * @return the header id
-   */
-  @Override public long getHeaderId(int position) {
-    return 0;
-  }
 
-  /**
-   * Creates a new header ViewHolder.
-   * <p>
-   * Only called if getHeaderId returns {@link #NO_HEADER_ID}.
-   *
-   * @param parent   the header's view parent
-   * @param position position in the adapter
-   * @param type
-   * @return a view holder for the created view
-   */
-  @Override public IntroductionViewHolder onCreateHeaderViewHolder(ViewGroup parent, int position, int type) {
-    return null;
-  }
-
-
-  /**
-   * Updates the header view to reflect the header data for the given position.
-   *
-   * @param viewHolder the header view holder
-   * @param position   the header's item position
-   * @param type
-   */
-  @Override public void onBindHeaderViewHolder(IntroductionViewHolder viewHolder, int position, int type) {
-
-  }
 
   static class IntroductionViewHolder extends RecyclerView.ViewHolder {
 
@@ -127,13 +93,38 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
      * @param t screen type @See ManageActivity.IntroductionScreenType
      */
     @SuppressLint("RestrictedApi") public void bind(@Nullable TI_Data d, @Nullable ManageViewModel.IntroducerInformation i, @NonNull ManageActivity.IntroductionScreenType t){
-      Preconditions.checkArgument((d == null && i == null && t.equals(ManageActivity.IntroductionScreenType.ALL))
+      Preconditions.checkArgument((d == null && i == null && t.equals(ALL))
                                   | (d != null && i != null && t.equals(ManageActivity.IntroductionScreenType.RECIPIENT_SPECIFIC)));
       getView().set(d, i, t);
     }
 
     public void setEnabled(boolean enabled){
       getView().setEnabled(enabled);
+    }
+
+    // Sticky header helpers
+    public void measure(int makeMeasureSpec, int makeMeasureSpec1) {
+      getView().measure(makeMeasureSpec, makeMeasureSpec1);
+    }
+
+    public int getMeasuredHeight() {
+      return getView().getMeasuredHeight();
+    }
+
+    public void layout(int left, int i, int right, int measuredHeight) {
+      getView().layout(left, i, right, measuredHeight);
+    }
+
+    public float getBottom() {
+      return getView().getBottom();
+    }
+
+    public View getRootView() {
+      return getView().getRootView();
+    }
+
+    public void draw(ManageAllListHeader.CustomCanvas customCanvas) {
+      getView().draw(customCanvas);
     }
   }
 
@@ -147,16 +138,12 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
 
   static class ManageAllListHeader extends RecyclerView.ItemDecoration{
 
-    private ManageAdapter adapter;
-    private ManageListFragment fragment;
-    private View headerView;
+    public IntroductionViewHolder headerView;
     // TODO. where do I inflate?
 
-    public ManageAllListHeader(ManageAdapter adapter, ManageListFragment fragment){
-      this.adapter = adapter;
-      this.fragment = fragment;
+    public ManageAllListHeader(View root){
       // TODO: Problems here cause of null root?
-      headerView = adapter.layoutInflater.inflate(R.layout.ti_manage_list_item, null);
+      this.headerView = new IntroductionViewHolder(root, null);
     }
 
     @Override
@@ -168,6 +155,7 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
       if(first != null){
         // only draw header if there is an introduction
         int pos = parent.getChildAdapterPosition(first);
+        // TODO: How do I pass a custom canvas to ListItems?
         if(canvas instanceof CustomCanvas){
          headerView.measure(
              View.MeasureSpec.makeMeasureSpec(first.getWidth(), View.MeasureSpec.EXACTLY),
@@ -200,12 +188,12 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
         save();
         translate(0f, calculateHeaderTop(top, second));
         // TODO, not passing this??
-        drawHeaderView(top, second);
+        headerView.draw(this);
         restore();
       }
     }
-    }
   }
+}
 
 
 
