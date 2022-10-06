@@ -5,4 +5,5 @@
     <stroke
         android:width="@dimen/TI_border_visibility_padding"
         android:color="@color/signal_colorError" />
+    <corners android:radius="@dimen/TI_listview_corner_radius"/>
 </shape>
