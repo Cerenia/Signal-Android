@@ -235,7 +235,9 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
       String name = getIntroducerName(item);
       if(!name.equals(getString(R.string.ManageIntroductionsListItem__Forgotten_Introducer))){
         ForgetIntroducerDialog.show(c, item.getIntroductionId(), item.getIntroduceeName(), getIntroducerName(item), item.getDate(), forgetHandler, viewModel.getScreenType());
+        return;
       }
+      // All screen
       Toast.makeText(c, R.string.ManageIntroductionsFragment__already_erased_toast, Toast.LENGTH_SHORT).show();
     }
 

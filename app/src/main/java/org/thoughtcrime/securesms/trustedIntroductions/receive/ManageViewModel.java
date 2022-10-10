@@ -81,11 +81,11 @@ public class ManageViewModel extends ViewModel {
     List<Pair<TI_Data, IntroducerInformation>> all = introductions.getValue();
     TI_Data curr = all.get(0).first;
     int i = 1;
-    while(curr.getId() != introductionId && i < all.size()){
+    while(!curr.getId().equals(introductionId) && i < all.size()){
       curr = all.get(i++).first;
     }
     i--;
-    if(curr.getId() != introductionId){
+    if(!curr.getId().equals(introductionId)){
       throw new AssertionError(TAG +": the introduction id was not present in the viewModels List");
     }
     curr = new TI_Data(curr.getId(), curr.getState(), RecipientId.UNKNOWN, curr.getIntroduceeId(), curr.getIntroduceeServiceId(), curr.getIntroduceeName(), curr.getIntroduceeNumber(), curr.getIntroduceeIdentityKey(), curr.getPredictedSecurityNumber(), curr.getTimestamp());
