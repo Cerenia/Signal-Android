@@ -18,7 +18,6 @@ import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.database.model.IdentityRecord;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.jobmanager.Job;
-import org.thoughtcrime.securesms.jobmanager.JobManager;
 import org.thoughtcrime.securesms.jobs.TrustedIntroductionsReceiveJob;
 import org.thoughtcrime.securesms.recipients.LiveRecipient;
 import org.thoughtcrime.securesms.recipients.Recipient;
@@ -180,8 +179,9 @@ public class TI_Utils {
     return Base64.encodeBytes(key.serialize());
   }
 
-  public static boolean encodedIdentityKeysEqual(RecipientId presentIntroduceeId, String identityKeyIntroduction){
-    return encodeIdentityKey(getIdentityKey(presentIntroduceeId)).compareTo(identityKeyIntroduction) == 0;
+  // Compare fetched Identity key from introduceeId (must have an identitiy record present) to the provided string
+  public static boolean encodedIdentityKeysEqual(RecipientId presentIntroduceeId, String toCompare){
+    return encodeIdentityKey(getIdentityKey(presentIntroduceeId)).compareTo(toCompare) == 0;
   }
 
   @SuppressLint("Range") @WorkerThread
@@ -226,32 +226,35 @@ public class TI_Utils {
   @SuppressLint("Range") // keywords exists
   public static @NonNull List<TI_Data> parseTIMessage(String body, long timestamp, RecipientId introducerId){
     if (!body.contains(TI_IDENTIFYER)){
-      assert false: "Non TI message passed into parse TI!";
+      throw new AssertionError("Non TI message passed into parse TI!");
     }
     ArrayList<TI_Data> result = new ArrayList<>();
     String jsonDataS = body.replace(TI_IDENTIFYER, "");
     try {
       JSONArray data = new JSONArray(jsonDataS);
-      ArrayList<String> serviceIds = new ArrayList<>();
+      ArrayList<IdKeyPair> idKeyPairs = new ArrayList<>();
+      List<String> recipientServiceIds = new ArrayList<>();
       // Get all SerciveIds of introducees first to minimize database Queries
       for(int i = 0; i < data.length(); i++){
         JSONObject o = data.getJSONObject(i);
-        serviceIds.add(o.getString(INTRODUCEE_SERVICE_ID_J));
+        String introduceeServiceId = o.getString(INTRODUCEE_SERVICE_ID_J);
+        idKeyPairs.add(new IdKeyPair(introduceeServiceId, o.getString(IDENTITY_J)));
+        recipientServiceIds.add(introduceeServiceId);
       }
-      Cursor cursor = SignalDatabase.recipients().getCursorForReceivingTI(serviceIds);
+      Cursor cursor = SignalDatabase.recipients().getCursorForReceivingTI(recipientServiceIds);
       // Construct TI Data & rebuild serviceId List to only contain the ones present in the database, freeing some memory
       // TODO could this be simplified with ServiceId.known?
-      serviceIds = new ArrayList<>();
+      ArrayList<String> knownIds = new ArrayList<>();
       if(cursor.getCount() > 0) {
         cursor.moveToFirst();
         while(!cursor.isAfterLast()){
           RecipientId introduceeId = RecipientId.from(cursor.getLong(cursor.getColumnIndex(LOCAL_RECIPIENT_ID)));
           String serviceId = cursor.getString(cursor.getColumnIndex(SERVICE_ID));
-          serviceIds.add(serviceId);
+          knownIds.add(serviceId);
           String name = cursor.getString(cursor.getColumnIndex(SORT_NAME));
           String phone = cursor.getString(cursor.getColumnIndex(PHONE));
-          IdentityKey identityKey = getIdentityKey(introduceeId);
-          TI_Data d = new TI_Data(null, null, introducerId, introduceeId, serviceId, name, phone, encodeIdentityKey(identityKey), null, timestamp);
+          String identityKey = IdKeyPair.findCorrespondingKeyInList(serviceId, idKeyPairs); 
+          TI_Data d = new TI_Data(null, null, introducerId, introduceeId, serviceId, name, phone, identityKey, null, timestamp);
           result.add(d);
           cursor.moveToNext();
         }
@@ -262,10 +265,10 @@ public class TI_Utils {
         JSONObject o = data.getJSONObject(i);
         // If data was fetched from local database, simply add the Security number information
         String introduceeServiceId = o.getString(INTRODUCEE_SERVICE_ID_J);
-        if (serviceIds.contains(introduceeServiceId)){
+        if (knownIds.contains(introduceeServiceId)){
           int j = 0;
           while(!result.get(j).getIntroduceeServiceId().equals(introduceeServiceId)) j++;
-          assert j < serviceIds.size(): "Programming error in parseTIMessage (size of service IDs vs. JSONArray)";
+          assert j < knownIds.size(): "Programming error in parseTIMessage (size of service IDs vs. JSONArray)";
           result.get(j).setPredictedSecurityNumber(o.getString(PREDICTED_FINGERPRINT_J));
         } else {
           TI_Data d = new TI_Data(null, null, introducerId, null, o.getString(INTRODUCEE_SERVICE_ID_J), o.getString(NAME_J), o.getString(NUMBER_J), o.getString(IDENTITY_J), o.getString(PREDICTED_FINGERPRINT_J), timestamp);
@@ -310,6 +313,25 @@ public class TI_Utils {
       return "InvalidKey";
     }
     return hashtext;
+  }
+
+  private static class IdKeyPair{
+    public String id;
+    public String key;
+
+    public IdKeyPair(String id, String key){
+      this.id = id;
+      this.key = key;
+    }
+
+    public static String findCorrespondingKeyInList(String id, ArrayList<IdKeyPair> list){
+      for (IdKeyPair p: list) {
+        if(id.equals(p.id)){
+          return p.key;
+        }
+      }
+      throw new AssertionError(TAG + " The Id you were searching for was not found in the list!");
+    }
   }
 
 }
