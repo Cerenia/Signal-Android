@@ -182,7 +182,7 @@ public class TrustedIntroductionsDatabase extends Database {
    * @param c a cursor pointing to a fully populated query result in the database.
    * @param timestamp the new timestamp to insert.
    */
-  @SuppressLint("Range") private @NonNull ContentValues buildContentValuesForTimestampUpdate(Cursor c, long timestamp){
+  @SuppressLint("Range") private @NonNull ContentValues buildContentValuesForTimestampUpdate(Cursor c, long timestamp, State s){
     return buildContentValuesForUpdate(c.getString(c.getColumnIndex(ID)),
                                        c.getString(c.getColumnIndex(STATE)),
                                        c.getString(c.getColumnIndex(INTRODUCER_RECIPIENT_ID)),
@@ -306,13 +306,15 @@ public class TrustedIntroductionsDatabase extends Database {
     Cursor c = writeableDatabase.query(TABLE_NAME, TI_ALL_PROJECTION, selectionBuilder.toString(), args, null, null, null);
     if (c.getCount() == 1){
       c.moveToFirst();
-      long result = writeableDatabase.update(TABLE_NAME, buildContentValuesForTimestampUpdate(c, data.getTimestamp()), ID + " = ?", SqlUtil.buildArgs(c.getInt(c.getColumnIndex(ID))));
-      // TODO testing
-      Log.e(TAG, "Updated timestamp of introduction " + result + " to: " + data.getTimestamp());
-      c.close();
-      return result;
+      long result;
+      if(c.getString(c.getColumnIndex(INTRODUCEE_PUBLIC_IDENTITY_KEY)).equals(data.getIntroduceeIdentityKey())) {
+        result = writeableDatabase.update(TABLE_NAME, buildContentValuesForTimestampUpdate(c, data.getTimestamp(), State.PENDING), ID + " = ?", SqlUtil.buildArgs(c.getInt(c.getColumnIndex(ID))));
+        Log.e(TAG, "Updated timestamp of introduction " + result + " to: " + data.getTimestamp());
+        c.close();
+        return result;
+      }
     }
-    assert c.getCount() == 0: TAG + " Either there is one entry or none, nothing else valid.";
+    if(c.getCount() != 0) throw new AssertionError(TAG + " Either there is one entry or none, nothing else valid.");
     c.close();
 
     ContentValues values = new ContentValues(9);

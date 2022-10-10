@@ -16,6 +16,7 @@ import com.google.android.material.switchmaterial.SwitchMaterial;
 import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
 import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase.State;
 import org.thoughtcrime.securesms.recipients.Recipient;
+import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.R;
 import org.whispersystems.signalservice.api.util.Preconditions;
@@ -122,8 +123,8 @@ public class ManageListItem extends ConstraintLayout {
   }
 
   @Nullable String getIntroducerName(Context c){
-    if(data.getIntroducerId() == null){
-      return null;
+    if(data.getIntroducerId().equals(RecipientId.UNKNOWN)){
+      return c.getString(R.string.ManageIntroductionsListItem__Forgotten_Introducer);
     }
     // TODO: problematic in terms of work on UI thread?
     Recipient r = Recipient.live(data.getIntroducerId()).resolve();
