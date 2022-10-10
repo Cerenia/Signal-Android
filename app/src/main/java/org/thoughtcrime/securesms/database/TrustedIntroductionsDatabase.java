@@ -12,6 +12,9 @@ import androidx.annotation.WorkerThread;
 
 import org.signal.core.util.SqlUtil;
 import org.signal.core.util.logging.Log;
+import org.signal.libsignal.protocol.IdentityKey;
+import org.thoughtcrime.securesms.database.model.IdentityRecord;
+import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
@@ -21,6 +24,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -277,6 +281,7 @@ public class TrustedIntroductionsDatabase extends Database {
                                        introduction.getTimestamp());
   }
 
+
   /**
    *
    * @return -1 -> conflict occured on insert, else id of introduction.
@@ -306,9 +311,8 @@ public class TrustedIntroductionsDatabase extends Database {
     Cursor c = writeableDatabase.query(TABLE_NAME, TI_ALL_PROJECTION, selectionBuilder.toString(), args, null, null, null);
     if (c.getCount() == 1){
       c.moveToFirst();
-      long result;
       if(c.getString(c.getColumnIndex(INTRODUCEE_PUBLIC_IDENTITY_KEY)).equals(data.getIntroduceeIdentityKey())) {
-        result = writeableDatabase.update(TABLE_NAME, buildContentValuesForTimestampUpdate(c, data.getTimestamp(), State.PENDING), ID + " = ?", SqlUtil.buildArgs(c.getInt(c.getColumnIndex(ID))));
+        long result = writeableDatabase.update(TABLE_NAME, buildContentValuesForTimestampUpdate(c, data.getTimestamp(), State.PENDING), ID + " = ?", SqlUtil.buildArgs(c.getInt(c.getColumnIndex(ID))));
         Log.e(TAG, "Updated timestamp of introduction " + result + " to: " + data.getTimestamp());
         c.close();
         return result;
