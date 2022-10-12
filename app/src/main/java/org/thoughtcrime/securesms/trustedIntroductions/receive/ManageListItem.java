@@ -139,6 +139,9 @@ public class ManageListItem extends ConstraintLayout {
     return new Date(data.getTimestamp());
   }
 
+  State getState(){
+    return data.getState();
+  }
   
   public TI_Data toggleSwitch(){
     TI_Data newIntro;

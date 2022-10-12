@@ -3979,6 +3979,7 @@
     <string name="ManageIntroductionsFragment__Title_Introductions_from">From %1$s\:</string>
     <string name="ManageIntroductionsFragment__navigate_text">Show all</string>
     <string name="ManageIntroductionsFragment__already_erased_toast">You already erased the introducer information of this introduction.</string>
+    <string name="ManageIntroductionsFragment__conflict_resolution_todo">The guided conflict resolution process is not yet implemented. TODO</string>
     <!-- ManageIntroductionsListItem -->
     <string name="ManageIntroductionsListItem__Pending">Pending</string>
     <string name="ManageIntroductionsListItem__Rejected">Rejected</string>
