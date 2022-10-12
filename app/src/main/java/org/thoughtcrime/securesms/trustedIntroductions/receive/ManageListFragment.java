@@ -23,6 +23,7 @@ import com.pnikosis.materialishprogress.ProgressWheel;
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.components.ButtonStripItemView;
 import org.thoughtcrime.securesms.components.ContactFilterView;
+import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.R;
@@ -242,6 +243,11 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
     }
 
     @Override public void onItemLongClick(ManageListItem item) {
+      TrustedIntroductionsDatabase.State s = item.getState();
+      if(s.equals(TrustedIntroductionsDatabase.State.CONFLICTING)){
+        // TODO: Propper go through managing conflicts path, to implement later.
+        Toast.makeText(c, R.string.ManageIntroductionsFragment__conflict_resolution_todo, Toast.LENGTH_SHORT).show();
+      }
       DeleteIntroductionDialog.show(c, item.getIntroductionId(), item.getIntroduceeName(), getIntroducerName(item), item.getDate(), deleteHandler);
     }
   }

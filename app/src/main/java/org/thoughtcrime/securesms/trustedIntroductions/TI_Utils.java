@@ -253,7 +253,7 @@ public class TI_Utils {
           knownIds.add(serviceId);
           String name = cursor.getString(cursor.getColumnIndex(SORT_NAME));
           String phone = cursor.getString(cursor.getColumnIndex(PHONE));
-          String identityKey = IdKeyPair.findCorrespondingKeyInList(serviceId, idKeyPairs); 
+          String identityKey = IdKeyPair.findCorrespondingKeyInList(serviceId, idKeyPairs);
           TI_Data d = new TI_Data(null, null, introducerId, introduceeId, serviceId, name, phone, identityKey, null, timestamp);
           result.add(d);
           cursor.moveToNext();
