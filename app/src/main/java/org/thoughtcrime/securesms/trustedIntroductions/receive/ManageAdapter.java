@@ -28,7 +28,6 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
   private final ManageAdapter.ItemClickListener clickListener;
   private final ManageActivity.IntroductionScreenType type;
 
-
   ManageAdapter(@NonNull Context context, ManageAdapter.ItemClickListener clickListener, ManageActivity.IntroductionScreenType t){
     super(new DiffUtil.ItemCallback<Pair<TI_Data, ManageViewModel.IntroducerInformation>>() {
       @Override public boolean areItemsTheSame(@NonNull Pair<TI_Data, ManageViewModel.IntroducerInformation> oldItem, @NonNull Pair<TI_Data, ManageViewModel.IntroducerInformation> newItem) {
@@ -64,8 +63,6 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
     Pair<TI_Data, ManageViewModel.IntroducerInformation> current = getItem(position);
     holder.bind(current.first, current.second, type);
   }
-
-
 
   static class IntroductionViewHolder extends RecyclerView.ViewHolder {
 
