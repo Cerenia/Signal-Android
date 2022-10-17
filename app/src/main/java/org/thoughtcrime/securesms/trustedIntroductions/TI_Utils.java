@@ -43,6 +43,9 @@ import org.thoughtcrime.securesms.util.Base64;
 import org.thoughtcrime.securesms.util.FeatureFlags;
 import org.whispersystems.signalservice.api.push.ServiceId;
 
+//TODO: May be able to simplify further by using JsonUtil.java in codebase...
+// Serialization for each object that I am sending is already present..
+
 public class TI_Utils {
 
   static final String TAG = Log.tag(TI_Utils.class);
