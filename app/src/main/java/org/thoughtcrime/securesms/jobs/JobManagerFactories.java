@@ -200,6 +200,7 @@ public final class JobManagerFactories {
       put(ThreadUpdateJob.KEY,                       new ThreadUpdateJob.Factory());
       put(TrustedIntroductionSendJob.KEY, new TrustedIntroductionSendJob.Factory());
       put(TrustedIntroductionsReceiveJob.KEY, new TrustedIntroductionsReceiveJob.Factory());
+      put(TrustedIntroductionsRetreiveIdentityJob.KEY, new TrustedIntroductionsRetreiveIdentityJob.Factory());
       put(TrimThreadJob.KEY,                         new TrimThreadJob.Factory());
       put(TypingSendJob.KEY,                         new TypingSendJob.Factory());
       put(UpdateApkJob.KEY,                          new UpdateApkJob.Factory());

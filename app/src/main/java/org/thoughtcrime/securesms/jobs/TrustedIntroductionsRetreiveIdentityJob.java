@@ -4,13 +4,16 @@ import androidx.annotation.NonNull;
 
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.jobmanager.Data;
+import org.thoughtcrime.securesms.jobmanager.Job;
 import org.thoughtcrime.securesms.jobmanager.impl.NetworkConstraint;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
 import org.whispersystems.signalservice.api.util.Preconditions;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
@@ -88,4 +91,31 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
   @Override protected boolean onShouldRetry(@NonNull Exception e) {
     return true;
   }
+
+  public static final class Factory implements Job.Factory<TrustedIntroductionsRetreiveIdentityJob> {
+
+    @NonNull @Override public TrustedIntroductionsRetreiveIdentityJob create(@NonNull Parameters parameters, @NonNull Data data) {
+      // deserialize TI_Data if present
+      String serializedTiData = data.getString(KEY_TI_DATA);
+      TI_Data d = null;
+      if (!serializedTiData.isEmpty()){
+        // TODO: What if it is empty?
+        try {
+          ByteArrayInputStream bis = new ByteArrayInputStream(serializedTiData.getBytes());
+          ObjectInputStream             ois = new ObjectInputStream(bis);
+          d = (TI_Data) ois.readObject();
+          ois.close();
+          bis.close();
+        } catch (IOException | ClassNotFoundException e) {
+          // TODO: How to fail gracefully?
+          e.printStackTrace();
+          throw new AssertionError("Deserialization of TI_Data failed");
+        }
+      }
+
+      return new TrustedIntroductionsRetreiveIdentityJob(d, parameters);
+    }
+  }
 }
+
+
