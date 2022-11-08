@@ -89,7 +89,7 @@ public class TrustedIntroductionsReceiveJob extends BaseJob  {
     } catch (IOException e){
       // TODO: How to fail gracefully?
       e.printStackTrace();
-      assert false: "Serialization of TI_Data failed";
+      throw new AssertionError("Serialization of TI_Data failed");
     }
     return new Data.Builder()
         .putString(KEY_INTRODUCER_ID, introducerId.serialize())
