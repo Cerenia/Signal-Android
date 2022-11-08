@@ -81,7 +81,9 @@ public class TI_Utils {
 
   // Job constants
   public static final long TI_JOB_LIFESPAN = TimeUnit.DAYS.toMillis(1);
-  public static final int TI_JOB_MAX_ATTEMPTS = Job.Parameters.UNLIMITED;
+  // TODO: debugging
+  //public static final int TI_JOB_MAX_ATTEMPTS = Job.Parameters.UNLIMITED;
+  public static final int TI_JOB_MAX_ATTEMPTS = 1;
 
   // How to format dates in introductions:
   @SuppressLint("SimpleDateFormat") public static final SimpleDateFormat INTRODUCTION_DATE_PATTERN = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss");
