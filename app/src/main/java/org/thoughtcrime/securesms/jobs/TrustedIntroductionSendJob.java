@@ -118,9 +118,9 @@ public class TrustedIntroductionSendJob extends BaseJob {
     MessageSender.send(context, message, -1, false, null, null);
   }
 
-  // TODO
+  // TODO: should we be more specific here? We just retry always currently.
   @Override protected boolean onShouldRetry(@NonNull Exception e) {
-    return false;
+    return true;
   }
 
   public static final class Factory implements Job.Factory<TrustedIntroductionSendJob> {
