@@ -53,7 +53,7 @@ public class TrustedIntroductionsReceiveJob extends BaseJob  {
          timestamp,
          null,
          new Parameters.Builder()
-                       .setQueue(introducerId.toQueueKey() + TI_Utils.serializeForQueue(messageBody))
+                       .setQueue(introducerId.toQueueKey() + TI_Utils.serializeForQueue(messageBody) + timestamp)
                        .setLifespan(TI_Utils.TI_JOB_LIFESPAN)
                        .setMaxAttempts(TI_Utils.TI_JOB_MAX_ATTEMPTS)
                        .addConstraint(NetworkConstraint.KEY)
@@ -140,6 +140,7 @@ public class TrustedIntroductionsReceiveJob extends BaseJob  {
       // Deserialize introduction_data if present
       String serializedIntroductions = data.getString(KEY_INTRODUCTIONS);
       ArrayList<TI_Data> tiData = null;
+      Log.e(TAG, serializedIntroductions);
       if (!serializedIntroductions.isEmpty()) {
         try {
           ByteArrayInputStream bis = new ByteArrayInputStream(serializedIntroductions.getBytes());
@@ -151,7 +152,9 @@ public class TrustedIntroductionsReceiveJob extends BaseJob  {
           // TODO: How to fail gracefully?
           // Right now, list just gets lost.
           e.printStackTrace();
-          throw new AssertionError("Deserialization of TI_Data list failed");
+          Log.e(TAG, e.toString());
+          // TODO (BUG): this currently horribly crashes application routinely.
+          //throw new AssertionError("Deserialization of TI_Data list failed");
         }
       }
 
