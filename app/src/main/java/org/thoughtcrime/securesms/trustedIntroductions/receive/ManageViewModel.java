@@ -1,5 +1,7 @@
 package org.thoughtcrime.securesms.trustedIntroductions.receive;
 
+import android.os.Looper;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
@@ -18,6 +20,7 @@ import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.logging.Handler;
 
 
 public class ManageViewModel extends ViewModel {
@@ -59,16 +62,16 @@ public class ManageViewModel extends ViewModel {
     return type;
   }
 
-  void deleteIntroduction(@NonNull Long introductionId){
+  void deleteIntroduction(@NonNull Long introductionId, ManageListFragment fragment){
     List <Pair<TI_Data, IntroducerInformation>>     oldIntros = introductions.getValue();
     ArrayList<Pair<TI_Data, IntroducerInformation>> newIntros = new ArrayList<>();
     for (Pair<TI_Data, IntroducerInformation> p : oldIntros){
       TI_Data i = p.first;
-      if (!i.getIntroducerId().equals(RecipientId.from(introductionId))){
+      if (!(i.getId().equals(introductionId))){
         newIntros.add(p);
       }
     }
-    introductions.postValue(newIntros);
+    introductions.setValue(newIntros);
     SignalExecutors.BOUNDED.execute(() -> {
       boolean res = SignalDatabase.trustedIntroductions().deleteIntroduction(introductionId);
       if(!res){

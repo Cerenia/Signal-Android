@@ -14,6 +14,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelStoreOwner;
 import androidx.recyclerview.widget.RecyclerView;
 import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.INTRODUCTION_DATE_PATTERN;
+import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.splitIntroductionDate;
 import static org.thoughtcrime.securesms.trustedIntroductions.receive.ManageActivity.IntroductionScreenType.ALL;
 import static org.thoughtcrime.securesms.trustedIntroductions.receive.ManageActivity.IntroductionScreenType.RECIPIENT_SPECIFIC;
 import static org.thoughtcrime.securesms.trustedIntroductions.receive.ManageActivity.IntroductionScreenType.fromString;
@@ -27,6 +28,7 @@ import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.R;
+import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -103,7 +105,11 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
       }
     });
     this.viewModel.getIntroductions().observe(getViewLifecycleOwner(), users -> {
-      List<Pair<TI_Data, ManageViewModel.IntroducerInformation>> filtered = getFiltered(users, null);
+      String filter = null;
+      if (!viewModel.getFilter().getValue().isEmpty()){
+        filter = viewModel.getFilter().getValue();
+      }
+      List<Pair<TI_Data, ManageViewModel.IntroducerInformation>> filtered = getFiltered(users, filter);
       if(adapter != null){
         adapter.submitList(new ArrayList<>(filtered));
       }
@@ -164,17 +170,27 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
   }
 
   // TODO: Move to asynchroneous background thread eventually if performance becomes a problem
+  // TODO: Do I need a differentiation between all screen?
   private List<Pair<TI_Data, ManageViewModel.IntroducerInformation>> getFiltered(List<Pair<TI_Data, ManageViewModel.IntroducerInformation>> introductions, @Nullable String filter){
     List<Pair<TI_Data, ManageViewModel.IntroducerInformation>> filtered = introductions != null ? new ArrayList<>(introductions) : new ArrayList<>();
     if(filter != null){
       if(!filter.isEmpty() && filter.compareTo("") != 0){
-        Pattern filterPattern = Pattern.compile(Pattern.quote(filter), Pattern.CASE_INSENSITIVE);
+        Pattern filterPattern = Pattern.compile("\\A" + filter + ".*", Pattern.CASE_INSENSITIVE);
         for (Pair<TI_Data, ManageViewModel.IntroducerInformation> p: introductions){
-          TI_Data d = p.first;
-          if (!filterPattern.matcher(INTRODUCTION_DATE_PATTERN.format(d.getTimestamp())).find() &&
-              !filterPattern.matcher(d.getIntroduceeName()).find() &&
-              !filterPattern.matcher(d.getIntroduceeNumber()).find() &&
-              !filterPattern.matcher(d.getState().toString()).find()){
+          TI_Data                     d = p.first;
+          TI_Utils.TimestampDateParts timestampParts = splitIntroductionDate(d.getTimestamp());
+          // Split up for debugging. May be one big expr.
+          boolean matchYear = filterPattern.matcher(timestampParts.year).find();
+          boolean matchMonth = filterPattern.matcher(timestampParts.month).find();
+          boolean matchDay = filterPattern.matcher(timestampParts.day).find();
+          boolean matchHours = filterPattern.matcher(timestampParts.hours).find();
+          boolean matchMinutes = filterPattern.matcher(timestampParts.minutes).find();
+          boolean matchSeconds = filterPattern.matcher(timestampParts.seconds).find();
+          boolean matchIntroduceeName = filterPattern.matcher(d.getIntroduceeName()).find();
+          boolean matchIntroduceeNumber = filterPattern.matcher(d.getIntroduceeNumber()).find();
+          String stateString = d.getState().toString();
+          boolean matchState = filterPattern.matcher(stateString).find();
+          if (!matchYear && !matchMonth && !matchDay && !matchHours && !matchMinutes && !matchSeconds && !matchIntroduceeName && !matchIntroduceeNumber && !matchState){
             filtered.remove(p);
           }
         }
@@ -190,14 +206,14 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
   }
 
   @Override public void onFilterChanged(String filter) {
-    if(!filter.isEmpty() && adapter != null){
+    if(adapter != null){
       viewModel.setQueryFilter(filter);
       adapter.submitList(getFiltered(viewModel.getIntroductions().getValue(), filter));
     }
   }
 
   @Override public void deleteIntroduction(@NonNull Long introductionId) {
-    viewModel.deleteIntroduction(introductionId);
+    viewModel.deleteIntroduction(introductionId, this);
   }
 
   @Override public void forgetIntroducer(@NonNull Long introductionId) {
