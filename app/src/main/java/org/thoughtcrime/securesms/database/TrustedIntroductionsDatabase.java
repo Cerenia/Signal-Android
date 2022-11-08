@@ -365,11 +365,15 @@ public class TrustedIntroductionsDatabase extends Database {
   // TODO: annoying that this needs to be public. Should be private and just passed as function pointer..
   // But java is annoying when it comes to function serialization so I won't do that for now
   public long insertIntroductionCallback(TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult result){
+    Preconditions.checkArgument(result.aci.equals(result.data.getIntroduceeServiceId()));
     ContentValues values = new ContentValues(9);
     // This is a recipient we do not have yet.
     values.put(INTRODUCEE_RECIPIENT_ID, UNKNOWN_INTRODUCEE_RECIPIENT_ID);
-    // TODO: check for conflict and update state accordingly
-    values.put(STATE, State.PENDING.toInt());
+    if(result.key.equals(result.data.getIntroduceeIdentityKey())){
+      values.put(STATE, State.PENDING.toInt());
+    } else {
+      values.put(STATE, State.CONFLICTING.toInt());
+    }
     values.put(INTRODUCER_RECIPIENT_ID, result.data.getIntroducerId().toLong());
     values.put(INTRODUCEE_SERVICE_ID, result.data.getIntroduceeServiceId());
     values.put(INTRODUCEE_PUBLIC_IDENTITY_KEY, result.data.getIntroduceeIdentityKey());
