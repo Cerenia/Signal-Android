@@ -88,6 +88,45 @@ public class TI_Utils {
   // How to format dates in introductions:
   @SuppressLint("SimpleDateFormat") public static final SimpleDateFormat INTRODUCTION_DATE_PATTERN = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss");
 
+  /**
+   * /@see ManageListFragment::getFiltered()
+   *
+   * @param timestamp the timestamp as long
+   * @return The date in 6 parts, in order of the format string, as strings
+   */
+  public static @NonNull TimestampDateParts splitIntroductionDate(long timestamp){
+    String date = INTRODUCTION_DATE_PATTERN.format(timestamp);
+    String[] dateTime = date.split(" ");
+    String[] dateParts = dateTime[0].split("/");
+    String[] timeParts = dateTime[1].split(":");
+    return new TimestampDateParts(dateParts[0],
+                                  dateParts[1],
+                                  dateParts[2],
+                                  timeParts[0],
+                                  timeParts[1],
+                                  timeParts[2]);
+  }
+
+  public static class TimestampDateParts {
+    public String year;
+    public String month;
+    public String day;
+    public String hours;
+    public String minutes;
+    public String seconds;
+
+    public TimestampDateParts(String year, String month, String day, String hours, String minutes, String seconds){
+      this.year = year;
+      this.month = month;
+      this.day = day;
+      this.hours = hours;
+      this.minutes = minutes;
+      this.seconds = seconds;
+    }
+  }
+
+
+
   //copied from @see VerifyDisplayFragment
   private static @NonNull String getFormattedSafetyNumbers(@NonNull Fingerprint fingerprint, int segmentCount) {
     String[]      segments = getSegments(fingerprint, segmentCount);
