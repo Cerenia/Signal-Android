@@ -138,11 +138,11 @@ public class TrustedIntroductionsReceiveJob extends BaseJob  {
 
     @NonNull @Override public TrustedIntroductionsReceiveJob create(@NonNull Parameters parameters, @NonNull Data data) {
       // Deserialize introduction_data if present
-      String serialized_introduction_data = data.getString(KEY_INTRODUCTIONS);
+      String serializedIntroductions = data.getString(KEY_INTRODUCTIONS);
       ArrayList<TI_Data> tiData = null;
-      if (!serialized_introduction_data.isEmpty()) {
+      if (!serializedIntroductions.isEmpty()) {
         try {
-          ByteArrayInputStream bis = new ByteArrayInputStream(serialized_introduction_data.getBytes());
+          ByteArrayInputStream bis = new ByteArrayInputStream(serializedIntroductions.getBytes());
           ObjectInputStream    ois = new ObjectInputStream(bis);
           tiData = (ArrayList<TI_Data>) ois.readObject();
           ois.close();
@@ -151,11 +151,10 @@ public class TrustedIntroductionsReceiveJob extends BaseJob  {
           // TODO: How to fail gracefully?
           // Right now, list just gets lost.
           e.printStackTrace();
-          //assert false : "Deserialization of TI_Data list failed";
+          throw new AssertionError("Deserialization of TI_Data list failed");
         }
       }
 
-      // private TrustedIntroductionsReceiveJob(@NonNull RecipientId introducerId, @NonNull String messageBody, @NonNull long timestamp, @Nullable ArrayList<TI_Data> tiData, @NonNull Parameters parameters)
       return new TrustedIntroductionsReceiveJob(RecipientId.from(data.getString(KEY_INTRODUCER_ID)),
                                                 data.getString(KEY_MESSAGE_BODY),
                                                 data.getLong(KEY_TIMESTAMP),
