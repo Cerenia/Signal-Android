@@ -15,6 +15,9 @@ import org.signal.core.util.logging.Log;
 import org.signal.libsignal.protocol.IdentityKey;
 import org.thoughtcrime.securesms.database.model.IdentityRecord;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
+import org.thoughtcrime.securesms.jobs.TrustedIntroductionSendJob;
+import org.thoughtcrime.securesms.jobs.TrustedIntroductionsReceiveJob;
+import org.thoughtcrime.securesms.jobs.TrustedIntroductionsRetreiveIdentityJob;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
@@ -330,7 +333,11 @@ public class TrustedIntroductionsDatabase extends Database {
       // TODO: After doing this, the recipient Id will no longer be null. Is this generally a problem because of leaking state?
       // TODO: After this is devd, simplify this function by calling helpers to build content values.
       // for now, adding unknown recipient id
-      values.put(INTRODUCEE_RECIPIENT_ID, UNKNOWN_INTRODUCEE_RECIPIENT_ID);
+      //values.put(INTRODUCEE_RECIPIENT_ID, UNKNOWN_INTRODUCEE_RECIPIENT_ID);
+      ApplicationDependencies.getJobManager().add(new TrustedIntroductionsRetreiveIdentityJob(data));
+      // TODO: testing
+      Log.e(TAG, "Unknown recipient, deferred insertion of Introduction into database for: " + data.getIntroduceeName());
+      return -1;
     } else {
       values.put(INTRODUCEE_RECIPIENT_ID, introduceeId.toLong());
       if (TI_Utils.encodedIdentityKeysEqual(introduceeId, data.getIntroduceeIdentityKey())){
@@ -354,7 +361,28 @@ public class TrustedIntroductionsDatabase extends Database {
     return id;
   }
 
-
+  // Callback for profile retreive Identity job
+  // TODO: annoying that this needs to be public. Should be private and just passed as function pointer..
+  // But java is annoying when it comes to function serialization so I won't do that for now
+  public long insertIntroductionCallback(TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult result){
+    ContentValues values = new ContentValues(9);
+    // This is a recipient we do not have yet.
+    values.put(INTRODUCEE_RECIPIENT_ID, UNKNOWN_INTRODUCEE_RECIPIENT_ID);
+    // TODO: check for conflict and update state accordingly
+    values.put(STATE, State.PENDING.toInt());
+    values.put(INTRODUCER_RECIPIENT_ID, result.data.getIntroducerId().toLong());
+    values.put(INTRODUCEE_SERVICE_ID, result.data.getIntroduceeServiceId());
+    values.put(INTRODUCEE_PUBLIC_IDENTITY_KEY, result.data.getIntroduceeIdentityKey());
+    values.put(INTRODUCEE_NAME, result.data.getIntroduceeName());
+    values.put(INTRODUCEE_NUMBER, result.data.getIntroduceeNumber());
+    values.put(PREDICTED_FINGERPRINT, result.data.getPredictedSecurityNumber());
+    values.put(TIMESTAMP, result.data.getTimestamp());
+    SQLiteDatabase writeableDatabase = databaseHelper.getSignalWritableDatabase();
+    long id = writeableDatabase.insert(TABLE_NAME, null, values);
+    // TODO: testing
+    Log.e(TAG, "Inserted new introduction for: " + result.data.getIntroduceeName() + ", with id: " + id);
+    return id;
+  }
 
   // TODO: Just pass a TI_Data object instead?
   @WorkerThread

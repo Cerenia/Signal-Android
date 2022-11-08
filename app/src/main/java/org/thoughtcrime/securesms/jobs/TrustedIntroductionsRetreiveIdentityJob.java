@@ -3,6 +3,7 @@ package org.thoughtcrime.securesms.jobs;
 import androidx.annotation.NonNull;
 
 import org.signal.core.util.logging.Log;
+import org.signal.libsignal.protocol.IdentityKey;
 import org.thoughtcrime.securesms.jobmanager.Data;
 import org.thoughtcrime.securesms.jobmanager.Job;
 import org.thoughtcrime.securesms.jobmanager.impl.NetworkConstraint;
@@ -15,6 +16,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.util.function.Consumer;
 
 public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
 
@@ -26,6 +29,20 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
   private static final String KEY_TI_DATA = "tiData";
 
   private final TI_Data data;
+
+  public static class TI_RetrieveIDJobResult implements Serializable {
+    public TI_Data data;
+    public IdentityKey key;
+    public String aci;
+    public String phone;
+
+    public TI_RetrieveIDJobResult(TI_Data data, IdentityKey key, String aci, String phone){
+      this.data = data;
+      this.key = key;
+      this.aci = aci;
+      this.phone = phone;
+    }
+  }
 
   /**
    * @param data introduceeId and IntroduceeNumber must be present
@@ -85,6 +102,8 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
 
   @Override protected void onRun() throws Exception {
     //TODO
+    // fetch profile
+    // Call db callback and pass the ti_Data & Profile (at least Identity key, phone and aci)
   }
 
   // TODO: should we be more specific here? We just retry always currently.
