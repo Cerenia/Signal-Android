@@ -316,7 +316,7 @@ public class TrustedIntroductionsDatabase extends Database {
       c.moveToFirst();
       if(c.getString(c.getColumnIndex(INTRODUCEE_PUBLIC_IDENTITY_KEY)).equals(data.getIntroduceeIdentityKey())) {
         long result = writeableDatabase.update(TABLE_NAME, buildContentValuesForTimestampUpdate(c, data.getTimestamp(), State.PENDING), ID + " = ?", SqlUtil.buildArgs(c.getInt(c.getColumnIndex(ID))));
-        Log.e(TAG, "Updated timestamp of introduction " + result + " to: " + data.getTimestamp());
+        Log.e(TAG, "Updated timestamp of introduction " + result + " to: " + TI_Utils.INTRODUCTION_DATE_PATTERN.format(data.getTimestamp()));
         c.close();
         return result;
       }

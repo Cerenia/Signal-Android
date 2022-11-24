@@ -88,7 +88,7 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
    * Serialize your job state so that it can be recreated in the future.
    */
   @NonNull @Override public Data serialize() {
-    String serializedData;
+    String serializedData = "";
     try{
       ByteArrayOutputStream bos = new ByteArrayOutputStream();
       ObjectOutputStream oos = new ObjectOutputStream(bos);
