@@ -3,9 +3,6 @@ package org.thoughtcrime.securesms.jobs;
 import androidx.annotation.NonNull;
 
 import org.signal.core.util.logging.Log;
-import org.signal.libsignal.protocol.IdentityKey;
-import org.signal.libsignal.zkgroup.profiles.ProfileKey;
-import org.thoughtcrime.securesms.conversation.mutiselect.MultiselectCollection;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
@@ -15,14 +12,14 @@ import org.thoughtcrime.securesms.jobmanager.impl.NetworkConstraint;
 import org.thoughtcrime.securesms.keyvalue.SignalStore;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
-import org.thoughtcrime.securesms.util.ProfileUtil;
+import org.thoughtcrime.securesms.util.Base64;
 import org.whispersystems.signalservice.api.profiles.ProfileAndCredential;
 import org.whispersystems.signalservice.api.profiles.SignalServiceProfile;
 import org.whispersystems.signalservice.api.push.ServiceId;
 import org.whispersystems.signalservice.api.push.SignalServiceAddress;
 import org.whispersystems.signalservice.api.services.ProfileService;
-import org.whispersystems.signalservice.api.util.Preconditions;
 import org.whispersystems.signalservice.internal.ServiceResponse;
+
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -32,9 +29,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.function.Consumer;
 
-import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
@@ -93,7 +88,8 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
       ByteArrayOutputStream bos = new ByteArrayOutputStream();
       ObjectOutputStream oos = new ObjectOutputStream(bos);
       oos.writeObject(data);
-      serializedData = bos.toString();
+      final byte[] bA = bos.toByteArray();
+      serializedData = Base64.encodeBytes(bA);
       oos.close();
       bos.close();
     } catch (IOException e){
@@ -177,7 +173,8 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
       if (!serializedTiData.isEmpty()){
         // TODO: What if it is empty?
         try {
-          ByteArrayInputStream bis = new ByteArrayInputStream(serializedTiData.getBytes());
+          final byte[] bytes = Base64.decode(serializedTiData);
+          ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
           ObjectInputStream             ois = new ObjectInputStream(bis);
           d = (TI_Data) ois.readObject();
           ois.close();
