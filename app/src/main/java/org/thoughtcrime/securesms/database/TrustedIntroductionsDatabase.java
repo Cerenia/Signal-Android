@@ -189,7 +189,7 @@ public class TrustedIntroductionsDatabase extends Database {
    * @param c a cursor pointing to a fully populated query result in the database.
    * @param timestamp the new timestamp to insert.
    */
-  @SuppressLint("Range") private @NonNull ContentValues buildContentValuesForTimestampUpdate(Cursor c, long timestamp, State s){
+  @SuppressLint("Range") private @NonNull ContentValues buildContentValuesForTimestampUpdate(Cursor c, long timestamp){
     return buildContentValuesForUpdate(c.getString(c.getColumnIndex(ID)),
                                        c.getString(c.getColumnIndex(STATE)),
                                        c.getString(c.getColumnIndex(INTRODUCER_RECIPIENT_ID)),
@@ -200,6 +200,19 @@ public class TrustedIntroductionsDatabase extends Database {
                                        c.getString(c.getColumnIndex(INTRODUCEE_PUBLIC_IDENTITY_KEY)),
                                        c.getString(c.getColumnIndex(PREDICTED_FINGERPRINT)),
                                        String.valueOf(timestamp));
+  }
+
+  /**
+   * Convenience function when changing state of an introduction
+   * @param introduction the introduction to change the state of
+   * @param s new state
+   * @return Correctly populated ContentValues
+   */
+  @SuppressLint("Range") private @NonNull ContentValues buildContentValuesForStateUpdate(TI_Data introduction, State s){
+    ContentValues values = buildContentValuesForUpdate(introduction);
+    values.remove(STATE);
+    values.put(STATE, s.toInt());
+    return values;
   }
 
 
@@ -315,7 +328,7 @@ public class TrustedIntroductionsDatabase extends Database {
     if (c.getCount() == 1){
       c.moveToFirst();
       if(c.getString(c.getColumnIndex(INTRODUCEE_PUBLIC_IDENTITY_KEY)).equals(data.getIntroduceeIdentityKey())) {
-        long result = writeableDatabase.update(TABLE_NAME, buildContentValuesForTimestampUpdate(c, data.getTimestamp(), State.PENDING), ID + " = ?", SqlUtil.buildArgs(c.getInt(c.getColumnIndex(ID))));
+        long result = writeableDatabase.update(TABLE_NAME, buildContentValuesForTimestampUpdate(c, data.getTimestamp()), ID + " = ?", SqlUtil.buildArgs(c.getInt(c.getColumnIndex(ID))));
         Log.e(TAG, "Updated timestamp of introduction " + result + " to: " + TI_Utils.INTRODUCTION_DATE_PATTERN.format(data.getTimestamp()));
         c.close();
         return result;
@@ -383,19 +396,27 @@ public class TrustedIntroductionsDatabase extends Database {
     values.put(TIMESTAMP, result.data.getTimestamp());
     SQLiteDatabase writeableDatabase = databaseHelper.getSignalWritableDatabase();
     long id = writeableDatabase.insert(TABLE_NAME, null, values);
-    // TODO: testing
     Log.e(TAG, "Inserted new introduction for: " + result.data.getIntroduceeName() + ", with id: " + id);
     return id;
   }
 
   // TODO: Just pass a TI_Data object instead?
   @WorkerThread
-  public boolean acceptIntroduction(int id, RecipientId introduceeId){
-    Cursor rdc = fetchRecipientDBCursor(introduceeId);
+  public boolean acceptIntroduction(TI_Data introduction){
+    Cursor rdc = fetchRecipientDBCursor(introduction.getIntroduceeId());
     if(rdc.getCount() <= 0){
       // TODO: Add introducee if not present in the database
+      // I think it should always be there now since I retreived the profile in any case...
+      // Investigate if errors occur
+      throw new AssertionError("Unexpected missing recipient in database while accepting introduction...");
     }
+    // TODO: Set the appropriate verification status
+
+
+
     // TODO: Statechange, pending -> accepted
+
+    buildContentValuesForStateUpdate(introduction, State.ACCEPTED);
     return true;
   }
 

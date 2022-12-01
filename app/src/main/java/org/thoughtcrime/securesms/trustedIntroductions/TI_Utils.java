@@ -8,15 +8,19 @@ import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
 
 import org.json.JSONException;
+import org.signal.core.util.concurrent.SignalExecutors;
 import org.signal.core.util.logging.Log;
 import org.signal.libsignal.protocol.IdentityKey;
 import org.signal.libsignal.protocol.InvalidKeyException;
 import org.signal.libsignal.protocol.fingerprint.Fingerprint;
 import org.signal.libsignal.protocol.fingerprint.NumericFingerprintGenerator;
+import org.thoughtcrime.securesms.crypto.ReentrantSessionLock;
+import org.thoughtcrime.securesms.database.IdentityDatabase;
 import org.thoughtcrime.securesms.database.RecipientDatabase;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.database.model.IdentityRecord;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
+import org.thoughtcrime.securesms.jobs.MultiDeviceVerifiedUpdateJob;
 import org.thoughtcrime.securesms.jobs.TrustedIntroductionsReceiveJob;
 import org.thoughtcrime.securesms.recipients.LiveRecipient;
 import org.thoughtcrime.securesms.recipients.Recipient;
@@ -38,9 +42,15 @@ import java.util.function.Supplier;
 
 import org.json.JSONObject;
 import org.json.JSONArray;
+import org.thoughtcrime.securesms.recipients.RecipientUtil;
+import org.thoughtcrime.securesms.storage.StorageSyncHelper;
 import org.thoughtcrime.securesms.util.Base64;
 import org.thoughtcrime.securesms.util.FeatureFlags;
+import org.thoughtcrime.securesms.util.IdentityUtil;
+import org.whispersystems.signalservice.api.SignalSessionLock;
 import org.whispersystems.signalservice.api.push.ServiceId;
+
+import static org.webrtc.ContextUtils.getApplicationContext;
 
 //TODO: May be able to simplify further by using JsonUtil.java in codebase...
 // Serialization for each object that I am sending is already present..
@@ -347,13 +357,11 @@ public class TI_Utils {
     } catch (NoSuchAlgorithmException e){
       Log.e(TAG, e.toString());
       Log.e(TAG, e.getMessage());
-      assert false: "No such Algorithm!";
-      return "InvalidKey";
+      throw new AssertionError("No such Algorithm!");
     } catch (IOException ioe){
       Log.e(TAG, ioe.toString());
       Log.e(TAG, ioe.getMessage());
-      assert false: "IO exception!";
-      return "InvalidKey";
+      throw new AssertionError("IO exception!");
     }
     return hashtext;
   }
@@ -375,6 +383,44 @@ public class TI_Utils {
       }
       throw new AssertionError(TAG + " The Id you were searching for was not found in the list!");
     }
+  }
+
+  /**
+   * Spawns it's own thread.
+   *
+   * Used both by verifyDisplayFragment and Introduction database
+   *
+   * @param status The new verification status
+   */
+  public static void updateContactsVerifiedStatus(RecipientId recipientId, IdentityKey identityKey,IdentityDatabase.VerifiedStatus status) {
+    Log.i(TAG, "Saving identity: " + recipientId);
+    SignalExecutors.BOUNDED.execute(() -> {
+      try (SignalSessionLock.Lock unused = ReentrantSessionLock.INSTANCE.acquire()) {
+        final boolean verified = IdentityDatabase.VerifiedStatus.isVerified(status);
+        if (verified) {
+          ApplicationDependencies.getProtocolStore().aci().identities()
+                                 .saveIdentityWithoutSideEffects(recipientId,
+                                                                 identityKey,
+                                                                 status,
+                                                                 false,
+                                                                 System.currentTimeMillis(),
+                                                                 true);
+        } else {
+          ApplicationDependencies.getProtocolStore().aci().identities().setVerified(recipientId, identityKey, status);
+        }
+
+        // For other devices but the Android phone, we map the finer statusses to verified or unverified.
+        // TODO: Change once we add new devices for TI
+        ApplicationDependencies.getJobManager()
+                               .add(new MultiDeviceVerifiedUpdateJob(recipientId,
+                                                                     identityKey,
+                                                                     status));
+        StorageSyncHelper.scheduleSyncForDataChange();
+        Recipient recipient = Recipient.live(recipientId).resolve();
+        // TODO: also use this method in VerifyDisplayFragment
+        IdentityUtil.markIdentityVerified(getApplicationContext(), recipient, verified, false);
+      }
+    });
   }
 
 }
