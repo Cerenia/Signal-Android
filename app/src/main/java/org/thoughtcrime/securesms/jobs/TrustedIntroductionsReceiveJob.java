@@ -12,6 +12,7 @@ import org.thoughtcrime.securesms.jobmanager.impl.NetworkConstraint;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
+import org.thoughtcrime.securesms.util.Base64;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -83,7 +84,7 @@ public class TrustedIntroductionsReceiveJob extends BaseJob  {
       ByteArrayOutputStream bos = new ByteArrayOutputStream();
       ObjectOutputStream    oos = new ObjectOutputStream(bos);
       oos.writeObject(introductions);
-      serializedIntroductions = bos.toString();
+      serializedIntroductions = Base64.encodeBytes(bos.toByteArray());
       oos.close();
       bos.close();
     } catch (IOException e){
@@ -143,7 +144,8 @@ public class TrustedIntroductionsReceiveJob extends BaseJob  {
       Log.e(TAG, serializedIntroductions);
       if (!serializedIntroductions.isEmpty()) {
         try {
-          ByteArrayInputStream bis = new ByteArrayInputStream(serializedIntroductions.getBytes());
+          final byte[] bytes = Base64.decode(serializedIntroductions);
+          ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
           ObjectInputStream    ois = new ObjectInputStream(bis);
           tiData = (ArrayList<TI_Data>) ois.readObject();
           ois.close();
