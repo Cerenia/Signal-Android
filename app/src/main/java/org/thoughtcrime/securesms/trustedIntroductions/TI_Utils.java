@@ -221,10 +221,17 @@ public class TI_Utils {
     return getFormattedSafetyNumbers(fingerprint, SEGMENTS).replace("\n", "");
   }
 
-  private static IdentityKey getIdentityKey(RecipientId id){
+  /**
+   * Also used in  TrustedIntroductionsDatabase
+   * @param id recipient ID
+   * @return their identity as saved in the Identity database
+   */
+  public static IdentityKey getIdentityKey(RecipientId id){
     Optional<IdentityRecord> identityRecord = ApplicationDependencies.getProtocolStore().aci().identities().getIdentityRecord(id);
     // If this doesn't work we have a programming error further up the stack, no introduction can be made if we don't have the identity.
-    assert identityRecord.isPresent() : TAG + " No identity found for the introduction recipient!";
+    if(!identityRecord.isPresent()){
+      throw new AssertionError(TAG + " No identity found for the introduction recipient!");
+    }
     return identityRecord.get().getIdentityKey();
   }
 
@@ -417,7 +424,6 @@ public class TI_Utils {
                                                                      status));
         StorageSyncHelper.scheduleSyncForDataChange();
         Recipient recipient = Recipient.live(recipientId).resolve();
-        // TODO: also use this method in VerifyDisplayFragment
         IdentityUtil.markIdentityVerified(getApplicationContext(), recipient, verified, false);
       }
     });

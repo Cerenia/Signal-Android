@@ -400,9 +400,16 @@ public class TrustedIntroductionsDatabase extends Database {
     return id;
   }
 
-  // TODO: Just pass a TI_Data object instead?
+  /**
+   * Expects the introducee to have been fetched.
+   * Expects introduction to already be present in database
+   * @param introduction PRE: introduction.introduceeId && introduction.id cannot be null
+   * @return
+   */
   @WorkerThread
   public boolean acceptIntroduction(TI_Data introduction){
+    Preconditions.checkArgument(introduction.getIntroduceeId() != null);
+    Preconditions.checkArgument(introduction.getId() != null);
     Cursor rdc = fetchRecipientDBCursor(introduction.getIntroduceeId());
     if(rdc.getCount() <= 0){
       // TODO: Add introducee if not present in the database
@@ -410,14 +417,15 @@ public class TrustedIntroductionsDatabase extends Database {
       // Investigate if errors occur
       throw new AssertionError("Unexpected missing recipient in database while accepting introduction...");
     }
-    // TODO: Set the appropriate verification status
-
-
-
-    // TODO: Statechange, pending -> accepted
-
-    buildContentValuesForStateUpdate(introduction, State.ACCEPTED);
-    return true;
+    // Set the appropriate verification status
+    RecipientId introduceeID = introduction.getIntroduceeId();
+    TI_Utils.updateContactsVerifiedStatus(introduceeID, TI_Utils.getIdentityKey(introduceeID), IdentityDatabase.VerifiedStatus.INTRODUCED);
+    // Statechange, pending -> accepted
+    ContentValues newValues = buildContentValuesForStateUpdate(introduction, State.ACCEPTED);
+    SQLiteDatabase writeableDatabase = databaseHelper.getSignalWritableDatabase();
+    long result = writeableDatabase.update(TABLE_NAME, newValues, ID + " = ?", SqlUtil.buildArgs(introduction.getId()));
+    Log.e(TAG, "Accepted introduction for: " + introduction.getIntroduceeName());
+    return result > -1;
   }
 
   @WorkerThread

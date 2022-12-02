@@ -62,6 +62,7 @@ import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.storage.StorageSyncHelper;
 import org.thoughtcrime.securesms.trustedIntroductions.ClearVerificationDialog;
+import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
 import org.thoughtcrime.securesms.util.FeatureFlags;
 import org.thoughtcrime.securesms.util.IdentityUtil;
 import org.thoughtcrime.securesms.util.Util;
@@ -265,7 +266,7 @@ public class VerifyDisplayFragment extends Fragment implements ViewTreeObserver.
       animateSuccessOnDraw = false;
       animateVerifiedSuccess();
       // The fingerprint matched after a QR scann and we can update the users verification status
-      updateContactsVerifiedStatus(VerifiedStatus.DIRECTLY_VERIFIED);
+      TI_Utils.updateContactsVerifiedStatus(recipient.getId(), remoteIdentity, VerifiedStatus.DIRECTLY_VERIFIED);
       updateVerifyButtonText(true);
     } else if (animateFailureOnDraw) {
       animateFailureOnDraw = false;
@@ -554,18 +555,18 @@ public class VerifyDisplayFragment extends Fragment implements ViewTreeObserver.
       }
     } else if (previousStatus == VerifiedStatus.MANUALLY_VERIFIED) {
       // manually verified, no user check necessary
-      updateContactsVerifiedStatus(VerifiedStatus.UNVERIFIED);
+      TI_Utils.updateContactsVerifiedStatus(recipient.getId(), remoteIdentity, VerifiedStatus.UNVERIFIED);
       updateVerifyButtonText(false);
     } else {
       // Unverified or default, simply set to manually verified
-      updateContactsVerifiedStatus(VerifiedStatus.MANUALLY_VERIFIED);
+      TI_Utils.updateContactsVerifiedStatus(recipient.getId(), remoteIdentity, VerifiedStatus.MANUALLY_VERIFIED);
       updateVerifyButtonText(true);
     }
   }
 
   @Override
   public void onClearVerification() {
-    updateContactsVerifiedStatus(VerifiedStatus.UNVERIFIED);
+    TI_Utils.updateContactsVerifiedStatus(recipient.getId(), remoteIdentity, VerifiedStatus.UNVERIFIED);
     updateVerifyButtonText(false);
   }
 
