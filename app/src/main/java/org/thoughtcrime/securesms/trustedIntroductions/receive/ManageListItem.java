@@ -4,8 +4,10 @@ import android.content.Context;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.ViewParent;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.Guideline;
@@ -26,6 +28,8 @@ import java.util.Date;
 import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.INTRODUCTION_DATE_PATTERN;
 
 public class ManageListItem extends ConstraintLayout {
+
+  private SwitchClickListener listener;
 
   private TI_Data        data;
   private TextView timestampDate;
@@ -60,7 +64,7 @@ public class ManageListItem extends ConstraintLayout {
     this.guideline    = findViewById(R.id.half_guide);
   }
 
-  public void set(@Nullable TI_Data data, @Nullable ManageViewModel.IntroducerInformation introducerInformation, ManageActivity.IntroductionScreenType t){
+  public void set(@Nullable TI_Data data, @Nullable ManageViewModel.IntroducerInformation introducerInformation, ManageActivity.IntroductionScreenType t, SwitchClickListener l){
     if(data == null && introducerInformation == null){
       // Populate as header
       int headerTypeface = Typeface.BOLD_ITALIC;
@@ -90,7 +94,7 @@ public class ManageListItem extends ConstraintLayout {
       this.switchLabel.setVisibility(visible);
       this.toggleSwitch.setVisibility(visible);
     }
-
+    this.listener = l;
     this.data = data;
     Date d = new Date(data.getTimestamp());
     String dString = INTRODUCTION_DATE_PATTERN.format(d);
@@ -147,16 +151,20 @@ public class ManageListItem extends ConstraintLayout {
     TI_Data newIntro;
     TrustedIntroductionsDatabase.State newState;
     switch(data.getState()){
-      case PENDING:
+      case PENDING: // TODO: Does this make sense?
       case REJECTED:
         newState = State.ACCEPTED;
         newIntro = changeState(data, newState);
         changeByState(newState);
+        listener.accept(data.getId()); // TODO: Right now not waiting for result as this would be a blocking operation on UI thread
+        // TODO: Might want a callback in the future that corrects the state and shows a toast if something went wrong...
+        // Same for accepted case
         break;
       case ACCEPTED:
         newState = State.REJECTED;
         newIntro = changeState(data, newState);
         changeByState(newState);
+        listener.reject(data.getId());
         break;
       default:
         // Do nothing if stale or conflicting
@@ -225,5 +233,10 @@ public class ManageListItem extends ConstraintLayout {
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_stale_conflicting));
         break;
     }
+  }
+
+  interface SwitchClickListener{
+    boolean accept(@NonNull Long introductionID);
+    boolean reject(@NonNull Long introductionID);
   }
 }

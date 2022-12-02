@@ -37,7 +37,7 @@ import java.util.regex.Pattern;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function0;
 
-public class ManageListFragment extends Fragment implements ContactFilterView.OnFilterChangedListener, DeleteIntroductionDialog.DeleteIntroduction, ForgetIntroducerDialog.ForgetIntroducer {
+public class ManageListFragment extends Fragment implements ContactFilterView.OnFilterChangedListener, DeleteIntroductionDialog.DeleteIntroduction, ForgetIntroducerDialog.ForgetIntroducer, ManageListItem.SwitchClickListener {
 
   private String TAG = Log.tag(ManageListFragment.class);
 
@@ -92,7 +92,7 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
       viewModel.loadIntroductions();
     }
     ManageActivity.IntroductionScreenType t = viewModel.getScreenType();
-    adapter = new ManageAdapter(requireContext(), new IntroductionClickListener(this, this), t);
+    adapter = new ManageAdapter(requireContext(), new IntroductionClickListener(this, this), t, this);
     introductionList = view.findViewById(R.id.recycler_view);
     introductionList.setClipToPadding(true);
     introductionList.setAdapter(adapter);
@@ -218,6 +218,19 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
 
   @Override public void forgetIntroducer(@NonNull Long introductionId) {
     viewModel.forgetIntroducer(introductionId);
+  }
+
+  public void acceptIntroduction(@NonNull Long introductionId){
+    viewModel.acceptIntroduction(introductionId);
+  }
+
+  @Override public boolean accept(@NonNull Long introductionID) {
+    return viewModel.acceptIntroduction(introductionID);
+  }
+
+  @Override public boolean reject(@NonNull Long introductionID) {
+    // TODO!
+    return false;
   }
 
   private class IntroductionClickListener implements ManageAdapter.ItemClickListener {
