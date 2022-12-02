@@ -1,7 +1,5 @@
 package org.thoughtcrime.securesms.trustedIntroductions.receive;
 
-import android.os.Looper;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
@@ -13,17 +11,13 @@ import androidx.core.util.Pair;
 
 import org.signal.core.util.concurrent.SignalExecutors;
 import org.signal.core.util.logging.Log;
-import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
-import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.logging.Handler;
 
 
 public class ManageViewModel extends ViewModel {
@@ -99,7 +93,7 @@ public class ManageViewModel extends ViewModel {
     });
   }
 
-  void acceptIntroduction(@NonNull Long introductionId){
+  boolean acceptIntroduction(@NonNull Long introductionId){
       iterateAndModify(introductionId, new Modify() {
         @Nullable @Override public Pair<TI_Data, IntroducerInformation> modifiedIntroductionItem(Pair<TI_Data, IntroducerInformation> introductionItem) {
           TI_Data oldIntroduction = introductionItem.first;
@@ -117,6 +111,7 @@ public class ManageViewModel extends ViewModel {
           return "Failed to accept introduction: " + introductionId;
         }
       });
+    return false; // TODO: boolean return not correct yet
   }
 
   /**

@@ -26,9 +26,10 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
 
   private final LayoutInflater layoutInflater;
   private final ManageAdapter.ItemClickListener clickListener;
+  private final ManageListItem.SwitchClickListener switchListener;
   private final ManageActivity.IntroductionScreenType type;
 
-  ManageAdapter(@NonNull Context context, ManageAdapter.ItemClickListener clickListener, ManageActivity.IntroductionScreenType t){
+  ManageAdapter(@NonNull Context context, @NonNull ManageAdapter.ItemClickListener clickListener, @NonNull ManageActivity.IntroductionScreenType t, @NonNull ManageListItem.SwitchClickListener switchListener){
     super(new DiffUtil.ItemCallback<Pair<TI_Data, ManageViewModel.IntroducerInformation>>() {
       @Override public boolean areItemsTheSame(@NonNull Pair<TI_Data, ManageViewModel.IntroducerInformation> oldItem, @NonNull Pair<TI_Data, ManageViewModel.IntroducerInformation> newItem) {
         return oldItem.first.getId().compareTo(newItem.first.getId()) == 0;
@@ -51,6 +52,7 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
     });
     this.layoutInflater = LayoutInflater.from(context);
     this.clickListener = clickListener;
+    this.switchListener = switchListener;
     this.type = t;
   }
 
@@ -61,7 +63,7 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
 
   @Override public void onBindViewHolder(@NonNull IntroductionViewHolder holder, int position) {
     Pair<TI_Data, ManageViewModel.IntroducerInformation> current = getItem(position);
-    holder.bind(current.first, current.second, type);
+    holder.bind(current.first, current.second, type, switchListener);
   }
 
   static class IntroductionViewHolder extends RecyclerView.ViewHolder {
@@ -89,10 +91,10 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
      * @param i introducer information, iff null, a header will be drawn.
      * @param t screen type @See ManageActivity.IntroductionScreenType
      */
-    @SuppressLint("RestrictedApi") public void bind(@Nullable TI_Data d, @Nullable ManageViewModel.IntroducerInformation i, @NonNull ManageActivity.IntroductionScreenType t){
+    @SuppressLint("RestrictedApi") public void bind(@Nullable TI_Data d, @Nullable ManageViewModel.IntroducerInformation i, @NonNull ManageActivity.IntroductionScreenType t, @NonNull ManageListItem.SwitchClickListener switchListener){
       //Preconditions.checkArgument((d == null && i == null && t.equals(ALL))
         //                          | (d != null && i != null && t.equals(ManageActivity.IntroductionScreenType.RECIPIENT_SPECIFIC)));
-      getView().set(d, i, t);
+      getView().set(d, i, t, switchListener);
     }
 
     public void setEnabled(boolean enabled){
