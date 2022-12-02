@@ -4,6 +4,7 @@ import android.os.Looper;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.WorkerThread;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
@@ -14,8 +15,10 @@ import org.signal.core.util.concurrent.SignalExecutors;
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.database.SignalDatabase;
+import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
+import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -62,45 +65,95 @@ public class ManageViewModel extends ViewModel {
     return type;
   }
 
-  void deleteIntroduction(@NonNull Long introductionId, ManageListFragment fragment){
-    List <Pair<TI_Data, IntroducerInformation>>     oldIntros = introductions.getValue();
-    ArrayList<Pair<TI_Data, IntroducerInformation>> newIntros = new ArrayList<>();
-    for (Pair<TI_Data, IntroducerInformation> p : oldIntros){
-      TI_Data i = p.first;
-      if (!(i.getId().equals(introductionId))){
-        newIntros.add(p);
+  void deleteIntroduction(@NonNull Long introductionId){
+    iterateAndModify(introductionId, new Modify() {
+      @Nullable @Override public Pair<TI_Data, IntroducerInformation> modifiedIntroductionItem(Pair<TI_Data, IntroducerInformation> introductionItem) {
+        return null;
       }
-    }
-    introductions.setValue(newIntros);
-    SignalExecutors.BOUNDED.execute(() -> {
-      boolean res = SignalDatabase.trustedIntroductions().deleteIntroduction(introductionId);
-      if(!res){
-        Log.e(TAG, String.format("Deleting Introduction with id %d failed. Was it already deleted?", introductionId));
+
+      @Override public boolean databaseCall(TI_Data introduction) {
+        return SignalDatabase.trustedIntroductions().deleteIntroduction(introduction.getId());
+      }
+
+      @NonNull @Override public String errorMessage(Long introductionId) {
+        return "The deletion of introduction " + introductionId + "did not succeed!";
       }
     });
   }
 
   void forgetIntroducer(@NonNull Long introductionId){
+    iterateAndModify(introductionId, new Modify() {
+      @Nullable @Override public Pair<TI_Data, IntroducerInformation> modifiedIntroductionItem(Pair<TI_Data, IntroducerInformation> introductionItem) {
+        TI_Data oldIntro = introductionItem.first;
+        TI_Data newIntroduction = new TI_Data(oldIntro.getId(), oldIntro.getState(), RecipientId.UNKNOWN, oldIntro.getIntroduceeId(), oldIntro.getIntroduceeServiceId(), oldIntro.getIntroduceeName(), oldIntro.getIntroduceeNumber(), oldIntro.getIntroduceeIdentityKey(), oldIntro.getPredictedSecurityNumber(), oldIntro.getTimestamp());
+        return new Pair<>(newIntroduction, new IntroducerInformation(forgottenPlaceholder, forgottenPlaceholder));
+      }
+
+      @WorkerThread @Override public boolean databaseCall(TI_Data introduction) {
+        return SignalDatabase.trustedIntroductions().clearIntroducer(introduction);
+      }
+
+      @NonNull @Override public String errorMessage(Long introductionId) {
+        return "Error while trying to forget Introducer for introduction: " + introductionId;
+      }
+    });
+  }
+
+  void acceptIntroduction(@NonNull Long introductionId){
+      iterateAndModify(introductionId, new Modify() {
+        @Nullable @Override public Pair<TI_Data, IntroducerInformation> modifiedIntroductionItem(Pair<TI_Data, IntroducerInformation> introductionItem) {
+          TI_Data oldIntroduction = introductionItem.first;
+          //(val id: Long?, val state: TrustedIntroductionsDatabase.State?, val introducerId: RecipientId, val introduceeId: RecipientId?, val introduceeServiceId: String, val introduceeName: String, val introduceeNumber: String, val introduceeIdentityKey: String, var predictedSecurityNumber: String?, val timestamp: Long)
+          TI_Data newIntroduction = new TI_Data(oldIntroduction.getId(), TrustedIntroductionsDatabase.State.ACCEPTED, oldIntroduction.getIntroducerId(), oldIntroduction.getIntroduceeId(), oldIntroduction.getIntroduceeServiceId(), oldIntroduction
+              .getIntroduceeName(), oldIntroduction.getIntroduceeNumber(), oldIntroduction.getIntroduceeIdentityKey(), oldIntroduction.getPredictedSecurityNumber(), oldIntroduction.getTimestamp());
+          return new Pair<>(newIntroduction, introductionItem.second);
+        }
+
+        @Override public boolean databaseCall(TI_Data introduction) {
+          return SignalDatabase.trustedIntroductions().acceptIntroduction(introduction);
+        }
+
+        @NonNull @Override public String errorMessage(Long introductionId) {
+          return "Failed to accept introduction: " + introductionId;
+        }
+      });
+  }
+
+  /**
+   * Generic iterator for manipulating the introductions list
+   * @param introductionId which introduction to manipulate
+   * @param m function handles for modification and database call
+   */
+  private void iterateAndModify(@NonNull Long introductionId, Modify m){
     List<Pair<TI_Data, IntroducerInformation>> all = introductions.getValue();
-    TI_Data curr = all.get(0).first;
+    Pair<TI_Data, IntroducerInformation> current = all.get(0);
     int i = 1;
-    while(!curr.getId().equals(introductionId) && i < all.size()){
-      curr = all.get(i++).first;
+    while(!current.first.getId().equals(introductionId) && i < all.size()){
+      current = all.get(i++);
     }
     i--;
-    if(!curr.getId().equals(introductionId)){
+    if(!current.first.getId().equals(introductionId)){
       throw new AssertionError(TAG +": the introduction id was not present in the viewModels List");
     }
-    curr = new TI_Data(curr.getId(), curr.getState(), RecipientId.UNKNOWN, curr.getIntroduceeId(), curr.getIntroduceeServiceId(), curr.getIntroduceeName(), curr.getIntroduceeNumber(), curr.getIntroduceeIdentityKey(), curr.getPredictedSecurityNumber(), curr.getTimestamp());
     all.remove(i);
-    if(type.equals(ManageActivity.IntroductionScreenType.ALL)){
-      all.add(new Pair<>(curr, new IntroducerInformation(forgottenPlaceholder, forgottenPlaceholder)));
+    current = m.modifiedIntroductionItem(current);
+    if(current != null){
+      all.add(current);
     }
     introductions.postValue(all);
-    final TI_Data finalCurr = curr;
+    final TI_Data finalIntroduction = current.first;
     SignalExecutors.BOUNDED.execute(() -> {
-      SignalDatabase.trustedIntroductions().clearIntroducer(finalCurr);
+      boolean res = m.databaseCall(finalIntroduction);
+      if(!res){
+        Log.e(TAG, m.errorMessage(introductionId));
+      }
     });
+  }
+
+  private interface Modify{
+    @Nullable Pair<TI_Data, IntroducerInformation> modifiedIntroductionItem(Pair<TI_Data, IntroducerInformation> introductionItem);
+    @WorkerThread boolean databaseCall(TI_Data introduction);
+    @NonNull String errorMessage(Long introductionId);
   }
 
   public void setQueryFilter(String filter) {

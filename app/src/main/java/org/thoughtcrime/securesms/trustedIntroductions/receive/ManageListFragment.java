@@ -213,7 +213,7 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
   }
 
   @Override public void deleteIntroduction(@NonNull Long introductionId) {
-    viewModel.deleteIntroduction(introductionId, this);
+    viewModel.deleteIntroduction(introductionId);
   }
 
   @Override public void forgetIntroducer(@NonNull Long introductionId) {
