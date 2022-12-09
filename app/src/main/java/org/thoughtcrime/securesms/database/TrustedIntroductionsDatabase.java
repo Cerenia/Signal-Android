@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.media.MediaDrm;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -150,8 +151,25 @@ public class TrustedIntroductionsDatabase extends Database {
           return STALE_CONFLICTING;
         default:
           // TODO: add back when you know what's up
-          //throw new AssertionError("No such state: " + state);
-          return CONFLICTING;
+          throw new AssertionError("No such state: " + state);
+      }
+    }
+
+    public boolean isStale(){
+      switch (this) {
+        case PENDING:
+        case ACCEPTED:
+        case REJECTED:
+        case CONFLICTING:
+          return false;
+        case STALE_PENDING:
+        case STALE_ACCEPTED:
+        case STALE_REJECTED:
+        case STALE_CONFLICTING:
+          return true;
+        default:
+          // TODO: add back when you know what's up
+          throw new AssertionError("No such state: " + this);
       }
     }
   }
@@ -401,6 +419,95 @@ public class TrustedIntroductionsDatabase extends Database {
   }
 
   /**
+   * @param introduction the introduction to be modified.
+   * @param newState the new state for the introduction.
+   * @param log_message what should be written on the logcat for the modification.
+   */
+  private boolean setState(@NonNull TI_Data introduction, @NonNull State newState, @NonNull String log_message) {
+    // We are setting conflicting and pending states directly when the introduction comes in. Should not change afterwards.
+    Preconditions.checkArgument(newState != State.PENDING && newState != State.CONFLICTING);
+    Preconditions.checkArgument(introduction.getIntroduceeId() != null);
+    Preconditions.checkArgument(introduction.getId() != null);
+    Cursor rdc = fetchRecipientDBCursor(introduction.getIntroduceeId());
+    if(rdc.getCount() <= 0){
+      // TODO: Add introducee if not present in the database
+      // I think it should always be there now since I retreived the profile in any case...
+      // Investigate if errors occur
+      throw new AssertionError("Unexpected missing recipient " + introduction.getIntroduceeName() + " in database while trying to change introduction state...");
+    }
+
+    RecipientId introduceeID = introduction.getIntroduceeId();
+    IdentityDatabase.VerifiedStatus previousIntroduceeVerification = SignalDatabase.identities().getVerifiedStatus(introduceeID);
+
+    // If the state turned stale we only change the introduction, not the verification status
+    if(!newState.isStale()){
+      modifyIntroduceeVerification(introduceeID,
+                                   SignalDatabase.identities().getVerifiedStatus(introduceeID),
+                                   newState,
+                                   String.format("Updated %s's verification state to: %s", introduction.getIntroduceeName(), newState.toString()));
+    }
+
+    // Modify introduction
+    ContentValues newValues = buildContentValuesForStateUpdate(introduction, newState);
+    SQLiteDatabase writeableDatabase = databaseHelper.getSignalWritableDatabase();
+    long result = writeableDatabase.update(TABLE_NAME, newValues, ID + " = ?", SqlUtil.buildArgs(introduction.getId()));
+
+    if ( result > 0 ){
+      // Log message on success
+      Log.e(TAG, log_message);
+      // TODO: multidevice add here
+      return true;
+    }
+    Log.e(TAG, "State modification of introduction: " + introduction.getId() + " failed!");
+    return false;
+  }
+
+  /**
+   * FSMs for verification status implemented here.
+   * @param introduceeID The recipient whose verification status may change
+   * @param previousIntroduceeVerification the previous verification status of the introducee
+   * @param newState PRE: !STALE
+   * @param logmessage what to print to logcat iff status was modified
+   */
+  private void modifyIntroduceeVerification(@NonNull RecipientId introduceeID, @NonNull IdentityDatabase.VerifiedStatus previousIntroduceeVerification, @NonNull State newState, @NonNull String logmessage){
+    IdentityDatabase.VerifiedStatus newIntroduceeVerification = previousIntroduceeVerification;
+    switch (previousIntroduceeVerification){
+      case DEFAULT:
+      case UNVERIFIED:
+      case MANUALLY_VERIFIED:
+        if (newState == State.ACCEPTED){
+          newIntroduceeVerification = IdentityDatabase.VerifiedStatus.INTRODUCED;
+        }
+        break;
+      case DUPLEX_VERIFIED:
+        if (newState == State.REJECTED){
+          // Back to "directly verified"
+          newIntroduceeVerification = IdentityDatabase.VerifiedStatus.DIRECTLY_VERIFIED;
+        }
+        break;
+      case DIRECTLY_VERIFIED:
+        if (newState == State.ACCEPTED){
+          newIntroduceeVerification = IdentityDatabase.VerifiedStatus.DUPLEX_VERIFIED;
+        }
+        break;
+      case INTRODUCED:
+        if (newState == State.REJECTED){
+          // There was some interaction so we go to unverified instead of default
+          newIntroduceeVerification = IdentityDatabase.VerifiedStatus.UNVERIFIED;
+        }
+        break;
+      default:
+        throw new AssertionError("Invalid verification status: " + previousIntroduceeVerification.toInt());
+    }
+    if(newIntroduceeVerification != previousIntroduceeVerification){
+      // Something changed
+      TI_Utils.updateContactsVerifiedStatus(introduceeID, TI_Utils.getIdentityKey(introduceeID), newIntroduceeVerification);
+      Log.e(TAG, logmessage);
+    }
+  }
+
+
+  /**
    * Expects the introducee to have been fetched.
    * Expects introduction to already be present in database
    * @param introduction PRE: introduction.introduceeId && introduction.id cannot be null
@@ -410,22 +517,7 @@ public class TrustedIntroductionsDatabase extends Database {
   public boolean acceptIntroduction(TI_Data introduction){
     Preconditions.checkArgument(introduction.getIntroduceeId() != null);
     Preconditions.checkArgument(introduction.getId() != null);
-    Cursor rdc = fetchRecipientDBCursor(introduction.getIntroduceeId());
-    if(rdc.getCount() <= 0){
-      // TODO: Add introducee if not present in the database
-      // I think it should always be there now since I retreived the profile in any case...
-      // Investigate if errors occur
-      throw new AssertionError("Unexpected missing recipient in database while accepting introduction...");
-    }
-    // Set the appropriate verification status
-    RecipientId introduceeID = introduction.getIntroduceeId();
-    TI_Utils.updateContactsVerifiedStatus(introduceeID, TI_Utils.getIdentityKey(introduceeID), IdentityDatabase.VerifiedStatus.INTRODUCED);
-    // Statechange, pending -> accepted
-    ContentValues newValues = buildContentValuesForStateUpdate(introduction, State.ACCEPTED);
-    SQLiteDatabase writeableDatabase = databaseHelper.getSignalWritableDatabase();
-    long result = writeableDatabase.update(TABLE_NAME, newValues, ID + " = ?", SqlUtil.buildArgs(introduction.getId()));
-    Log.e(TAG, "Accepted introduction for: " + introduction.getIntroduceeName());
-    return result > -1;
+    return setState(introduction, State.ACCEPTED,"Accepted introduction for: " + introduction.getIntroduceeName());
   }
 
   @WorkerThread
@@ -524,32 +616,6 @@ public class TrustedIntroductionsDatabase extends Database {
   // Maybe keep around one level of previous introduction? Apparently there is a situation in the app, whereas if someone does not follow the instructions of setting up
   // their new device exactly, they may be set as unverified, while they eventually still end up with the same identity key (TODO: find Github issue or discussion?)
   // For this case, having a record of stale introductions could be used to restore the verification state without having to reverify.
-
-  /**
-   * @param id which introduction to modify
-   * @param state what state to set, cannot be PENDING
-   * @return true if this was successfull, false otherwise (UUID did not exist in the database)
-   */
-  private boolean setState(int id, @NonNull State state) {
-    Preconditions.checkArgument(state != State.PENDING);
-    SQLiteDatabase database = databaseHelper.getSignalWritableDatabase();
-    String query = ID + " = ?";
-    String[] args = SqlUtil.buildArgs(id);
-
-    ContentValues values = new ContentValues(1);
-    values.put(STATE, state.toInt());
-
-    // TODO: Should there be update checks here to make sure no illegal state transition occurs?
-    // @see FSM in your notes drawn on the 09.08.2022.
-
-    int update = database.update(TABLE_NAME, values, query, args);
-
-    if ( update > 0 ){
-      // TODO: multidevice add here
-      return true;
-    }
-    return false;
-  }
 
   // TODO: all state transition methods can be public => FSM Logic adhered to this way.
 
