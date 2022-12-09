@@ -511,13 +511,26 @@ public class TrustedIntroductionsDatabase extends Database {
    * Expects the introducee to have been fetched.
    * Expects introduction to already be present in database
    * @param introduction PRE: introduction.introduceeId && introduction.id cannot be null
-   * @return
+   * @return true if success, false otherwise
    */
   @WorkerThread
   public boolean acceptIntroduction(TI_Data introduction){
     Preconditions.checkArgument(introduction.getIntroduceeId() != null);
     Preconditions.checkArgument(introduction.getId() != null);
     return setState(introduction, State.ACCEPTED,"Accepted introduction for: " + introduction.getIntroduceeName());
+  }
+
+  /**
+   * Expects the introducee to have been fetched.
+   * Expects introduction to already be present in database.
+   * @param introduction PRE: introduction.introduceeId && introduction.id cannot be null
+   * @return true if success, false otherwise
+   */
+  @WorkerThread
+  public boolean rejectIntroduction(TI_Data introduction){
+    Preconditions.checkArgument(introduction.getIntroduceeId() != null);
+    Preconditions.checkArgument(introduction.getId() != null);
+    return setState(introduction, State.REJECTED,"Rejected introduction for: " + introduction.getIntroduceeName());
   }
 
   @WorkerThread
