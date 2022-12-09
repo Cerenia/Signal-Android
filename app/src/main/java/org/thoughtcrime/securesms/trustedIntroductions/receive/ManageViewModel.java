@@ -93,7 +93,7 @@ public class ManageViewModel extends ViewModel {
     });
   }
 
-  boolean acceptIntroduction(@NonNull Long introductionId){
+  void acceptIntroduction(@NonNull Long introductionId){
       iterateAndModify(introductionId, new Modify() {
         @Nullable @Override public Pair<TI_Data, IntroducerInformation> modifiedIntroductionItem(Pair<TI_Data, IntroducerInformation> introductionItem) {
           TI_Data oldIntroduction = introductionItem.first;
@@ -111,7 +111,26 @@ public class ManageViewModel extends ViewModel {
           return "Failed to accept introduction: " + introductionId;
         }
       });
-    return false; // TODO: boolean return not correct yet
+  }
+
+  void rejectIntroduction(@NonNull Long introductionId){
+    iterateAndModify(introductionId, new Modify() {
+      @Nullable @Override public Pair<TI_Data, IntroducerInformation> modifiedIntroductionItem(Pair<TI_Data, IntroducerInformation> introductionItem) {
+        TI_Data oldIntroduction = introductionItem.first;
+        //(val id: Long?, val state: TrustedIntroductionsDatabase.State?, val introducerId: RecipientId, val introduceeId: RecipientId?, val introduceeServiceId: String, val introduceeName: String, val introduceeNumber: String, val introduceeIdentityKey: String, var predictedSecurityNumber: String?, val timestamp: Long)
+        TI_Data newIntroduction = new TI_Data(oldIntroduction.getId(), TrustedIntroductionsDatabase.State.REJECTED, oldIntroduction.getIntroducerId(), oldIntroduction.getIntroduceeId(), oldIntroduction.getIntroduceeServiceId(), oldIntroduction
+            .getIntroduceeName(), oldIntroduction.getIntroduceeNumber(), oldIntroduction.getIntroduceeIdentityKey(), oldIntroduction.getPredictedSecurityNumber(), oldIntroduction.getTimestamp());
+        return new Pair<>(newIntroduction, introductionItem.second);
+      }
+
+      @Override public boolean databaseCall(TI_Data introduction) {
+        return SignalDatabase.trustedIntroductions().rejectIntroduction(introduction);
+      }
+
+      @NonNull @Override public String errorMessage(Long introductionId) {
+        return "Failed to reject introduction: " + introductionId;
+      }
+    });
   }
 
   /**

@@ -157,8 +157,7 @@ public class ManageListItem extends ConstraintLayout {
         newState = State.ACCEPTED;
         newIntro = changeState(data, newState);
         changeByState(newState);
-        listener.accept(data.getId()); // TODO: Right now not waiting for result as this would be a blocking operation on UI thread
-        // TODO: Might want a callback in the future that corrects the state and shows a toast if something went wrong...
+        listener.accept(data.getId());
         // Same for accepted case
         break;
       case ACCEPTED:
@@ -237,7 +236,7 @@ public class ManageListItem extends ConstraintLayout {
   }
 
   interface SwitchClickListener{
-    boolean accept(@NonNull Long introductionID);
-    boolean reject(@NonNull Long introductionID);
+    void accept(@NonNull Long introductionID);
+    void reject(@NonNull Long introductionID);
   }
 }
