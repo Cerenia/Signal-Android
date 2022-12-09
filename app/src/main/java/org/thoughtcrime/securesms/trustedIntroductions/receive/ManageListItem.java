@@ -116,11 +116,7 @@ public class ManageListItem extends ConstraintLayout {
       guideline.setGuidelinePercent(0.75f);
     }
     changeByState(data.getState());
-    toggleSwitch.setOnClickListener(new OnClickListener() {
-      @Override public void onClick(View v) {
-        toggleSwitch();
-      }
-    });
+    toggleSwitch.setOnClickListener(v -> toggleSwitch());
   }
 
   /**
