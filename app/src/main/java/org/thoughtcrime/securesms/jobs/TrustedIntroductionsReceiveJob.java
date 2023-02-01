@@ -37,6 +37,7 @@ public class TrustedIntroductionsReceiveJob extends BaseJob  {
   private final RecipientId introducerId;
   private final long timestamp;
   private final String messageBody;
+  private boolean bodyParsed = false;
   private final ArrayList<TI_Data> introductions;
   // counter keeping track of which TI_DATA has made it's way to the database
   // allows to only serialize introductions that have not yet been done if process get's interrupted
@@ -46,26 +47,29 @@ public class TrustedIntroductionsReceiveJob extends BaseJob  {
   private static final String KEY_INTRODUCER_ID = "introducer_id";
   private static final String KEY_TIMESTAMP = "timestamp";
   private static final String KEY_MESSAGE_BODY = "messageBody";
+  private static final String KEY_BODY_PARSED = "bodyParsed";
   private static final String KEY_INTRODUCTIONS = "serialized_remaining_introduction_data";
 
   public TrustedIntroductionsReceiveJob(@NonNull RecipientId introducerId, @NonNull String messageBody, @NonNull long timestamp){
     this(introducerId,
          messageBody,
+         false,
          timestamp,
          null,
          new Parameters.Builder()
-                       .setQueue(introducerId.toQueueKey() + TI_Utils.serializeForQueue(messageBody) + timestamp)
+                       .setQueue(introducerId.toQueueKey() + TI_Utils.serializeForQueue(messageBody) + timestamp) // TODO: Why does this need a seperate queue? Can I just enqueue each intro per introducer?
                        .setLifespan(TI_Utils.TI_JOB_LIFESPAN)
                        .setMaxAttempts(TI_Utils.TI_JOB_MAX_ATTEMPTS)
                        .addConstraint(NetworkConstraint.KEY)
                        .build());
   }
 
-  private TrustedIntroductionsReceiveJob(@NonNull RecipientId introducerId, @NonNull String messageBody, @NonNull long timestamp, @Nullable ArrayList<TI_Data> tiData, @NonNull Parameters parameters){
+  private TrustedIntroductionsReceiveJob(@NonNull RecipientId introducerId, @NonNull String messageBody, @NonNull Boolean bodyParsed, @NonNull long timestamp, @Nullable ArrayList<TI_Data> tiData, @NonNull Parameters parameters){
     super(parameters);
     this.introducerId = introducerId;
     this.timestamp = timestamp;
     this.messageBody = messageBody;
+    this.bodyParsed = bodyParsed;
     this.introductions = tiData != null ? tiData : new ArrayList<>();
   }
 
@@ -95,6 +99,7 @@ public class TrustedIntroductionsReceiveJob extends BaseJob  {
     return new Data.Builder()
         .putString(KEY_INTRODUCER_ID, introducerId.serialize())
         .putString(KEY_MESSAGE_BODY, messageBody)
+        .putBoolean(KEY_BODY_PARSED, bodyParsed)
         .putString(KEY_INTRODUCTIONS, serializedIntroductions)
         .putLong(KEY_TIMESTAMP, timestamp)
         .build();
@@ -116,18 +121,23 @@ public class TrustedIntroductionsReceiveJob extends BaseJob  {
 
 
   @Override protected void onRun() throws Exception {
-    if(introductions.isEmpty()){
+    if(!bodyParsed){
       List<TI_Data> tiData = parseTIMessage(messageBody, timestamp, introducerId);
       introductions.addAll(tiData);
+      bodyParsed = true;
     }
     TrustedIntroductionsDatabase db = SignalDatabase.trustedIntroductions();
     for(TI_Data introduction: introductions){
-      db.incomingIntroduction(introduction);
+      long result = db.incomingIntroduction(introduction);
+      if (result == -1){
+        // TODO: How to fail gracefully?
+        throw new AssertionError(TAG + String.format("Introduction insertion for %s failed...", introduction.getIntroduceeName()));
+      }
       inserts_succeeded++;
-      // TODO: What if insert fails? (-1 answer)
       // Testing
       Log.e(TAG, String.format("Inserted introduction of %s into the database", introduction.getIntroduceeName()));
     }
+    Log.e(TAG, "TrustedIntroductionsReceiveJob completed!");
   }
 
   // TODO
@@ -162,6 +172,7 @@ public class TrustedIntroductionsReceiveJob extends BaseJob  {
 
       return new TrustedIntroductionsReceiveJob(RecipientId.from(data.getString(KEY_INTRODUCER_ID)),
                                                 data.getString(KEY_MESSAGE_BODY),
+                                                data.getBoolean(KEY_BODY_PARSED),
                                                 data.getLong(KEY_TIMESTAMP),
                                                 tiData,
                                                 parameters);
