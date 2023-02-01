@@ -115,8 +115,8 @@ public class ManageListItem extends ConstraintLayout {
       introducerNumber.setVisibility(View.GONE);
       guideline.setGuidelinePercent(0.75f);
     }
-    changeByState(data.getState());
     toggleSwitch.setOnClickListener(v -> toggleSwitch());
+    changeByState(data.getState());
   }
 
   /**
