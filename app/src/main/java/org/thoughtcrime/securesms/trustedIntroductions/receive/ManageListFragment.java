@@ -96,16 +96,6 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
     introductionList = view.findViewById(R.id.recycler_view);
     introductionList.setClipToPadding(true);
     introductionList.setAdapter(adapter);
-    /*
-    introductionList.addOnScrollListener(new RecyclerView.OnScrollListener() {
-      @Override
-      public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
-        if (newState == RecyclerView.SCROLL_STATE_DRAGGING) {
-          // TODO: Add scrollCallback if needed, determined during Integration testing
-        }
-      }
-    });
-    */
     this.viewModel.getIntroductions().observe(getViewLifecycleOwner(), users -> {
       String filter = null;
       if (!viewModel.getFilter().getValue().isEmpty()){
