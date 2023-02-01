@@ -103,6 +103,7 @@ public class ContactsSelectionListFragment extends Fragment implements ContactFi
     TIRecyclerViewAdapter = new ContactsSelectionAdapter(requireContext(), glideRequests, new ContactClickListener());
 
     TIContactsRecycler.setAdapter(TIRecyclerViewAdapter);
+    /*
     TIContactsRecycler.addOnScrollListener(new RecyclerView.OnScrollListener() {
       @Override
       public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
@@ -111,6 +112,7 @@ public class ContactsSelectionListFragment extends Fragment implements ContactFi
         }
       }
     });
+    */
   }
 
   @MainThread
