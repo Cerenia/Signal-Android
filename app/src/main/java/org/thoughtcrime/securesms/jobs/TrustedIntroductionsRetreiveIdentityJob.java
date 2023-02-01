@@ -42,15 +42,15 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
   // TI_Data
   private static final String KEY_TI_DATA = "tiData";
 
-  private final TI_Data data;
+  private final TI_RetrieveIDJobResult data;
 
   public static class TI_RetrieveIDJobResult implements Serializable {
-    public TI_Data data;
+    public TI_Data TIData;
     public String key;
     public String aci;
 
     public TI_RetrieveIDJobResult(TI_Data data, String key, String aci){
-      this.data = data;
+      this.TIData = data;
       this.key = key;
       this.aci = aci;
     }
@@ -76,7 +76,7 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
 
   private TrustedIntroductionsRetreiveIdentityJob(@NonNull TI_Data data, @NonNull Parameters parameters){
     super(parameters);
-    this.data = data;
+    this.data = new TI_RetrieveIDJobResult(data, null, null);
   }
 
 
@@ -89,6 +89,7 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
       ByteArrayOutputStream bos = new ByteArrayOutputStream();
       ObjectOutputStream oos = new ObjectOutputStream(bos);
       oos.writeObject(data);
+      // TODO: continue here... Serializtion of RecipientId fails for some reason... Not sure why, it seems to work with the other serializations (e.g. receive Job etc..)..
       final byte[] bA = bos.toByteArray();
       serializedData = Base64.encodeBytes(bA);
       oos.close();
@@ -115,7 +116,7 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
   @Override public void onFailure() {
     // TODO: Would we like some kind of note to the user that this happened?
     // Not urgent but may be nice to have in the user-specific screen
-    Log.e(TAG, "Could not find a registered user with service id:" + data.getIntroduceeServiceId() + " and phone nr: " + data.getIntroduceeNumber()  +". This introduction failed and will not be retried.");
+    Log.e(TAG, "Could not find a registered user with service id:" + data.TIData.getIntroduceeServiceId() + " and phone nr: " + data.TIData.getIntroduceeNumber()  +". This introduction failed and will not be retried.");
   }
 
   @Override protected void onRun() throws Exception {
@@ -127,7 +128,7 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
 
     //TODO test
     Log.e(TAG, "Retreive Job started!!");
-    ServiceId sid = ServiceId.parseOrThrow(data.getIntroduceeServiceId());
+    ServiceId sid = ServiceId.parseOrThrow(data.TIData.getIntroduceeServiceId());
     SignalServiceAddress serviceAddress = new SignalServiceAddress(sid);
     ProfileService                                    profileService = ApplicationDependencies.getProfileService();
     Observable<ServiceResponse<ProfileAndCredential>> result         = profileService.getProfile(serviceAddress, Optional.empty(), Optional.empty(), SignalServiceProfile.RequestType.PROFILE, Locale.getDefault()).toObservable();
@@ -137,19 +138,19 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
     ProfileService.ProfileResponseProcessor processor = new ProfileService.ProfileResponseProcessor(sr);
     TI_RetrieveIDJobResult jobResult = new TI_RetrieveIDJobResult();
     if (processor.notFound()){
-      Log.e(TAG, "No user exists with service ID: " + data.getIntroduceeServiceId() + ". Ignoring introduction.");
+      Log.e(TAG, "No user exists with service ID: " + data.TIData.getIntroduceeServiceId() + ". Ignoring introduction.");
       return;
     } else if (processor.hasResult()) {
       if (sr.getResult().isPresent()){
-        jobResult.data = data;
+        jobResult.TIData = data.TIData;
         SignalServiceProfile profile  =  sr.getResult().get().getProfile();
         jobResult.key = profile.getIdentityKey();
       } else {
-        Log.e(TAG, "ServiceResponse.getResult() was empty for service ID: " + data.getIntroduceeServiceId() + ". Ignoring introduction.");
+        Log.e(TAG, "ServiceResponse.getResult() was empty for service ID: " + data.TIData.getIntroduceeServiceId() + ". Ignoring introduction.");
         return;
       }
     } else {
-      Log.e(TAG, "Processor did not have a result for service ID: " + data.getIntroduceeServiceId() + ". Ignoring introduction.");
+      Log.e(TAG, "Processor did not have a result for service ID: " + data.TIData.getIntroduceeServiceId() + ". Ignoring introduction.");
       return;
     }
     TrustedIntroductionsDatabase db = SignalDatabase.trustedIntroductions();
@@ -159,7 +160,7 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
   @Override protected boolean onShouldRetry(@NonNull Exception e) {
     if(e instanceof IllegalArgumentException){
       e.printStackTrace();
-      Log.e(TAG,"The introduction for " + data.getIntroduceeName() + " with number: " + data.getIntroduceeNumber() + " was not accepted.");
+      Log.e(TAG,"The introduction for " + data.TIData.getIntroduceeName() + " with number: " + data.TIData.getIntroduceeNumber() + " was not accepted.");
       return false;
     }
     return true;
