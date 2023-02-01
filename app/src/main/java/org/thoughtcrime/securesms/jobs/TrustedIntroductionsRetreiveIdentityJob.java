@@ -64,6 +64,7 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
    * @param data introduceeId and IntroduceeNumber must be present
    */
   public TrustedIntroductionsRetreiveIdentityJob(@NonNull TI_Data data){
+    // TODO: Currently bogus introduceeId and IntroduceeNumber lead to an application crash
     this(data, new Parameters.Builder()
                                .setQueue(data.getIntroduceeId().toQueueKey() + data.getIntroduceeNumber() + TAG)
                                .setLifespan(TI_Utils.TI_JOB_LIFESPAN)
