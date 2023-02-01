@@ -396,25 +396,25 @@ public class TrustedIntroductionsDatabase extends Database {
   // TODO: annoying that this needs to be public. Should be private and just passed as function pointer..
   // But java is annoying when it comes to function serialization so I won't do that for now
   public long insertIntroductionCallback(TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult result){
-    Preconditions.checkArgument(result.aci.equals(result.data.getIntroduceeServiceId()));
+    Preconditions.checkArgument(result.aci.equals(result.TIData.getIntroduceeServiceId()));
     ContentValues values = new ContentValues(9);
     // This is a recipient we do not have yet.
     values.put(INTRODUCEE_RECIPIENT_ID, UNKNOWN_INTRODUCEE_RECIPIENT_ID);
-    if(result.key.equals(result.data.getIntroduceeIdentityKey())){
+    if(result.key.equals(result.TIData.getIntroduceeIdentityKey())){
       values.put(STATE, State.PENDING.toInt());
     } else {
       values.put(STATE, State.CONFLICTING.toInt());
     }
-    values.put(INTRODUCER_RECIPIENT_ID, result.data.getIntroducerId().toLong());
-    values.put(INTRODUCEE_SERVICE_ID, result.data.getIntroduceeServiceId());
-    values.put(INTRODUCEE_PUBLIC_IDENTITY_KEY, result.data.getIntroduceeIdentityKey());
-    values.put(INTRODUCEE_NAME, result.data.getIntroduceeName());
-    values.put(INTRODUCEE_NUMBER, result.data.getIntroduceeNumber());
-    values.put(PREDICTED_FINGERPRINT, result.data.getPredictedSecurityNumber());
-    values.put(TIMESTAMP, result.data.getTimestamp());
+    values.put(INTRODUCER_RECIPIENT_ID, result.TIData.getIntroducerId().toLong());
+    values.put(INTRODUCEE_SERVICE_ID, result.TIData.getIntroduceeServiceId());
+    values.put(INTRODUCEE_PUBLIC_IDENTITY_KEY, result.TIData.getIntroduceeIdentityKey());
+    values.put(INTRODUCEE_NAME, result.TIData.getIntroduceeName());
+    values.put(INTRODUCEE_NUMBER, result.TIData.getIntroduceeNumber());
+    values.put(PREDICTED_FINGERPRINT, result.TIData.getPredictedSecurityNumber());
+    values.put(TIMESTAMP, result.TIData.getTimestamp());
     SQLiteDatabase writeableDatabase = databaseHelper.getSignalWritableDatabase();
     long id = writeableDatabase.insert(TABLE_NAME, null, values);
-    Log.e(TAG, "Inserted new introduction for: " + result.data.getIntroduceeName() + ", with id: " + id);
+    Log.e(TAG, "Inserted new introduction for: " + result.TIData.getIntroduceeName() + ", with id: " + id);
     return id;
   }
 
