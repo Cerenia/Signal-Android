@@ -80,11 +80,7 @@ public class ManageViewModel extends ViewModel {
       @Nullable @Override public Pair<TI_Data, IntroducerInformation> modifiedIntroductionItem(Pair<TI_Data, IntroducerInformation> introductionItem) {
         TI_Data oldIntro = introductionItem.first;
         TI_Data newIntroduction = new TI_Data(oldIntro.getId(), oldIntro.getState(), RecipientId.UNKNOWN, oldIntro.getIntroduceeId(), oldIntro.getIntroduceeServiceId(), oldIntro.getIntroduceeName(), oldIntro.getIntroduceeNumber(), oldIntro.getIntroduceeIdentityKey(), oldIntro.getPredictedSecurityNumber(), oldIntro.getTimestamp());
-        if(type == ManageActivity.IntroductionScreenType.RECIPIENT_SPECIFIC) {
-          return new Pair<>(newIntroduction, new IntroducerInformation(forgottenPlaceholder, forgottenPlaceholder));
-        } else {
-          return null;
-        }
+        return new Pair<>(newIntroduction, new IntroducerInformation(forgottenPlaceholder, forgottenPlaceholder));
       }
 
       @WorkerThread @Override public boolean databaseCall(TI_Data introduction) {
@@ -157,7 +153,8 @@ public class ManageViewModel extends ViewModel {
     // This needs to happen before current is potentially deleted
     TI_Data modifiedIntroduction = current.first;
     current = m.modifiedIntroductionItem(current);
-    if(current != null){
+    if(current != null &&
+       !(type == ManageActivity.IntroductionScreenType.RECIPIENT_SPECIFIC && modifiedIntroduction.getIntroducerId() == RecipientId.UNKNOWN)) {
       all.add(current);
       // only reassign if current was not deleted
       modifiedIntroduction = current.first;
