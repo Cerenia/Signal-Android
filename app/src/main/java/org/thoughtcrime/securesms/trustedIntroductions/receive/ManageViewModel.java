@@ -80,7 +80,11 @@ public class ManageViewModel extends ViewModel {
       @Nullable @Override public Pair<TI_Data, IntroducerInformation> modifiedIntroductionItem(Pair<TI_Data, IntroducerInformation> introductionItem) {
         TI_Data oldIntro = introductionItem.first;
         TI_Data newIntroduction = new TI_Data(oldIntro.getId(), oldIntro.getState(), RecipientId.UNKNOWN, oldIntro.getIntroduceeId(), oldIntro.getIntroduceeServiceId(), oldIntro.getIntroduceeName(), oldIntro.getIntroduceeNumber(), oldIntro.getIntroduceeIdentityKey(), oldIntro.getPredictedSecurityNumber(), oldIntro.getTimestamp());
-        return new Pair<>(newIntroduction, new IntroducerInformation(forgottenPlaceholder, forgottenPlaceholder));
+        if(type == ManageActivity.IntroductionScreenType.RECIPIENT_SPECIFIC) {
+          return new Pair<>(newIntroduction, new IntroducerInformation(forgottenPlaceholder, forgottenPlaceholder));
+        } else {
+          return null;
+        }
       }
 
       @WorkerThread @Override public boolean databaseCall(TI_Data introduction) {
