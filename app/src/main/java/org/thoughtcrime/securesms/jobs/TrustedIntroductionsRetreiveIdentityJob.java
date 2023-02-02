@@ -2,6 +2,8 @@ package org.thoughtcrime.securesms.jobs;
 
 import androidx.annotation.NonNull;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
@@ -39,12 +41,14 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
 
   private static final String TAG = Log.tag(TrustedIntroductionsRetreiveIdentityJob.class);
 
-  // TI_Data
-  private static final String KEY_TI_DATA = "tiData";
+  private static final String KEY_JSON_DATA = "data";
+  private static final String KEY_JSON_TI_DATA = "tiData";
+  private static final String KEY_JSON_KEY = "key";
+  private static final String KEY_JSON_ACI = "aci";
 
   private final TI_RetrieveIDJobResult data;
 
-  public static class TI_RetrieveIDJobResult implements Serializable {
+  public static class TI_RetrieveIDJobResult {
     public TI_Data TIData;
     public String key;
     public String aci;
@@ -63,10 +67,10 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
   /**
    * @param data introduceeId and IntroduceeNumber must be present
    */
-  public TrustedIntroductionsRetreiveIdentityJob(@NonNull TI_Data data){
+  public TrustedIntroductionsRetreiveIdentityJob(@NonNull TI_RetrieveIDJobResult data){
     // TODO: Currently bogus introduceeId and IntroduceeNumber lead to an application crash
     this(data, new Parameters.Builder()
-                               .setQueue(data.getIntroducerId().toQueueKey() + data.getIntroduceeNumber() + TAG)
+                               .setQueue(data.TIData.getIntroducerId().toQueueKey() + data.TIData.getIntroduceeNumber() + TAG)
                                .setLifespan(TI_Utils.TI_JOB_LIFESPAN)
                                .setMaxAttempts(TI_Utils.TI_JOB_MAX_ATTEMPTS)
                                .addConstraint(NetworkConstraint.KEY)
@@ -74,9 +78,9 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
 
   }
 
-  private TrustedIntroductionsRetreiveIdentityJob(@NonNull TI_Data data, @NonNull Parameters parameters){
+  private TrustedIntroductionsRetreiveIdentityJob(@NonNull TI_RetrieveIDJobResult data, @NonNull Parameters parameters){
     super(parameters);
-    this.data = new TI_RetrieveIDJobResult(data, null, null);
+    this.data = data;
   }
 
 
@@ -84,22 +88,17 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
    * Serialize your job state so that it can be recreated in the future.
    */
   @NonNull @Override public Data serialize() {
-    String serializedData = "";
+    JSONObject serializedData = new JSONObject();
     try{
-      ByteArrayOutputStream bos = new ByteArrayOutputStream();
-      ObjectOutputStream oos = new ObjectOutputStream(bos);
-      oos.writeObject(data);
-      // TODO: continue here... Serializtion of RecipientId fails for some reason... Not sure why, it seems to work with the other serializations (e.g. receive Job etc..)..
-      final byte[] bA = bos.toByteArray();
-      serializedData = Base64.encodeBytes(bA);
-      oos.close();
-      bos.close();
-    } catch (IOException e){
-      // TODO: How to fail gracefully?
-      e.printStackTrace();
-      throw new AssertionError("Serialization of TI_Data failed");
+      serializedData.put(KEY_JSON_TI_DATA, data.TIData.serialize());
+      serializedData.putOpt(KEY_JSON_KEY, data.key);
+      serializedData.putOpt(KEY_JSON_ACI, data.aci);
+    } catch (JSONException e){
+      // TODO: fail gracefully
+     e.printStackTrace();
+     throw new AssertionError(TAG + " Json serialization of TI_RetrieveIDJobResult failed!");
     }
-    return new Data.Builder().putString(KEY_TI_DATA, serializedData)
+    return new Data.Builder().putString(KEY_JSON_DATA, serializedData.toString())
                              .build();
   }
 
@@ -170,25 +169,23 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
 
     @NonNull @Override public TrustedIntroductionsRetreiveIdentityJob create(@NonNull Parameters parameters, @NonNull Data data) {
       // deserialize TI_Data if present
-      String serializedTiData = data.getString(KEY_TI_DATA);
-      TI_Data d = null;
+      String serializedTiData = data.getString(KEY_JSON_DATA);
+      TI_RetrieveIDJobResult result;
       if (!serializedTiData.isEmpty()){
-        // TODO: What if it is empty?
         try {
-          final byte[] bytes = Base64.decode(serializedTiData);
-          ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
-          ObjectInputStream             ois = new ObjectInputStream(bis);
-          d = (TI_Data) ois.readObject();
-          ois.close();
-          bis.close();
-        } catch (IOException | ClassNotFoundException e) {
+          JSONObject j = new JSONObject(serializedTiData);
+          result = new TI_RetrieveIDJobResult(TI_Data.Deserializer.deserialize(j.getString(KEY_JSON_TI_DATA)),
+                                              j.getString(KEY_JSON_KEY),
+                                              j.getString(KEY_JSON_ACI));
+          return new TrustedIntroductionsRetreiveIdentityJob(result, parameters);
+        } catch (JSONException e) {
           // TODO: How to fail gracefully?
           e.printStackTrace();
-          throw new AssertionError("Deserialization of TI_Data failed");
+          throw new AssertionError("Deserialization of TI_RetrieveIDJobResult failed");
         }
       }
-
-      return new TrustedIntroductionsRetreiveIdentityJob(d, parameters);
+      // unreachable code but compiler complains..
+      return null;
     }
   }
 }
