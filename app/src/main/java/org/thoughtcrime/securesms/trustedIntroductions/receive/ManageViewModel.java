@@ -150,12 +150,16 @@ public class ManageViewModel extends ViewModel {
       throw new AssertionError(TAG +": the introduction id was not present in the viewModels List");
     }
     all.remove(i);
+    // This needs to happen before current is potentially deleted
+    TI_Data modifiedIntroduction = current.first;
     current = m.modifiedIntroductionItem(current);
     if(current != null){
       all.add(current);
+      // only reassign if current was not deleted
+      modifiedIntroduction = current.first;
     }
+    final TI_Data finalIntroduction = modifiedIntroduction;
     introductions.postValue(all);
-    final TI_Data finalIntroduction = current.first;
     SignalExecutors.BOUNDED.execute(() -> {
       boolean res = m.databaseCall(finalIntroduction);
       if(!res){
