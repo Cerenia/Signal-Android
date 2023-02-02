@@ -368,7 +368,8 @@ public class TrustedIntroductionsDatabase extends Database {
       ApplicationDependencies.getJobManager().add(new TrustedIntroductionsRetreiveIdentityJob(new TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult(data, null, null)));
       // TODO: testing
       Log.e(TAG, "Unknown recipient, deferred insertion of Introduction into database for: " + data.getIntroduceeName());
-      return -1;
+      // This is expected and not an error.
+      return 0;
     } else {
       values.put(INTRODUCEE_RECIPIENT_ID, introduceeId.toLong());
       if (TI_Utils.encodedIdentityKeysEqual(introduceeId, data.getIntroduceeIdentityKey())){

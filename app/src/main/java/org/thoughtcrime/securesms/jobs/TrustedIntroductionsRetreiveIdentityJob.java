@@ -174,9 +174,11 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
       if (!serializedTiData.isEmpty()){
         try {
           JSONObject j = new JSONObject(serializedTiData);
+          String key = j.has(KEY_JSON_KEY) ? j.getString(KEY_JSON_KEY) : null;
+          String aci = j.has(KEY_JSON_ACI) ? j.getString(KEY_JSON_ACI) : null;
           result = new TI_RetrieveIDJobResult(TI_Data.Deserializer.deserialize(j.getString(KEY_JSON_TI_DATA)),
-                                              j.getString(KEY_JSON_KEY),
-                                              j.getString(KEY_JSON_ACI));
+                                              key,
+                                              aci);
           return new TrustedIntroductionsRetreiveIdentityJob(result, parameters);
         } catch (JSONException e) {
           // TODO: How to fail gracefully?
