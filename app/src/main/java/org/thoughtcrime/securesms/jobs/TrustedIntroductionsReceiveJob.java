@@ -121,7 +121,7 @@ public class TrustedIntroductionsReceiveJob extends BaseJob  {
       long result = db.incomingIntroduction(introduction);
       if (result == -1){
         // TODO: How to fail gracefully?
-        throw new AssertionError(TAG + String.format("Introduction insertion for %s failed...", introduction.getIntroduceeName()));
+        //throw new AssertionError(TAG + String.format("Introduction insertion for %s failed...", introduction.getIntroduceeName()));
       }
       inserts_succeeded++;
       // Testing
@@ -147,12 +147,12 @@ public class TrustedIntroductionsReceiveJob extends BaseJob  {
           JSONArray arr = new JSONArray(serializedIntroductions);
           for (int i = 0; i < arr.length(); i++){
             // Casting directly since I'm the only one deserializing
-            tiData.add(TI_Data.Deserializer.deserialize((String)arr.get(i)));
+            tiData.add(TI_Data.Deserializer.deserialize(arr.getString(i)));
           }
         } catch (JSONException | NullPointerException e) {
           e.printStackTrace();
           // TODO: fail gracefully
-          throw new AssertionError("JSON deserialization of introductions failed!");
+          //throw new AssertionError("JSON deserialization of introductions failed!");
         }
       }
 

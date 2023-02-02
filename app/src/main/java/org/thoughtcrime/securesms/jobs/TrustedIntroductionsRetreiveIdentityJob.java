@@ -96,7 +96,7 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
     } catch (JSONException e){
       // TODO: fail gracefully
      e.printStackTrace();
-     throw new AssertionError(TAG + " Json serialization of TI_RetrieveIDJobResult failed!");
+     //throw new AssertionError(TAG + " Json serialization of TI_RetrieveIDJobResult failed!");
     }
     return new Data.Builder().putString(KEY_JSON_DATA, serializedData.toString())
                              .build();
@@ -181,7 +181,7 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
         } catch (JSONException e) {
           // TODO: How to fail gracefully?
           e.printStackTrace();
-          throw new AssertionError("Deserialization of TI_RetrieveIDJobResult failed");
+          //throw new AssertionError("Deserialization of TI_RetrieveIDJobResult failed");
         }
       }
       // unreachable code but compiler complains..
