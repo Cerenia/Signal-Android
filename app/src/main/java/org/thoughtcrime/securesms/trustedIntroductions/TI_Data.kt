@@ -29,40 +29,42 @@ data class TI_Data (val id: Long?, val state: TrustedIntroductionsDatabase.State
     return builder.toString()
   }
 
-  // factory from serialized String
-  fun deserialize(serialized: String): TI_Data {
-    val d = JSONObject(serialized)
-    // Absence of key signifies null
-    val id: Long?
-    if (d.has("id")){
-      id = d.getLong("id")
-    } else{
-      id = null
+  companion object Deserializer{
+    // factory from serialized String
+    fun deserialize(serialized: String): TI_Data {
+      val d = JSONObject(serialized)
+      // Absence of key signifies null
+      val id: Long?
+      if (d.has("id")){
+        id = d.getLong("id")
+      } else{
+        id = null
+      }
+      val state: TrustedIntroductionsDatabase.State?
+      if (d.has("state")){
+        state = TrustedIntroductionsDatabase.State.forState(d.getInt("state"))
+      } else{
+        state = null
+      }
+      val introducerId = RecipientId.from(d.getLong("introducerId"))
+      val introduceeId : RecipientId?
+      if (d.has("introduceeId")){
+        introduceeId = RecipientId.from(d.getLong("introduceeId"))
+      } else {
+        introduceeId = null
+      }
+      val introduceeServiceId = d.getString("introduceeServiceId")
+      val introduceeName = d.getString("introduceeName")
+      val introduceeNumber = d.getString("introduceeNumber")
+      val introduceeIdentityKey = d.getString("introduceeIdentityKey")
+      val predictedSecurityNumber: String?
+      if (d.has("predictedSecurityNumber")){
+        predictedSecurityNumber = d.getString("predictedSecurityNumber")
+      } else{
+        predictedSecurityNumber = null
+      }
+      val timestamp = d.getLong("timestamp")
+      return TI_Data(id, state, introducerId, introduceeId, introduceeServiceId, introduceeName, introduceeNumber, introduceeIdentityKey, predictedSecurityNumber, timestamp)
     }
-    val state: TrustedIntroductionsDatabase.State?
-    if (d.has("state")){
-      state = TrustedIntroductionsDatabase.State.forState(d.getInt("state"))
-    } else{
-      state = null
-    }
-    val introducerId = RecipientId.from(d.getLong("introducerId"))
-    val introduceeId : RecipientId?
-    if (d.has("introduceeId")){
-      introduceeId = RecipientId.from(d.getLong("introduceeId"))
-    } else {
-      introduceeId = null
-    }
-    val introduceeServiceId = d.getString("introduceeServiceId")
-    val introduceeName = d.getString("introduceeName")
-    val introduceeNumber = d.getString("introduceeNumber")
-    val introduceeIdentityKey = d.getString("introduceeIdentityKey")
-    val predictedSecurityNumber: String?
-    if (d.has("predictedSecurityNumber")){
-      predictedSecurityNumber = d.getString("predictedSecurityNumber")
-    } else{
-      predictedSecurityNumber = null
-    }
-    val timestamp = d.getLong("timestamp")
-    return TI_Data(id, state, introducerId, introduceeId, introduceeServiceId, introduceeName, introduceeNumber, introduceeIdentityKey, predictedSecurityNumber, timestamp)
   }
 }

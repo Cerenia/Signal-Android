@@ -3,6 +3,10 @@ package org.thoughtcrime.securesms.jobs;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
@@ -14,10 +18,6 @@ import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
 import org.thoughtcrime.securesms.util.Base64;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -37,7 +37,7 @@ public class TrustedIntroductionsReceiveJob extends BaseJob  {
   private final RecipientId introducerId;
   private final long timestamp;
   private final String messageBody;
-  private boolean bodyParsed = false;
+  private boolean bodyParsed;
   private final ArrayList<TI_Data> introductions;
   // counter keeping track of which TI_DATA has made it's way to the database
   // allows to only serialize introductions that have not yet been done if process get's interrupted
@@ -82,25 +82,15 @@ public class TrustedIntroductionsReceiveJob extends BaseJob  {
       introductions.remove(0);
       inserts_succeeded--;
     }
-    String serializedIntroductions = "";
-    try{
-      // Serialize remaining List
-      ByteArrayOutputStream bos = new ByteArrayOutputStream();
-      ObjectOutputStream    oos = new ObjectOutputStream(bos);
-      oos.writeObject(introductions);
-      serializedIntroductions = Base64.encodeBytes(bos.toByteArray());
-      oos.close();
-      bos.close();
-    } catch (IOException e){
-      // TODO: How to fail gracefully?
-      e.printStackTrace();
-      throw new AssertionError("Serialization of TI_Data failed");
+    JSONArray serializedIntroductions = new JSONArray();
+    for (TI_Data d: introductions){
+      serializedIntroductions.put(d.serialize());
     }
     return new Data.Builder()
         .putString(KEY_INTRODUCER_ID, introducerId.serialize())
         .putString(KEY_MESSAGE_BODY, messageBody)
         .putBoolean(KEY_BODY_PARSED, bodyParsed)
-        .putString(KEY_INTRODUCTIONS, serializedIntroductions)
+        .putString(KEY_INTRODUCTIONS, serializedIntroductions.toString())
         .putLong(KEY_TIMESTAMP, timestamp)
         .build();
   }
@@ -153,20 +143,15 @@ public class TrustedIntroductionsReceiveJob extends BaseJob  {
       ArrayList<TI_Data> tiData = null;
       Log.e(TAG, serializedIntroductions);
       if (!serializedIntroductions.isEmpty()) {
-        try {
-          final byte[] bytes = Base64.decode(serializedIntroductions);
-          ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
-          ObjectInputStream    ois = new ObjectInputStream(bis);
-          tiData = (ArrayList<TI_Data>) ois.readObject();
-          ois.close();
-          bis.close();
-        } catch (IOException | ClassNotFoundException e) {
-          // TODO: How to fail gracefully?
-          // Right now, list just gets lost.
+        try{
+          JSONArray arr = new JSONArray(serializedIntroductions);
+          for (int i = 0; i < arr.length(); i++){
+            // Casting directly since I'm the only one deserializing
+            tiData.add(TI_Data.Deserializer.deserialize((String)arr.get(i)));
+          }
+        } catch (JSONException | NullPointerException e) {
+          Log.e(TAG, "JSON deserialization of introductions failed!");
           e.printStackTrace();
-          Log.e(TAG, e.toString());
-          // TODO (BUG): this currently horribly crashes application routinely.
-          //throw new AssertionError("Deserialization of TI_Data list failed");
         }
       }
 
