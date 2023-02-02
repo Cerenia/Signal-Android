@@ -140,7 +140,7 @@ public class TrustedIntroductionsReceiveJob extends BaseJob  {
     @NonNull @Override public TrustedIntroductionsReceiveJob create(@NonNull Parameters parameters, @NonNull Data data) {
       // Deserialize introduction_data if present
       String serializedIntroductions = data.getString(KEY_INTRODUCTIONS);
-      ArrayList<TI_Data> tiData = null;
+      ArrayList<TI_Data> tiData = new ArrayList<>();
       Log.e(TAG, serializedIntroductions);
       if (!serializedIntroductions.isEmpty()) {
         try{
