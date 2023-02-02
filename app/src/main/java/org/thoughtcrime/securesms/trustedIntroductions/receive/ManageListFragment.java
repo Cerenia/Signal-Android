@@ -216,12 +216,12 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
     viewModel.acceptIntroduction(introductionId);
   }
 
-  @Override public void accept(@NonNull Long introductionID) {
-    viewModel.acceptIntroduction(introductionID);
+  @Override public void accept(@NonNull Long introductionId) {
+    viewModel.acceptIntroduction(introductionId);
   }
 
-  @Override public void reject(@NonNull Long introductionID) {
-    viewModel.rejectIntroduction(introductionID);
+  @Override public void reject(@NonNull Long introductionId) {
+    viewModel.rejectIntroduction(introductionId);
   }
 
   private class IntroductionClickListener implements ManageAdapter.ItemClickListener {

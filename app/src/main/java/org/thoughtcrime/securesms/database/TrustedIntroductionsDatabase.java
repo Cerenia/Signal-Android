@@ -440,6 +440,8 @@ public class TrustedIntroductionsDatabase extends Database {
     RecipientId introduceeID = introduction.getIntroduceeId();
     IdentityDatabase.VerifiedStatus previousIntroduceeVerification = SignalDatabase.identities().getVerifiedStatus(introduceeID);
 
+    // TODO: missing utilization of previousIntroduceeVerification, FSM needs to be implemented here and newState must be adapted accordingly
+
     // If the state turned stale we only change the introduction, not the verification status
     if(!newState.isStale()){
       modifyIntroduceeVerification(introduceeID,
