@@ -365,7 +365,7 @@ public class TrustedIntroductionsDatabase extends Database {
       // TODO: After this is devd, simplify this function by calling helpers to build content values.
       // for now, adding unknown recipient id
       //values.put(INTRODUCEE_RECIPIENT_ID, UNKNOWN_INTRODUCEE_RECIPIENT_ID);
-      ApplicationDependencies.getJobManager().add(new TrustedIntroductionsRetreiveIdentityJob(data));
+      ApplicationDependencies.getJobManager().add(new TrustedIntroductionsRetreiveIdentityJob(new TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult(data, null, null)));
       // TODO: testing
       Log.e(TAG, "Unknown recipient, deferred insertion of Introduction into database for: " + data.getIntroduceeName());
       return -1;
