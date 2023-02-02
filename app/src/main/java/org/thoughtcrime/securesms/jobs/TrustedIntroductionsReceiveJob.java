@@ -124,8 +124,6 @@ public class TrustedIntroductionsReceiveJob extends BaseJob  {
         throw new AssertionError(TAG + String.format("Introduction insertion for %s failed...", introduction.getIntroduceeName()));
       }
       inserts_succeeded++;
-      // Testing
-      Log.e(TAG, String.format("Inserted introduction of %s into the database", introduction.getIntroduceeName()));
     }
     Log.e(TAG, "TrustedIntroductionsReceiveJob completed!");
   }
@@ -146,7 +144,6 @@ public class TrustedIntroductionsReceiveJob extends BaseJob  {
         try{
           JSONArray arr = new JSONArray(serializedIntroductions);
           for (int i = 0; i < arr.length(); i++){
-            // Casting directly since I'm the only one deserializing
             tiData.add(TI_Data.Deserializer.deserialize(arr.getString(i)));
           }
         } catch (JSONException | NullPointerException e) {
