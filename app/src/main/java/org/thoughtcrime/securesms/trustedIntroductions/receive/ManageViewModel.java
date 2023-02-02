@@ -153,12 +153,14 @@ public class ManageViewModel extends ViewModel {
     // This needs to happen before current is potentially deleted
     TI_Data modifiedIntroduction = current.first;
     current = m.modifiedIntroductionItem(current);
-    if(current != null &&
-       !(type == ManageActivity.IntroductionScreenType.RECIPIENT_SPECIFIC && modifiedIntroduction.getIntroducerId() == RecipientId.UNKNOWN)) {
-      all.add(current);
+    if(current != null){
       // only reassign if current was not deleted
       modifiedIntroduction = current.first;
-    }
+      if (!(type == ManageActivity.IntroductionScreenType.RECIPIENT_SPECIFIC && modifiedIntroduction.getIntroducerId() == RecipientId.UNKNOWN)){ // recipient specific forgot introducer
+        all.add(current);
+      }
+    } // else don't add back to list
+
     final TI_Data finalIntroduction = modifiedIntroduction;
     introductions.postValue(all);
     SignalExecutors.BOUNDED.execute(() -> {
