@@ -150,8 +150,9 @@ public class TrustedIntroductionsReceiveJob extends BaseJob  {
             tiData.add(TI_Data.Deserializer.deserialize((String)arr.get(i)));
           }
         } catch (JSONException | NullPointerException e) {
-          Log.e(TAG, "JSON deserialization of introductions failed!");
           e.printStackTrace();
+          // TODO: fail gracefully
+          throw new AssertionError("JSON deserialization of introductions failed!");
         }
       }
 
