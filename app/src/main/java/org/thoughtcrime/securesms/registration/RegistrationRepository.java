@@ -200,25 +200,17 @@ public final class RegistrationRepository {
   private void saveOwnIdentityKey(@NonNull RecipientId selfId, @NonNull SignalServiceAccountDataStoreImpl protocolStore, long now) {
     protocolStore.identities().saveIdentityWithoutSideEffects(selfId,
                                                               protocolStore.getIdentityKeyPair().getPublicKey(),
-                                                              IdentityTable.VerifiedStatus.VERIFIED,
+                                                              IdentityTable.VerifiedStatus.DUPLEX_VERIFIED,
                                                               true,
                                                               now,
                                                               true);
-    ApplicationDependencies.getIdentityStore()
+    ApplicationDependencies.getProtocolStore().aci().identities()
                            .saveIdentityWithoutSideEffects(selfId,
-                                                           identityKey.getPublicKey(),
-                                                           IdentityDatabase.VerifiedStatus.DIRECTLY_VERIFIED,
+                                                           protocolStore.getIdentityKeyPair().getPublicKey(),
+                                                           IdentityTable.VerifiedStatus.DUPLEX_VERIFIED,
                                                            true,
                                                            System.currentTimeMillis(),
                                                            true);
-
-    TextSecurePreferences.setPushServerPassword(context, registrationData.getPassword());
-    TextSecurePreferences.setPushRegistered(context, true);
-    TextSecurePreferences.setSignedPreKeyRegistered(context, true);
-    TextSecurePreferences.setPromptedPushRegistration(context, true);
-    TextSecurePreferences.setUnauthorizedReceived(context, false);
-
-    PinState.onRegistration(context, kbsData, pin, hasPin);
   }
 
   @WorkerThread
