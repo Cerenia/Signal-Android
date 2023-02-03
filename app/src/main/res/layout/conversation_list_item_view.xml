@@ -71,7 +71,7 @@
         android:maxLines="1"
         android:textAlignment="viewStart"
         android:textColor="@color/signal_colorOnSurface"
-        app:layout_constraintEnd_toStartOf="@id/conversation_list_item_name_barrier"
+        app:layout_constraintEnd_toStartOf="@id/conversation_list_item_date"
         app:layout_constraintStart_toEndOf="@id/conversation_list_item_avatar"
         app:layout_constraintTop_toTopOf="@id/conversation_list_item_summary"
         app:layout_constraintVertical_chainStyle="packed"

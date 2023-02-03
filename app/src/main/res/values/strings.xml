@@ -527,6 +527,7 @@
     <string name="ConversationListItemAction_archived_conversations_d">Archived conversations (%d)</string>
 
     <!-- ConversationTitleView -->
+    <string name="ConversationTitleView_verified">Verified</string>
     <string name="ConversationTitleView_manually_verified">Manually Verified</string>
     <string name="ConversationTitleView_directly_verified">QR Verified</string>
     <string name="ConversationTitleView_introduced">Introduced</string>
