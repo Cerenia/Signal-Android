@@ -791,7 +791,7 @@ open class RecipientTable(context: Context, databaseHelper: SignalDatabase) : Da
   /**
    * Returns a cursor populated with the Recipients that correspond to the
    * ones that are a valid target for an introduction.
-   * @See IdentityDatabase.getCursorForTIUnlocked()
+   * @See IdentityTable.getCursorForTIUnlocked()
    */
   @SuppressLint("Range")
   fun getReaderForValidTI_Candidates(cursor: Cursor): RecipientReader {
@@ -799,7 +799,7 @@ open class RecipientTable(context: Context, databaseHelper: SignalDatabase) : Da
     if(cursor.moveToFirst()){
       cursor.use {
         while (!it.isAfterLast) {
-          identifiers.add(it.getString(it.getColumnIndex(IdentityDatabase.ADDRESS)))
+          identifiers.add(it.getString(it.getColumnIndex(IdentityTable.ADDRESS)))
           it.moveToNext()
         }
       }

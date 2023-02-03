@@ -438,7 +438,7 @@ public class TrustedIntroductionsDatabase extends Database {
     }
 
     RecipientId introduceeID = introduction.getIntroduceeId();
-    IdentityDatabase.VerifiedStatus previousIntroduceeVerification = SignalDatabase.identities().getVerifiedStatus(introduceeID);
+    IdentityTable.VerifiedStatus previousIntroduceeVerification = SignalDatabase.identities().getVerifiedStatus(introduceeID);
 
     // TODO: missing utilization of previousIntroduceeVerification, FSM needs to be implemented here and newState must be adapted accordingly
 
@@ -473,30 +473,30 @@ public class TrustedIntroductionsDatabase extends Database {
    * @param logmessage what to print to logcat iff status was modified
    */
   private void modifyIntroduceeVerification(@NonNull RecipientId introduceeID, @NonNull IdentityDatabase.VerifiedStatus previousIntroduceeVerification, @NonNull State newState, @NonNull String logmessage){
-    IdentityDatabase.VerifiedStatus newIntroduceeVerification = previousIntroduceeVerification;
+    IdentityTable.VerifiedStatus newIntroduceeVerification = previousIntroduceeVerification;
     switch (previousIntroduceeVerification){
       case DEFAULT:
       case UNVERIFIED:
       case MANUALLY_VERIFIED:
         if (newState == State.ACCEPTED){
-          newIntroduceeVerification = IdentityDatabase.VerifiedStatus.INTRODUCED;
+          newIntroduceeVerification = IdentityTable.VerifiedStatus.INTRODUCED;
         }
         break;
       case DUPLEX_VERIFIED:
         if (newState == State.REJECTED){
           // Back to "directly verified"
-          newIntroduceeVerification = IdentityDatabase.VerifiedStatus.DIRECTLY_VERIFIED;
+          newIntroduceeVerification = IdentityTable.VerifiedStatus.DIRECTLY_VERIFIED;
         }
         break;
       case DIRECTLY_VERIFIED:
         if (newState == State.ACCEPTED){
-          newIntroduceeVerification = IdentityDatabase.VerifiedStatus.DUPLEX_VERIFIED;
+          newIntroduceeVerification = IdentityTable.VerifiedStatus.DUPLEX_VERIFIED;
         }
         break;
       case INTRODUCED:
         if (newState == State.REJECTED){
           // There was some interaction so we go to unverified instead of default
-          newIntroduceeVerification = IdentityDatabase.VerifiedStatus.UNVERIFIED;
+          newIntroduceeVerification = IdentityTable.VerifiedStatus.UNVERIFIED;
         }
         break;
       default:

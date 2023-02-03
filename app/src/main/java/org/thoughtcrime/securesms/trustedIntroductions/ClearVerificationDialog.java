@@ -7,7 +7,7 @@ import android.content.DialogInterface;
 import androidx.annotation.NonNull;
 
 import org.thoughtcrime.securesms.R;
-import org.thoughtcrime.securesms.database.IdentityDatabase;
+import org.thoughtcrime.securesms.database.IdentityTable;
 
 /**
  * Dialog is displayed if a user wants to clear a verification status that is higher than 'manually' verified,
@@ -32,11 +32,11 @@ public class ClearVerificationDialog {
     /**
      * @param context Caller context.
      * @param cb Calling Fragment which implements the Callback.
-     * @param status The contacts verification status. Must be strongly verified (@see IdentityDatabase)
+     * @param status The contacts verification status. Must be strongly verified (@see IdentityTable)
      * @return Returns the users decision. If true, clear, otherwise don't.
      */
-    public static void show(@NonNull Context context, Callback cb, IdentityDatabase.VerifiedStatus status) {
-        assert IdentityDatabase.VerifiedStatus.stronglyVerified(status): "Unsupported Verification status";
+    public static void show(@NonNull Context context, Callback cb, IdentityTable.VerifiedStatus status) {
+        assert IdentityTable.VerifiedStatus.stronglyVerified(status): "Unsupported Verification status";
 
         clearVerification = false;
         AlertDialog.Builder builder = new AlertDialog.Builder(context).setTitle(R.string.ClearVerificationDialog__Title);
