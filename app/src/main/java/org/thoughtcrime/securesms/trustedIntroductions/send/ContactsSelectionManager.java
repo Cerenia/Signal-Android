@@ -3,7 +3,8 @@ package org.thoughtcrime.securesms.trustedIntroductions.send;
 import androidx.core.util.Consumer;
 
 import org.signal.core.util.concurrent.SignalExecutors;
-import org.thoughtcrime.securesms.database.RecipientDatabase;
+import org.thoughtcrime.securesms.database.IdentityTable;
+import org.thoughtcrime.securesms.database.RecipientTable;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 
@@ -21,10 +22,10 @@ public class ContactsSelectionManager {
   private final RecipientId recipientId;
 
   // Dependency injection makes the class testable
-  private final IdentityDatabase  idb;
-  private final RecipientDatabase rdb;
+  private final IdentityTable  idb;
+  private final RecipientTable rdb;
 
-  ContactsSelectionManager(@NonNull RecipientId recipientId, @NonNull IdentityDatabase idb, @NonNull RecipientDatabase rdb){
+  ContactsSelectionManager(@NonNull RecipientId recipientId, @NonNull IdentityTable idb, @NonNull RecipientTable rdb){
     this.recipientId = recipientId;
     this.idb = idb;
     this.rdb = rdb;
@@ -32,7 +33,7 @@ public class ContactsSelectionManager {
 
   void getValidContacts(@NonNull Consumer<List<Recipient>> introducableContacts){
     SignalExecutors.BOUNDED.execute(() -> {
-      RecipientDatabase.RecipientReader reader = rdb.getReaderForValidTI_Candidates(idb.getCursorForTIUnlocked());
+      RecipientTable.RecipientReader reader = rdb.getReaderForValidTI_Candidates(idb.getCursorForTIUnlocked());
       int count = reader.getCount();
       if (count == 0){
         introducableContacts.accept(Collections.emptyList());
