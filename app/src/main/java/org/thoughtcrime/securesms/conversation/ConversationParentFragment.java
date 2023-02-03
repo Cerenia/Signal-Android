@@ -253,6 +253,7 @@ import org.thoughtcrime.securesms.mms.SlideFactory.MediaType;
 import org.thoughtcrime.securesms.mms.StickerSlide;
 import org.thoughtcrime.securesms.mms.VideoSlide;
 import org.thoughtcrime.securesms.notifications.NotificationChannels;
+import org.thoughtcrime.securesms.notifications.v2.ConversationId;
 import org.thoughtcrime.securesms.payments.CanNotSendPaymentDialog;
 import org.thoughtcrime.securesms.trustedIntroductions.send.CanNotIntroduceDialog;
 import org.thoughtcrime.securesms.permissions.Permissions;
@@ -1264,7 +1265,7 @@ public class ConversationParentFragment extends Fragment
       case TRUSTED_INTRODUCTION:
         Optional<IdentityRecord> recipientRecord = ApplicationDependencies.getProtocolStore().aci().identities().getIdentityRecord(recipient.getId());
         CanNotIntroduceDialog.ConversationType conversationType;
-        if (!isSecureText){
+        if (!viewModel.isDefaultSmsApplication()){
           conversationType = CanNotIntroduceDialog.ConversationType.SMS;
         } else if (!isSingleConversation()){
           // Dialogue for Group (at some point this can be implemented)
