@@ -21,6 +21,7 @@ import com.annimon.stream.Stream;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.avatar.view.AvatarView;
 import org.thoughtcrime.securesms.badges.BadgeImageView;
+import org.thoughtcrime.securesms.database.IdentityTable;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.database.model.StoryViewState;
 import org.thoughtcrime.securesms.mms.GlideRequests;
@@ -212,7 +213,7 @@ public class ConversationTitleView extends ConstraintLayout {
   private void setIndividualRecipientTitle(@NonNull Recipient recipient) {
     final String displayName = recipient.getDisplayNameOrUsername(getContext());
     this.title.setText(displayName);
-    IdentityDatabase.VerifiedStatus verifiedStatus = SignalDatabase.identities().getVerifiedStatus(recipient.getId());
+    IdentityTable.VerifiedStatus verifiedStatus = SignalDatabase.identities().getVerifiedStatus(recipient.getId());
     //IdentityRecord ide = SignalDatabase.identities().getIdentityRecord(recipient.getId().toString());
     //Optional<IdentityRecord> identityRecord = ApplicationDependencies.getIdentityStore().getIdentityRecord(recipient.getId());
     //IdentityTable.VerifiedStatus verifiedStatus = identityRecord.isPresent() ? identityRecord.get().getVerifiedStatus() : IdentityDatabase.VerifiedStatus.DEFAULT;
