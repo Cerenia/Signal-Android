@@ -23,11 +23,6 @@ import org.thoughtcrime.securesms.avatar.view.AvatarView;
 import org.thoughtcrime.securesms.badges.BadgeImageView;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.database.model.StoryViewState;
-import org.thoughtcrime.securesms.badges.models.Badge;
-import org.thoughtcrime.securesms.components.AvatarImageView;
-import org.thoughtcrime.securesms.database.IdentityDatabase;
-import org.thoughtcrime.securesms.database.model.IdentityRecord;
-import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.mms.GlideRequests;
 import org.thoughtcrime.securesms.recipients.LiveRecipient;
 import org.thoughtcrime.securesms.recipients.Recipient;
@@ -220,7 +215,7 @@ public class ConversationTitleView extends ConstraintLayout {
     IdentityDatabase.VerifiedStatus verifiedStatus = SignalDatabase.identities().getVerifiedStatus(recipient.getId());
     //IdentityRecord ide = SignalDatabase.identities().getIdentityRecord(recipient.getId().toString());
     //Optional<IdentityRecord> identityRecord = ApplicationDependencies.getIdentityStore().getIdentityRecord(recipient.getId());
-    //IdentityDatabase.VerifiedStatus verifiedStatus = identityRecord.isPresent() ? identityRecord.get().getVerifiedStatus() : IdentityDatabase.VerifiedStatus.DEFAULT;
+    //IdentityTable.VerifiedStatus verifiedStatus = identityRecord.isPresent() ? identityRecord.get().getVerifiedStatus() : IdentityDatabase.VerifiedStatus.DEFAULT;
     switch (verifiedStatus){
       case MANUALLY_VERIFIED:
         this.subtitle.setText(R.string.ConversationTitleView_manually_verified);

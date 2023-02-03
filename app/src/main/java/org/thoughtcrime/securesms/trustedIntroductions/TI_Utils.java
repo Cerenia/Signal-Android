@@ -15,7 +15,7 @@ import org.signal.libsignal.protocol.InvalidKeyException;
 import org.signal.libsignal.protocol.fingerprint.Fingerprint;
 import org.signal.libsignal.protocol.fingerprint.NumericFingerprintGenerator;
 import org.thoughtcrime.securesms.crypto.ReentrantSessionLock;
-import org.thoughtcrime.securesms.database.IdentityDatabase;
+import org.thoughtcrime.securesms.database.IdentityTable;
 import org.thoughtcrime.securesms.database.RecipientDatabase;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.database.model.IdentityRecord;
@@ -42,7 +42,6 @@ import java.util.function.Supplier;
 
 import org.json.JSONObject;
 import org.json.JSONArray;
-import org.thoughtcrime.securesms.recipients.RecipientUtil;
 import org.thoughtcrime.securesms.storage.StorageSyncHelper;
 import org.thoughtcrime.securesms.util.Base64;
 import org.thoughtcrime.securesms.util.FeatureFlags;
@@ -399,11 +398,11 @@ public class TI_Utils {
    *
    * @param status The new verification status
    */
-  public static void updateContactsVerifiedStatus(RecipientId recipientId, IdentityKey identityKey,IdentityDatabase.VerifiedStatus status) {
+  public static void updateContactsVerifiedStatus(RecipientId recipientId, IdentityKey identityKey, IdentityTable.VerifiedStatus status) {
     Log.i(TAG, "Saving identity: " + recipientId);
     SignalExecutors.BOUNDED.execute(() -> {
       try (SignalSessionLock.Lock unused = ReentrantSessionLock.INSTANCE.acquire()) {
-        final boolean verified = IdentityDatabase.VerifiedStatus.isVerified(status);
+        final boolean verified = IdentityTable.VerifiedStatus.isVerified(status);
         if (verified) {
           ApplicationDependencies.getProtocolStore().aci().identities()
                                  .saveIdentityWithoutSideEffects(recipientId,

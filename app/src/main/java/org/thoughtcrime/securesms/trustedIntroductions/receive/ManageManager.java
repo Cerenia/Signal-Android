@@ -1,15 +1,10 @@
 package org.thoughtcrime.securesms.trustedIntroductions.receive;
 
-import android.content.Context;
-
 import androidx.annotation.NonNull;
 import androidx.core.util.Consumer;
 import androidx.core.util.Pair;
 
-import org.apache.http.impl.io.IdentityInputStreamHC4;
 import org.signal.core.util.concurrent.SignalExecutors;
-import org.thoughtcrime.securesms.database.IdentityDatabase;
-import org.thoughtcrime.securesms.database.LogDatabase;
 import org.thoughtcrime.securesms.database.RecipientDatabase;
 import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
 import org.thoughtcrime.securesms.recipients.Recipient;
