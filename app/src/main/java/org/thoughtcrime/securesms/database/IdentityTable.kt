@@ -17,6 +17,8 @@
 package org.thoughtcrime.securesms.database
 
 import android.content.Context
+import android.database.Cursor
+import androidx.annotation.NonNull
 import androidx.core.content.contentValuesOf
 import org.greenrobot.eventbus.EventBus
 import org.signal.core.util.delete
@@ -45,6 +47,9 @@ import org.whispersystems.signalservice.api.util.UuidUtil
 import java.lang.AssertionError
 import java.util.Optional
 
+import java.lang.StringBuilder
+
+
 class IdentityTable internal constructor(context: Context?, databaseHelper: SignalDatabase?) : DatabaseTable(context, databaseHelper) {
 
   companion object {
@@ -68,6 +73,7 @@ class IdentityTable internal constructor(context: Context?, databaseHelper: Sign
         $NONBLOCKING_APPROVAL INTEGER DEFAULT 0
       )
     """
+    const private val  TI_ADDRESS_PROJECTION    = ADDRESS;
   }
 
   fun getIdentityStoreRecord(addressName: String): IdentityStoreRecord? {
@@ -149,6 +155,34 @@ class IdentityTable internal constructor(context: Context?, databaseHelper: Sign
       recipients.markNeedsSync(recipientId)
       StorageSyncHelper.scheduleSyncForDataChange()
     }
+  }
+
+  /**
+   *
+   * @return Returns a Cursor which iterates through all contacts that are unlocked for
+   * trusted introductions (for which @see VerifiedStatus.tiUnlocked returns true)
+   */
+  @NonNull
+  fun getCursorForTIUnlocked(): Cursor? {
+    val validStates: ArrayList<String> = ArrayList()
+    // dynamically compute the valid states and query the Signal database for these contacts
+    for (e in VerifiedStatus.values()) {
+      if (VerifiedStatus.ti_forwardUnlocked(e)) {
+        validStates.add(e.toInt().toString())
+      }
+    }
+    assert(validStates.size > 0) { "No valid states defined for TI" }
+    val selectionBuilder = StringBuilder()
+    selectionBuilder.append(String.format("%s=?", VERIFIED))
+    if (validStates.size > 1) {
+      for (i in 0 until validStates.size - 1) {
+        selectionBuilder.append(String.format(" OR %s=?", VERIFIED))
+      }
+    }
+    // create the rest of the query
+    val readableDatabase = readableDatabase
+    val states = validStates.toArray(arrayOf<String>())
+    return readableDatabase.query(TABLE_NAME, arrayOf<String>(TI_ADDRESS_PROJECTION), selectionBuilder.toString(), states, null, null, null)
   }
 
   fun updateIdentityAfterSync(addressName: String, recipientId: RecipientId, identityKey: IdentityKey, verifiedStatus: VerifiedStatus) {
@@ -235,14 +269,26 @@ class IdentityTable internal constructor(context: Context?, databaseHelper: Sign
     EventBus.getDefault().post(IdentityRecord(recipientId, identityKey, verifiedStatus, firstUse, timestamp, nonBlockingApproval))
   }
 
+
+  /**
+   * Trusted Introductions: We differentiate between a direct verification <code>DIRECTLY_VERIFIED</code> (via. QR code)
+   * and a weaker, manual verification <code>MANUALLY_VERIFIED</code>. Additionally, a user can become verified by the
+   * trusted introductions mechanism <code>TRUSTINGLY_INTRODUCED</code>. A user that has been trustingly introduced and
+   * directly verified is <code>DUPLEX_VERIFIED</code>, the strongest level.
+   * A user can always manually reset the trust to be unverified.
+   *
+   */
   enum class VerifiedStatus {
-    DEFAULT, VERIFIED, UNVERIFIED;
+    DEFAULT, DIRECTLY_VERIFIED, INTRODUCED, DUPLEX_VERIFIED, MANUALLY_VERIFIED, UNVERIFIED;
 
     fun toInt(): Int {
       return when (this) {
         DEFAULT -> 0
-        VERIFIED -> 1
-        UNVERIFIED -> 2
+        DIRECTLY_VERIFIED -> 1
+        INTRODUCED -> 2
+        DUPLEX_VERIFIED -> 3
+        MANUALLY_VERIFIED -> 4
+        UNVERIFIED -> 5
       }
     }
 
@@ -251,9 +297,89 @@ class IdentityTable internal constructor(context: Context?, databaseHelper: Sign
       fun forState(state: Int): VerifiedStatus {
         return when (state) {
           0 -> DEFAULT
-          1 -> VERIFIED
-          2 -> UNVERIFIED
+          1 -> DIRECTLY_VERIFIED
+          2 -> INTRODUCED
+          3 -> DUPLEX_VERIFIED
+          4 -> MANUALLY_VERIFIED
+          5 -> UNVERIFIED
           else -> throw AssertionError("No such state: $state")
+        }
+      }
+
+      /**
+       * Much of the code relies on checks of the verification status that are not interested in the finer details.
+       * This function can now be called instead of doing 4 comparisons manually.
+       * Do not use this to decide if trusted introduction is allowed.
+       * @return True is verified, false otherwise.
+       */
+      @JvmStatic
+      fun isVerified(verifiedStatus: VerifiedStatus): Boolean{
+        return when (verifiedStatus){
+          DIRECTLY_VERIFIED -> true
+          INTRODUCED -> true
+          DUPLEX_VERIFIED -> true
+          MANUALLY_VERIFIED -> true
+          DEFAULT -> false
+          UNVERIFIED -> false
+        }
+      }
+
+      /**
+       * Adding this in order to be able to change my mind easily on what should unlock a TI.
+       * For now, only direct verification unlocks forwarding a contact's public key,
+       * in order not to propagate malicious verifications further than one connection.
+       *
+       * @param verifiedStatus the verification status to be checked
+       * @return true if strongly enough verified to unlock forwarding this contact as a
+       * trusted introduction, false otherwise
+       */
+      @JvmStatic
+      fun ti_forwardUnlocked(verifiedStatus: VerifiedStatus): Boolean{
+        return when (verifiedStatus){
+          DIRECTLY_VERIFIED -> true
+          DUPLEX_VERIFIED -> true
+          INTRODUCED -> false
+          MANUALLY_VERIFIED -> false
+          DEFAULT -> false
+          UNVERIFIED -> false
+        }
+      }
+
+      /**
+       * A recipient can only receive TrustedIntroductions iff they have previously been strongly verified.
+       * This function exists as it's own thing to allow for flexible changes.
+       *
+       * @param verifiedStatus The verification status of the recipient.
+       * @return True if this recipient can receive trusted introductions.
+       */
+      @JvmStatic
+      fun ti_recipientUnlocked(verifiedStatus: VerifiedStatus): Boolean{
+        return when (verifiedStatus){
+          DIRECTLY_VERIFIED -> true
+          DUPLEX_VERIFIED -> true
+          //INTRODUCED: (if someone is being MiTmed, an introduction could be sensitive data. So you should be sure who you are talking to before you forward)
+          //TODO: Both versions of this have their own pros and cons... Which one should it be?
+          INTRODUCED -> false
+          MANUALLY_VERIFIED -> false
+          DEFAULT -> false
+          UNVERIFIED -> false
+        }
+      }
+
+      /**
+       * Returns true for any non-trivial positive verification status.
+       * Used to promt user when clearing a verification status that is not trivially recoverable and to decide
+       * if a channel is secure enough to forward an introduction over.
+       */
+      @JvmStatic
+      fun stronglyVerified(verifiedStatus: VerifiedStatus): Boolean{
+        return when (verifiedStatus){
+          DIRECTLY_VERIFIED -> true
+          DUPLEX_VERIFIED -> true
+          INTRODUCED -> true
+          MANUALLY_VERIFIED -> false
+          DEFAULT -> false
+          UNVERIFIED -> false
         }
       }
     }
