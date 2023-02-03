@@ -156,7 +156,7 @@ class SafetyNumberBottomSheetFragment : DSLSettingsBottomSheetFragment(layoutId 
           customPref(
             SafetyNumberRecipientRowItem.Model(
               recipient = it.recipient,
-              isVerified = IdentityTable.VerifiedStatus.isVerified(it.identityRecord.verifiedStatus), 
+              isVerified = IdentityTable.VerifiedStatus.isVerified(it.identityRecord.verifiedStatus),
               distributionListMembershipCount = it.distributionListMembershipCount,
               groupMembershipCount = it.groupMembershipCount,
               getContextMenuActions = { model ->

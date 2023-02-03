@@ -19,7 +19,7 @@ data class SafetyNumberBottomSheetState(
   fun isCheckupComplete(): Boolean {
     return loadState == LoadState.DONE ||
       isEmpty() ||
-      destinationToRecipientMap.values.flatten().all { it.identityRecord.verifiedStatus == IdentityTable.VerifiedStatus.VERIFIED }
+      destinationToRecipientMap.values.flatten().all { IdentityTable.VerifiedStatus.isVerified(it.identityRecord.verifiedStatus) }
   }
 
   enum class LoadState {
