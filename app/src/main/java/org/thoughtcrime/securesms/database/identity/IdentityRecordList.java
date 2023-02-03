@@ -42,7 +42,7 @@ public final class IdentityRecordList {
 
   private static boolean isVerified(@NonNull Collection<IdentityRecord> identityRecords) {
     for (IdentityRecord identityRecord : identityRecords) {
-      if (!IdentityTable.VerifiedStatus.isVerified(identityRecord.getVerifiedStatus())) {
+      if (!VerifiedStatus.isVerified(identityRecord.getVerifiedStatus())) {
         return false;
       }
     }
