@@ -484,6 +484,16 @@ public class ConversationParentFragment extends Fragment
   private Callback             callback;
   private RecentEmojiPageModel recentEmojis;
 
+  public static ConversationParentFragment create(Intent intent) {
+    ConversationParentFragment fragment = new ConversationParentFragment();
+    Bundle                     bundle   = new Bundle();
+
+    bundle.putAll(ConversationIntents.createParentFragmentArguments(intent));
+    fragment.setArguments(bundle);
+
+    return fragment;
+  }
+
   // TI Contact Picker Activity Launcher
   public ActivityResultLauncher<Intent> tiLaunch = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
                                                                       new ActivityResultCallback<ActivityResult>() {
