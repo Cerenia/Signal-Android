@@ -52,6 +52,7 @@ import org.thoughtcrime.securesms.crypto.IdentityKeyParcelable;
 import org.thoughtcrime.securesms.crypto.ReentrantSessionLock;
 import org.thoughtcrime.securesms.database.IdentityTable;
 import org.thoughtcrime.securesms.database.IdentityTable.VerifiedStatus;
+import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.database.model.IdentityRecord;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.jobs.MultiDeviceVerifiedUpdateJob;
@@ -545,9 +546,9 @@ public class VerifyDisplayFragment extends Fragment implements ViewTreeObserver.
   private void updateVerifyButtonLogic() {
     final RecipientId recipientId = recipient.getId();
     // Check the current verification status
-    IdentityDatabase.VerifiedStatus previousStatus = SignalDatabase.identities().getVerifiedStatus(recipientId);
+    IdentityTable.VerifiedStatus previousStatus = SignalDatabase.identities().getVerifiedStatus(recipientId);
     Log.i(TAG, "Saving identity: " + recipientId);
-    if (IdentityDatabase.VerifiedStatus.stronglyVerified(previousStatus)) {
+    if (IdentityTable.VerifiedStatus.stronglyVerified(previousStatus)) {
       androidx.fragment.app.FragmentActivity activity = getActivity();
       // TODO: when would this activity ever be null?
       if (activity != null) {
@@ -576,15 +577,15 @@ public class VerifyDisplayFragment extends Fragment implements ViewTreeObserver.
    *
    * @param status The new verification status
    */
-  private void updateContactsVerifiedStatus(IdentityDatabase.VerifiedStatus status) {
+  private void updateContactsVerifiedStatus(IdentityTable.VerifiedStatus status) {
     final RecipientId recipientId = recipient.getId();
     Log.i(TAG, "Saving identity: " + recipientId);
     SignalExecutors.BOUNDED.execute(() -> {
       try (SignalSessionLock.Lock unused = ReentrantSessionLock.INSTANCE.acquire()) {
-        final boolean verified = IdentityDatabase.VerifiedStatus.isVerified(status);
+        final boolean verified = IdentityTable.VerifiedStatus.isVerified(status);
         if (verified) {
           Log.i(TAG, "Saving identity: " + recipientId);
-          ApplicationDependencies.getIdentityStore()
+          ApplicationDependencies.getProtocolStore().aci().identities()
                                  .saveIdentityWithoutSideEffects(recipientId,
                                                                  remoteIdentity,
                                                                  status,
@@ -602,7 +603,7 @@ public class VerifyDisplayFragment extends Fragment implements ViewTreeObserver.
                                                                      remoteIdentity,
                                                                      status));
         StorageSyncHelper.scheduleSyncForDataChange();
-        IdentityUtil.markIdentityVerified(context, recipient.get(), verified, false);
+        IdentityUtil.markIdentityVerified(getActivity(), recipient.get(), verified, false);
       }
     });
   }

@@ -4,6 +4,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.signal.core.util.logging.Log;
+import org.thoughtcrime.securesms.database.ThreadTable;
+import org.thoughtcrime.securesms.database.model.StoryType;
 import org.thoughtcrime.securesms.jobmanager.Data;
 import org.thoughtcrime.securesms.jobmanager.Job;
 import org.thoughtcrime.securesms.jobmanager.impl.NetworkConstraint;
@@ -11,8 +13,7 @@ import org.thoughtcrime.securesms.recipients.LiveRecipient;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.sms.MessageSender;
-import org.thoughtcrime.securesms.sms.OutgoingEncryptedMessage;
-import org.thoughtcrime.securesms.sms.OutgoingTextMessage;
+import org.thoughtcrime.securesms.mms.OutgoingMessage;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
 
 import java.io.ByteArrayOutputStream;
@@ -28,6 +29,9 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
 
 public class TrustedIntroductionSendJob extends BaseJob {
 
@@ -111,11 +115,10 @@ public class TrustedIntroductionSendJob extends BaseJob {
     String body = TI_Utils.buildMessageBody(introductionRecipientId, introduceeIds);
     LiveRecipient liveIntroductionRecipient = Recipient.live(introductionRecipientId);
     Recipient introductionRecipient = liveIntroductionRecipient.resolve();
-    // TODO: expires in ok? I think 0 means it stays put...
-    OutgoingTextMessage message =  new OutgoingEncryptedMessage(introductionRecipient, body, 0);
+    OutgoingMessage message =  OutgoingMessage.text(introductionRecipient, body, 0, System.currentTimeMillis());
     // TODO: do we need a listener?
     // TODO: -1 for thread ID indeed ok?
-    MessageSender.send(context, message, -1, false, null, null);
+    MessageSender.send(context, message, -1, MessageSender.SendType.SIGNAL, null, null);
   }
 
   // TODO: should we be more specific here? We just retry always currently.
