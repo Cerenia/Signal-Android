@@ -71,7 +71,7 @@ class SafetyNumberReviewConnectionsFragment : DSLSettingsFragment(
           customPref(
             SafetyNumberRecipientRowItem.Model(
               recipient = it.recipient,
-              isVerified = it.identityRecord.verifiedStatus == IdentityTable.VerifiedStatus.VERIFIED,
+              isVerified = IdentityTable.VerifiedStatus.isVerified(it.identityRecord.verifiedStatus),
               distributionListMembershipCount = it.distributionListMembershipCount,
               groupMembershipCount = it.groupMembershipCount,
               getContextMenuActions = { model ->
