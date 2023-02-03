@@ -1,7 +1,5 @@
 package org.thoughtcrime.securesms.database.model
 
-import org.signal.libsignal.protocol.IdentityKey
-import org.thoughtcrime.securesms.database.RecipientDatabase
 import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase
 import org.thoughtcrime.securesms.recipients.RecipientId
 
