@@ -40,7 +40,7 @@ import java.util.Set;
  * This implementation currently does not support multidevice.
  *
  */
-public class TrustedIntroductionsDatabase extends Database {
+public class TrustedIntroductionsDatabase extends DatabaseTable {
 
   private final String TAG = Log.tag(TrustedIntroductionsDatabase.class);
 
@@ -472,7 +472,7 @@ public class TrustedIntroductionsDatabase extends Database {
    * @param newState PRE: !STALE
    * @param logmessage what to print to logcat iff status was modified
    */
-  private void modifyIntroduceeVerification(@NonNull RecipientId introduceeID, @NonNull IdentityDatabase.VerifiedStatus previousIntroduceeVerification, @NonNull State newState, @NonNull String logmessage){
+  private void modifyIntroduceeVerification(@NonNull RecipientId introduceeID, @NonNull IdentityTable.VerifiedStatus previousIntroduceeVerification, @NonNull State newState, @NonNull String logmessage){
     IdentityTable.VerifiedStatus newIntroduceeVerification = previousIntroduceeVerification;
     switch (previousIntroduceeVerification){
       case DEFAULT:
@@ -621,7 +621,7 @@ public class TrustedIntroductionsDatabase extends Database {
    */
   @WorkerThread
   private Cursor fetchRecipientDBCursor(RecipientId introduceeId){
-    RecipientDatabase rdb = SignalDatabase.recipients();
+    RecipientTable rdb = SignalDatabase.recipients();
     // TODO: Simplify if you see that you finally never query this cursor with more than 1 recipient...
     Set<RecipientId> s = new HashSet<>();
     s.add(introduceeId);
