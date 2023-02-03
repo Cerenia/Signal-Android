@@ -16,7 +16,7 @@ import org.signal.libsignal.protocol.fingerprint.Fingerprint;
 import org.signal.libsignal.protocol.fingerprint.NumericFingerprintGenerator;
 import org.thoughtcrime.securesms.crypto.ReentrantSessionLock;
 import org.thoughtcrime.securesms.database.IdentityTable;
-import org.thoughtcrime.securesms.database.RecipientDatabase;
+import org.thoughtcrime.securesms.database.RecipientTable;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.database.model.IdentityRecord;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
@@ -248,7 +248,7 @@ public class TI_Utils {
     assert introducees.size() > 0: TAG + " buildMessageBody called with no Recipient Ids!";
 
     // TODO: Should I just use the LiveRecipient Stuff instead?  :/ caching etc..
-    RecipientDatabase rdb = SignalDatabase.recipients();
+    RecipientTable rdb = SignalDatabase.recipients();
     Cursor recipientCursor = rdb.getCursorForSendingTI(introducees);
     JSONArray data = new JSONArray();
 
