@@ -97,6 +97,8 @@ public class EmojiTextView extends AppCompatTextView {
     }
 
     textDirection = getLayoutDirection() == LAYOUT_DIRECTION_LTR ? TextDirectionHeuristics.FIRSTSTRONG_RTL : TextDirectionHeuristics.ANYRTL_LTR;
+
+    setEmojiCompatEnabled(useSystemEmoji());
   }
 
   @Override
@@ -152,7 +154,7 @@ public class EmojiTextView extends AppCompatTextView {
     // Android fails to ellipsize spannable strings. (https://issuetracker.google.com/issues/36991688)
     // We ellipsize them ourselves by manually truncating the appropriate section.
     if (getText() != null && getText().length() > 0 && isEllipsizedAtEnd()) {
-      if (getMaxLines() > 0) {
+      if (getMaxLines() > 0 && getMaxLines() != Integer.MAX_VALUE) {
         ellipsizeEmojiTextForMaxLines();
       } else if (maxLength > 0) {
         ellipsizeAnyTextForMaxLength();
@@ -355,7 +357,7 @@ public class EmojiTextView extends AppCompatTextView {
   }
 
   private boolean useSystemEmoji() {
-   return !forceCustom && SignalStore.settings().isPreferSystemEmoji();
+   return isInEditMode() || (!forceCustom && SignalStore.settings().isPreferSystemEmoji());
   }
 
   @Override

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <merge xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:viewBindingIgnore="true"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:background="@color/core_grey_60"
     tools:parentTag="android.widget.FrameLayout">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -192,7 +192,7 @@
             app:layout_constraintEnd_toStartOf="@id/image_editor_hud_draw_color_bar"
             app:layout_constraintStart_toStartOf="@id/image_editor_hud_draw_color_bar"
             tools:alpha="1"
-            tools:tint="@color/red" />
+            tools:tint="@color/red_500" />
 
         <androidx.appcompat.widget.AppCompatSeekBar
             android:id="@+id/image_editor_hud_draw_color_bar"

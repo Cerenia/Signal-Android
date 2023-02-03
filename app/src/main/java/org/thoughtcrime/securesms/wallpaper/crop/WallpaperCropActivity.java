@@ -15,12 +15,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StyleRes;
 import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
-import androidx.lifecycle.ViewModelProviders;
+import androidx.lifecycle.ViewModelProvider;
 
 import org.signal.core.util.logging.Log;
 import org.signal.imageeditor.core.ImageEditorView;
@@ -29,6 +28,7 @@ import org.signal.imageeditor.core.model.EditorModel;
 import org.signal.imageeditor.core.renderers.FaceBlurRenderer;
 import org.thoughtcrime.securesms.BaseActivity;
 import org.thoughtcrime.securesms.R;
+import org.thoughtcrime.securesms.components.ProgressCard;
 import org.thoughtcrime.securesms.conversation.colors.ColorizerView;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.scribbles.UriGlideRenderer;
@@ -36,7 +36,6 @@ import org.thoughtcrime.securesms.util.AsynchronousCallback;
 import org.thoughtcrime.securesms.util.DynamicTheme;
 import org.thoughtcrime.securesms.util.Projection;
 import org.thoughtcrime.securesms.util.ViewUtil;
-import org.thoughtcrime.securesms.util.views.SimpleProgressDialog;
 import org.thoughtcrime.securesms.wallpaper.ChatWallpaper;
 import org.thoughtcrime.securesms.wallpaper.ChatWallpaperPreviewActivity;
 
@@ -55,6 +54,7 @@ public final class WallpaperCropActivity extends BaseActivity {
 
   private ImageEditorView        imageEditor;
   private WallpaperCropViewModel viewModel;
+  private ProgressCard           progressCard;
 
   public static Intent newIntent(@NonNull Context context,
                                  @Nullable RecipientId recipientId,
@@ -84,9 +84,11 @@ public final class WallpaperCropActivity extends BaseActivity {
     Log.i(TAG, "Cropping wallpaper for " + (recipientId == null ? "default wallpaper" : recipientId));
 
     WallpaperCropViewModel.Factory factory = new WallpaperCropViewModel.Factory(recipientId);
-    viewModel = ViewModelProviders.of(this, factory).get(WallpaperCropViewModel.class);
+    viewModel = new ViewModelProvider(this, factory).get(WallpaperCropViewModel.class);
 
-    imageEditor = findViewById(R.id.image_editor);
+    imageEditor  = findViewById(R.id.image_editor);
+    progressCard = findViewById(R.id.wallpaper_crop_progress_card);
+
     View          sentBubble     = findViewById(R.id.preview_bubble_2);
     TextView      bubble2Text    = findViewById(R.id.chat_wallpaper_bubble2_text);
     View          setWallPaper   = findViewById(R.id.preview_set_wallpaper);
@@ -156,17 +158,24 @@ public final class WallpaperCropActivity extends BaseActivity {
 
     Point size = new Point(imageEditor.getWidth(), imageEditor.getHeight());
 
-    AlertDialog dialog = SimpleProgressDialog.show(this);
+    if (progressCard != null) {
+      progressCard.setVisibility(View.VISIBLE);
+    }
+
     viewModel.render(this, model, size,
                      new AsynchronousCallback.MainThread<ChatWallpaper, WallpaperCropViewModel.Error>() {
                        @Override public void onComplete(@Nullable ChatWallpaper result) {
-                         dialog.dismiss();
+                         if (progressCard != null) {
+                           progressCard.setVisibility(View.GONE);
+                         }
                          setResult(RESULT_OK, new Intent().putExtra(ChatWallpaperPreviewActivity.EXTRA_CHAT_WALLPAPER, result));
                          finish();
                        }
 
                        @Override public void onError(@Nullable WallpaperCropViewModel.Error error) {
-                         dialog.dismiss();
+                         if (progressCard != null) {
+                           progressCard.setVisibility(View.GONE);
+                         }
                          Toast.makeText(WallpaperCropActivity.this, R.string.WallpaperCropActivity__error_setting_wallpaper, Toast.LENGTH_SHORT).show();
                        }
                      }.toWorkerCallback());
@@ -179,7 +188,7 @@ public final class WallpaperCropActivity extends BaseActivity {
     int   width  = displayMetrics.widthPixels;
     float ratio  = width / (float) height;
 
-    EditorModel editorModel = EditorModel.createForWallpaperEditing(ratio);
+    EditorModel editorModel = EditorModel.createForWallpaperEditing(ratio, ContextCompat.getColor(this, R.color.signal_colorBackground));
 
     EditorElement image = new EditorElement(new UriGlideRenderer(imageUri, true, width, height, UriGlideRenderer.WEAK_BLUR));
     image.getFlags()

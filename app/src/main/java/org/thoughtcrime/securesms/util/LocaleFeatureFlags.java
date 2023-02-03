@@ -44,18 +44,29 @@ public final class LocaleFeatureFlags {
     return Optional.ofNullable(PushMediaConstraints.MediaConfig.forLevel(level));
   }
 
-  /**
-   * Whether or not you should suggest SMS during onboarding.
-   */
-  public static boolean shouldSuggestSms() {
-    Set<String> blacklist   = new HashSet<>(Arrays.asList(FeatureFlags.suggestSmsBlacklist().split(",")));
-    String      countryCode = String.valueOf(PhoneNumberFormatter.getLocalCountryCode());
-
-    return !blacklist.contains(countryCode);
-  }
-
   public static boolean shouldShowReleaseNote(@NonNull String releaseNoteUuid, @NonNull String countries) {
     return isEnabled(releaseNoteUuid, countries);
+  }
+
+  /**
+   * @return Whether Google Pay is disabled in this region
+   */
+  public static boolean isGooglePayDisabled() {
+    return isEnabled(FeatureFlags.GOOGLE_PAY_DISABLED_REGIONS, FeatureFlags.googlePayDisabledRegions());
+  }
+
+  /**
+   * @return Whether credit cards are disabled in this region
+   */
+  public static boolean isCreditCardDisabled() {
+    return isEnabled(FeatureFlags.CREDIT_CARD_DISABLED_REGIONS, FeatureFlags.creditCardDisabledRegions());
+  }
+
+  /**
+   * @return Whether PayPal is disabled in this region
+   */
+  public static boolean isPayPalDisabled() {
+    return isEnabled(FeatureFlags.PAYPAL_DISABLED_REGIONS, FeatureFlags.paypalDisabledRegions());
   }
 
   /**

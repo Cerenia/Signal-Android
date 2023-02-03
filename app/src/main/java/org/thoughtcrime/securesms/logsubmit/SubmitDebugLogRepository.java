@@ -25,10 +25,12 @@ import org.thoughtcrime.securesms.net.StandardUserAgentInterceptor;
 import org.thoughtcrime.securesms.providers.BlobProvider;
 import org.thoughtcrime.securesms.push.SignalServiceNetworkAccess;
 import org.thoughtcrime.securesms.util.FeatureFlags;
-import org.thoughtcrime.securesms.util.Stopwatch;
+import org.signal.core.util.Stopwatch;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -36,6 +38,8 @@ import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPOutputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -81,6 +85,7 @@ public class SubmitDebugLogRepository {
     add(new LogSectionExoPlayerPool());
     add(new LogSectionKeyPreferences());
     add(new LogSectionSMS());
+    add(new LogSectionStories());
     add(new LogSectionBadges());
     add(new LogSectionPermissions());
     add(new LogSectionTrace());
@@ -125,6 +130,38 @@ public class SubmitDebugLogRepository {
     SignalExecutors.UNBOUNDED.execute(() -> callback.onResult(submitLogInternal(untilTime, prefixLines, trace)));
   }
 
+  public void writeLogToDisk(@NonNull Uri uri, long untilTime, Callback<Boolean> callback) {
+    SignalExecutors.UNBOUNDED.execute(() -> {
+      try (ZipOutputStream outputStream = new ZipOutputStream(context.getContentResolver().openOutputStream(uri))) {
+        StringBuilder prefixLines = linesToStringBuilder(getPrefixLogLinesInternal(), null);
+
+        outputStream.putNextEntry(new ZipEntry("log.txt"));
+        outputStream.write(prefixLines.toString().getBytes(StandardCharsets.UTF_8));
+
+        try (LogDatabase.Reader reader = LogDatabase.getInstance(context).getAllBeforeTime(untilTime)) {
+          while (reader.hasNext()) {
+            outputStream.write(reader.next().getBytes());
+            outputStream.write("\n".getBytes());
+          }
+        } catch (IllegalStateException e) {
+          Log.e(TAG, "Failed to read row!", e);
+          callback.onResult(false);
+          return;
+        }
+
+        outputStream.closeEntry();
+
+        outputStream.putNextEntry(new ZipEntry("signal.trace"));
+        outputStream.write(Tracer.getInstance().serialize());
+        outputStream.closeEntry();
+
+        callback.onResult(true);
+      } catch (IOException e) {
+        callback.onResult(false);
+      }
+    });
+  }
+
   @WorkerThread
   private @NonNull Optional<String> submitLogInternal(long untilTime, @NonNull List<LogLine> prefixLines, @Nullable byte[] trace) {
     String traceUrl = null;
@@ -137,17 +174,7 @@ public class SubmitDebugLogRepository {
       }
     }
 
-    StringBuilder prefixStringBuilder = new StringBuilder();
-    for (LogLine line : prefixLines) {
-      switch (line.getPlaceholderType()) {
-        case NONE:
-          prefixStringBuilder.append(line.getText()).append('\n');
-          break;
-        case TRACE:
-          prefixStringBuilder.append(traceUrl).append('\n');
-          break;
-      }
-    }
+    StringBuilder prefixStringBuilder = linesToStringBuilder(prefixLines, traceUrl);
 
     try {
       Stopwatch stopwatch = new Stopwatch("log-upload");
@@ -209,10 +236,10 @@ public class SubmitDebugLogRepository {
 
   @WorkerThread
   private @NonNull String uploadContent(@NonNull String contentType, @NonNull RequestBody requestBody) throws IOException {
-    try {
-      OkHttpClient client   = new OkHttpClient.Builder().addInterceptor(new StandardUserAgentInterceptor()).dns(SignalServiceNetworkAccess.DNS).build();
-      Response     response = client.newCall(new Request.Builder().url(API_ENDPOINT).get().build()).execute();
-      ResponseBody body     = response.body();
+    OkHttpClient client = new OkHttpClient.Builder().addInterceptor(new StandardUserAgentInterceptor()).dns(SignalServiceNetworkAccess.DNS).build();
+
+    try (Response response = client.newCall(new Request.Builder().url(API_ENDPOINT).get().build()).execute()) {
+      ResponseBody body = response.body();
 
       if (!response.isSuccessful() || body == null) {
         throw new IOException("Unsuccessful response: " + response);
@@ -234,10 +261,10 @@ public class SubmitDebugLogRepository {
 
       post.addFormDataPart("file", "file", requestBody);
 
-      Response postResponse = client.newCall(new Request.Builder().url(url).post(post.build()).build()).execute();
-
-      if (!postResponse.isSuccessful()) {
-        throw new IOException("Bad response: " + postResponse);
+      try (Response postResponse = client.newCall(new Request.Builder().url(url).post(post.build()).build()).execute()) {
+        if (!postResponse.isSuccessful()) {
+          throw new IOException("Bad response: " + postResponse);
+        }
       }
 
       return API_ENDPOINT + "/" + item;
@@ -319,6 +346,22 @@ public class SubmitDebugLogRepository {
     }
 
     return out.toString();
+  }
+
+  private static @NonNull StringBuilder linesToStringBuilder(@NonNull List<LogLine> lines, @Nullable String traceUrl) {
+    StringBuilder stringBuilder = new StringBuilder();
+    for (LogLine line : lines) {
+      switch (line.getPlaceholderType()) {
+        case NONE:
+          stringBuilder.append(line.getText()).append('\n');
+          break;
+        case TRACE:
+          stringBuilder.append(traceUrl).append('\n');
+          break;
+      }
+    }
+
+    return stringBuilder;
   }
 
   public interface Callback<E> {

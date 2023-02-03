@@ -38,11 +38,16 @@ internal class PaymentsValues internal constructor(store: KeyValueStore) : Signa
     private const val PAYMENTS_CURRENT_CURRENCY = "payments_current_currency"
     private const val DEFAULT_CURRENCY_CODE = "GBP"
     private const val USER_CONFIRMED_MNEMONIC = "mob_payments_user_confirmed_mnemonic"
+    private const val USER_CONFIRMED_MNEMONIC_LARGE_BALANCE = "mob_payments_user_confirmed_mnemonic_large_balance"
     private const val SHOW_ABOUT_MOBILE_COIN_INFO_CARD = "mob_payments_show_about_mobile_coin_info_card"
     private const val SHOW_ADDING_TO_YOUR_WALLET_INFO_CARD = "mob_payments_show_adding_to_your_wallet_info_card"
     private const val SHOW_CASHING_OUT_INFO_CARD = "mob_payments_show_cashing_out_info_card"
     private const val SHOW_RECOVERY_PHRASE_INFO_CARD = "mob_payments_show_recovery_phrase_info_card"
     private const val SHOW_UPDATE_PIN_INFO_CARD = "mob_payments_show_update_pin_info_card"
+    private const val PAYMENT_LOCK_ENABLED = "mob_payments_payment_lock_enabled"
+    private const val PAYMENT_LOCK_TIMESTAMP = "mob_payments_payment_lock_timestamp"
+    private const val PAYMENT_LOCK_SKIP_COUNT = "mob_payments_payment_lock_skip_count"
+    private const val SHOW_SAVE_RECOVERY_PHRASE = "mob_show_save_recovery_phrase"
 
     private val LARGE_BALANCE_THRESHOLD = Money.mobileCoin(BigDecimal.valueOf(500))
 
@@ -50,7 +55,20 @@ internal class PaymentsValues internal constructor(store: KeyValueStore) : Signa
     const val MOB_PAYMENTS_ENABLED = "mob_payments_enabled"
   }
 
+  @get:JvmName("isPaymentLockEnabled")
+  var paymentLock: Boolean by booleanValue(PAYMENT_LOCK_ENABLED, false)
+  var paymentLockTimestamp: Long by longValue(PAYMENT_LOCK_TIMESTAMP, 0)
+  var paymentLockSkipCount: Int by integerValue(PAYMENT_LOCK_SKIP_COUNT, 0)
+  var showSaveRecoveryPhrase: Boolean by booleanValue(SHOW_SAVE_RECOVERY_PHRASE, true)
+  var userConfirmedMnemonic
+    get() = getBoolean(USER_CONFIRMED_MNEMONIC, false)
+    private set(value) = putBoolean(USER_CONFIRMED_MNEMONIC, value)
+
+  private var userConfirmedMnemonicLargeBalance
+    get() = getBoolean(USER_CONFIRMED_MNEMONIC_LARGE_BALANCE, false)
+    set(value) = putBoolean(USER_CONFIRMED_MNEMONIC_LARGE_BALANCE, value)
   private val liveCurrentCurrency: MutableLiveData<Currency> by lazy { MutableLiveData(currentCurrency()) }
+  private val enclaveFailure: MutableLiveData<Boolean> by lazy { MutableLiveData(false) }
   private val liveMobileCoinLedger: MutableLiveData<MobileCoinLedgerWrapper> by lazy { MutableLiveData(mobileCoinLatestFullLedger()) }
   private val liveMobileCoinBalance: LiveData<Balance> by lazy { Transformations.map(liveMobileCoinLedger) { obj: MobileCoinLedgerWrapper -> obj.balance } }
 
@@ -64,20 +82,25 @@ internal class PaymentsValues internal constructor(store: KeyValueStore) : Signa
       PAYMENTS_CURRENT_CURRENCY,
       DEFAULT_CURRENCY_CODE,
       USER_CONFIRMED_MNEMONIC,
+      USER_CONFIRMED_MNEMONIC_LARGE_BALANCE,
       SHOW_ABOUT_MOBILE_COIN_INFO_CARD,
       SHOW_ADDING_TO_YOUR_WALLET_INFO_CARD,
       SHOW_CASHING_OUT_INFO_CARD,
       SHOW_RECOVERY_PHRASE_INFO_CARD,
-      SHOW_UPDATE_PIN_INFO_CARD
+      SHOW_UPDATE_PIN_INFO_CARD,
+      PAYMENT_LOCK_ENABLED,
+      PAYMENT_LOCK_TIMESTAMP,
+      PAYMENT_LOCK_SKIP_COUNT,
+      SHOW_SAVE_RECOVERY_PHRASE
     )
   }
 
-  fun userConfirmedMnemonic(): Boolean {
-    return store.getBoolean(USER_CONFIRMED_MNEMONIC, false)
-  }
-
-  fun setUserConfirmedMnemonic(userConfirmedMnemonic: Boolean) {
-    store.beginWrite().putBoolean(USER_CONFIRMED_MNEMONIC, userConfirmedMnemonic).commit()
+  fun confirmMnemonic(confirmed: Boolean) {
+    if (userHasLargeBalance()) {
+      userConfirmedMnemonicLargeBalance = confirmed
+    } else {
+      userConfirmedMnemonic = confirmed
+    }
   }
 
   /**
@@ -192,6 +215,14 @@ internal class PaymentsValues internal constructor(store: KeyValueStore) : Signa
     return liveCurrentCurrency
   }
 
+  fun setEnclaveFailure(failure: Boolean) {
+    enclaveFailure.postValue(failure)
+  }
+
+  fun enclaveFailure(): LiveData<Boolean> {
+    return enclaveFailure
+  }
+
   fun showAboutMobileCoinInfoCard(): Boolean {
     return store.getBoolean(SHOW_ABOUT_MOBILE_COIN_INFO_CARD, true)
   }
@@ -204,11 +235,11 @@ internal class PaymentsValues internal constructor(store: KeyValueStore) : Signa
     return store.getBoolean(SHOW_CASHING_OUT_INFO_CARD, true)
   }
 
-  fun showRecoveryPhraseInfoCard(): Boolean {
+  fun isMnemonicConfirmed(): Boolean {
     return if (userHasLargeBalance()) {
-      store.getBoolean(SHOW_CASHING_OUT_INFO_CARD, true)
+      userConfirmedMnemonicLargeBalance
     } else {
-      false
+      userConfirmedMnemonic
     }
   }
 
@@ -308,7 +339,7 @@ internal class PaymentsValues internal constructor(store: KeyValueStore) : Signa
       val existingEntropy = paymentsEntropy.bytes
       if (Arrays.equals(existingEntropy, entropyFromMnemonic)) {
         setMobileCoinPaymentsEnabled(true)
-        setUserConfirmedMnemonic(true)
+        confirmMnemonic(true)
         return WalletRestoreResult.ENTROPY_UNCHANGED
       }
     }

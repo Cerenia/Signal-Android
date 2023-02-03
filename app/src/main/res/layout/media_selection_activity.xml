@@ -3,7 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    tools:viewBindingIgnore="true">
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/fragment_container"
@@ -14,8 +15,7 @@
         android:id="@+id/switch_widget"
         android:layout_width="match_parent"
         android:layout_height="48dp"
-        android:layout_gravity="bottom|center_horizontal"
-        android:layout_marginBottom="8dp">
+        android:layout_gravity="bottom|center_horizontal">
 
         <View
             android:id="@+id/selected_pill"
@@ -30,8 +30,9 @@
         <TextView
             android:id="@+id/camera_switch"
             android:layout_width="wrap_content"
-            android:layout_height="36sp"
+            android:layout_height="wrap_content"
             android:gravity="center"
+            android:minHeight="36sp"
             android:paddingHorizontal="18dp"
             android:shadowColor="@color/black"
             android:text="@string/MediaSelectionActivity__camera"
@@ -41,13 +42,14 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:background="@color/red" />
+            tools:background="@color/red_500" />
 
         <TextView
             android:id="@+id/text_switch"
             android:layout_width="wrap_content"
-            android:layout_height="36sp"
+            android:layout_height="wrap_content"
             android:gravity="center"
+            android:minHeight="36sp"
             android:paddingHorizontal="18dp"
             android:shadowColor="@color/black"
             android:shadowRadius="3"
@@ -59,7 +61,7 @@
             app:layout_constraintHorizontal_bias="0"
             app:layout_constraintStart_toEndOf="@id/camera_switch"
             app:layout_constraintTop_toTopOf="parent"
-            tools:background="@color/green" />
+            tools:background="@color/green_500" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </FrameLayout>

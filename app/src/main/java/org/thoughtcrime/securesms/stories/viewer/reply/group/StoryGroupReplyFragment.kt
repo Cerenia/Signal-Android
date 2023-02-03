@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
 import androidx.annotation.ColorInt
 import androidx.fragment.app.Fragment
@@ -27,6 +28,10 @@ import org.thoughtcrime.securesms.components.settings.configure
 import org.thoughtcrime.securesms.contacts.paged.ContactSearchKey
 import org.thoughtcrime.securesms.conversation.MarkReadHelper
 import org.thoughtcrime.securesms.conversation.colors.Colorizer
+import org.thoughtcrime.securesms.conversation.ui.inlinequery.InlineQuery
+import org.thoughtcrime.securesms.conversation.ui.inlinequery.InlineQueryChangedListener
+import org.thoughtcrime.securesms.conversation.ui.inlinequery.InlineQueryResultsController
+import org.thoughtcrime.securesms.conversation.ui.inlinequery.InlineQueryViewModel
 import org.thoughtcrime.securesms.conversation.ui.mentions.MentionsPickerFragment
 import org.thoughtcrime.securesms.conversation.ui.mentions.MentionsPickerViewModel
 import org.thoughtcrime.securesms.database.model.Mention
@@ -101,6 +106,10 @@ class StoryGroupReplyFragment :
     ownerProducer = { requireActivity() }
   )
 
+  private val inlineQueryViewModel: InlineQueryViewModel by viewModels(
+    ownerProducer = { requireActivity() }
+  )
+
   private val keyboardPagerViewModel: KeyboardPagerViewModel by viewModels(
     ownerProducer = { requireActivity() }
   )
@@ -136,6 +145,7 @@ class StoryGroupReplyFragment :
   private lateinit var adapter: PagingMappingAdapter<MessageId>
   private lateinit var dataObserver: RecyclerView.AdapterDataObserver
   private lateinit var composer: StoryReplyComposer
+  private lateinit var notInGroup: View
 
   private var markReadHelper: MarkReadHelper? = null
 
@@ -145,6 +155,8 @@ class StoryGroupReplyFragment :
   private var resendMentions: List<Mention> = emptyList()
   private var resendReaction: String? = null
 
+  private lateinit var inlineQueryResultsController: InlineQueryResultsController
+
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     SignalExecutors.BOUNDED.execute {
       RetrieveProfileJob.enqueue(groupRecipientId)
@@ -152,6 +164,7 @@ class StoryGroupReplyFragment :
 
     recyclerView = view.findViewById(R.id.recycler)
     composer = view.findViewById(R.id.composer)
+    notInGroup = view.findViewById(R.id.not_in_group)
 
     lifecycleDisposable.bindTo(viewLifecycleOwner)
 
@@ -168,12 +181,13 @@ class StoryGroupReplyFragment :
     StoryGroupReplyItem.register(adapter)
 
     composer.callback = this
+    composer.hint = getString(R.string.StoryViewerPageFragment__reply_to_group)
 
     onPageSelected(findListener<StoryViewsAndRepliesPagerParent>()?.selectedChild ?: StoryViewsAndRepliesPagerParent.Child.REPLIES)
 
     var firstSubmit = true
 
-    viewModel.state
+    lifecycleDisposable += viewModel.state
       .observeOn(AndroidSchedulers.mainThread())
       .subscribeBy { state ->
         if (markReadHelper == null && state.threadId > 0L) {
@@ -203,10 +217,7 @@ class StoryGroupReplyFragment :
     adapter.registerAdapterDataObserver(dataObserver)
 
     initializeMentions()
-
-    if (savedInstanceState == null) {
-      ViewUtil.focusAndShowKeyboard(composer)
-    }
+    initializeComposer(savedInstanceState)
 
     recyclerView.addOnScrollListener(GroupReplyScrollObserver())
   }
@@ -227,7 +238,7 @@ class StoryGroupReplyFragment :
   override fun onDestroyView() {
     super.onDestroyView()
 
-    composer.input.setMentionQueryChangedListener(null)
+    composer.input.setInlineQueryChangedListener(null)
     composer.input.setMentionValidator(null)
   }
 
@@ -366,6 +377,8 @@ class StoryGroupReplyFragment :
   }
 
   private fun sendReaction(emoji: String) {
+    findListener<Callback>()?.onReactionEmojiSelected(emoji)
+
     lifecycleDisposable += StoryGroupReplySender.sendReaction(requireContext(), storyId, emoji)
       .observeOn(AndroidSchedulers.mainThread())
       .subscribeBy(
@@ -374,7 +387,7 @@ class StoryGroupReplyFragment :
             resendReaction = emoji
 
             SafetyNumberBottomSheet
-              .forIdentityRecordsAndDestination(error.untrustedRecords, ContactSearchKey.RecipientSearchKey.Story(groupRecipientId))
+              .forIdentityRecordsAndDestination(error.untrustedRecords, ContactSearchKey.RecipientSearchKey(groupRecipientId, true))
               .show(childFragmentManager)
           } else {
             Log.w(TAG, "Failed to send reply", error)
@@ -420,24 +433,68 @@ class StoryGroupReplyFragment :
     sendReaction(emoji)
   }
 
+  private fun initializeComposer(savedInstanceState: Bundle?) {
+    val isActiveGroup = Recipient.observable(groupRecipientId).map { it.isActiveGroup }
+    if (savedInstanceState == null) {
+      lifecycleDisposable += isActiveGroup.firstOrError().observeOn(AndroidSchedulers.mainThread()).subscribe { active ->
+        if (active) {
+          ViewUtil.focusAndShowKeyboard(composer)
+        }
+      }
+    }
+
+    lifecycleDisposable += isActiveGroup.distinctUntilChanged().observeOn(AndroidSchedulers.mainThread()).forEach { active ->
+      composer.visible = active
+      notInGroup.visible = !active
+    }
+  }
+
   private fun initializeMentions() {
+    inlineQueryResultsController = InlineQueryResultsController(
+      requireContext(),
+      inlineQueryViewModel,
+      composer,
+      (requireView() as ViewGroup),
+      composer.input,
+      viewLifecycleOwner
+    )
+
     Recipient.live(groupRecipientId).observe(viewLifecycleOwner) { recipient ->
       mentionsViewModel.onRecipientChange(recipient)
 
-      composer.input.setMentionQueryChangedListener { query ->
-        if (recipient.isPushV2Group) {
-          ensureMentionsContainerFilled()
-          mentionsViewModel.onQueryChange(query)
+      composer.input.setInlineQueryChangedListener(object : InlineQueryChangedListener {
+        override fun onQueryChanged(inlineQuery: InlineQuery) {
+          when (inlineQuery) {
+            is InlineQuery.Mention -> {
+              if (recipient.isPushV2Group) {
+                ensureMentionsContainerFilled()
+                mentionsViewModel.onQueryChange(inlineQuery.query)
+              }
+              inlineQueryViewModel.onQueryChange(inlineQuery)
+            }
+            is InlineQuery.Emoji -> {
+              inlineQueryViewModel.onQueryChange(inlineQuery)
+              mentionsViewModel.onQueryChange(null)
+            }
+            is InlineQuery.NoQuery -> {
+              mentionsViewModel.onQueryChange(null)
+              inlineQueryViewModel.onQueryChange(inlineQuery)
+            }
+          }
         }
-      }
+
+        override fun clearQuery() {
+          onQueryChanged(InlineQuery.NoQuery)
+        }
+      })
 
       composer.input.setMentionValidator { annotations ->
         if (!recipient.isPushV2Group) {
           annotations
         } else {
 
-          val validRecipientIds: Set<String> = recipient.participants
-            .map { r -> MentionAnnotation.idToMentionAnnotationValue(r.id) }
+          val validRecipientIds: Set<String> = recipient.participantIds
+            .map { id -> MentionAnnotation.idToMentionAnnotationValue(id) }
             .toSet()
 
           annotations
@@ -450,6 +507,11 @@ class StoryGroupReplyFragment :
     mentionsViewModel.selectedRecipient.observe(viewLifecycleOwner) { recipient ->
       composer.input.replaceTextWithMention(recipient.getDisplayName(requireContext()), recipient.id)
     }
+
+    lifecycleDisposable += inlineQueryViewModel
+      .selection
+      .observeOn(AndroidSchedulers.mainThread())
+      .subscribe { r -> composer.input.replaceText(r) }
 
     mentionsViewModel.isShowing.observe(viewLifecycleOwner) { updateNestedScrolling() }
   }
@@ -474,7 +536,7 @@ class StoryGroupReplyFragment :
             resendMentions = mentions
 
             SafetyNumberBottomSheet
-              .forIdentityRecordsAndDestination(throwable.untrustedRecords, ContactSearchKey.RecipientSearchKey.Story(groupRecipientId))
+              .forIdentityRecordsAndDestination(throwable.untrustedRecords, ContactSearchKey.RecipientSearchKey(groupRecipientId, true))
               .show(childFragmentManager)
           } else {
             Log.w(TAG, "Failed to send reply", throwable)
@@ -541,5 +603,6 @@ class StoryGroupReplyFragment :
   interface Callback {
     fun onStartDirectReply(recipientId: RecipientId)
     fun requestFullScreen(fullscreen: Boolean)
+    fun onReactionEmojiSelected(emoji: String)
   }
 }

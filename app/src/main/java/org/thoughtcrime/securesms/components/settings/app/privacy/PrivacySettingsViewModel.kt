@@ -27,11 +27,6 @@ class PrivacySettingsViewModel(
       store.update { it.copy(blockedCount = count) }
       refresh()
     }
-
-    repository.getPrivateStories { privateStories ->
-      store.update { it.copy(privateStories = privateStories) }
-      refresh()
-    }
   }
 
   fun setReadReceiptsEnabled(enabled: Boolean) {
@@ -79,6 +74,11 @@ class PrivacySettingsViewModel(
     refresh()
   }
 
+  fun togglePaymentLock(enable: Boolean) {
+    SignalStore.paymentsValues().paymentLock = enable
+    refresh()
+  }
+
   fun setObsoletePasswordTimeoutEnabled(enabled: Boolean) {
     sharedPreferences.edit().putBoolean(TextSecurePreferences.PASSPHRASE_TIMEOUT_PREF, enabled).apply()
     refresh()
@@ -86,11 +86,6 @@ class PrivacySettingsViewModel(
 
   fun setObsoletePasswordTimeout(minutes: Int) {
     TextSecurePreferences.setPassphraseTimeoutInterval(ApplicationDependencies.getApplication(), minutes)
-    refresh()
-  }
-
-  fun setStoriesEnabled(isStoriesEnabled: Boolean) {
-    SignalStore.storyValues().isFeatureDisabled = !isStoriesEnabled
     refresh()
   }
 
@@ -107,19 +102,18 @@ class PrivacySettingsViewModel(
       screenLockActivityTimeout = TextSecurePreferences.getScreenLockTimeout(ApplicationDependencies.getApplication()),
       screenSecurity = TextSecurePreferences.isScreenSecurityEnabled(ApplicationDependencies.getApplication()),
       incognitoKeyboard = TextSecurePreferences.isIncognitoKeyboardEnabled(ApplicationDependencies.getApplication()),
+      paymentLock = SignalStore.paymentsValues().paymentLock,
       seeMyPhoneNumber = SignalStore.phoneNumberPrivacy().phoneNumberSharingMode,
       findMeByPhoneNumber = SignalStore.phoneNumberPrivacy().phoneNumberListingMode,
       isObsoletePasswordEnabled = !TextSecurePreferences.isPasswordDisabled(ApplicationDependencies.getApplication()),
       isObsoletePasswordTimeoutEnabled = TextSecurePreferences.isPassphraseTimeoutEnabled(ApplicationDependencies.getApplication()),
       obsoletePasswordTimeout = TextSecurePreferences.getPassphraseTimeoutInterval(ApplicationDependencies.getApplication()),
-      universalExpireTimer = SignalStore.settings().universalExpireTimer,
-      privateStories = emptyList(),
-      isStoriesEnabled = !SignalStore.storyValues().isFeatureDisabled
+      universalExpireTimer = SignalStore.settings().universalExpireTimer
     )
   }
 
   private fun updateState(state: PrivacySettingsState): PrivacySettingsState {
-    return getState().copy(blockedCount = state.blockedCount, privateStories = state.privateStories)
+    return getState().copy(blockedCount = state.blockedCount)
   }
 
   class Factory(

@@ -1,11 +1,13 @@
 package org.thoughtcrime.securesms.mediasend.v2.text.send
 
+import android.graphics.Bitmap
+import android.net.Uri
 import io.reactivex.rxjava3.core.Single
+import io.reactivex.rxjava3.schedulers.Schedulers
 import org.signal.core.util.ThreadUtil
 import org.signal.core.util.logging.Log
 import org.thoughtcrime.securesms.contacts.paged.ContactSearchKey
 import org.thoughtcrime.securesms.database.SignalDatabase
-import org.thoughtcrime.securesms.database.ThreadDatabase
 import org.thoughtcrime.securesms.database.model.StoryType
 import org.thoughtcrime.securesms.database.model.databaseprotos.StoryTextPost
 import org.thoughtcrime.securesms.fonts.TextFont
@@ -14,19 +16,29 @@ import org.thoughtcrime.securesms.keyvalue.StorySend
 import org.thoughtcrime.securesms.linkpreview.LinkPreview
 import org.thoughtcrime.securesms.mediasend.v2.UntrustedRecords
 import org.thoughtcrime.securesms.mediasend.v2.text.TextStoryPostCreationState
-import org.thoughtcrime.securesms.mms.OutgoingMediaMessage
-import org.thoughtcrime.securesms.mms.OutgoingSecureMediaMessage
+import org.thoughtcrime.securesms.mms.OutgoingMessage
+import org.thoughtcrime.securesms.providers.BlobProvider
 import org.thoughtcrime.securesms.recipients.Recipient
 import org.thoughtcrime.securesms.stories.Stories
 import org.thoughtcrime.securesms.util.Base64
+import java.io.ByteArrayOutputStream
 
 private val TAG = Log.tag(TextStoryPostSendRepository::class.java)
 
 class TextStoryPostSendRepository {
 
-  fun send(contactSearchKey: Set<ContactSearchKey>, textStoryPostCreationState: TextStoryPostCreationState, linkPreview: LinkPreview?): Single<TextStoryPostSendResult> {
+  fun compressToBlob(bitmap: Bitmap): Single<Uri> {
+    return Single.fromCallable {
+      val outputStream = ByteArrayOutputStream()
+      bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
+      bitmap.recycle()
+      BlobProvider.getInstance().forData(outputStream.toByteArray()).createForSingleUseInMemory()
+    }.subscribeOn(Schedulers.computation())
+  }
+
+  fun send(contactSearchKey: Set<ContactSearchKey>, textStoryPostCreationState: TextStoryPostCreationState, linkPreview: LinkPreview?, identityChangesSince: Long): Single<TextStoryPostSendResult> {
     return UntrustedRecords
-      .checkForBadIdentityRecords(contactSearchKey.filterIsInstance(ContactSearchKey.RecipientSearchKey::class.java).toSet())
+      .checkForBadIdentityRecords(contactSearchKey.filterIsInstance(ContactSearchKey.RecipientSearchKey::class.java).toSet(), identityChangesSince)
       .toSingleDefault<TextStoryPostSendResult>(TextStoryPostSendResult.Success)
       .onErrorReturn {
         if (it is UntrustedRecords.UntrustedRecordsException) {
@@ -47,16 +59,12 @@ class TextStoryPostSendRepository {
 
   private fun performSend(contactSearchKey: Set<ContactSearchKey>, textStoryPostCreationState: TextStoryPostCreationState, linkPreview: LinkPreview?): Single<TextStoryPostSendResult> {
     return Single.fromCallable {
-      val messages: MutableList<OutgoingSecureMediaMessage> = mutableListOf()
+      val messages: MutableList<OutgoingMessage> = mutableListOf()
       val distributionListSentTimestamp = System.currentTimeMillis()
 
       for (contact in contactSearchKey) {
         val recipient = Recipient.resolved(contact.requireShareContact().recipientId.get())
-        val isStory = contact is ContactSearchKey.RecipientSearchKey.Story || recipient.isDistributionList
-
-        if (isStory && recipient.isActiveGroup && recipient.isGroup) {
-          SignalDatabase.groups.markDisplayAsStory(recipient.requireGroupId())
-        }
+        val isStory = contact.requireRecipientSearchKey().isStory || recipient.isDistributionList
 
         if (isStory && !recipient.isMyStory) {
           SignalStore.storyValues().setLatestStorySend(StorySend.newSend(recipient))
@@ -68,28 +76,16 @@ class TextStoryPostSendRepository {
           else -> StoryType.NONE
         }
 
-        val message = OutgoingMediaMessage(
-          recipient,
-          serializeTextStoryState(textStoryPostCreationState),
-          emptyList(),
-          if (recipient.isDistributionList) distributionListSentTimestamp else System.currentTimeMillis(),
-          -1,
-          0,
-          false,
-          ThreadDatabase.DistributionTypes.DEFAULT,
-          storyType.toTextStoryType(),
-          null,
-          false,
-          null,
-          emptyList(),
-          listOfNotNull(linkPreview),
-          emptyList(),
-          mutableSetOf(),
-          mutableSetOf(),
-          null
+        val message = OutgoingMessage(
+          recipient = recipient,
+          body = serializeTextStoryState(textStoryPostCreationState),
+          timestamp = if (recipient.isDistributionList) distributionListSentTimestamp else System.currentTimeMillis(),
+          storyType = storyType.toTextStoryType(),
+          previews = listOfNotNull(linkPreview),
+          isSecure = true
         )
 
-        messages.add(OutgoingSecureMediaMessage(message))
+        messages.add(message)
         ThreadUtil.sleep(5)
       }
 

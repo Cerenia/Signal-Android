@@ -14,7 +14,7 @@ import com.annimon.stream.Stream;
 
 import org.signal.core.util.StringUtil;
 import org.signal.core.util.logging.Log;
-import org.signal.libsignal.zkgroup.profiles.ProfileKeyCredential;
+import org.signal.libsignal.zkgroup.profiles.ExpiringProfileKeyCredential;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.badges.models.Badge;
 import org.thoughtcrime.securesms.contacts.avatars.ContactPhoto;
@@ -28,13 +28,15 @@ import org.thoughtcrime.securesms.contacts.avatars.TransparentContactPhoto;
 import org.thoughtcrime.securesms.conversation.colors.AvatarColor;
 import org.thoughtcrime.securesms.conversation.colors.ChatColors;
 import org.thoughtcrime.securesms.conversation.colors.ChatColorsPalette;
-import org.thoughtcrime.securesms.database.RecipientDatabase;
-import org.thoughtcrime.securesms.database.RecipientDatabase.MentionSetting;
-import org.thoughtcrime.securesms.database.RecipientDatabase.RegisteredState;
-import org.thoughtcrime.securesms.database.RecipientDatabase.UnidentifiedAccessMode;
-import org.thoughtcrime.securesms.database.RecipientDatabase.VibrateState;
+import org.thoughtcrime.securesms.database.RecipientTable;
+import org.thoughtcrime.securesms.database.RecipientTable.MentionSetting;
+import org.thoughtcrime.securesms.database.RecipientTable.RegisteredState;
+import org.thoughtcrime.securesms.database.RecipientTable.UnidentifiedAccessMode;
+import org.thoughtcrime.securesms.database.RecipientTable.VibrateState;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.database.model.DistributionListId;
+import org.thoughtcrime.securesms.database.model.ProfileAvatarFileDetails;
+import org.thoughtcrime.securesms.database.model.RecipientRecord;
 import org.thoughtcrime.securesms.database.model.databaseprotos.RecipientExtras;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.groups.GroupId;
@@ -69,8 +71,9 @@ import java.util.stream.Collectors;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
-import static org.thoughtcrime.securesms.database.RecipientDatabase.InsightsBannerTier;
+import static org.thoughtcrime.securesms.database.RecipientTable.InsightsBannerTier;
 
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class Recipient {
 
   private static final String TAG = Log.tag(Recipient.class);
@@ -81,61 +84,57 @@ public class Recipient {
 
   private static final int MAX_MEMBER_NAMES = 10;
 
-  private final RecipientId            id;
-  private final boolean                resolving;
-  private final ServiceId              serviceId;
-  private final PNI                    pni;
-  private final String                 username;
-  private final String                 e164;
-  private final String                 email;
-  private final GroupId                groupId;
-  private final DistributionListId     distributionListId;
-  private final List<Recipient>        participants;
-  private final Optional<Long>         groupAvatarId;
-  private final boolean                isSelf;
-  private final boolean                blocked;
-  private final long                   muteUntil;
-  private final VibrateState           messageVibrate;
-  private final VibrateState           callVibrate;
-  private final Uri                    messageRingtone;
-  private final Uri                    callRingtone;
-  private final Optional<Integer>      defaultSubscriptionId;
-  private final int                    expireMessages;
-  private final RegisteredState        registered;
-  private final byte[]                 profileKey;
-  private final ProfileKeyCredential   profileKeyCredential;
-  private final String                 groupName;
-  private final Uri                    systemContactPhoto;
-  private final String                 customLabel;
-  private final Uri                    contactUri;
-  private final ProfileName            signalProfileName;
-  private final String                 profileAvatar;
-  private final boolean                hasProfileImage;
-  private final boolean                profileSharing;
-  private final long                   lastProfileFetch;
-  private final String                 notificationChannel;
-  private final UnidentifiedAccessMode unidentifiedAccessMode;
-  private final boolean                forceSmsSelection;
-  private final Capability             groupsV1MigrationCapability;
-  private final Capability             senderKeyCapability;
-  private final Capability             announcementGroupCapability;
-  private final Capability             changeNumberCapability;
-  private final Capability             storiesCapability;
-  private final Capability             giftBadgesCapability;
-  private final InsightsBannerTier     insightsBannerTier;
-  private final byte[]                 storageId;
-  private final MentionSetting         mentionSetting;
-  private final ChatWallpaper          wallpaper;
-  private final ChatColors             chatColors;
-  private final AvatarColor            avatarColor;
-  private final String                 about;
-  private final String                 aboutEmoji;
-  private final ProfileName            systemProfileName;
-  private final String                 systemContactName;
-  private final Optional<Extras>       extras;
-  private final boolean                hasGroupsInCommon;
-  private final List<Badge>            badges;
-  private final boolean                isReleaseNotesRecipient;
+  private final RecipientId                  id;
+  private final boolean                      resolving;
+  private final ServiceId                    serviceId;
+  private final PNI                          pni;
+  private final String                       username;
+  private final String                       e164;
+  private final String                       email;
+  private final GroupId                      groupId;
+  private final DistributionListId           distributionListId;
+  private final List<RecipientId>            participantIds;
+  private final Optional<Long>               groupAvatarId;
+  private final boolean                      isSelf;
+  private final boolean                      blocked;
+  private final long                         muteUntil;
+  private final VibrateState                 messageVibrate;
+  private final VibrateState                 callVibrate;
+  private final Uri                          messageRingtone;
+  private final Uri                          callRingtone;
+  private final Optional<Integer>            defaultSubscriptionId;
+  private final int                          expireMessages;
+  private final RegisteredState              registered;
+  private final byte[]                       profileKey;
+  private final ExpiringProfileKeyCredential expiringProfileKeyCredential;
+  private final String                       groupName;
+  private final Uri                          systemContactPhoto;
+  private final String                       customLabel;
+  private final Uri                          contactUri;
+  private final ProfileName                  signalProfileName;
+  private final String                       profileAvatar;
+  private final ProfileAvatarFileDetails     profileAvatarFileDetails;
+  private final boolean                      profileSharing;
+  private final long                         lastProfileFetch;
+  private final String                       notificationChannel;
+  private final UnidentifiedAccessMode       unidentifiedAccessMode;
+  private final boolean                      forceSmsSelection;
+  private final RecipientRecord.Capabilities capabilities;
+  private final InsightsBannerTier           insightsBannerTier;
+  private final byte[]                       storageId;
+  private final MentionSetting               mentionSetting;
+  private final ChatWallpaper                wallpaper;
+  private final ChatColors                   chatColors;
+  private final AvatarColor                  avatarColor;
+  private final String                       about;
+  private final String                       aboutEmoji;
+  private final ProfileName                  systemProfileName;
+  private final String                       systemContactName;
+  private final Optional<Extras>             extras;
+  private final boolean                      hasGroupsInCommon;
+  private final List<Badge>                  badges;
+  private final boolean                      isReleaseNotesRecipient;
+  private final boolean                      needsPniSignature;
 
   /**
    * Returns a {@link LiveRecipient}, which contains a {@link Recipient} that may or may not be
@@ -214,26 +213,45 @@ public class Recipient {
   }
 
   /**
-   * Returns a fully-populated {@link Recipient} based off of a {@link SignalServiceAddress},
-   * creating one in the database if necessary. We special-case GV1 members because we want to
-   * prioritize E164 addresses and not use the UUIDs if possible.
-   */
-  @WorkerThread
-  public static @NonNull Recipient externalGV1Member(@NonNull SignalServiceAddress address) {
-    if (address.getNumber().isPresent()) {
-      return externalPush(null, address.getNumber().get());
-    } else {
-      return externalPush(address.getServiceId());
-    }
-  }
-
-  /**
    * Returns a fully-populated {@link Recipient} based off of a ServiceId, creating one
    * in the database if necessary.
    */
   @WorkerThread
   public static @NonNull Recipient externalPush(@NonNull ServiceId serviceId) {
     return externalPush(serviceId, null);
+  }
+
+  /**
+   * Create a recipient with a full (ACI, PNI, E164) tuple. It is assumed that the association between the PNI and serviceId is trusted.
+   * That means it must be from either storage service or a PNI verification message.
+   */
+  public static @NonNull Recipient trustedPush(@NonNull ServiceId serviceId, @Nullable PNI pni, @Nullable String e164) {
+    if (ServiceId.UNKNOWN.equals(serviceId)) {
+      throw new AssertionError("Unknown serviceId!");
+    }
+
+    RecipientTable db = SignalDatabase.recipients();
+
+    RecipientId recipientId;
+
+    if (FeatureFlags.phoneNumberPrivacy()) {
+      recipientId = db.getAndPossiblyMergePnpVerified(serviceId, pni, e164);
+    } else {
+      recipientId = db.getAndPossiblyMerge(serviceId, e164);
+    }
+
+    Recipient resolved = resolved(recipientId);
+
+    if (!resolved.getId().equals(recipientId)) {
+      Log.w(TAG, "Resolved " + recipientId + ", but got back a recipient with " + resolved.getId());
+    }
+
+    if (!resolved.isRegistered()) {
+      Log.w(TAG, "External push was locally marked unregistered. Marking as registered.");
+      db.markRegistered(recipientId, serviceId);
+    }
+
+    return resolved;
   }
 
   /**
@@ -251,8 +269,8 @@ public class Recipient {
       throw new AssertionError();
     }
 
-    RecipientDatabase db          = SignalDatabase.recipients();
-    RecipientId       recipientId = db.getAndPossiblyMerge(serviceId, e164);
+    RecipientTable db          = SignalDatabase.recipients();
+    RecipientId    recipientId = db.getAndPossiblyMerge(serviceId, e164);
 
     Recipient resolved = resolved(recipientId);
 
@@ -279,8 +297,8 @@ public class Recipient {
    */
   @WorkerThread
   public static @NonNull Recipient externalContact(@NonNull String identifier) {
-    RecipientDatabase db = SignalDatabase.recipients();
-    RecipientId       id = null;
+    RecipientTable db = SignalDatabase.recipients();
+    RecipientId    id = null;
 
     if (UuidUtil.isUuid(identifier)) {
       throw new AssertionError("UUIDs are not valid system contact identifiers!");
@@ -335,8 +353,8 @@ public class Recipient {
   public static @NonNull Recipient external(@NonNull Context context, @NonNull String identifier) {
     Preconditions.checkNotNull(identifier, "Identifier cannot be null!");
 
-    RecipientDatabase db = SignalDatabase.recipients();
-    RecipientId       id = null;
+    RecipientTable db = SignalDatabase.recipients();
+    RecipientId    id = null;
 
     if (UuidUtil.isUuid(identifier)) {
       ServiceId serviceId = ServiceId.parseOrThrow(identifier);
@@ -357,120 +375,116 @@ public class Recipient {
     return ApplicationDependencies.getRecipientCache().getSelf();
   }
 
+  public static boolean isSelfSet() {
+    return ApplicationDependencies.getRecipientCache().getSelfId() != null;
+  }
+
   Recipient(@NonNull RecipientId id) {
-    this.id                          = id;
-    this.resolving                   = true;
-    this.serviceId                   = null;
-    this.pni                         = null;
-    this.username                    = null;
-    this.e164                        = null;
-    this.email                       = null;
-    this.groupId                     = null;
-    this.distributionListId          = null;
-    this.participants                = Collections.emptyList();
-    this.groupAvatarId               = Optional.empty();
-    this.isSelf                      = false;
-    this.blocked                     = false;
-    this.muteUntil                   = 0;
-    this.messageVibrate              = VibrateState.DEFAULT;
-    this.callVibrate                 = VibrateState.DEFAULT;
-    this.messageRingtone             = null;
-    this.callRingtone                = null;
-    this.insightsBannerTier          = InsightsBannerTier.TIER_TWO;
-    this.defaultSubscriptionId       = Optional.empty();
-    this.expireMessages              = 0;
-    this.registered                  = RegisteredState.UNKNOWN;
-    this.profileKey                  = null;
-    this.profileKeyCredential        = null;
-    this.groupName                   = null;
-    this.systemContactPhoto          = null;
-    this.customLabel                 = null;
-    this.contactUri                  = null;
-    this.signalProfileName           = ProfileName.EMPTY;
-    this.profileAvatar               = null;
-    this.hasProfileImage             = false;
-    this.profileSharing              = false;
-    this.lastProfileFetch            = 0;
-    this.notificationChannel         = null;
-    this.unidentifiedAccessMode      = UnidentifiedAccessMode.DISABLED;
-    this.forceSmsSelection           = false;
-    this.groupsV1MigrationCapability = Capability.UNKNOWN;
-    this.senderKeyCapability         = Capability.UNKNOWN;
-    this.announcementGroupCapability = Capability.UNKNOWN;
-    this.changeNumberCapability      = Capability.UNKNOWN;
-    this.storiesCapability           = Capability.UNKNOWN;
-    this.giftBadgesCapability        = Capability.UNKNOWN;
-    this.storageId                   = null;
-    this.mentionSetting              = MentionSetting.ALWAYS_NOTIFY;
-    this.wallpaper                   = null;
-    this.chatColors                  = null;
-    this.avatarColor                 = AvatarColor.UNKNOWN;
-    this.about                       = null;
-    this.aboutEmoji                  = null;
-    this.systemProfileName           = ProfileName.EMPTY;
-    this.systemContactName           = null;
-    this.extras                      = Optional.empty();
-    this.hasGroupsInCommon           = false;
-    this.badges                      = Collections.emptyList();
-    this.isReleaseNotesRecipient     = false;
+    this.id                           = id;
+    this.resolving                    = true;
+    this.serviceId                    = null;
+    this.pni                          = null;
+    this.username                     = null;
+    this.e164                         = null;
+    this.email                        = null;
+    this.groupId                      = null;
+    this.distributionListId           = null;
+    this.participantIds               = Collections.emptyList();
+    this.groupAvatarId                = Optional.empty();
+    this.isSelf                       = false;
+    this.blocked                      = false;
+    this.muteUntil                    = 0;
+    this.messageVibrate               = VibrateState.DEFAULT;
+    this.callVibrate                  = VibrateState.DEFAULT;
+    this.messageRingtone              = null;
+    this.callRingtone                 = null;
+    this.insightsBannerTier           = InsightsBannerTier.TIER_TWO;
+    this.defaultSubscriptionId        = Optional.empty();
+    this.expireMessages               = 0;
+    this.registered                   = RegisteredState.UNKNOWN;
+    this.profileKey                   = null;
+    this.expiringProfileKeyCredential = null;
+    this.groupName                    = null;
+    this.systemContactPhoto           = null;
+    this.customLabel                  = null;
+    this.contactUri                   = null;
+    this.signalProfileName            = ProfileName.EMPTY;
+    this.profileAvatar                = null;
+    this.profileAvatarFileDetails     = ProfileAvatarFileDetails.NO_DETAILS;
+    this.profileSharing               = false;
+    this.lastProfileFetch             = 0;
+    this.notificationChannel          = null;
+    this.unidentifiedAccessMode       = UnidentifiedAccessMode.DISABLED;
+    this.forceSmsSelection            = false;
+    this.capabilities                 = RecipientRecord.Capabilities.UNKNOWN;
+    this.storageId                    = null;
+    this.mentionSetting               = MentionSetting.ALWAYS_NOTIFY;
+    this.wallpaper                    = null;
+    this.chatColors                   = null;
+    this.avatarColor                  = AvatarColor.UNKNOWN;
+    this.about                        = null;
+    this.aboutEmoji                   = null;
+    this.systemProfileName            = ProfileName.EMPTY;
+    this.systemContactName            = null;
+    this.extras                       = Optional.empty();
+    this.hasGroupsInCommon            = false;
+    this.badges                       = Collections.emptyList();
+    this.isReleaseNotesRecipient      = false;
+    this.needsPniSignature            = false;
   }
 
   public Recipient(@NonNull RecipientId id, @NonNull RecipientDetails details, boolean resolved) {
-    this.id                          = id;
-    this.resolving                   = !resolved;
-    this.serviceId                   = details.serviceId;
-    this.pni                         = details.pni;
-    this.username                    = details.username;
-    this.e164                        = details.e164;
-    this.email                       = details.email;
-    this.groupId                     = details.groupId;
-    this.distributionListId          = details.distributionListId;
-    this.participants                = details.participants;
-    this.groupAvatarId               = details.groupAvatarId;
-    this.isSelf                      = details.isSelf;
-    this.blocked                     = details.blocked;
-    this.muteUntil                   = details.mutedUntil;
-    this.messageVibrate              = details.messageVibrateState;
-    this.callVibrate                 = details.callVibrateState;
-    this.messageRingtone             = details.messageRingtone;
-    this.callRingtone                = details.callRingtone;
-    this.insightsBannerTier          = details.insightsBannerTier;
-    this.defaultSubscriptionId       = details.defaultSubscriptionId;
-    this.expireMessages              = details.expireMessages;
-    this.registered                  = details.registered;
-    this.profileKey                  = details.profileKey;
-    this.profileKeyCredential        = details.profileKeyCredential;
-    this.groupName                   = details.groupName;
-    this.systemContactPhoto          = details.systemContactPhoto;
-    this.customLabel                 = details.customLabel;
-    this.contactUri                  = details.contactUri;
-    this.signalProfileName           = details.profileName;
-    this.profileAvatar               = details.profileAvatar;
-    this.hasProfileImage             = details.hasProfileImage;
-    this.profileSharing              = details.profileSharing;
-    this.lastProfileFetch            = details.lastProfileFetch;
-    this.notificationChannel         = details.notificationChannel;
-    this.unidentifiedAccessMode      = details.unidentifiedAccessMode;
-    this.forceSmsSelection           = details.forceSmsSelection;
-    this.groupsV1MigrationCapability = details.groupsV1MigrationCapability;
-    this.senderKeyCapability         = details.senderKeyCapability;
-    this.announcementGroupCapability = details.announcementGroupCapability;
-    this.changeNumberCapability      = details.changeNumberCapability;
-    this.storiesCapability           = details.storiesCapability;
-    this.giftBadgesCapability        = details.giftBadgesCapability;
-    this.storageId                   = details.storageId;
-    this.mentionSetting              = details.mentionSetting;
-    this.wallpaper                   = details.wallpaper;
-    this.chatColors                  = details.chatColors;
-    this.avatarColor                 = details.avatarColor;
-    this.about                       = details.about;
-    this.aboutEmoji                  = details.aboutEmoji;
-    this.systemProfileName           = details.systemProfileName;
-    this.systemContactName           = details.systemContactName;
-    this.extras                      = details.extras;
-    this.hasGroupsInCommon           = details.hasGroupsInCommon;
-    this.badges                      = details.badges;
-    this.isReleaseNotesRecipient     = details.isReleaseChannel;
+    this.id                           = id;
+    this.resolving                    = !resolved;
+    this.serviceId                    = details.serviceId;
+    this.pni                          = details.pni;
+    this.username                     = details.username;
+    this.e164                         = details.e164;
+    this.email                        = details.email;
+    this.groupId                      = details.groupId;
+    this.distributionListId           = details.distributionListId;
+    this.participantIds               = details.participantIds;
+    this.groupAvatarId                = details.groupAvatarId;
+    this.isSelf                       = details.isSelf;
+    this.blocked                      = details.blocked;
+    this.muteUntil                    = details.mutedUntil;
+    this.messageVibrate               = details.messageVibrateState;
+    this.callVibrate                  = details.callVibrateState;
+    this.messageRingtone              = details.messageRingtone;
+    this.callRingtone                 = details.callRingtone;
+    this.insightsBannerTier           = details.insightsBannerTier;
+    this.defaultSubscriptionId        = details.defaultSubscriptionId;
+    this.expireMessages               = details.expireMessages;
+    this.registered                   = details.registered;
+    this.profileKey                   = details.profileKey;
+    this.expiringProfileKeyCredential = details.expiringProfileKeyCredential;
+    this.groupName                    = details.groupName;
+    this.systemContactPhoto           = details.systemContactPhoto;
+    this.customLabel                  = details.customLabel;
+    this.contactUri                   = details.contactUri;
+    this.signalProfileName            = details.profileName;
+    this.profileAvatar                = details.profileAvatar;
+    this.profileAvatarFileDetails     = details.profileAvatarFileDetails;
+    this.profileSharing               = details.profileSharing;
+    this.lastProfileFetch             = details.lastProfileFetch;
+    this.notificationChannel          = details.notificationChannel;
+    this.unidentifiedAccessMode       = details.unidentifiedAccessMode;
+    this.forceSmsSelection            = details.forceSmsSelection;
+    this.capabilities                 = details.capabilities;
+    this.storageId                    = details.storageId;
+    this.mentionSetting               = details.mentionSetting;
+    this.wallpaper                    = details.wallpaper;
+    this.chatColors                   = details.chatColors;
+    this.avatarColor                  = details.avatarColor;
+    this.about                        = details.about;
+    this.aboutEmoji                   = details.aboutEmoji;
+    this.systemProfileName            = details.systemProfileName;
+    this.systemContactName            = details.systemContactName;
+    this.extras                       = details.extras;
+    this.hasGroupsInCommon            = details.hasGroupsInCommon;
+    this.badges                       = details.badges;
+    this.isReleaseNotesRecipient      = details.isReleaseChannel;
+    this.needsPniSignature            = details.needsPniSignature;
   }
 
   public @NonNull RecipientId getId() {
@@ -487,10 +501,12 @@ public class Recipient {
 
   public @Nullable String getGroupName(@NonNull Context context) {
     if (groupId != null && Util.isEmpty(this.groupName)) {
-      List<Recipient> others = participants.stream()
-                                           .filter(r -> !r.isSelf())
-                                           .limit(MAX_MEMBER_NAMES)
-                                           .collect(Collectors.toList());
+      RecipientId     selfId = ApplicationDependencies.getRecipientCache().getSelfId();
+      List<Recipient> others = participantIds.stream()
+                                             .filter(id -> !id.equals(selfId))
+                                             .limit(MAX_MEMBER_NAMES)
+                                             .map(Recipient::resolved)
+                                             .collect(Collectors.toList());
 
       Map<String, Integer> shortNameCounts = new HashMap<>();
 
@@ -514,7 +530,7 @@ public class Recipient {
         }
       }
 
-      if (participants.stream().anyMatch(Recipient::isSelf)) {
+      if (participantIds.stream().anyMatch(id -> id.equals(selfId))) {
         names.add(context.getString(R.string.Recipient_you));
       }
 
@@ -540,6 +556,37 @@ public class Recipient {
   }
 
   public @NonNull String getDisplayName(@NonNull Context context) {
+    String name = getNameFromLocalData(context);
+
+    if (Util.isEmpty(name)) {
+      name = context.getString(R.string.Recipient_unknown);
+    }
+
+    return StringUtil.isolateBidi(name);
+  }
+
+  public @NonNull String getDisplayNameOrUsername(@NonNull Context context) {
+    String name = getNameFromLocalData(context);
+
+    if (Util.isEmpty(name)) {
+      name = StringUtil.isolateBidi(username);
+    }
+
+    if (Util.isEmpty(name)) {
+      name = StringUtil.isolateBidi(context.getString(R.string.Recipient_unknown));
+    }
+
+    return StringUtil.isolateBidi(name);
+  }
+
+  public boolean hasNonUsernameDisplayName(@NonNull Context context) {
+    return getNameFromLocalData(context) != null;
+  }
+
+  /**
+   * @return local name for user ignoring the username.
+   */
+  private @Nullable String getNameFromLocalData(@NonNull Context context) {
     String name = getGroupName(context);
 
     if (Util.isEmpty(name)) {
@@ -556,40 +603,6 @@ public class Recipient {
 
     if (Util.isEmpty(name)) {
       name = email;
-    }
-
-    if (Util.isEmpty(name)) {
-      name = context.getString(R.string.Recipient_unknown);
-    }
-
-    return StringUtil.isolateBidi(name);
-  }
-
-  public @NonNull String getDisplayNameOrUsername(@NonNull Context context) {
-    String name = getGroupName(context);
-
-    if (Util.isEmpty(name)) {
-      name = systemContactName;
-    }
-
-    if (Util.isEmpty(name)) {
-      name = StringUtil.isolateBidi(getProfileName().toString());
-    }
-
-    if (Util.isEmpty(name) && !Util.isEmpty(e164)) {
-      name = PhoneNumberFormatter.prettyPrint(e164);
-    }
-
-    if (Util.isEmpty(name)) {
-      name = StringUtil.isolateBidi(email);
-    }
-
-    if (Util.isEmpty(name)) {
-      name = StringUtil.isolateBidi(username);
-    }
-
-    if (Util.isEmpty(name)) {
-      name = StringUtil.isolateBidi(context.getString(R.string.Recipient_unknown));
     }
 
     return name;
@@ -637,8 +650,9 @@ public class Recipient {
     String name = Util.getFirstNonEmpty(getGroupName(context),
                                         getSystemProfileName().getGivenName(),
                                         getProfileName().getGivenName(),
-                                        getDisplayName(context),
-                                        getUsername().orElse(null));
+                                        getE164().orElse(null),
+                                        getUsername().orElse(null),
+                                        getDisplayName(context));
 
     return StringUtil.isolateBidi(name);
   }
@@ -811,6 +825,10 @@ public class Recipient {
     return profileAvatar;
   }
 
+  public @NonNull ProfileAvatarFileDetails getProfileAvatarFileDetails() {
+    return profileAvatarFileDetails;
+  }
+
   public boolean isProfileSharing() {
     return profileSharing;
   }
@@ -856,11 +874,16 @@ public class Recipient {
   }
 
   public boolean isActiveGroup() {
-    return Stream.of(getParticipants()).anyMatch(Recipient::isSelf);
+    RecipientId selfId = Recipient.self().getId();
+    return Stream.of(getParticipantIds()).anyMatch(p -> p.equals(selfId));
   }
 
-  public @NonNull List<Recipient> getParticipants() {
-    return new ArrayList<>(participants);
+  public boolean isInactiveGroup() {
+    return isGroup() && !isActiveGroup();
+  }
+
+  public @NonNull List<RecipientId> getParticipantIds() {
+    return new ArrayList<>(participantIds);
   }
 
   public @NonNull Drawable getFallbackContactPhotoDrawable(Context context, boolean inverted) {
@@ -907,7 +930,7 @@ public class Recipient {
     if      (isSelf)                                                                             return null;
     else if (isGroupInternal() && groupAvatarId.isPresent())                                     return new GroupRecordContactPhoto(groupId, groupAvatarId.get());
     else if (systemContactPhoto != null && SignalStore.settings().isPreferSystemContactPhotos()) return new SystemContactPhoto(id, systemContactPhoto, 0);
-    else if (profileAvatar != null && hasProfileImage)                                           return new ProfileContactPhoto(this, profileAvatar);
+    else if (profileAvatar != null && profileAvatarFileDetails.hasFile())                        return new ProfileContactPhoto(this);
     else if (systemContactPhoto != null)                                                         return new SystemContactPhoto(id, systemContactPhoto, 0);
     else                                                                                         return null;
   }
@@ -961,22 +984,25 @@ public class Recipient {
   }
 
   public @NonNull RegisteredState getRegistered() {
-    if      (isPushGroup()) return RegisteredState.REGISTERED;
-    else if (isMmsGroup())  return RegisteredState.NOT_REGISTERED;
-
-    return registered;
+    if (isPushGroup() || isDistributionList()) {
+      return RegisteredState.REGISTERED;
+    } else if (isMmsGroup()) {
+      return RegisteredState.NOT_REGISTERED;
+    } else {
+      return registered;
+    }
   }
 
   public boolean isRegistered() {
-    return registered == RegisteredState.REGISTERED || isPushGroup();
+    return getRegistered() == RegisteredState.REGISTERED;
   }
 
   public boolean isMaybeRegistered() {
-    return registered != RegisteredState.NOT_REGISTERED || isPushGroup();
+    return getRegistered() != RegisteredState.NOT_REGISTERED;
   }
 
   public boolean isUnregistered() {
-    return registered == RegisteredState.NOT_REGISTERED && !isPushGroup();
+    return getRegistered() == RegisteredState.NOT_REGISTERED;
   }
 
   public @Nullable String getNotificationChannel() {
@@ -987,47 +1013,28 @@ public class Recipient {
     return forceSmsSelection;
   }
 
-  public @NonNull Capability getGroupsV1MigrationCapability() {
-    return groupsV1MigrationCapability;
-  }
-
-  public @NonNull Capability getSenderKeyCapability() {
-    return senderKeyCapability;
-  }
-
-  public @NonNull Capability getAnnouncementGroupCapability() {
-    return announcementGroupCapability;
-  }
-
-  public @NonNull Capability getChangeNumberCapability() {
-    return changeNumberCapability;
-  }
-
   public @NonNull Capability getStoriesCapability() {
-    return storiesCapability;
+    return capabilities.getStoriesCapability();
   }
 
   public @NonNull Capability getGiftBadgesCapability() {
-    return giftBadgesCapability;
+    return capabilities.getGiftBadgesCapability();
   }
 
-  /**
-   * True if this recipient supports the message retry system, or false if we should use the legacy session reset system.
-   */
-  public boolean supportsMessageRetries() {
-    return getSenderKeyCapability() == Capability.SUPPORTED;
+  public @NonNull Capability getPnpCapability() {
+    return capabilities.getPnpCapability();
+  }
+
+  public @NonNull Capability getPaymentActivationCapability() {
+    return capabilities.getPaymentActivation();
   }
 
   public @Nullable byte[] getProfileKey() {
     return profileKey;
   }
 
-  public @Nullable ProfileKeyCredential getProfileKeyCredential() {
-    return profileKeyCredential;
-  }
-
-  public boolean hasProfileKeyCredential() {
-    return profileKeyCredential != null;
+  public @Nullable ExpiringProfileKeyCredential getExpiringProfileKeyCredential() {
+    return expiringProfileKeyCredential;
   }
 
   public @Nullable byte[] getStorageServiceId() {
@@ -1041,6 +1048,8 @@ public class Recipient {
   public @Nullable ChatWallpaper getWallpaper() {
     if (wallpaper != null) {
       return wallpaper;
+    } else if (isReleaseNotes()) {
+      return null;
     } else {
       return SignalStore.wallpaper().getWallpaper();
     }
@@ -1101,7 +1110,7 @@ public class Recipient {
   }
 
   public @NonNull List<Badge> getBadges() {
-    return FeatureFlags.displayDonorBadges() || isSelf() ? badges : Collections.emptyList();
+    return badges;
   }
 
   public @Nullable Badge getFeaturedBadge() {
@@ -1177,6 +1186,10 @@ public class Recipient {
     return isReleaseNotesRecipient || isSelf;
   }
 
+  public boolean needsPniSignature() {
+    return FeatureFlags.phoneNumberPrivacy() && needsPniSignature;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -1203,6 +1216,10 @@ public class Recipient {
 
     public int serialize() {
       return value;
+    }
+
+    public boolean isSupported() {
+      return this == SUPPORTED;
     }
 
     public static Capability deserialize(int value) {
@@ -1267,7 +1284,7 @@ public class Recipient {
            blocked == other.blocked &&
            muteUntil == other.muteUntil &&
            expireMessages == other.expireMessages &&
-           hasProfileImage == other.hasProfileImage &&
+           Objects.equals(profileAvatarFileDetails, other.profileAvatarFileDetails) &&
            profileSharing == other.profileSharing &&
            lastProfileFetch == other.lastProfileFetch &&
            forceSmsSelection == other.forceSmsSelection &&
@@ -1276,7 +1293,7 @@ public class Recipient {
            Objects.equals(e164, other.e164) &&
            Objects.equals(email, other.email) &&
            Objects.equals(groupId, other.groupId) &&
-           allContentsAreTheSame(participants, other.participants) &&
+           Objects.equals(participantIds, other.participantIds) &&
            Objects.equals(groupAvatarId, other.groupAvatarId) &&
            messageVibrate == other.messageVibrate &&
            callVibrate == other.callVibrate &&
@@ -1285,7 +1302,7 @@ public class Recipient {
            Objects.equals(defaultSubscriptionId, other.defaultSubscriptionId) &&
            registered == other.registered &&
            Arrays.equals(profileKey, other.profileKey) &&
-           Objects.equals(profileKeyCredential, other.profileKeyCredential) &&
+           Objects.equals(expiringProfileKeyCredential, other.expiringProfileKeyCredential) &&
            Objects.equals(groupName, other.groupName) &&
            Objects.equals(systemContactPhoto, other.systemContactPhoto) &&
            Objects.equals(customLabel, other.customLabel) &&
@@ -1295,7 +1312,6 @@ public class Recipient {
            Objects.equals(profileAvatar, other.profileAvatar) &&
            Objects.equals(notificationChannel, other.notificationChannel) &&
            unidentifiedAccessMode == other.unidentifiedAccessMode &&
-           groupsV1MigrationCapability == other.groupsV1MigrationCapability &&
            insightsBannerTier == other.insightsBannerTier &&
            Arrays.equals(storageId, other.storageId) &&
            mentionSetting == other.mentionSetting &&
@@ -1346,7 +1362,7 @@ public class Recipient {
     }
 
     public @NonNull FallbackContactPhoto getPhotoForDistributionList() {
-      return new ResourceContactPhoto(R.drawable.ic_group_outline_34, R.drawable.ic_group_outline_20, R.drawable.ic_group_outline_48);
+      return new ResourceContactPhoto(R.drawable.symbol_stories_24, R.drawable.symbol_stories_24, R.drawable.symbol_stories_24);
     }
   }
 

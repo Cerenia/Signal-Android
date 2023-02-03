@@ -1,7 +1,5 @@
 package org.thoughtcrime.securesms.jobs;
 
-import android.content.Context;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
@@ -62,8 +60,11 @@ public class ProfileKeySendJob extends BaseJob {
       throw new AssertionError("Do not send profile keys directly for GV2");
     }
 
-    List<RecipientId> recipients = conversationRecipient.isGroup() ? Stream.of(RecipientUtil.getEligibleForSending(conversationRecipient.getParticipants())).map(Recipient::getId).toList()
-                                                                   : Stream.of(conversationRecipient.getId()).toList();
+    List<RecipientId> recipients = conversationRecipient.isGroup() ? Stream.of(RecipientUtil.getEligibleForSending(Recipient.resolvedList(conversationRecipient.getParticipantIds())))
+                                                                           .map(Recipient::getId)
+                                                                           .toList()
+                                                                   : Stream.of(conversationRecipient.getId())
+                                                                           .toList();
 
     recipients.remove(Recipient.self().getId());
 
@@ -152,7 +153,7 @@ public class ProfileKeySendJob extends BaseJob {
                                                                            .withTimestamp(System.currentTimeMillis())
                                                                            .withProfileKey(Recipient.self().resolve().getProfileKey());
 
-    List<SendMessageResult> results = GroupSendUtil.sendUnresendableDataMessage(context, null, destinations, false, ContentHint.IMPLICIT, dataMessage.build());
+    List<SendMessageResult> results = GroupSendUtil.sendUnresendableDataMessage(context, null, destinations, false, ContentHint.IMPLICIT, dataMessage.build(), false);
 
     return GroupSendJobHelper.getCompletedSends(destinations, results).completed;
   }

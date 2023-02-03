@@ -6,14 +6,13 @@ import androidx.annotation.Nullable;
 import com.annimon.stream.Stream;
 
 import org.signal.libsignal.zkgroup.groups.GroupMasterKey;
-import org.thoughtcrime.securesms.database.IdentityDatabase;
-import org.thoughtcrime.securesms.database.RecipientDatabase;
+import org.thoughtcrime.securesms.database.GroupTable;
+import org.thoughtcrime.securesms.database.IdentityTable;
+import org.thoughtcrime.securesms.database.RecipientTable;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.database.model.DistributionListId;
-import org.thoughtcrime.securesms.database.model.DistributionListPrivacyMode;
 import org.thoughtcrime.securesms.database.model.DistributionListRecord;
 import org.thoughtcrime.securesms.database.model.RecipientRecord;
-import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.groups.GroupId;
 import org.thoughtcrime.securesms.keyvalue.PhoneNumberPrivacyValues;
 import org.thoughtcrime.securesms.recipients.Recipient;
@@ -30,8 +29,8 @@ import org.whispersystems.signalservice.api.subscriptions.SubscriberId;
 import org.whispersystems.signalservice.api.util.UuidUtil;
 import org.whispersystems.signalservice.internal.storage.protos.AccountRecord;
 import org.whispersystems.signalservice.internal.storage.protos.ContactRecord.IdentityState;
+import org.whispersystems.signalservice.internal.storage.protos.GroupV2Record;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -85,9 +84,9 @@ public final class StorageSyncModels {
 
   public static List<SignalAccountRecord.PinnedConversation> localToRemotePinnedConversations(@NonNull List<RecipientRecord> settings) {
     return Stream.of(settings)
-                 .filter(s -> s.getGroupType() == RecipientDatabase.GroupType.SIGNAL_V1 ||
-                              s.getGroupType() == RecipientDatabase.GroupType.SIGNAL_V2 ||
-                              s.getRegistered() == RecipientDatabase.RegisteredState.REGISTERED)
+                 .filter(s -> s.getGroupType() == RecipientTable.GroupType.SIGNAL_V1 ||
+                              s.getGroupType() == RecipientTable.GroupType.SIGNAL_V2 ||
+                              s.getRegistered() == RecipientTable.RegisteredState.REGISTERED)
                  .map(StorageSyncModels::localToRemotePinnedConversation)
                  .toList();
   }
@@ -109,10 +108,14 @@ public final class StorageSyncModels {
     ServiceId serviceId = recipient.getServiceId() != null ? recipient.getServiceId() : ServiceId.UNKNOWN;
     boolean   hideStory = recipient.getExtras() != null && recipient.getExtras().hideStory();
 
-    return new SignalContactRecord.Builder(rawStorageId, new SignalServiceAddress(serviceId, recipient.getE164()), recipient.getSyncExtras().getStorageProto())
+    return new SignalContactRecord.Builder(rawStorageId, serviceId, recipient.getSyncExtras().getStorageProto())
+                                  .setE164(recipient.getE164())
+                                  .setPni(recipient.getPni())
                                   .setProfileKey(recipient.getProfileKey())
-                                  .setGivenName(recipient.getProfileName().getGivenName())
-                                  .setFamilyName(recipient.getProfileName().getFamilyName())
+                                  .setProfileGivenName(recipient.getProfileName().getGivenName())
+                                  .setProfileFamilyName(recipient.getProfileName().getFamilyName())
+                                  .setSystemGivenName(recipient.getSystemProfileName().getGivenName())
+                                  .setSystemFamilyName(recipient.getSystemProfileName().getFamilyName())
                                   .setBlocked(recipient.isBlocked())
                                   .setProfileSharingEnabled(recipient.isProfileSharing() || recipient.getSystemContactUri() != null)
                                   .setIdentityKey(recipient.getSyncExtras().getIdentityKey())
@@ -121,6 +124,8 @@ public final class StorageSyncModels {
                                   .setForcedUnread(recipient.getSyncExtras().isForcedUnread())
                                   .setMuteUntil(recipient.getMuteUntil())
                                   .setHideStory(hideStory)
+                                  .setUnregisteredTimestamp(recipient.getSyncExtras().getUnregisteredTimestamp())
+                                  .setHidden(recipient.isHidden())
                                   .build();
   }
 
@@ -159,7 +164,20 @@ public final class StorageSyncModels {
       throw new AssertionError("Group master key not on recipient record");
     }
 
-    boolean hideStory = recipient.getExtras() != null && recipient.getExtras().hideStory();
+    boolean                     hideStory        = recipient.getExtras() != null && recipient.getExtras().hideStory();
+    GroupTable.ShowAsStoryState showAsStoryState = SignalDatabase.groups().getShowAsStoryState(groupId);
+    GroupV2Record.StorySendMode storySendMode;
+
+    switch (showAsStoryState) {
+      case ALWAYS:
+        storySendMode = GroupV2Record.StorySendMode.ENABLED;
+        break;
+      case NEVER:
+        storySendMode = GroupV2Record.StorySendMode.DISABLED;
+        break;
+      default:
+        storySendMode = GroupV2Record.StorySendMode.DEFAULT;
+    }
 
     return new SignalGroupV2Record.Builder(rawStorageId, groupMasterKey, recipient.getSyncExtras().getStorageProto())
                                   .setBlocked(recipient.isBlocked())
@@ -167,8 +185,9 @@ public final class StorageSyncModels {
                                   .setArchived(recipient.getSyncExtras().isArchived())
                                   .setForcedUnread(recipient.getSyncExtras().isForcedUnread())
                                   .setMuteUntil(recipient.getMuteUntil())
-                                  .setNotifyForMentionsWhenMuted(recipient.getMentionSetting() == RecipientDatabase.MentionSetting.ALWAYS_NOTIFY)
+                                  .setNotifyForMentionsWhenMuted(recipient.getMentionSetting() == RecipientTable.MentionSetting.ALWAYS_NOTIFY)
                                   .setHideStory(hideStory)
+                                  .setStorySendMode(storySendMode)
                                   .build();
   }
 
@@ -206,15 +225,15 @@ public final class StorageSyncModels {
                                                 .build();
   }
 
-  public static @NonNull IdentityDatabase.VerifiedStatus remoteToLocalIdentityStatus(@NonNull IdentityState identityState) {
+  public static @NonNull IdentityTable.VerifiedStatus remoteToLocalIdentityStatus(@NonNull IdentityState identityState) {
     switch (identityState) {
-      case VERIFIED:   return IdentityDatabase.VerifiedStatus.VERIFIED;
-      case UNVERIFIED: return IdentityDatabase.VerifiedStatus.UNVERIFIED;
-      default:         return IdentityDatabase.VerifiedStatus.DEFAULT;
+      case VERIFIED:   return IdentityTable.VerifiedStatus.VERIFIED;
+      case UNVERIFIED: return IdentityTable.VerifiedStatus.UNVERIFIED;
+      default:         return IdentityTable.VerifiedStatus.DEFAULT;
     }
   }
 
-  private static IdentityState localToRemoteIdentityState(@NonNull IdentityDatabase.VerifiedStatus local) {
+  private static IdentityState localToRemoteIdentityState(@NonNull IdentityTable.VerifiedStatus local) {
     switch (local) {
       case VERIFIED:   return IdentityState.VERIFIED;
       case UNVERIFIED: return IdentityState.UNVERIFIED;

@@ -4,18 +4,18 @@ import android.content.Context
 import android.net.Uri
 import androidx.annotation.WorkerThread
 import androidx.fragment.app.FragmentManager
+import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.PlaybackException
 import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.SimpleExoPlayer
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.schedulers.Schedulers
 import org.signal.core.util.ThreadUtil
-import org.signal.core.util.isAbsent
 import org.signal.core.util.logging.Log
 import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.contacts.HeaderAction
-import org.thoughtcrime.securesms.database.AttachmentDatabase
+import org.thoughtcrime.securesms.database.AttachmentTable
+import org.thoughtcrime.securesms.database.AttachmentTable.TransformProperties
 import org.thoughtcrime.securesms.database.SignalDatabase
 import org.thoughtcrime.securesms.database.model.DistributionListId
 import org.thoughtcrime.securesms.database.model.MmsMessageRecord
@@ -25,7 +25,7 @@ import org.thoughtcrime.securesms.keyvalue.SignalStore
 import org.thoughtcrime.securesms.mediasend.Media
 import org.thoughtcrime.securesms.mediasend.v2.stories.ChooseStoryTypeBottomSheet
 import org.thoughtcrime.securesms.mms.MediaConstraints
-import org.thoughtcrime.securesms.mms.OutgoingSecureMediaMessage
+import org.thoughtcrime.securesms.mms.OutgoingMessage
 import org.thoughtcrime.securesms.mms.SentMediaQuality
 import org.thoughtcrime.securesms.mms.VideoSlide
 import org.thoughtcrime.securesms.recipients.Recipient
@@ -34,7 +34,6 @@ import org.thoughtcrime.securesms.recipients.RecipientUtil
 import org.thoughtcrime.securesms.sms.MessageSender
 import org.thoughtcrime.securesms.storage.StorageSyncHelper
 import org.thoughtcrime.securesms.util.BottomSheetUtil
-import org.thoughtcrime.securesms.util.FeatureFlags
 import org.thoughtcrime.securesms.util.MediaUtil
 import org.thoughtcrime.securesms.util.hasLinkPreview
 import java.util.Optional
@@ -42,36 +41,47 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.time.Duration.Companion.microseconds
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
+/**
+ * Collection of helper methods and constants for dealing with the stories feature.
+ */
 object Stories {
 
   private val TAG = Log.tag(Stories::class.java)
 
-  const val MAX_BODY_SIZE = 700
+  const val MAX_TEXT_STORY_SIZE = 700
+  const val MAX_TEXT_STORY_LINE_COUNT = 13
+  const val MAX_CAPTION_SIZE = 1500
 
   @JvmField
-  val MAX_VIDEO_DURATION_MILLIS = TimeUnit.SECONDS.toMillis(30)
+  val MAX_VIDEO_DURATION_MILLIS: Long = (31.seconds - 1.milliseconds).inWholeMilliseconds
 
-  @JvmStatic
-  fun isFeatureAvailable(): Boolean {
-    return SignalStore.account().isRegistered && FeatureFlags.stories() && Recipient.self().storiesCapability == Recipient.Capability.SUPPORTED
-  }
-
+  /**
+   * Whether or not the user has the Stories feature enabled.
+   */
   @JvmStatic
   fun isFeatureEnabled(): Boolean {
-    return isFeatureAvailable() && !SignalStore.storyValues().isFeatureDisabled
+    return !SignalStore.storyValues().isFeatureDisabled
+  }
+
+  fun getHeaderAction(onClick: () -> Unit): HeaderAction {
+    return HeaderAction(
+      R.string.ContactsCursorLoader_new,
+      R.drawable.ic_plus_12,
+      onClick
+    )
   }
 
   fun getHeaderAction(fragmentManager: FragmentManager): HeaderAction {
-    return HeaderAction(
-      R.string.ContactsCursorLoader_new_story,
-      R.drawable.ic_plus_20
-    ) {
+    return getHeaderAction {
       ChooseStoryTypeBottomSheet().show(fragmentManager, BottomSheetUtil.STANDARD_BOTTOM_SHEET_FRAGMENT_TAG)
     }
   }
 
-  fun sendTextStories(messages: List<OutgoingSecureMediaMessage>): Completable {
+  fun sendTextStories(messages: List<OutgoingMessage>): Completable {
     return Completable.create { emitter ->
       MessageSender.sendStories(ApplicationDependencies.getApplication(), messages, null, null)
       emitter.onComplete()
@@ -106,10 +116,9 @@ object Stories {
     }
 
     Log.d(TAG, "Enqueuing downloads for up to $limit stories for $recipientId (force: $force)")
-    SignalDatabase.mms.getUnreadStories(recipientId, limit).use {
-      while (it.next != null) {
-        val record = it.current as MmsMessageRecord
-        enqueueAttachmentsFromStoryForDownloadSync(record, force)
+    SignalDatabase.messages.getUnreadStories(recipientId, limit).use { reader ->
+      reader.forEach {
+        enqueueAttachmentsFromStoryForDownloadSync(it as MmsMessageRecord, false)
       }
     }
   }
@@ -120,16 +129,15 @@ object Stories {
     }.subscribeOn(Schedulers.io())
   }
 
+  @JvmStatic
   @WorkerThread
-  private fun enqueueAttachmentsFromStoryForDownloadSync(record: MmsMessageRecord, ignoreAutoDownloadConstraints: Boolean) {
+  fun enqueueAttachmentsFromStoryForDownloadSync(record: MmsMessageRecord, ignoreAutoDownloadConstraints: Boolean) {
     SignalDatabase.attachments.getAttachmentsForMessage(record.id).filterNot { it.isSticker }.forEach {
-      if (it.transferState == AttachmentDatabase.TRANSFER_PROGRESS_PENDING) {
-        val job = AttachmentDownloadJob(record.id, it.attachmentId, ignoreAutoDownloadConstraints)
-        ApplicationDependencies.getJobManager().add(job)
-      }
+      val job = AttachmentDownloadJob(record.id, it.attachmentId, ignoreAutoDownloadConstraints)
+      ApplicationDependencies.getJobManager().add(job)
     }
 
-    if (record.hasLinkPreview()) {
+    if (record.hasLinkPreview() && record.linkPreviews[0].attachmentId != null) {
       ApplicationDependencies.getJobManager().add(
         AttachmentDownloadJob(record.id, record.linkPreviews[0].attachmentId, true)
       )
@@ -188,6 +196,15 @@ object Stories {
 
     @JvmStatic
     @WorkerThread
+    fun canPreUploadMedia(media: Media): Boolean {
+      return when {
+        MediaUtil.isVideo(media.mimeType) -> getSendRequirements(media) != SendRequirements.REQUIRES_CLIP
+        else -> true
+      }
+    }
+
+    @JvmStatic
+    @WorkerThread
     fun getSendRequirements(media: Media): SendRequirements {
       return when (getContentDuration(media)) {
         is DurationResult.ValidDuration -> SendRequirements.VALID_DURATION
@@ -225,7 +242,7 @@ object Stories {
 
     private fun getContentDuration(media: Media): DurationResult {
       return if (MediaUtil.isVideo(media.mimeType)) {
-        val mediaDuration = if (media.duration == 0L && media.transformProperties.isAbsent()) {
+        val mediaDuration = if (media.duration == 0L && media.transformProperties.map(TransformProperties::shouldSkipTransform).orElse(true)) {
           getVideoDuration(media.uri)
         } else if (media.transformProperties.map { it.isVideoTrim }.orElse(false)) {
           TimeUnit.MICROSECONDS.toMillis(media.transformProperties.get().videoTrimEndTimeUs - media.transformProperties.get().videoTrimStartTimeUs)
@@ -255,7 +272,7 @@ object Stories {
     @WorkerThread
     fun getVideoDuration(uri: Uri): Long {
       var duration = 0L
-      var player: SimpleExoPlayer? = null
+      var player: ExoPlayer? = null
       val countDownLatch = CountDownLatch(1)
       ThreadUtil.runOnMainSync {
         val mainThreadPlayer = ApplicationDependencies.getExoPlayerPool().get("stories_duration_check")
@@ -320,11 +337,12 @@ object Stories {
           error("Illegal clip: $startTimeUs > $endTimeUs for clip $clipIndex")
         }
 
-        AttachmentDatabase.TransformProperties(false, true, startTimeUs, endTimeUs, SentMediaQuality.STANDARD.code)
+        AttachmentTable.TransformProperties(false, true, startTimeUs, endTimeUs, SentMediaQuality.STANDARD.code)
       }.map { transformMedia(media, it) }
     }
 
-    private fun transformMedia(media: Media, transformProperties: AttachmentDatabase.TransformProperties): Media {
+    private fun transformMedia(media: Media, transformProperties: AttachmentTable.TransformProperties): Media {
+      Log.d(TAG, "Transforming media clip: ${transformProperties.videoTrimStartTimeUs.microseconds.inWholeSeconds}s to ${transformProperties.videoTrimEndTimeUs.microseconds.inWholeSeconds}s")
       return Media(
         media.uri,
         media.mimeType,

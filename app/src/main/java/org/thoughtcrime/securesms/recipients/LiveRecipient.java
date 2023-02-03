@@ -13,10 +13,10 @@ import com.annimon.stream.Stream;
 
 import org.signal.core.util.ThreadUtil;
 import org.signal.core.util.logging.Log;
-import org.thoughtcrime.securesms.database.DistributionListDatabase;
-import org.thoughtcrime.securesms.database.GroupDatabase;
-import org.thoughtcrime.securesms.database.GroupDatabase.GroupRecord;
-import org.thoughtcrime.securesms.database.RecipientDatabase;
+import org.thoughtcrime.securesms.database.DistributionListTables;
+import org.thoughtcrime.securesms.database.GroupTable;
+import org.thoughtcrime.securesms.database.model.GroupRecord;
+import org.thoughtcrime.securesms.database.RecipientTable;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.database.model.DistributionListRecord;
 import org.thoughtcrime.securesms.database.model.RecipientRecord;
@@ -41,19 +41,19 @@ public final class LiveRecipient {
   private final LiveData<Recipient>           observableLiveDataResolved;
   private final Set<RecipientForeverObserver> observers;
   private final Observer<Recipient>           foreverObserver;
-  private final AtomicReference<Recipient>    recipient;
-  private final RecipientDatabase             recipientDatabase;
-  private final GroupDatabase                 groupDatabase;
-  private final DistributionListDatabase      distributionListDatabase;
-  private final MutableLiveData<Object>       refreshForceNotify;
+  private final AtomicReference<Recipient> recipient;
+  private final RecipientTable             recipientTable;
+  private final GroupTable                 groupDatabase;
+  private final DistributionListTables distributionListTables;
+  private final MutableLiveData<Object> refreshForceNotify;
 
   LiveRecipient(@NonNull Context context, @NonNull Recipient defaultRecipient) {
     this.context                  = context.getApplicationContext();
     this.liveData                 = new MutableLiveData<>(defaultRecipient);
     this.recipient                = new AtomicReference<>(defaultRecipient);
-    this.recipientDatabase        = SignalDatabase.recipients();
+    this.recipientTable           = SignalDatabase.recipients();
     this.groupDatabase            = SignalDatabase.groups();
-    this.distributionListDatabase = SignalDatabase.distributionLists();
+    this.distributionListTables   = SignalDatabase.distributionLists();
     this.observers                = new CopyOnWriteArraySet<>();
     this.foreverObserver          = recipient -> {
       ThreadUtil.postToMain(() -> {
@@ -152,19 +152,8 @@ public final class LiveRecipient {
       Log.w(TAG, "[Resolve][MAIN] " + getId(), new Throwable());
     }
 
-    Recipient       updated      = fetchAndCacheRecipientFromDisk(getId());
-    List<Recipient> participants = Stream.of(updated.getParticipants())
-                                         .filter(Recipient::isResolving)
-                                         .map(Recipient::getId)
-                                         .map(this::fetchAndCacheRecipientFromDisk)
-                                         .toList();
-
-    for (Recipient participant : participants) {
-      participant.live().set(participant);
-    }
-
+    Recipient updated = fetchAndCacheRecipientFromDisk(getId());
     set(updated);
-
     return updated;
   }
 
@@ -188,16 +177,7 @@ public final class LiveRecipient {
       Log.w(TAG, "[Refresh][MAIN] " + id, new Throwable());
     }
 
-    Recipient       recipient    = fetchAndCacheRecipientFromDisk(id);
-    List<Recipient> participants = Stream.of(recipient.getParticipants())
-                                         .map(Recipient::getId)
-                                         .map(this::fetchAndCacheRecipientFromDisk)
-                                         .toList();
-
-    for (Recipient participant : participants) {
-      participant.live().set(participant);
-    }
-
+    Recipient recipient = fetchAndCacheRecipientFromDisk(id);
     set(recipient);
     refreshForceNotify.postValue(new Object());
   }
@@ -211,7 +191,7 @@ public final class LiveRecipient {
   }
 
   private @NonNull Recipient fetchAndCacheRecipientFromDisk(@NonNull RecipientId id) {
-    RecipientRecord  record  = recipientDatabase.getRecord(id);
+    RecipientRecord  record  = recipientTable.getRecord(id);
     RecipientDetails details;
     if (record.getGroupId() != null) {
       details = getGroupRecipientDetails(record);
@@ -221,7 +201,7 @@ public final class LiveRecipient {
       details = RecipientDetails.forIndividual(context, record);
     }
 
-    Recipient recipient = new Recipient(id, details, true);
+    Recipient recipient = new Recipient(record.getId(), details, true);
     RecipientIdCache.INSTANCE.put(recipient);
     return recipient;
   }
@@ -231,9 +211,9 @@ public final class LiveRecipient {
     Optional<GroupRecord> groupRecord = groupDatabase.getGroup(record.getId());
 
     if (groupRecord.isPresent()) {
-      String          title    = groupRecord.get().getTitle();
-      List<Recipient> members  = Stream.of(groupRecord.get().getMembers()).filterNot(RecipientId::isUnknown).map(this::fetchAndCacheRecipientFromDisk).toList();
-      Optional<Long>  avatarId = Optional.empty();
+      String            title    = groupRecord.get().getTitle();
+      List<RecipientId> members  = Stream.of(groupRecord.get().getMembers()).filterNot(RecipientId::isUnknown).toList();
+      Optional<Long>    avatarId = Optional.empty();
 
       if (groupRecord.get().hasAvatar()) {
         avatarId = Optional.of(groupRecord.get().getAvatarId());
@@ -247,12 +227,12 @@ public final class LiveRecipient {
 
   @WorkerThread
   private @NonNull RecipientDetails getDistributionListRecipientDetails(@NonNull RecipientRecord record) {
-    DistributionListRecord groupRecord = distributionListDatabase.getList(Objects.requireNonNull(record.getDistributionListId()));
+    DistributionListRecord groupRecord = distributionListTables.getList(Objects.requireNonNull(record.getDistributionListId()));
 
     // TODO [stories] We'll have to see what the perf is like for very large distribution lists. We may not be able to support fetching all the members.
     if (groupRecord != null) {
-      String          title    = groupRecord.isUnknown() ? null : groupRecord.getName();
-      List<Recipient> members  = Stream.of(groupRecord.getMembers()).filterNot(RecipientId::isUnknown).map(this::fetchAndCacheRecipientFromDisk).toList();
+      String            title    = groupRecord.isUnknown() ? null : groupRecord.getName();
+      List<RecipientId> members  = Stream.of(groupRecord.getMembers()).filterNot(RecipientId::isUnknown).toList();
 
       return RecipientDetails.forDistributionList(title, members, record);
     }

@@ -46,7 +46,7 @@ public class GroupPreJoinActionProcessor extends GroupActionProcessor {
                                                                             SignalStore.internalValues().groupCallingServer(),
                                                                             new byte[0],
                                                                             AUDIO_LEVELS_INTERVAL,
-                                                                            AudioProcessingMethodSelector.get(),
+                                                                            RingRtcDynamicConfiguration.getAudioProcessingMethod(),
                                                                             webRtcInteractor.getGroupCallObserver());
 
     try {
@@ -89,6 +89,8 @@ public class GroupPreJoinActionProcessor extends GroupActionProcessor {
   @Override
   protected @NonNull WebRtcServiceState handleGroupLocalDeviceStateChanged(@NonNull WebRtcServiceState currentState) {
     Log.i(tag, "handleGroupLocalDeviceStateChanged():");
+
+    currentState = super.handleGroupLocalDeviceStateChanged(currentState);
 
     GroupCall                  groupCall = currentState.getCallInfoState().requireGroupCall();
     GroupCall.LocalDeviceState device    = groupCall.getLocalDeviceState();

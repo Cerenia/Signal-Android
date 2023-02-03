@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    tools:viewBindingIgnore="true"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="0dp"
@@ -19,7 +20,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="4dp"
         app:tint="@color/signal_colorOnSurface"
-        tools:src="@drawable/ic_archive_24"/>
+        tools:src="@drawable/symbol_archive_android_24"/>
 
     <TextView
         android:id="@+id/signal_bottom_action_bar_item_title"

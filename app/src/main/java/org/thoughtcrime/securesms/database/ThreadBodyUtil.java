@@ -50,6 +50,16 @@ public final class ThreadBodyUtil {
       return format(context, record, emoji, R.string.ThreadRecord_sticker);
     } else if (MessageRecordUtil.hasGiftBadge(record)) {
       return String.format("%s %s", EmojiStrings.GIFT, getGiftSummary(context, record));
+    } else if (MessageRecordUtil.isStoryReaction(record)) {
+      return getStoryReactionSummary(context, record);
+    } else if (record.isPaymentNotification()) {
+      return String.format("%s %s", EmojiStrings.CARD, context.getString(R.string.ThreadRecord_payment));
+    } else if (record.isPaymentsRequestToActivate()) {
+      return String.format("%s %s", EmojiStrings.CARD, getPaymentActivationRequestSummary(context, record));
+    } else if (record.isPaymentsActivated()) {
+      return String.format("%s %s", EmojiStrings.CARD, getPaymentActivatedSummary(context, record));
+    } else if (record.isCallLog() && !record.isGroupCall()) {
+      return getCallLogSummary(context, record);
     }
 
     boolean hasImage = false;
@@ -77,11 +87,62 @@ public final class ThreadBodyUtil {
 
   private static @NonNull String getGiftSummary(@NonNull Context context, @NonNull MessageRecord messageRecord) {
     if (messageRecord.isOutgoing()) {
-      return context.getString(R.string.ThreadRecord__you_sent_a_gift);
+      return context.getString(R.string.ThreadRecord__you_donated_for_s, messageRecord.getRecipient().getShortDisplayName(context));
     } else if (messageRecord.getViewedReceiptCount() > 0) {
-      return context.getString(R.string.ThreadRecord__you_redeemed_a_gift_badge);
+      return context.getString(R.string.ThreadRecord__you_redeemed_a_badge);
     } else {
-      return context.getString(R.string.ThreadRecord__you_received_a_gift);
+      return context.getString(R.string.ThreadRecord__s_donated_for_you, messageRecord.getRecipient().getShortDisplayName(context));
+    }
+  }
+
+  private static @NonNull String getStoryReactionSummary(@NonNull Context context, @NonNull MessageRecord messageRecord) {
+    if (messageRecord.isOutgoing()) {
+      return context.getString(R.string.ThreadRecord__reacted_s_to_their_story, messageRecord.getDisplayBody(context));
+    } else {
+      return context.getString(R.string.ThreadRecord__reacted_s_to_your_story, messageRecord.getDisplayBody(context));
+    }
+  }
+
+  private static @NonNull String getPaymentActivationRequestSummary(@NonNull Context context, @NonNull MessageRecord messageRecord) {
+    if (messageRecord.isOutgoing()) {
+      return context.getString(R.string.ThreadRecord_you_sent_request);
+    } else {
+      return context.getString(R.string.ThreadRecord_wants_you_to_activate_payments, messageRecord.getRecipient().getShortDisplayName(context));
+    }
+  }
+
+  private static @NonNull String getPaymentActivatedSummary(@NonNull Context context, @NonNull MessageRecord messageRecord) {
+    if (messageRecord.isOutgoing()) {
+      return context.getString(R.string.ThreadRecord_you_activated_payments);
+    } else {
+      return context.getString(R.string.ThreadRecord_can_accept_payments, messageRecord.getRecipient().getShortDisplayName(context));
+    }
+  }
+
+  private static @NonNull String getCallLogSummary(@NonNull Context context, @NonNull MessageRecord record) {
+    CallTable.Call call = SignalDatabase.calls().getCallByMessageId(record.getId());
+    if (call != null) {
+      boolean accepted = call.getEvent() == CallTable.Event.ACCEPTED;
+      if (call.getDirection() == CallTable.Direction.OUTGOING) {
+        if (call.getType() == CallTable.Type.AUDIO_CALL) {
+          return context.getString(accepted ? R.string.MessageRecord_outgoing_voice_call : R.string.MessageRecord_unanswered_voice_call);
+        } else {
+          return context.getString(accepted ? R.string.MessageRecord_outgoing_video_call : R.string.MessageRecord_unanswered_video_call);
+        }
+      } else {
+        boolean isVideoCall = call.getType() == CallTable.Type.VIDEO_CALL;
+        boolean isMissed    = call.getEvent() == CallTable.Event.MISSED;
+
+        if (accepted) {
+          return context.getString(isVideoCall ? R.string.MessageRecord_incoming_video_call : R.string.MessageRecord_incoming_voice_call);
+        } else if (isMissed) {
+          return isVideoCall ? context.getString(R.string.MessageRecord_missed_video_call) : context.getString(R.string.MessageRecord_missed_voice_call);
+        } else {
+          return isVideoCall ? context.getString(R.string.MessageRecord_you_declined_a_video_call) : context.getString(R.string.MessageRecord_you_declined_a_voice_call);
+        }
+      }
+    } else {
+      return "";
     }
   }
   

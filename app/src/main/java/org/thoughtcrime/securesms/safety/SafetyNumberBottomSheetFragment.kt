@@ -20,7 +20,7 @@ import org.thoughtcrime.securesms.components.settings.models.SplashImage
 import org.thoughtcrime.securesms.conversation.ui.error.SafetyNumberChangeRepository
 import org.thoughtcrime.securesms.conversation.ui.error.TrustAndVerifyResult
 import org.thoughtcrime.securesms.crypto.IdentityKeyParcelable
-import org.thoughtcrime.securesms.database.IdentityDatabase
+import org.thoughtcrime.securesms.database.IdentityTable
 import org.thoughtcrime.securesms.safety.review.SafetyNumberReviewConnectionsFragment
 import org.thoughtcrime.securesms.util.LifecycleDisposable
 import org.thoughtcrime.securesms.util.fragments.findListener
@@ -127,7 +127,7 @@ class SafetyNumberBottomSheetFragment : DSLSettingsBottomSheetFragment(layoutId 
       textPref(
         title = DSLSettingsText.from(
           when {
-            state.isCheckupComplete() && state.hasLargeNumberOfUntrustedRecipients -> ""
+            state.isCheckupComplete() && state.hasLargeNumberOfUntrustedRecipients -> getString(R.string.SafetyNumberBottomSheetFragment__all_connections_have_been_reviewed)
             state.hasLargeNumberOfUntrustedRecipients -> getString(R.string.SafetyNumberBottomSheetFragment__you_have_d_connections, args.untrustedRecipients.size)
             else -> getString(R.string.SafetyNumberBottomSheetFragment__the_following_people)
           },
@@ -137,7 +137,7 @@ class SafetyNumberBottomSheetFragment : DSLSettingsBottomSheetFragment(layoutId 
       )
 
       if (state.isEmpty()) {
-        space(DimensionUnit.DP.toPixels(96f).toInt())
+        space(DimensionUnit.DP.toPixels(48f).toInt())
 
         noPadTextPref(
           title = DSLSettingsText.from(
@@ -147,6 +147,8 @@ class SafetyNumberBottomSheetFragment : DSLSettingsBottomSheetFragment(layoutId 
             DSLSettingsText.ColorModifier(ContextCompat.getColor(requireContext(), R.color.signal_colorOnSurfaceVariant))
           )
         )
+
+        space(DimensionUnit.DP.toPixels(48f).toInt())
       }
 
       if (!state.hasLargeNumberOfUntrustedRecipients) {
@@ -154,7 +156,7 @@ class SafetyNumberBottomSheetFragment : DSLSettingsBottomSheetFragment(layoutId 
           customPref(
             SafetyNumberRecipientRowItem.Model(
               recipient = it.recipient,
-              isVerified = it.identityRecord.verifiedStatus == IdentityDatabase.VerifiedStatus.VERIFIED,
+              isVerified = it.identityRecord.verifiedStatus == IdentityTable.VerifiedStatus.VERIFIED,
               distributionListMembershipCount = it.distributionListMembershipCount,
               groupMembershipCount = it.groupMembershipCount,
               getContextMenuActions = { model ->

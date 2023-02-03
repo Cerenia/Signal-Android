@@ -14,14 +14,14 @@ import androidx.fragment.app.viewModels
 import org.signal.core.util.logging.Log
 import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.components.settings.DSLConfiguration
-import org.thoughtcrime.securesms.components.settings.DSLSettingsAdapter
 import org.thoughtcrime.securesms.components.settings.DSLSettingsFragment
 import org.thoughtcrime.securesms.components.settings.DSLSettingsText
 import org.thoughtcrime.securesms.components.settings.configure
-import org.thoughtcrime.securesms.database.RecipientDatabase
+import org.thoughtcrime.securesms.database.RecipientTable
 import org.thoughtcrime.securesms.notifications.NotificationChannels
 import org.thoughtcrime.securesms.util.ConversationUtil
 import org.thoughtcrime.securesms.util.RingtoneUtil
+import org.thoughtcrime.securesms.util.adapter.mapping.MappingAdapter
 
 private val TAG = Log.tag(CustomNotificationsSettingsFragment::class.java)
 
@@ -48,7 +48,7 @@ class CustomNotificationsSettingsFragment : DSLSettingsFragment(R.string.CustomN
     viewModel.channelConsistencyCheck()
   }
 
-  override fun bindAdapter(adapter: DSLSettingsAdapter) {
+  override fun bindAdapter(adapter: MappingAdapter) {
     messageSoundResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
       handleResult(result, viewModel::setMessageSound)
     }
@@ -91,7 +91,7 @@ class CustomNotificationsSettingsFragment : DSLSettingsFragment(R.string.CustomN
           title = DSLSettingsText.from(R.string.CustomNotificationsDialogFragment__customize),
           summary = DSLSettingsText.from(R.string.CustomNotificationsDialogFragment__change_sound_and_vibration),
           isEnabled = state.controlsEnabled,
-          onClick = { NotificationChannels.openChannelSettings(requireContext(), state.recipient!!.notificationChannel!!, ConversationUtil.getShortcutId(state.recipient)) }
+          onClick = { NotificationChannels.getInstance().openChannelSettings(requireActivity(), state.recipient!!.notificationChannel!!, ConversationUtil.getShortcutId(state.recipient)) }
         )
       } else {
         clickPref(
@@ -106,7 +106,7 @@ class CustomNotificationsSettingsFragment : DSLSettingsFragment(R.string.CustomN
             title = DSLSettingsText.from(R.string.CustomNotificationsDialogFragment__vibrate),
             isEnabled = state.controlsEnabled,
             isChecked = state.messageVibrateEnabled,
-            onClick = { viewModel.setMessageVibrate(RecipientDatabase.VibrateState.fromBoolean(!state.messageVibrateEnabled)) }
+            onClick = { viewModel.setMessageVibrate(RecipientTable.VibrateState.fromBoolean(!state.messageVibrateEnabled)) }
           )
         } else {
           radioListPref(
@@ -115,7 +115,7 @@ class CustomNotificationsSettingsFragment : DSLSettingsFragment(R.string.CustomN
             listItems = vibrateLabels,
             selected = state.messageVibrateState.id,
             onSelected = {
-              viewModel.setMessageVibrate(RecipientDatabase.VibrateState.fromId(it))
+              viewModel.setMessageVibrate(RecipientTable.VibrateState.fromId(it))
             }
           )
         }
@@ -139,7 +139,7 @@ class CustomNotificationsSettingsFragment : DSLSettingsFragment(R.string.CustomN
           listItems = vibrateLabels,
           selected = state.callVibrateState.id,
           onSelected = {
-            viewModel.setCallVibrate(RecipientDatabase.VibrateState.fromId(it))
+            viewModel.setCallVibrate(RecipientTable.VibrateState.fromId(it))
           }
         )
       }

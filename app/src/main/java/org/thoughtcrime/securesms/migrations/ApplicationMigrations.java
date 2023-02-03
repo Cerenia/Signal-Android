@@ -103,9 +103,21 @@ public class ApplicationMigrations {
     static final int STORY_DISTRIBUTION_LIST_SYNC  = 59;
     static final int EMOJI_VERSION_7               = 60;
     static final int MY_STORY_PRIVACY_MODE         = 61;
+    static final int REFRESH_EXPIRING_CREDENTIAL   = 62;
+    static final int EMOJI_SEARCH_INDEX_10         = 63;
+    static final int REFRESH_PNI_REGISTRATION_ID   = 64;
+    static final int KBS_MIGRATION_2               = 65;
+    static final int PNI_2                         = 66;
+    static final int SYSTEM_NAME_SYNC              = 67;
+    static final int STORY_VIEWED_STATE            = 68;
+    static final int STORY_READ_STATE              = 69;
+    static final int THREAD_MESSAGE_SCHEMA_CHANGE  = 70;
+    static final int SMS_MMS_MERGE                 = 71;
+    static final int REBUILD_MESSAGE_FTS_INDEX     = 72;
+    static final int UPDATE_SMS_JOBS               = 73;
   }
 
-  public static final int CURRENT_VERSION = 61;
+  public static final int CURRENT_VERSION = 73;
 
   /**
    * This *must* be called after the {@link JobManager} has been instantiated, but *before* the call
@@ -449,6 +461,54 @@ public class ApplicationMigrations {
 
     if (lastSeenVersion < Version.MY_STORY_PRIVACY_MODE) {
       jobs.put(Version.MY_STORY_PRIVACY_MODE, new SyncDistributionListsMigrationJob());
+    }
+
+    if (lastSeenVersion < Version.REFRESH_EXPIRING_CREDENTIAL) {
+      jobs.put(Version.REFRESH_EXPIRING_CREDENTIAL, new AttributesMigrationJob());
+    }
+
+    if (lastSeenVersion < Version.EMOJI_SEARCH_INDEX_10) {
+      jobs.put(Version.EMOJI_SEARCH_INDEX_10, new EmojiDownloadMigrationJob());
+    }
+
+    if (lastSeenVersion < Version.REFRESH_PNI_REGISTRATION_ID) {
+      jobs.put(Version.REFRESH_PNI_REGISTRATION_ID, new AttributesMigrationJob());
+    }
+
+    if (lastSeenVersion < Version.KBS_MIGRATION_2) {
+      jobs.put(Version.KBS_MIGRATION_2, new KbsEnclaveMigrationJob());
+    }
+
+    if (lastSeenVersion < Version.PNI_2) {
+      jobs.put(Version.PNI_2, new PniMigrationJob());
+    }
+
+    if (lastSeenVersion < Version.SYSTEM_NAME_SYNC) {
+      jobs.put(Version.SYSTEM_NAME_SYNC, new StorageServiceSystemNameMigrationJob());
+    }
+
+    if (lastSeenVersion < Version.STORY_VIEWED_STATE) {
+      jobs.put(Version.STORY_VIEWED_STATE, new StoryViewedReceiptsStateMigrationJob());
+    }
+
+    if (lastSeenVersion < Version.STORY_READ_STATE) {
+      jobs.put(Version.STORY_READ_STATE, new StoryReadStateMigrationJob());
+    }
+
+    if (lastSeenVersion < Version.THREAD_MESSAGE_SCHEMA_CHANGE) {
+      jobs.put(Version.THREAD_MESSAGE_SCHEMA_CHANGE, new DatabaseMigrationJob());
+    }
+
+    if (lastSeenVersion < Version.SMS_MMS_MERGE) {
+      jobs.put(Version.SMS_MMS_MERGE, new DatabaseMigrationJob());
+    }
+
+    if (lastSeenVersion < Version.REBUILD_MESSAGE_FTS_INDEX) {
+      jobs.put(Version.REBUILD_MESSAGE_FTS_INDEX, new RebuildMessageSearchIndexMigrationJob());
+    }
+
+    if (lastSeenVersion < Version.UPDATE_SMS_JOBS) {
+      jobs.put(Version.UPDATE_SMS_JOBS, new UpdateSmsJobsMigrationJob());
     }
 
     return jobs;

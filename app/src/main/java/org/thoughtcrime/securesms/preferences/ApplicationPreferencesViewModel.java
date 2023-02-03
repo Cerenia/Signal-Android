@@ -8,11 +8,11 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
-import androidx.lifecycle.ViewModelProviders;
+import androidx.lifecycle.ViewModelProvider;
 
 import org.signal.core.util.concurrent.SignalExecutors;
 import org.thoughtcrime.securesms.R;
-import org.thoughtcrime.securesms.database.MediaDatabase;
+import org.thoughtcrime.securesms.database.MediaTable;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.preferences.widgets.StorageGraphView;
 
@@ -27,12 +27,12 @@ public class ApplicationPreferencesViewModel extends ViewModel {
   }
 
   static ApplicationPreferencesViewModel getApplicationPreferencesViewModel(@NonNull FragmentActivity activity) {
-    return ViewModelProviders.of(activity).get(ApplicationPreferencesViewModel.class);
+    return new ViewModelProvider(activity).get(ApplicationPreferencesViewModel.class);
   }
 
   void refreshStorageBreakdown(@NonNull Context context) {
     SignalExecutors.BOUNDED.execute(() -> {
-      MediaDatabase.StorageBreakdown breakdown = SignalDatabase.media().getStorageBreakdown();
+      MediaTable.StorageBreakdown breakdown = SignalDatabase.media().getStorageBreakdown();
 
       StorageGraphView.StorageBreakdown latestStorageBreakdown = new StorageGraphView.StorageBreakdown(Arrays.asList(
         new StorageGraphView.Entry(ContextCompat.getColor(context, R.color.storage_color_photos), breakdown.getPhotoSize()),

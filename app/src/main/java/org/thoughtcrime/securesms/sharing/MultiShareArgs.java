@@ -24,6 +24,7 @@ import org.thoughtcrime.securesms.util.Util;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -61,11 +62,9 @@ public final class MultiShareArgs implements Parcelable {
   }
 
   protected MultiShareArgs(Parcel in) {
-    List<ContactSearchKey.ParcelableRecipientSearchKey> parcelableRecipientSearchKeys = in.createTypedArrayList(ContactSearchKey.ParcelableRecipientSearchKey.CREATOR);
+    List<ContactSearchKey.RecipientSearchKey> parcelableRecipientSearchKeys = in.createTypedArrayList(ContactSearchKey.RecipientSearchKey.CREATOR);
 
-    contactSearchKeys = parcelableRecipientSearchKeys.stream()
-                                                     .map(ContactSearchKey.ParcelableRecipientSearchKey::asRecipientSearchKey)
-                                                     .collect(Collectors.toSet());
+    contactSearchKeys = new HashSet<>(parcelableRecipientSearchKeys);
     media             = in.createTypedArrayList(Media.CREATOR);
     draftText         = in.readString();
     stickerLocator    = in.readParcelable(StickerLocator.class.getClassLoader());
@@ -149,6 +148,10 @@ public final class MultiShareArgs implements Parcelable {
   }
 
   public boolean isValidForStories() {
+    if (isViewOnce()) {
+      return false;
+    }
+
     return isTextStory ||
            (!media.isEmpty() && media.stream().allMatch(m -> MediaUtil.isStorySupportedType(m.getMimeType()))) ||
            MediaUtil.isStorySupportedType(dataType) ||
@@ -168,7 +171,7 @@ public final class MultiShareArgs implements Parcelable {
       BreakIteratorCompat breakIteratorCompat = BreakIteratorCompat.getInstance();
       breakIteratorCompat.setText(getDraftText());
 
-      if (breakIteratorCompat.countBreaks() > Stories.MAX_BODY_SIZE) {
+      if (breakIteratorCompat.countBreaks() > Stories.MAX_TEXT_STORY_SIZE) {
         return false;
       }
     }
@@ -193,7 +196,8 @@ public final class MultiShareArgs implements Parcelable {
   }
 
   public boolean allRecipientsAreStories() {
-    return !contactSearchKeys.isEmpty() && contactSearchKeys.stream().allMatch(key -> key instanceof ContactSearchKey.RecipientSearchKey.Story);
+    return !contactSearchKeys.isEmpty() && contactSearchKeys.stream()
+                                                            .allMatch(key -> key.requireRecipientSearchKey().isStory());
   }
 
   public static final Creator<MultiShareArgs> CREATOR = new Creator<MultiShareArgs>() {
@@ -215,7 +219,7 @@ public final class MultiShareArgs implements Parcelable {
 
   @Override
   public void writeToParcel(Parcel dest, int flags) {
-    dest.writeTypedList(Stream.of(contactSearchKeys).map(ContactSearchKey::requireParcelable).toList());
+    dest.writeTypedList(Stream.of(contactSearchKeys).map(ContactSearchKey::requireRecipientSearchKey).toList());
     dest.writeTypedList(media);
     dest.writeString(draftText);
     dest.writeParcelable(stickerLocator, flags);
@@ -263,7 +267,7 @@ public final class MultiShareArgs implements Parcelable {
            (!media.isEmpty() ||
             !TextUtils.isEmpty(draftText) ||
             MediaUtil.isImageOrVideoType(dataType) ||
-            (!contactSearchKeys.isEmpty() && contactSearchKeys.stream().anyMatch(key -> key instanceof ContactSearchKey.RecipientSearchKey.Story)));
+            (!contactSearchKeys.isEmpty() && contactSearchKeys.stream().anyMatch(key -> key.requireRecipientSearchKey().isStory())));
   }
 
   public static final class Builder {

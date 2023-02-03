@@ -2,7 +2,6 @@ package org.thoughtcrime.securesms.components.menu
 
 import android.content.Context
 import android.graphics.Rect
-import android.os.Build
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -50,9 +49,7 @@ class SignalContextMenu private constructor(
       setOnDismissListener { onDismiss.run() }
     }
 
-    if (Build.VERSION.SDK_INT >= 21) {
-      elevation = 20f
-    }
+    elevation = 20f
 
     contextMenuList.setItems(items)
   }
@@ -133,11 +130,11 @@ class SignalContextMenu private constructor(
     val container: ViewGroup
   ) {
 
-    var onDismiss: Runnable? = null
-    var offsetX = 0
-    var offsetY = 0
-    var horizontalPosition = HorizontalPosition.START
-    var verticalPosition = VerticalPosition.BELOW
+    private var onDismiss: Runnable? = null
+    private var offsetX = 0
+    private var offsetY = 0
+    private var horizontalPosition = HorizontalPosition.START
+    private var verticalPosition = VerticalPosition.BELOW
 
     fun onDismiss(onDismiss: Runnable): Builder {
       this.onDismiss = onDismiss

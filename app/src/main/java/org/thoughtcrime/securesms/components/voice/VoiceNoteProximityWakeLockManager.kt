@@ -5,7 +5,6 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.media.AudioManager
-import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
 import android.support.v4.media.session.MediaControllerCompat
@@ -29,11 +28,7 @@ class VoiceNoteProximityWakeLockManager(
   private val mediaController: MediaControllerCompat
 ) : DefaultLifecycleObserver {
 
-  private val wakeLock: PowerManager.WakeLock? = if (Build.VERSION.SDK_INT >= 21) {
-    ServiceUtil.getPowerManager(activity.applicationContext).newWakeLock(PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK, TAG)
-  } else {
-    null
-  }
+  private val wakeLock: PowerManager.WakeLock? = ServiceUtil.getPowerManager(activity.applicationContext).newWakeLock(PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK, TAG)
 
   private val sensorManager: SensorManager = ServiceUtil.getSensorManager(activity)
   private val proximitySensor: Sensor? = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY)
@@ -82,6 +77,7 @@ class VoiceNoteProximityWakeLockManager(
     sensorManager.unregisterListener(hardwareSensorEventListener)
 
     if (wakeLock?.isHeld == true) {
+      Log.d(TAG, "[cleanUpWakeLock] Releasing wake lock.")
       wakeLock.release()
     }
 
@@ -102,10 +98,14 @@ class VoiceNoteProximityWakeLockManager(
 
       if (isPlayerActive()) {
         if (startTime == -1L) {
+          Log.d(TAG, "[onPlaybackStateChanged] Player became active with start time $startTime, registering sensor listener.")
           startTime = System.currentTimeMillis()
           sensorManager.registerListener(hardwareSensorEventListener, proximitySensor, SensorManager.SENSOR_DELAY_NORMAL)
+        } else {
+          Log.d(TAG, "[onPlaybackStateChanged] Player became active without start time, skipping sensor registration")
         }
       } else {
+        Log.d(TAG, "[onPlaybackStateChanged] Player became inactive. Cleaning up wake lock.")
         cleanUpWakeLock()
       }
     }
@@ -132,12 +132,14 @@ class VoiceNoteProximityWakeLockManager(
 
       if (newStreamType == AudioManager.STREAM_VOICE_CALL) {
         if (wakeLock?.isHeld == false) {
+          Log.d(TAG, "[onSensorChanged] Acquiring wakelock")
           wakeLock.acquire(TimeUnit.MINUTES.toMillis(30))
         }
 
         startTime = System.currentTimeMillis()
       } else {
         if (wakeLock?.isHeld == true) {
+          Log.d(TAG, "[onSensorChanged] Releasing wakelock")
           wakeLock.release()
         }
       }

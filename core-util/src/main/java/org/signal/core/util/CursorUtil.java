@@ -3,8 +3,10 @@ package org.signal.core.util;
 import android.database.Cursor;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import java.util.Optional;
+import java.util.function.Function;
 
 
 public final class CursorUtil {
@@ -60,6 +62,14 @@ public final class CursorUtil {
       return Optional.empty();
     } else {
       return Optional.of(requireInt(cursor, column));
+    }
+  }
+
+  public static Optional<Long> getLong(@NonNull Cursor cursor, @NonNull String column) {
+    if (cursor.getColumnIndex(column) < 0) {
+      return Optional.empty();
+    } else {
+      return Optional.of(requireLong(cursor, column));
     }
   }
 

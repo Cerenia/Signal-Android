@@ -144,20 +144,20 @@ public final class ContactSelectionListFragment extends LoggingFragment
   private MappingAdapter                              contactChipAdapter;
   private ContactChipViewModel                        contactChipViewModel;
   private LifecycleDisposable                         lifecycleDisposable;
-
   private HeaderActionProvider                        headerActionProvider;
   private TextView                                    headerActionView;
 
-  @Nullable private FixedViewsAdapter headerAdapter;
-  @Nullable private FixedViewsAdapter footerAdapter;
-  @Nullable private ListCallback      listCallback;
-  @Nullable private ScrollCallback    scrollCallback;
-  private           GlideRequests     glideRequests;
-  private           SelectionLimits   selectionLimit = SelectionLimits.NO_LIMITS;
-  private           Set<RecipientId>  currentSelection;
-  private           boolean           isMulti;
-  private           boolean           hideCount;
-  private           boolean           canSelectSelf;
+  @Nullable private FixedViewsAdapter       headerAdapter;
+  @Nullable private FixedViewsAdapter       footerAdapter;
+  @Nullable private ListCallback            listCallback;
+  @Nullable private ScrollCallback          scrollCallback;
+  @Nullable private OnItemLongClickListener onItemLongClickListener;
+  private           GlideRequests           glideRequests;
+  private           SelectionLimits         selectionLimit = SelectionLimits.NO_LIMITS;
+  private           Set<RecipientId>        currentSelection;
+  private           boolean                 isMulti;
+  private           boolean                 hideCount;
+  private           boolean                 canSelectSelf;
 
   @Override
   public void onAttach(@NonNull Context context) {
@@ -205,6 +205,14 @@ public final class ContactSelectionListFragment extends LoggingFragment
 
     if (getParentFragment() instanceof HeaderActionProvider) {
       headerActionProvider = (HeaderActionProvider) getParentFragment();
+    }
+
+    if (context instanceof OnItemLongClickListener) {
+      onItemLongClickListener = (OnItemLongClickListener) context;
+    }
+
+    if (getParentFragment() instanceof OnItemLongClickListener) {
+      onItemLongClickListener = (OnItemLongClickListener) getParentFragment();
     }
   }
 
@@ -346,6 +354,12 @@ public final class ContactSelectionListFragment extends LoggingFragment
     }
 
     return view;
+  }
+
+  @Override
+  public void onDestroyView() {
+    super.onDestroyView();
+    constraintLayout = null;
   }
 
   private @NonNull Bundle safeArguments() {
@@ -653,7 +667,7 @@ public final class ContactSelectionListFragment extends LoggingFragment
       SelectedContact selectedContact = contact.isUsernameType() ? SelectedContact.forUsername(contact.getRecipientId().orElse(null), contact.getNumber())
                                                                  : SelectedContact.forPhone(contact.getRecipientId().orElse(null), contact.getNumber());
 
-      if (!canSelectSelf && Recipient.self().getId().equals(selectedContact.getOrCreateRecipientId(requireContext()))) {
+      if (!canSelectSelf && !selectedContact.hasUsername() && Recipient.self().getId().equals(selectedContact.getOrCreateRecipientId(requireContext()))) {
         Toast.makeText(requireContext(), R.string.ContactSelectionListFragment_you_do_not_need_to_add_yourself_to_the_group, Toast.LENGTH_SHORT).show();
         return;
       }
@@ -718,6 +732,15 @@ public final class ContactSelectionListFragment extends LoggingFragment
         if (onContactSelectedListener != null) {
           onContactSelectedListener.onContactDeselected(contact.getRecipientId(), contact.getNumber());
         }
+      }
+    }
+
+    @Override
+    public boolean onItemLongClick(ContactSelectionListItem item) {
+      if (onItemLongClickListener != null) {
+        return onItemLongClickListener.onLongClick(item, recyclerView);
+      } else {
+        return false;
       }
     }
   }
@@ -848,6 +871,10 @@ public final class ContactSelectionListFragment extends LoggingFragment
 
   public interface HeaderActionProvider {
     @NonNull HeaderAction getHeaderAction();
+  }
+
+  public interface OnItemLongClickListener {
+    boolean onLongClick(ContactSelectionListItem contactSelectionListItem, RecyclerView recyclerView);
   }
 
   public interface AbstractContactsCursorLoaderFactoryProvider {

@@ -9,18 +9,18 @@ import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.components.WrapperDialogFragment
 import org.thoughtcrime.securesms.components.menu.ActionItem
 import org.thoughtcrime.securesms.components.settings.DSLConfiguration
-import org.thoughtcrime.securesms.components.settings.DSLSettingsAdapter
 import org.thoughtcrime.securesms.components.settings.DSLSettingsFragment
 import org.thoughtcrime.securesms.components.settings.DSLSettingsText
 import org.thoughtcrime.securesms.components.settings.configure
 import org.thoughtcrime.securesms.crypto.IdentityKeyParcelable
-import org.thoughtcrime.securesms.database.IdentityDatabase
+import org.thoughtcrime.securesms.database.IdentityTable
 import org.thoughtcrime.securesms.safety.SafetyNumberBottomSheetState
 import org.thoughtcrime.securesms.safety.SafetyNumberBottomSheetViewModel
 import org.thoughtcrime.securesms.safety.SafetyNumberBucket
 import org.thoughtcrime.securesms.safety.SafetyNumberBucketRowItem
 import org.thoughtcrime.securesms.safety.SafetyNumberRecipientRowItem
 import org.thoughtcrime.securesms.util.LifecycleDisposable
+import org.thoughtcrime.securesms.util.adapter.mapping.MappingAdapter
 import org.thoughtcrime.securesms.verify.VerifyIdentityFragment
 
 /**
@@ -38,7 +38,7 @@ class SafetyNumberReviewConnectionsFragment : DSLSettingsFragment(
 
   private val lifecycleDisposable = LifecycleDisposable()
 
-  override fun bindAdapter(adapter: DSLSettingsAdapter) {
+  override fun bindAdapter(adapter: MappingAdapter) {
     SafetyNumberBucketRowItem.register(adapter)
     SafetyNumberRecipientRowItem.register(adapter)
     lifecycleDisposable.bindTo(viewLifecycleOwner)
@@ -55,9 +55,10 @@ class SafetyNumberReviewConnectionsFragment : DSLSettingsFragment(
 
   private fun getConfiguration(state: SafetyNumberBottomSheetState): DSLConfiguration {
     return configure {
+      val recipientCount = state.destinationToRecipientMap.values.flatten().size
       textPref(
         title = DSLSettingsText.from(
-          getString(R.string.SafetyNumberReviewConnectionsFragment__d_recipients_may_have, state.destinationToRecipientMap.values.flatten().size),
+          resources.getQuantityString(R.plurals.SafetyNumberReviewConnectionsFragment__d_recipients_may_have, recipientCount, recipientCount),
           DSLSettingsText.TextAppearanceModifier(R.style.Signal_Text_BodyMedium),
           DSLSettingsText.ColorModifier(ContextCompat.getColor(requireContext(), R.color.signal_colorOnSurfaceVariant))
         )
@@ -70,7 +71,7 @@ class SafetyNumberReviewConnectionsFragment : DSLSettingsFragment(
           customPref(
             SafetyNumberRecipientRowItem.Model(
               recipient = it.recipient,
-              isVerified = it.identityRecord.verifiedStatus == IdentityDatabase.VerifiedStatus.VERIFIED,
+              isVerified = it.identityRecord.verifiedStatus == IdentityTable.VerifiedStatus.VERIFIED,
               distributionListMembershipCount = it.distributionListMembershipCount,
               groupMembershipCount = it.groupMembershipCount,
               getContextMenuActions = { model ->

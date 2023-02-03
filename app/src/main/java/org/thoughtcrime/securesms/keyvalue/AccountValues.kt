@@ -22,7 +22,9 @@ import org.thoughtcrime.securesms.util.TextSecurePreferences
 import org.thoughtcrime.securesms.util.Util
 import org.whispersystems.signalservice.api.push.ACI
 import org.whispersystems.signalservice.api.push.PNI
+import org.whispersystems.signalservice.api.push.ServiceIds
 import org.whispersystems.signalservice.api.push.SignalServiceAddress
+import java.lang.IllegalStateException
 import java.security.SecureRandom
 
 internal class AccountValues internal constructor(store: KeyValueStore) : SignalStoreValues(store) {
@@ -37,6 +39,7 @@ internal class AccountValues internal constructor(store: KeyValueStore) : Signal
     private const val KEY_FCM_TOKEN_LAST_SET_TIME = "account.fcm_token_last_set_time"
     private const val KEY_DEVICE_NAME = "account.device_name"
     private const val KEY_DEVICE_ID = "account.device_id"
+    private const val KEY_PNI_REGISTRATION_ID = "account.pni_registration_id"
 
     private const val KEY_ACI_IDENTITY_PUBLIC_KEY = "account.aci_identity_public_key"
     private const val KEY_ACI_IDENTITY_PRIVATE_KEY = "account.aci_identity_private_key"
@@ -119,6 +122,12 @@ internal class AccountValues internal constructor(store: KeyValueStore) : Signal
   val e164: String?
     get() = getString(KEY_E164, null)
 
+  /** The local user's e164. Will throw if not present. */
+  fun requireE164(): String {
+    val e164: String? = getString(KEY_E164, null)
+    return e164 ?: throw IllegalStateException("No e164!")
+  }
+
   fun setE164(e164: String) {
     putString(KEY_E164, e164)
   }
@@ -133,6 +142,8 @@ internal class AccountValues internal constructor(store: KeyValueStore) : Signal
 
   /** A randomly-generated value that represents this registration instance. Helps the server know if you reinstalled. */
   var registrationId: Int by integerValue(KEY_REGISTRATION_ID, 0)
+
+  var pniRegistrationId: Int by integerValue(KEY_PNI_REGISTRATION_ID, 0)
 
   /** The identity key pair for the ACI identity. */
   val aciIdentityKey: IdentityKeyPair
@@ -201,13 +212,26 @@ internal class AccountValues internal constructor(store: KeyValueStore) : Signal
   }
 
   /** When acting as a linked device, this method lets you store the identity keys sent from the primary device */
-  fun setIdentityKeysFromPrimaryDevice(aciKeys: IdentityKeyPair) {
+  fun setAciIdentityKeysFromPrimaryDevice(aciKeys: IdentityKeyPair) {
     synchronized(this) {
       require(isLinkedDevice) { "Must be a linked device!" }
       store
         .beginWrite()
         .putBlob(KEY_ACI_IDENTITY_PUBLIC_KEY, aciKeys.publicKey.serialize())
         .putBlob(KEY_ACI_IDENTITY_PRIVATE_KEY, aciKeys.privateKey.serialize())
+        .commit()
+    }
+  }
+
+  /** Set an identity key pair for the PNI identity via change number. */
+  fun setPniIdentityKeyAfterChangeNumber(key: IdentityKeyPair) {
+    synchronized(this) {
+      Log.i(TAG, "Setting a new PNI identity key pair.")
+
+      store
+        .beginWrite()
+        .putBlob(KEY_PNI_IDENTITY_PUBLIC_KEY, key.publicKey.serialize())
+        .putBlob(KEY_PNI_IDENTITY_PRIVATE_KEY, key.privateKey.serialize())
         .commit()
     }
   }
@@ -286,7 +310,7 @@ internal class AccountValues internal constructor(store: KeyValueStore) : Signal
     }
 
     if (previous && !registered) {
-      clearLocalCredentials(ApplicationDependencies.getApplication())
+      clearLocalCredentials()
     }
   }
 
@@ -305,7 +329,7 @@ internal class AccountValues internal constructor(store: KeyValueStore) : Signal
   val isLinkedDevice: Boolean
     get() = !isPrimaryDevice
 
-  private fun clearLocalCredentials(context: Context) {
+  private fun clearLocalCredentials() {
     putString(KEY_SERVICE_PASSWORD, Util.getSecret(18))
 
     val newProfileKey = ProfileKeyUtil.createNew()

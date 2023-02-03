@@ -4,18 +4,23 @@ import android.content.Context
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.schedulers.Schedulers
+import org.signal.core.util.concurrent.SignalExecutors
 import org.thoughtcrime.securesms.conversation.ConversationMessage
 import org.thoughtcrime.securesms.database.DatabaseObserver
+import org.thoughtcrime.securesms.database.MessageTable
 import org.thoughtcrime.securesms.database.SignalDatabase
 import org.thoughtcrime.securesms.database.model.DistributionListId
 import org.thoughtcrime.securesms.database.model.MessageRecord
 import org.thoughtcrime.securesms.database.model.StoryResult
 import org.thoughtcrime.securesms.database.model.StoryViewState
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies
+import org.thoughtcrime.securesms.jobs.MultiDeviceReadUpdateJob
+import org.thoughtcrime.securesms.keyvalue.SignalStore
 import org.thoughtcrime.securesms.recipients.Recipient
 import org.thoughtcrime.securesms.recipients.RecipientForeverObserver
 import org.thoughtcrime.securesms.recipients.RecipientId
 import org.thoughtcrime.securesms.sms.MessageSender
+import org.thoughtcrime.securesms.stories.Stories
 
 class StoriesLandingRepository(context: Context) {
 
@@ -34,16 +39,23 @@ class StoriesLandingRepository(context: Context) {
         val myStoriesId = SignalDatabase.recipients.getOrInsertFromDistributionListId(DistributionListId.MY_STORY)
         val myStories = Recipient.resolved(myStoriesId)
 
-        emitter.onNext(
-          SignalDatabase.mms.orderedStoryRecipientsAndIds.groupBy {
-            val recipient = Recipient.resolved(it.recipientId)
-            if (recipient.isDistributionList) {
-              myStories
-            } else {
-              recipient
-            }
+        val stories = SignalDatabase.messages.getOrderedStoryRecipientsAndIds(false)
+        val mapping: MutableMap<Recipient, List<StoryResult>> = mutableMapOf()
+
+        stories.forEach {
+          val recipient = Recipient.resolved(it.recipientId)
+          if (recipient.isDistributionList || (it.isOutgoing && !recipient.isInactiveGroup())) {
+            val list = mapping[myStories] ?: emptyList()
+            mapping[myStories] = list + it
           }
-        )
+
+          if (!recipient.isDistributionList && !recipient.isBlocked && !recipient.isInactiveGroup()) {
+            val list = mapping[recipient] ?: emptyList()
+            mapping[recipient] = list + it
+          }
+        }
+
+        emitter.onNext(mapping)
       }
 
       val observer = DatabaseObserver.Observer {
@@ -65,14 +77,14 @@ class StoriesLandingRepository(context: Context) {
           .reversed()
           .take(if (recipient.isMyStory) 2 else 1)
           .map {
-            SignalDatabase.mms.getMessageRecord(it.messageId)
+            SignalDatabase.messages.getMessageRecord(it.messageId)
           }
 
         var sendingCount: Long = 0
         var failureCount: Long = 0
 
         if (recipient.isMyStory) {
-          SignalDatabase.mms.getMessages(results.map { it.messageId }).use { reader ->
+          SignalDatabase.messages.getMessages(results.map { it.messageId }).use { reader ->
             var messageRecord: MessageRecord? = reader.getNext()
             while (messageRecord != null) {
               if (messageRecord.isOutgoing && (messageRecord.isPending || messageRecord.isMediaPending)) {
@@ -93,7 +105,7 @@ class StoriesLandingRepository(context: Context) {
         Observable.just(emptyList())
       } else {
         Observable.combineLatest(observables) {
-          it.toList() as List<StoriesLandingItemData>
+          it.filterIsInstance<StoriesLandingItemData>()
         }
       }
     }.subscribeOn(Schedulers.io())
@@ -106,8 +118,8 @@ class StoriesLandingRepository(context: Context) {
         val itemData = StoriesLandingItemData(
           storyRecipient = sender,
           storyViewState = StoryViewState.NONE,
-          hasReplies = messageRecords.any { SignalDatabase.mms.getNumberOfStoryReplies(it.id) > 0 },
-          hasRepliesFromSelf = messageRecords.any { SignalDatabase.mms.hasSelfReplyInStory(it.id) },
+          hasReplies = messageRecords.any { SignalDatabase.messages.getNumberOfStoryReplies(it.id) > 0 },
+          hasRepliesFromSelf = messageRecords.any { SignalDatabase.messages.hasSelfReplyInStory(it.id) },
           isHidden = sender.shouldHideStory(),
           primaryStory = ConversationMessage.ConversationMessageFactory.createWithUnresolvedData(context, messageRecords[primaryIndex]),
           secondaryStory = if (sender.isMyStory) messageRecords.drop(1).firstOrNull()?.let {
@@ -151,5 +163,22 @@ class StoriesLandingRepository(context: Context) {
     return Completable.fromAction {
       SignalDatabase.recipients.setHideStory(recipientId, hideStory)
     }.subscribeOn(Schedulers.io())
+  }
+
+  /**
+   * Marks all stories as "seen" by the user (marking them as read in the database)
+   */
+  fun markStoriesRead() {
+    SignalExecutors.BOUNDED_IO.execute {
+      val messageInfos: List<MessageTable.MarkedMessageInfo> = SignalDatabase.messages.markAllIncomingStoriesRead()
+      val releaseThread: Long? = SignalStore.releaseChannelValues().releaseChannelRecipientId?.let { SignalDatabase.threads.getThreadIdIfExistsFor(it) }
+
+      MultiDeviceReadUpdateJob.enqueue(messageInfos.filter { it.threadId == releaseThread }.map { it.syncMessageId })
+
+      if (messageInfos.any { it.threadId == releaseThread }) {
+        SignalStore.storyValues().userHasReadOnboardingStory = true
+        Stories.onStorySettingsChanged(Recipient.self().id)
+      }
+    }
   }
 }

@@ -1,6 +1,5 @@
 package org.thoughtcrime.securesms.preferences;
 
-import android.app.AlertDialog;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,12 +13,15 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.app.ShareCompat;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProviders;
+import androidx.lifecycle.ViewModelProvider;
+
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.contactshare.SimpleTextWatcher;
 import org.thoughtcrime.securesms.keyvalue.SignalStore;
 import org.thoughtcrime.securesms.util.CommunicationActions;
+import org.thoughtcrime.securesms.util.LifecycleDisposable;
 import org.thoughtcrime.securesms.util.SignalProxyUtil;
 import org.thoughtcrime.securesms.util.Util;
 import org.thoughtcrime.securesms.util.ViewUtil;
@@ -39,6 +41,7 @@ public class EditProxyFragment extends Fragment {
   private View                           shareButton;
   private CircularProgressMaterialButton saveButton;
   private EditProxyViewModel             viewModel;
+  private LifecycleDisposable            lifecycleDisposable;
 
   public static EditProxyFragment newInstance() {
     return new EditProxyFragment();
@@ -58,6 +61,9 @@ public class EditProxyFragment extends Fragment {
     this.saveButton  = view.findViewById(R.id.edit_proxy_save);
     this.shareButton = view.findViewById(R.id.edit_proxy_share);
 
+    lifecycleDisposable = new LifecycleDisposable();
+    lifecycleDisposable.bindTo(getViewLifecycleOwner());
+
     proxyText.addTextChangedListener(new SimpleTextWatcher() {
       @Override
       public void onTextChanged(String text) {
@@ -72,7 +78,7 @@ public class EditProxyFragment extends Fragment {
 
     saveButton.setOnClickListener(v -> onSaveClicked());
     shareButton.setOnClickListener(v -> onShareClicked());
-    proxySwitch.setOnCheckedChangeListener((buttonView, isChecked) -> viewModel.onToggleProxy(isChecked));
+    proxySwitch.setOnCheckedChangeListener((buttonView, isChecked) -> viewModel.onToggleProxy(isChecked, proxyText.getText().toString()));
 
     LearnMoreTextView description = view.findViewById(R.id.edit_proxy_switch_title_description);
     description.setLearnMoreVisible(true);
@@ -89,12 +95,14 @@ public class EditProxyFragment extends Fragment {
   }
 
   private void initViewModel() {
-    viewModel = ViewModelProviders.of(this).get(EditProxyViewModel.class);
+    viewModel = new ViewModelProvider(this).get(EditProxyViewModel.class);
 
-    viewModel.getUiState().observe(getViewLifecycleOwner(), this::presentUiState);
-    viewModel.getProxyState().observe(getViewLifecycleOwner(), this::presentProxyState);
-    viewModel.getEvents().observe(getViewLifecycleOwner(), this::presentEvent);
-    viewModel.getSaveState().observe(getViewLifecycleOwner(), this::presentSaveState);
+    lifecycleDisposable.addAll(
+        viewModel.getUiState().subscribe(this::presentUiState),
+        viewModel.getProxyState().subscribe(this::presentProxyState),
+        viewModel.getEvents().subscribe(this::presentEvent),
+        viewModel.getSaveState().subscribe(this::presentSaveState)
+    );
   }
 
   private void presentUiState(@NonNull EditProxyViewModel.UiState uiState) {
@@ -102,6 +110,8 @@ public class EditProxyFragment extends Fragment {
       case ALL_ENABLED:
         proxyText.setEnabled(true);
         proxyText.setAlpha(1);
+        saveButton.setEnabled(true);
+        saveButton.setAlpha(1);
         proxyTitle.setAlpha(1);
         onProxyTextChanged(proxyText.getText().toString());
         break;
@@ -147,24 +157,24 @@ public class EditProxyFragment extends Fragment {
       case PROXY_SUCCESS:
         proxyStatus.setVisibility(View.VISIBLE);
         proxyText.setText(Optional.ofNullable(SignalStore.proxy().getProxy()).map(SignalProxy::getHost).orElse(""));
-        new AlertDialog.Builder(requireContext())
-                       .setTitle(R.string.preferences_success)
-                       .setMessage(R.string.preferences_you_are_connected_to_the_proxy)
-                       .setPositiveButton(android.R.string.ok, (d, i) -> {
-                         requireActivity().onBackPressed();
-                         d.dismiss();
-                       })
-                       .show();
+        new MaterialAlertDialogBuilder(requireContext())
+           .setTitle(R.string.preferences_success)
+           .setMessage(R.string.preferences_you_are_connected_to_the_proxy)
+           .setPositiveButton(android.R.string.ok, (d, i) -> {
+             requireActivity().onBackPressed();
+             d.dismiss();
+           })
+           .show();
         break;
       case PROXY_FAILURE:
         proxyStatus.setVisibility(View.INVISIBLE);
         proxyText.setText(Optional.ofNullable(SignalStore.proxy().getProxy()).map(SignalProxy::getHost).orElse(""));
         ViewUtil.focusAndMoveCursorToEndAndOpenKeyboard(proxyText);
-        new AlertDialog.Builder(requireContext())
-                       .setTitle(R.string.preferences_failed_to_connect)
-                       .setMessage(R.string.preferences_couldnt_connect_to_the_proxy)
-                       .setPositiveButton(android.R.string.ok, (d, i) -> d.dismiss())
-                       .show();
+        new MaterialAlertDialogBuilder(requireContext())
+           .setTitle(R.string.preferences_failed_to_connect)
+           .setMessage(R.string.preferences_couldnt_connect_to_the_proxy)
+           .setPositiveButton(android.R.string.ok, (d, i) -> d.dismiss())
+           .show();
         break;
     }
   }
@@ -181,7 +191,12 @@ public class EditProxyFragment extends Fragment {
   }
 
   private void onSaveClicked() {
-    viewModel.onSaveClicked(proxyText.getText().toString());
+    String text = proxyText.getText().toString();
+    if (Util.isEmpty(text)) {
+      proxySwitch.setChecked(false);
+    } else {
+      viewModel.onSaveClicked(text);
+    }
   }
 
   private void onShareClicked() {
@@ -194,14 +209,10 @@ public class EditProxyFragment extends Fragment {
 
   private void onProxyTextChanged(@NonNull String text) {
     if (Util.isEmpty(text)) {
-      saveButton.setEnabled(false);
-      saveButton.setAlpha(0.5f);
       shareButton.setEnabled(false);
       shareButton.setAlpha(0.5f);
       proxyStatus.setVisibility(View.INVISIBLE);
     } else {
-      saveButton.setEnabled(true);
-      saveButton.setAlpha(1);
       shareButton.setEnabled(true);
       shareButton.setAlpha(1);
 

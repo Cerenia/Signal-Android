@@ -16,6 +16,7 @@ import org.thoughtcrime.securesms.BuildConfig;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.groups.SelectionLimits;
 import org.thoughtcrime.securesms.jobs.RefreshAttributesJob;
+import org.thoughtcrime.securesms.jobs.RefreshOwnProfileJob;
 import org.thoughtcrime.securesms.jobs.RemoteConfigRefreshJob;
 import org.thoughtcrime.securesms.keyvalue.SignalStore;
 import org.thoughtcrime.securesms.messageprocessingalarm.MessageProcessReceiver;
@@ -54,7 +55,6 @@ public final class FeatureFlags {
   private static final long FETCH_INTERVAL = TimeUnit.HOURS.toMillis(2);
 
   private static final String PAYMENTS_KILL_SWITCH              = "android.payments.kill";
-  private static final String USERNAMES                         = "android.usernames";
   private static final String GROUPS_V2_RECOMMENDED_LIMIT       = "global.groupsv2.maxGroupSize";
   private static final String GROUPS_V2_HARD_LIMIT              = "global.groupsv2.groupSizeHardLimit";
   private static final String GROUP_NAME_MAX_LENGTH             = "global.groupsv2.maxNameLength";
@@ -77,16 +77,9 @@ public final class FeatureFlags {
   private static final String MEDIA_QUALITY_LEVELS              = "android.mediaQuality.levels";
   private static final String RETRY_RECEIPT_LIFESPAN            = "android.retryReceiptLifespan";
   private static final String RETRY_RESPOND_MAX_AGE             = "android.retryRespondMaxAge";
-  private static final String SENDER_KEY                        = "android.senderKey.5";
   private static final String SENDER_KEY_MAX_AGE                = "android.senderKeyMaxAge";
   private static final String RETRY_RECEIPTS                    = "android.retryReceipts";
-  private static final String SUGGEST_SMS_BLACKLIST             = "android.suggestSmsBlacklist";
   private static final String MAX_GROUP_CALL_RING_SIZE          = "global.calling.maxGroupCallRingSize";
-  private static final String GROUP_CALL_RINGING                = "android.calling.groupCallRinging";
-  private static final String DONOR_BADGES                      = "android.donorBadges.6";
-  private static final String DONOR_BADGES_DISPLAY              = "android.donorBadges.display.4";
-  private static final String CDSH                              = "android.cdsh";
-  private static final String STORIES                           = "android.stories.2";
   private static final String STORIES_TEXT_FUNCTIONS            = "android.stories.text.functions";
   private static final String HARDWARE_AEC_BLOCKLIST_MODELS     = "android.calling.hardwareAecBlockList";
   private static final String SOFTWARE_AEC_BLOCKLIST_MODELS     = "android.calling.softwareAecBlockList";
@@ -96,8 +89,21 @@ public final class FeatureFlags {
   private static final String PHONE_NUMBER_PRIVACY              = "android.pnp";
   private static final String USE_FCM_FOREGROUND_SERVICE        = "android.useFcmForegroundService.3";
   private static final String STORIES_AUTO_DOWNLOAD_MAXIMUM     = "android.stories.autoDownloadMaximum";
-  private static final String GIFT_BADGES                       = "android.giftBadges.3";
-  private static final String USE_QR_LEGACY_SCAN                = "android.qr.legacy_scan";
+  private static final String TELECOM_MANUFACTURER_ALLOWLIST    = "android.calling.telecomAllowList";
+  private static final String TELECOM_MODEL_BLOCKLIST           = "android.calling.telecomModelBlockList";
+  private static final String CAMERAX_MODEL_BLOCKLIST           = "android.cameraXModelBlockList";
+  private static final String CAMERAX_MIXED_MODEL_BLOCKLIST     = "android.cameraXMixedModelBlockList";
+  private static final String RECIPIENT_MERGE_V2                = "android.recipientMergeV2";
+  private static final String HIDE_CONTACTS                     = "android.hide.contacts";
+  public  static final String CREDIT_CARD_PAYMENTS              = "android.credit.card.payments.3";
+  private static final String PAYMENTS_REQUEST_ACTIVATE_FLOW    = "android.payments.requestActivateFlow";
+  public  static final String GOOGLE_PAY_DISABLED_REGIONS       = "global.donations.gpayDisabledRegions";
+  public  static final String CREDIT_CARD_DISABLED_REGIONS      = "global.donations.ccDisabledRegions";
+  public  static final String PAYPAL_DISABLED_REGIONS           = "global.donations.paypalDisabledRegions";
+  private static final String CDS_HARD_LIMIT                    = "android.cds.hardLimit";
+  private static final String CHAT_FILTERS                      = "android.chat.filters.3";
+  private static final String PAYPAL_ONE_TIME_DONATIONS         = "android.oneTimePayPalDonations.2";
+  private static final String PAYPAL_RECURRING_DONATIONS        = "android.recurringPayPalDonations.2";
 
   /**
    * We will only store remote values for flags in this set. If you want a flag to be controllable
@@ -106,10 +112,8 @@ public final class FeatureFlags {
   @VisibleForTesting
   static final Set<String> REMOTE_CAPABLE = SetUtil.newHashSet(
       PAYMENTS_KILL_SWITCH,
-      GROUPS_V2_RECOMMENDED_LIMIT,
-      GROUPS_V2_HARD_LIMIT,
+      GROUPS_V2_RECOMMENDED_LIMIT, GROUPS_V2_HARD_LIMIT,
       INTERNAL_USER,
-      USERNAMES,
       VERIFY_V2,
       CLIENT_EXPIRATION,
       DONATE_MEGAPHONE,
@@ -129,16 +133,9 @@ public final class FeatureFlags {
       MEDIA_QUALITY_LEVELS,
       RETRY_RECEIPT_LIFESPAN,
       RETRY_RESPOND_MAX_AGE,
-      SENDER_KEY,
       RETRY_RECEIPTS,
-      SUGGEST_SMS_BLACKLIST,
       MAX_GROUP_CALL_RING_SIZE,
-      GROUP_CALL_RINGING,
-      CDSH,
       SENDER_KEY_MAX_AGE,
-      DONOR_BADGES,
-      DONOR_BADGES_DISPLAY,
-      STORIES,
       STORIES_TEXT_FUNCTIONS,
       HARDWARE_AEC_BLOCKLIST_MODELS,
       SOFTWARE_AEC_BLOCKLIST_MODELS,
@@ -147,8 +144,21 @@ public final class FeatureFlags {
       PAYMENTS_COUNTRY_BLOCKLIST,
       USE_FCM_FOREGROUND_SERVICE,
       STORIES_AUTO_DOWNLOAD_MAXIMUM,
-      GIFT_BADGES,
-      USE_QR_LEGACY_SCAN
+      TELECOM_MANUFACTURER_ALLOWLIST,
+      TELECOM_MODEL_BLOCKLIST,
+      CAMERAX_MODEL_BLOCKLIST,
+      CAMERAX_MIXED_MODEL_BLOCKLIST,
+      RECIPIENT_MERGE_V2,
+      HIDE_CONTACTS,
+      CREDIT_CARD_PAYMENTS,
+      PAYMENTS_REQUEST_ACTIVATE_FLOW,
+      GOOGLE_PAY_DISABLED_REGIONS,
+      CREDIT_CARD_DISABLED_REGIONS,
+      PAYPAL_DISABLED_REGIONS,
+      CDS_HARD_LIMIT,
+      CHAT_FILTERS,
+      PAYPAL_ONE_TIME_DONATIONS,
+      PAYPAL_RECURRING_DONATIONS
   );
 
   @VisibleForTesting
@@ -194,14 +204,9 @@ public final class FeatureFlags {
       MEDIA_QUALITY_LEVELS,
       RETRY_RECEIPT_LIFESPAN,
       RETRY_RESPOND_MAX_AGE,
-      SUGGEST_SMS_BLACKLIST,
       RETRY_RECEIPTS,
-      SENDER_KEY,
       MAX_GROUP_CALL_RING_SIZE,
-      GROUP_CALL_RINGING,
-      CDSH,
       SENDER_KEY_MAX_AGE,
-      DONOR_BADGES_DISPLAY,
       DONATE_MEGAPHONE,
       HARDWARE_AEC_BLOCKLIST_MODELS,
       SOFTWARE_AEC_BLOCKLIST_MODELS,
@@ -209,7 +214,13 @@ public final class FeatureFlags {
       USE_AEC3,
       PAYMENTS_COUNTRY_BLOCKLIST,
       USE_FCM_FOREGROUND_SERVICE,
-      USE_QR_LEGACY_SCAN
+      TELECOM_MANUFACTURER_ALLOWLIST,
+      TELECOM_MODEL_BLOCKLIST,
+      CAMERAX_MODEL_BLOCKLIST,
+      RECIPIENT_MERGE_V2,
+      CREDIT_CARD_PAYMENTS,
+      PAYMENTS_REQUEST_ACTIVATE_FLOW,
+      CDS_HARD_LIMIT
   );
 
   /**
@@ -233,9 +244,6 @@ public final class FeatureFlags {
    */
   private static final Map<String, OnFlagChange> FLAG_CHANGE_LISTENERS = new HashMap<String, OnFlagChange>() {{
     put(MESSAGE_PROCESSOR_ALARM_INTERVAL, change -> MessageProcessReceiver.startOrUpdateAlarm(ApplicationDependencies.getApplication()));
-    put(SENDER_KEY, change -> ApplicationDependencies.getJobManager().add(new RefreshAttributesJob()));
-    put(STORIES, change -> ApplicationDependencies.getJobManager().add(new RefreshAttributesJob()));
-    put(GIFT_BADGES, change -> ApplicationDependencies.getJobManager().add(new RefreshAttributesJob()));
   }};
 
   private static final Map<String, Object> REMOTE_VALUES = new TreeMap<>();
@@ -291,7 +299,8 @@ public final class FeatureFlags {
 
   /** Creating usernames, sending messages by username. */
   public static synchronized boolean usernames() {
-    return getBoolean(USERNAMES, false);
+    // For now these features are paired, but leaving the separate method in case we decide to separate in the future.
+    return phoneNumberPrivacy();
   }
 
   /**
@@ -332,7 +341,7 @@ public final class FeatureFlags {
    * IMPORTANT: This is under active development. Enabling this *will* break your contacts in terrible, irreversible ways.
    */
   public static boolean phoneNumberPrivacy() {
-    return getBoolean(PHONE_NUMBER_PRIVACY, false) && Environment.IS_STAGING;
+    return getBoolean(PHONE_NUMBER_PRIVACY, false);
   }
 
   /** Whether to use the custom streaming muxer or built in android muxer. */
@@ -414,44 +423,14 @@ public final class FeatureFlags {
     return Math.min(getLong(SENDER_KEY_MAX_AGE, TimeUnit.DAYS.toMillis(14)), TimeUnit.DAYS.toMillis(90));
   }
 
-  /** A comma-delimited list of country codes that should not be told about SMS during onboarding. */
-  public static @NonNull String suggestSmsBlacklist() {
-    return getString(SUGGEST_SMS_BLACKLIST, "");
-  }
-
   /** Max group size that can be use group call ringing. */
   public static long maxGroupCallRingSize() {
     return getLong(MAX_GROUP_CALL_RING_SIZE, 16);
   }
 
-  /** Whether or not to show the group call ring toggle in the UI. */
-  public static boolean groupCallRinging() {
-    return getBoolean(GROUP_CALL_RINGING, false);
-  }
-
   /** A comma-separated list of country codes where payments should be disabled. */
   public static String paymentsCountryBlocklist() {
     return getString(PAYMENTS_COUNTRY_BLOCKLIST, "98,963,53,850,7");
-  }
-
-  /**
-   * Whether or not to show donor badges in the UI.
-   */
-  public static boolean donorBadges() {
-    if (Environment.IS_STAGING) {
-      return true;
-    } else {
-      return getBoolean(DONOR_BADGES, true) || SignalStore.donationsValues().getSubscriber() != null;
-    }
-  }
-
-  /**
-   * Whether or not stories are available
-   *
-   * NOTE: This feature is still under ongoing development, do not enable.
-   */
-  public static boolean stories() {
-    return getBoolean(STORIES, false);
   }
 
   /**
@@ -463,17 +442,6 @@ public final class FeatureFlags {
     return getBoolean(STORIES_TEXT_FUNCTIONS, false);
   }
 
-  /**
-   * Whether or not donor badges should be displayed throughout the app.
-   */
-  public static boolean displayDonorBadges() {
-    return getBoolean(DONOR_BADGES_DISPLAY, true);
-  }
-
-  public static boolean cdsh() {
-    return Environment.IS_STAGING && getBoolean(CDSH, false);
-  }
-
   /** A comma-separated list of models that should *not* use hardware AEC for calling. */
   public static @NonNull String hardwareAecBlocklistModels() {
     return getString(HARDWARE_AEC_BLOCKLIST_MODELS, "");
@@ -482,6 +450,26 @@ public final class FeatureFlags {
   /** A comma-separated list of models that should *not* use software AEC for calling. */
   public static @NonNull String softwareAecBlocklistModels() {
     return getString(SOFTWARE_AEC_BLOCKLIST_MODELS, "");
+  }
+
+  /** A comma-separated list of manufacturers that *should* use Telecom for calling. */
+  public static @NonNull String telecomManufacturerAllowList() {
+    return getString(TELECOM_MANUFACTURER_ALLOWLIST, "");
+  }
+
+  /** A comma-separated list of manufacturers that *should* use Telecom for calling. */
+  public static @NonNull String telecomModelBlockList() {
+    return getString(TELECOM_MODEL_BLOCKLIST, "");
+  }
+
+  /** A comma-separated list of manufacturers that should *not* use CameraX. */
+  public static @NonNull String cameraXModelBlocklist() {
+    return getString(CAMERAX_MODEL_BLOCKLIST, "");
+  }
+
+  /** A comma-separated list of manufacturers that should *not* use CameraX mixed mode. */
+  public static @NonNull String cameraXMixedModelBlocklist() {
+    return getString(CAMERAX_MIXED_MODEL_BLOCKLIST, "");
   }
 
   /** Whether or not hardware AEC should be used for calling on devices older than API 29. */
@@ -504,17 +492,76 @@ public final class FeatureFlags {
   public static int storiesAutoDownloadMaximum() {
     return getInteger(STORIES_AUTO_DOWNLOAD_MAXIMUM, 2);
   }
+
   /**
-   * Whether or not Gifting Badges should be available on this client.
+   * Whether or not users can hide contacts.
    *
-   * NOTE: This feature is under development and should not be enabled on prod. Doing so is solely at your own risk.
+   * WARNING: This feature is intended to be enabled in tandem with other clients, as it modifies contact records.
+   * Here be dragons.
    */
-  public static boolean giftBadges() {
-    return getBoolean(GIFT_BADGES, Environment.IS_STAGING);
+  public static boolean hideContacts() {
+    return getBoolean(HIDE_CONTACTS, false);
   }
 
-  public static boolean useQrLegacyScan() {
-    return getBoolean(USE_QR_LEGACY_SCAN, false);
+  /**
+   * Whether or not we should allow credit card payments for donations
+   */
+  public static boolean creditCardPayments() {
+    return getBoolean(CREDIT_CARD_PAYMENTS, Environment.IS_STAGING);
+  }
+
+  /** Whether client supports sending a request to another to activate payments */
+  public static boolean paymentsRequestActivateFlow() {
+    return getBoolean(PAYMENTS_REQUEST_ACTIVATE_FLOW, false);
+  }
+
+  /**
+   * @return Serialized list of regions in which Google Pay is disabled for donations
+   */
+  public static @NonNull String googlePayDisabledRegions() {
+    return getString(GOOGLE_PAY_DISABLED_REGIONS, "*");
+  }
+
+  /**
+   * @return Serialized list of regions in which credit cards are disabled for donations
+   */
+  public static @NonNull String creditCardDisabledRegions() {
+    return getString(CREDIT_CARD_DISABLED_REGIONS, "*");
+  }
+
+  /**
+   * @return Serialized list of regions in which PayPal is disabled for donations
+   */
+  public static @NonNull String paypalDisabledRegions() {
+    return getString(PAYPAL_DISABLED_REGIONS, "*");
+  }
+
+  /**
+   * If the user has more than this number of contacts, the CDS request will certainly be rejected, so we must fail.
+   */
+  public static int cdsHardLimit() {
+    return getInteger(CDS_HARD_LIMIT, 50_000);
+  }
+
+  /**
+   * Enables chat filters. Note that this UI is incomplete.
+   */
+  public static boolean chatFilters() {
+    return getBoolean(CHAT_FILTERS, false);
+  }
+
+  /**
+   * Whether or not we should allow PayPal payments for one-time donations
+   */
+  public static boolean paypalOneTimeDonations() {
+    return getBoolean(PAYPAL_ONE_TIME_DONATIONS, Environment.IS_STAGING);
+  }
+
+  /**
+   * Whether or not we should allow PayPal payments for recurring donations
+   */
+  public static boolean paypalRecurringDonations() {
+    return getBoolean(PAYPAL_RECURRING_DONATIONS, Environment.IS_STAGING);
   }
 
   /** Only for rendering debug info. */

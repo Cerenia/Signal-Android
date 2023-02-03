@@ -13,9 +13,8 @@ import org.signal.core.util.logging.Log
 import org.signal.imageeditor.core.model.EditorModel
 import org.thoughtcrime.securesms.contacts.paged.ContactSearchKey
 import org.thoughtcrime.securesms.conversation.MessageSendType
-import org.thoughtcrime.securesms.database.AttachmentDatabase.TransformProperties
+import org.thoughtcrime.securesms.database.AttachmentTable.TransformProperties
 import org.thoughtcrime.securesms.database.SignalDatabase
-import org.thoughtcrime.securesms.database.ThreadDatabase
 import org.thoughtcrime.securesms.database.model.Mention
 import org.thoughtcrime.securesms.database.model.StoryType
 import org.thoughtcrime.securesms.keyvalue.SignalStore
@@ -31,8 +30,7 @@ import org.thoughtcrime.securesms.mediasend.SentMediaQualityTransform
 import org.thoughtcrime.securesms.mediasend.VideoEditorFragment
 import org.thoughtcrime.securesms.mediasend.VideoTrimTransform
 import org.thoughtcrime.securesms.mms.MediaConstraints
-import org.thoughtcrime.securesms.mms.OutgoingMediaMessage
-import org.thoughtcrime.securesms.mms.OutgoingSecureMediaMessage
+import org.thoughtcrime.securesms.mms.OutgoingMessage
 import org.thoughtcrime.securesms.mms.SentMediaQuality
 import org.thoughtcrime.securesms.mms.Slide
 import org.thoughtcrime.securesms.providers.BlobProvider
@@ -43,6 +41,7 @@ import org.thoughtcrime.securesms.sms.MessageSender.PreUploadResult
 import org.thoughtcrime.securesms.stories.Stories
 import org.thoughtcrime.securesms.util.MessageUtil
 import java.util.Collections
+import java.util.Optional
 import java.util.concurrent.TimeUnit
 
 private val TAG = Log.tag(MediaSelectionRepository::class.java)
@@ -87,10 +86,13 @@ class MediaSelectionRepository(context: Context) {
       throw IllegalStateException("No selected media!")
     }
 
+    val isSendingToStories = singleContact?.isStory == true || contacts.any { it.isStory }
+    val sentMediaQuality = if (isSendingToStories) SentMediaQuality.STANDARD else quality
+
     return Maybe.create<MediaSendActivityResult> { emitter ->
       val trimmedBody: String = if (isViewOnce) "" else getTruncatedBody(message?.toString()?.trim()) ?: ""
       val trimmedMentions: List<Mention> = if (isViewOnce) emptyList() else mentions
-      val modelsToTransform: Map<Media, MediaTransform> = buildModelsToTransform(selectedMedia, stateMap, quality)
+      val modelsToTransform: Map<Media, MediaTransform> = buildModelsToTransform(selectedMedia, stateMap, sentMediaQuality)
       val oldToNewMediaMap: Map<Media, Media> = MediaRepository.transformMediaSync(context, selectedMedia, modelsToTransform)
       val updatedMedia = oldToNewMediaMap.values.toList()
 
@@ -101,13 +103,25 @@ class MediaSelectionRepository(context: Context) {
       val singleRecipient: Recipient? = singleContact?.let { Recipient.resolved(it.recipientId) }
       val storyType: StoryType = if (singleRecipient?.isDistributionList == true) {
         SignalDatabase.distributionLists.getStoryType(singleRecipient.requireDistributionListId())
+      } else if (singleRecipient?.isGroup == true && singleContact.isStory) {
+        StoryType.STORY_WITH_REPLIES
       } else {
         StoryType.NONE
       }
 
-      if (isSms || MessageSender.isLocalSelfSend(context, singleRecipient, isSms)) {
+      if (isSms || MessageSender.isLocalSelfSend(context, singleRecipient, MessageSender.SendType.SIGNAL)) {
         Log.i(TAG, "SMS or local self-send. Skipping pre-upload.")
-        emitter.onSuccess(MediaSendActivityResult.forTraditionalSend(singleRecipient!!.id, updatedMedia, trimmedBody, sendType, isViewOnce, trimmedMentions, StoryType.NONE))
+        emitter.onSuccess(
+          MediaSendActivityResult(
+            recipientId = singleRecipient!!.id,
+            nonUploadedMedia = updatedMedia,
+            body = trimmedBody,
+            messageSendType = sendType,
+            isViewOnce = isViewOnce,
+            mentions = trimmedMentions,
+            storyType = StoryType.NONE
+          )
+        )
       } else {
         val splitMessage = MessageUtil.getSplitMessage(context, trimmedBody, sendType.calculateCharacters(trimmedBody).maxPrimaryMessageSize)
         val splitBody = splitMessage.body
@@ -127,7 +141,7 @@ class MediaSelectionRepository(context: Context) {
           )
         }
 
-        val clippedMediaForStories = if (singleContact?.isStory == true || contacts.any { it.isStory }) {
+        val clippedVideosForStories: List<Media> = if (isSendingToStories) {
           updatedMedia.filter {
             Stories.MediaTransform.getSendRequirements(it) == Stories.MediaTransform.SendRequirements.REQUIRES_CLIP
           }.map { media ->
@@ -140,14 +154,34 @@ class MediaSelectionRepository(context: Context) {
         uploadRepository.updateDisplayOrder(updatedMedia)
         uploadRepository.getPreUploadResults { uploadResults ->
           if (contacts.isNotEmpty()) {
-            sendMessages(contacts, splitBody, uploadResults, trimmedMentions, isViewOnce, clippedMediaForStories)
+            sendMessages(contacts, splitBody, uploadResults, trimmedMentions, isViewOnce, clippedVideosForStories)
             uploadRepository.deleteAbandonedAttachments()
             emitter.onComplete()
           } else if (uploadResults.isNotEmpty()) {
-            emitter.onSuccess(MediaSendActivityResult.forPreUpload(singleRecipient!!.id, uploadResults, splitBody, sendType, isViewOnce, trimmedMentions, storyType))
+            emitter.onSuccess(
+              MediaSendActivityResult(
+                recipientId = singleRecipient!!.id,
+                preUploadResults = uploadResults.toList(),
+                body = splitBody,
+                messageSendType = sendType,
+                isViewOnce = isViewOnce,
+                mentions = trimmedMentions,
+                storyType = storyType
+              )
+            )
           } else {
             Log.w(TAG, "Got empty upload results! isSms: $isSms, updatedMedia.size(): ${updatedMedia.size}, isViewOnce: $isViewOnce, target: $singleContact")
-            emitter.onSuccess(MediaSendActivityResult.forTraditionalSend(singleRecipient!!.id, updatedMedia, trimmedBody, sendType, isViewOnce, trimmedMentions, storyType))
+            emitter.onSuccess(
+              MediaSendActivityResult(
+                recipientId = singleRecipient!!.id,
+                nonUploadedMedia = updatedMedia,
+                body = trimmedBody,
+                messageSendType = sendType,
+                isViewOnce = isViewOnce,
+                mentions = trimmedMentions,
+                storyType = storyType
+              )
+            )
           }
         }
       }
@@ -155,12 +189,12 @@ class MediaSelectionRepository(context: Context) {
   }
 
   private fun getTruncatedBody(body: String?): String? {
-    return if (body.isNullOrEmpty()) {
+    return if (!Stories.isFeatureEnabled() || body.isNullOrEmpty()) {
       body
     } else {
       val iterator = BreakIteratorCompat.getInstance()
       iterator.setText(body)
-      iterator.take(Stories.MAX_BODY_SIZE).toString()
+      iterator.take(Stories.MAX_CAPTION_SIZE).toString()
     }
   }
 
@@ -178,7 +212,7 @@ class MediaSelectionRepository(context: Context) {
   }
 
   fun isLocalSelfSend(recipient: Recipient?, isSms: Boolean): Boolean {
-    return MessageSender.isLocalSelfSend(context, recipient, isSms)
+    return MessageSender.isLocalSelfSend(context, recipient, if (isSms) MessageSender.SendType.SMS else MessageSender.SendType.SIGNAL)
   }
 
   @WorkerThread
@@ -225,19 +259,15 @@ class MediaSelectionRepository(context: Context) {
     isViewOnce: Boolean,
     storyClips: List<Media>
   ) {
-    val nonStoryMessages: MutableList<OutgoingSecureMediaMessage> = ArrayList(contacts.size)
-    val storyPreUploadMessages: MutableMap<PreUploadResult, MutableList<OutgoingSecureMediaMessage>> = mutableMapOf()
-    val storyClipMessages: MutableList<OutgoingSecureMediaMessage> = ArrayList()
+    val nonStoryMessages: MutableList<OutgoingMessage> = ArrayList(contacts.size)
+    val storyPreUploadMessages: MutableMap<PreUploadResult, MutableList<OutgoingMessage>> = mutableMapOf()
+    val storyClipMessages: MutableList<OutgoingMessage> = ArrayList()
     val distributionListPreUploadSentTimestamps: MutableMap<PreUploadResult, Long> = mutableMapOf()
-    val distributionListStoryClipsSentTimestamps: MutableMap<Media, Long> = mutableMapOf()
+    val distributionListStoryClipsSentTimestamps: MutableMap<MediaKey, Long> = mutableMapOf()
 
     for (contact in contacts) {
       val recipient = Recipient.resolved(contact.recipientId)
       val isStory = contact.isStory || recipient.isDistributionList
-
-      if (isStory && recipient.isActiveGroup && recipient.isGroup) {
-        SignalDatabase.groups.markDisplayAsStory(recipient.requireGroupId())
-      }
 
       if (isStory && !recipient.isMyStory) {
         SignalStore.storyValues().setLatestStorySend(StorySend.newSend(recipient))
@@ -249,39 +279,27 @@ class MediaSelectionRepository(context: Context) {
         else -> StoryType.NONE
       }
 
-      val message = OutgoingMediaMessage(
-        recipient,
-        body,
-        emptyList(),
-        if (recipient.isDistributionList) distributionListPreUploadSentTimestamps.getOrPut(preUploadResults.first()) { System.currentTimeMillis() } else System.currentTimeMillis(),
-        -1,
-        TimeUnit.SECONDS.toMillis(recipient.expiresInSeconds.toLong()),
-        isViewOnce,
-        ThreadDatabase.DistributionTypes.DEFAULT,
-        storyType,
-        null,
-        false,
-        null,
-        emptyList(),
-        emptyList(),
-        mentions,
-        mutableSetOf(),
-        mutableSetOf(),
-        null
+      val message = OutgoingMessage(
+        recipient = recipient,
+        body = body,
+        sentTimeMillis = if (recipient.isDistributionList) distributionListPreUploadSentTimestamps.getOrPut(preUploadResults.first()) { System.currentTimeMillis() } else System.currentTimeMillis(),
+        expiresIn = if (isStory) 0 else TimeUnit.SECONDS.toMillis(recipient.expiresInSeconds.toLong()),
+        isViewOnce = isViewOnce,
+        storyType = storyType,
+        mentions = mentions,
+        isSecure = true
       )
 
       if (isStory) {
         preUploadResults.filterNot { result -> storyClips.any { it.uri == result.media.uri } }.forEach {
           val list = storyPreUploadMessages[it] ?: mutableListOf()
-          list.add(
-            OutgoingSecureMediaMessage(message).withSentTimestamp(
-              if (recipient.isDistributionList) {
-                distributionListPreUploadSentTimestamps.getOrPut(it) { System.currentTimeMillis() }
-              } else {
-                System.currentTimeMillis()
-              }
-            )
-          )
+          val timestamp = if (recipient.isDistributionList) {
+            distributionListPreUploadSentTimestamps.getOrPut(it) { System.currentTimeMillis() }
+          } else {
+            System.currentTimeMillis()
+          }
+
+          list.add(message.copy(sentTimeMillis = timestamp))
           storyPreUploadMessages[it] = list
 
           // XXX We must do this to avoid sending out messages to the same recipient with the same
@@ -291,27 +309,15 @@ class MediaSelectionRepository(context: Context) {
 
         storyClips.forEach {
           storyClipMessages.add(
-            OutgoingSecureMediaMessage(
-              OutgoingMediaMessage(
-                recipient,
-                body,
-                listOf(MediaUploadRepository.asAttachment(context, it)),
-                if (recipient.isDistributionList) distributionListStoryClipsSentTimestamps.getOrPut(it) { System.currentTimeMillis() } else System.currentTimeMillis(),
-                -1,
-                TimeUnit.SECONDS.toMillis(recipient.expiresInSeconds.toLong()),
-                isViewOnce,
-                ThreadDatabase.DistributionTypes.DEFAULT,
-                storyType,
-                null,
-                false,
-                null,
-                emptyList(),
-                emptyList(),
-                mentions,
-                mutableSetOf(),
-                mutableSetOf(),
-                null
-              )
+            OutgoingMessage(
+              recipient = recipient,
+              body = body,
+              attachments = listOf(MediaUploadRepository.asAttachment(context, it)),
+              sentTimeMillis = if (recipient.isDistributionList) distributionListStoryClipsSentTimestamps.getOrPut(it.asKey()) { System.currentTimeMillis() } else System.currentTimeMillis(),
+              isViewOnce = isViewOnce,
+              storyType = storyType,
+              mentions = mentions,
+              isSecure = true
             )
           )
 
@@ -320,7 +326,7 @@ class MediaSelectionRepository(context: Context) {
           ThreadUtil.sleep(5)
         }
       } else {
-        nonStoryMessages.add(OutgoingSecureMediaMessage(message))
+        nonStoryMessages.add(message)
 
         // XXX We must do this to avoid sending out messages to the same recipient with the same
         //     sentTimestamp. If we do this, they'll be considered dupes by the receiver.
@@ -329,24 +335,31 @@ class MediaSelectionRepository(context: Context) {
     }
 
     if (nonStoryMessages.isNotEmpty()) {
-      Log.d(TAG, "Sending ${nonStoryMessages.size} non-story preupload messages")
+      Log.d(TAG, "Sending ${nonStoryMessages.size} preupload messages to chats")
       MessageSender.sendMediaBroadcast(
         context,
         nonStoryMessages,
-        preUploadResults
+        preUploadResults,
+        true
       )
     }
 
     if (storyPreUploadMessages.isNotEmpty()) {
       Log.d(TAG, "Sending ${storyPreUploadMessages.size} preload messages to stories")
       storyPreUploadMessages.forEach { (preUploadResult, messages) ->
-        MessageSender.sendMediaBroadcast(context, messages, Collections.singleton(preUploadResult))
+        MessageSender.sendMediaBroadcast(context, messages, Collections.singleton(preUploadResult), nonStoryMessages.isEmpty())
       }
     }
 
     if (storyClipMessages.isNotEmpty()) {
-      Log.d(TAG, "Sending ${storyClipMessages.size} clip messages to stories")
+      Log.d(TAG, "Sending ${storyClipMessages.size} video clip messages to stories")
       MessageSender.sendStories(context, storyClipMessages, null, null)
     }
   }
+
+  private fun Media.asKey(): MediaKey {
+    return MediaKey(this, this.transformProperties)
+  }
+
+  data class MediaKey(val media: Media, val mediaTransform: Optional<TransformProperties>)
 }

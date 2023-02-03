@@ -14,9 +14,14 @@ import android.widget.TextView;
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.Px;
 import androidx.annotation.StringRes;
 import androidx.core.content.ContextCompat;
 
+import com.google.android.material.shape.MaterialShapeDrawable;
+import com.google.android.material.shape.ShapeAppearanceModel;
+
+import org.signal.core.util.DimensionUnit;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.mms.GlideApp;
 
@@ -36,7 +41,10 @@ public class TooltipPopup extends PopupWindow {
 
   private final View      anchor;
   private final ImageView arrow;
-  private final int       position;
+  private final int position;
+  private final int startMargin;
+
+  private final MaterialShapeDrawable shapeableBubbleBackground = new MaterialShapeDrawable();
 
   public static Builder forTarget(@NonNull View anchor) {
     return new Builder(anchor);
@@ -44,6 +52,7 @@ public class TooltipPopup extends PopupWindow {
 
   private TooltipPopup(@NonNull View anchor,
                        int rawPosition,
+                       @Px int startMargin,
                        @NonNull String text,
                        @ColorInt int backgroundTint,
                        @ColorInt int textColor,
@@ -54,8 +63,9 @@ public class TooltipPopup extends PopupWindow {
           ViewGroup.LayoutParams.WRAP_CONTENT,
           ViewGroup.LayoutParams.WRAP_CONTENT);
 
-    this.anchor   = anchor;
-    this.position = getRtlPosition(anchor.getContext(), rawPosition);
+    this.anchor      = anchor;
+    this.position    = getRtlPosition(anchor.getContext(), rawPosition);
+    this.startMargin = startMargin;
 
     switch (rawPosition) {
       case POSITION_ABOVE: arrow = getContentView().findViewById(R.id.tooltip_arrow_bottom); break;
@@ -78,10 +88,12 @@ public class TooltipPopup extends PopupWindow {
 
     if (backgroundTint == 0) {
       bubble.getBackground().setColorFilter(ContextCompat.getColor(anchor.getContext(), R.color.tooltip_default_color), PorterDuff.Mode.MULTIPLY);
-      arrow.setColorFilter(ContextCompat.getColor(anchor.getContext(), R.color.tooltip_default_color), PorterDuff.Mode.MULTIPLY);
+      arrow.setColorFilter(ContextCompat.getColor(anchor.getContext(), R.color.tooltip_default_color), PorterDuff.Mode.SRC_IN);
+      shapeableBubbleBackground.setTint(ContextCompat.getColor(anchor.getContext(), R.color.tooltip_default_color));
     } else {
       bubble.getBackground().setColorFilter(backgroundTint, PorterDuff.Mode.MULTIPLY);
-      arrow.setColorFilter(backgroundTint, PorterDuff.Mode.MULTIPLY);
+      arrow.setColorFilter(backgroundTint, PorterDuff.Mode.SRC_IN);
+      shapeableBubbleBackground.setTint(backgroundTint);
     }
 
     if (iconGlideModel != null) {
@@ -90,9 +102,7 @@ public class TooltipPopup extends PopupWindow {
       GlideApp.with(anchor.getContext()).load(iconGlideModel).into(iconView);
     }
 
-    if (Build.VERSION.SDK_INT >= 21) {
-      setElevation(10);
-    }
+    setElevation(10);
 
     getContentView().setOnClickListener(v -> dismiss());
 
@@ -139,6 +149,41 @@ public class TooltipPopup extends PopupWindow {
       default:
         throw new AssertionError("Invalid tooltip position!");
     }
+
+    switch (position) {
+      case POSITION_ABOVE:
+        xoffset += startMargin;
+        xoffset -= DimensionUnit.DP.toPixels(20);
+      case POSITION_BELOW:
+        xoffset += startMargin;
+        xoffset -= DimensionUnit.DP.toPixels(20);
+        break;
+      case POSITION_LEFT:
+        xoffset += startMargin;
+        break;
+      case POSITION_RIGHT:
+        xoffset -= startMargin;
+    }
+
+    View bubble = getContentView().findViewById(R.id.tooltip_bubble);
+    ShapeAppearanceModel.Builder  shapeAppearanceModel  = ShapeAppearanceModel.builder()
+                                                                              .setAllCornerSizes(DimensionUnit.DP.toPixels(18));
+
+    // If the arrow is within the last 20dp of the right hand side, use RIGHT and set corner to 9dp
+    onLayout(() -> {
+      if (arrow.getX() > getContentView().getWidth() / 2f) {
+        arrow.setImageResource(R.drawable.ic_tooltip_arrow_up_right);
+      }
+
+      float arrowEnd = arrow.getX() + arrow.getRight();
+      if (arrowEnd > getContentView().getRight() - DimensionUnit.DP.toPixels(20)) {
+        shapeableBubbleBackground.setShapeAppearanceModel(shapeAppearanceModel.setTopRightCornerSize(DimensionUnit.DP.toPixels(9f)).build());
+        bubble.setBackground(shapeableBubbleBackground);
+      } else if (arrowEnd < DimensionUnit.DP.toPixels(20)) {
+        shapeableBubbleBackground.setShapeAppearanceModel(shapeAppearanceModel.setTopLeftCornerSize(DimensionUnit.DP.toPixels(9f)).build());
+        bubble.setBackground(shapeableBubbleBackground);
+      }
+    });
 
     showAsDropDown(anchor, xoffset, yoffset);
   }
@@ -192,6 +237,7 @@ public class TooltipPopup extends PopupWindow {
     private int               textResId;
     private Object            iconGlideModel;
     private OnDismissListener dismissListener;
+    private int               setStartMargin;
 
     private Builder(@NonNull View anchor) {
       this.anchor = anchor;
@@ -222,9 +268,14 @@ public class TooltipPopup extends PopupWindow {
       return this;
     }
 
+    public Builder setStartMargin(@Px int startMargin) {
+      this.setStartMargin = startMargin;
+      return this;
+    }
+
     public TooltipPopup show(int position) {
       String       text    = anchor.getContext().getString(textResId);
-      TooltipPopup tooltip = new TooltipPopup(anchor, position, text, backgroundTint, textColor, iconGlideModel, dismissListener);
+      TooltipPopup tooltip = new TooltipPopup(anchor, position, setStartMargin, text, backgroundTint, textColor, iconGlideModel, dismissListener);
 
       tooltip.show();
 

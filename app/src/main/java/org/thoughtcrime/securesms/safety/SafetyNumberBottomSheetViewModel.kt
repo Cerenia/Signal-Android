@@ -25,7 +25,7 @@ class SafetyNumberBottomSheetViewModel(
     private const val MAX_RECIPIENTS_TO_DISPLAY = 5
   }
 
-  private val destinationStore = RxStore(args.destinations.map { it.asRecipientSearchKey() })
+  private val destinationStore = RxStore(args.destinations)
   val destinationSnapshot: List<ContactSearchKey.RecipientSearchKey>
     get() = destinationStore.state
 
@@ -38,14 +38,16 @@ class SafetyNumberBottomSheetViewModel(
 
   val state: Flowable<SafetyNumberBottomSheetState> = store.stateFlowable.observeOn(AndroidSchedulers.mainThread())
 
-  val hasLargeNumberOfUntrustedRecipients
-    get() = store.state.hasLargeNumberOfUntrustedRecipients
-
   private val disposables = CompositeDisposable()
 
   init {
-    if (!store.state.hasLargeNumberOfUntrustedRecipients) {
-      loadRecipients()
+    val bucketFlowable: Flowable<Map<SafetyNumberBucket, List<SafetyNumberRecipient>>> = destinationStore.stateFlowable.switchMap { repository.getBuckets(args.untrustedRecipients, it) }
+    disposables += store.update(bucketFlowable) { map, state ->
+      state.copy(
+        destinationToRecipientMap = map,
+        untrustedRecipientCount = map.size,
+        loadState = if (state.loadState == SafetyNumberBottomSheetState.LoadState.INIT) SafetyNumberBottomSheetState.LoadState.READY else state.loadState
+      )
     }
   }
 
@@ -62,19 +64,10 @@ class SafetyNumberBottomSheetViewModel(
     }
   }
 
-  private fun loadRecipients() {
-    val bucketFlowable: Flowable<Map<SafetyNumberBucket, List<SafetyNumberRecipient>>> = destinationStore.stateFlowable.switchMap { repository.getBuckets(args.untrustedRecipients, it) }
-
-    disposables += store.update(bucketFlowable) { map, state ->
-      state.copy(
-        destinationToRecipientMap = map,
-        untrustedRecipientCount = map.size
-      )
-    }
-  }
-
   override fun onCleared() {
     disposables.clear()
+    destinationStore.dispose()
+    store.dispose()
   }
 
   fun getIdentityRecord(recipientId: RecipientId): Maybe<IdentityRecord> {

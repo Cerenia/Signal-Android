@@ -22,18 +22,27 @@ import android.database.MatrixCursor;
 
 import androidx.annotation.NonNull;
 
+import org.signal.core.util.CursorUtil;
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.R;
-import org.thoughtcrime.securesms.database.GroupDatabase;
+import org.thoughtcrime.securesms.database.GroupTable;
+import org.thoughtcrime.securesms.database.RecipientTable;
 import org.thoughtcrime.securesms.database.SignalDatabase;
-import org.thoughtcrime.securesms.database.ThreadDatabase;
+import org.thoughtcrime.securesms.database.ThreadTable;
+import org.thoughtcrime.securesms.database.model.GroupRecord;
 import org.thoughtcrime.securesms.database.model.ThreadRecord;
 import org.thoughtcrime.securesms.phonenumbers.NumberUtil;
+import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.util.FeatureFlags;
 import org.thoughtcrime.securesms.util.UsernameUtil;
+import org.whispersystems.signalservice.internal.util.Util;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * CursorLoader that initializes a ContactsDatabase instance
@@ -185,12 +194,12 @@ public class ContactsCursorLoader extends AbstractContactsCursorLoader {
   }
 
   private Cursor getRecentConversationsCursor(boolean groupsOnly) {
-    ThreadDatabase threadDatabase = SignalDatabase.threads();
+    ThreadTable threadTable = SignalDatabase.threads();
 
     MatrixCursor recentConversations = ContactsCursorRows.createMatrixCursor(RECENT_CONVERSATION_MAX);
-    try (Cursor rawConversations = threadDatabase.getRecentConversationList(RECENT_CONVERSATION_MAX, flagSet(mode, DisplayMode.FLAG_INACTIVE_GROUPS), false, groupsOnly, hideGroupsV1(mode), !smsEnabled(mode), false)) {
-      ThreadDatabase.Reader reader = threadDatabase.readerFor(rawConversations);
-      ThreadRecord          threadRecord;
+    try (Cursor rawConversations = threadTable.getRecentConversationList(RECENT_CONVERSATION_MAX, flagSet(mode, DisplayMode.FLAG_INACTIVE_GROUPS), false, groupsOnly, hideGroupsV1(mode), !smsEnabled(mode), false)) {
+      ThreadTable.Reader reader = threadTable.readerFor(rawConversations);
+      ThreadRecord       threadRecord;
       while ((threadRecord = reader.getNext()) != null) {
         recentConversations.addRow(ContactsCursorRows.forRecipient(getContext(), threadRecord.getRecipient()));
       }
@@ -213,13 +222,36 @@ public class ContactsCursorLoader extends AbstractContactsCursorLoader {
   }
 
   private Cursor getGroupsCursor() {
-    MatrixCursor groupContacts = ContactsCursorRows.createMatrixCursor();
-    try (GroupDatabase.Reader reader = SignalDatabase.groups().queryGroupsByTitle(getFilter(), flagSet(mode, DisplayMode.FLAG_INACTIVE_GROUPS), hideGroupsV1(mode), !smsEnabled(mode))) {
-      GroupDatabase.GroupRecord groupRecord;
+    MatrixCursor                  groupContacts = ContactsCursorRows.createMatrixCursor();
+    Map<RecipientId, GroupRecord> groups        = new LinkedHashMap<>();
+
+    try (GroupTable.Reader reader = SignalDatabase.groups().queryGroupsByTitle(getFilter(), flagSet(mode, DisplayMode.FLAG_INACTIVE_GROUPS), hideGroupsV1(mode), !smsEnabled(mode))) {
+      GroupRecord groupRecord;
       while ((groupRecord = reader.getNext()) != null) {
-        groupContacts.addRow(ContactsCursorRows.forGroup(groupRecord));
+        groups.put(groupRecord.getRecipientId(), groupRecord);
       }
     }
+
+    if (getFilter() != null && !Util.isEmpty(getFilter())) {
+      Set<RecipientId> filteredContacts = new HashSet<>();
+      try (Cursor cursor = SignalDatabase.recipients().queryAllContacts(getFilter())) {
+        while (cursor != null && cursor.moveToNext()) {
+          filteredContacts.add(RecipientId.from(CursorUtil.requireString(cursor, RecipientTable.ID)));
+        }
+      }
+
+      try (GroupTable.Reader reader = SignalDatabase.groups().queryGroupsByMembership(filteredContacts, flagSet(mode, DisplayMode.FLAG_INACTIVE_GROUPS), hideGroupsV1(mode), !smsEnabled(mode))) {
+        GroupRecord groupRecord;
+        while ((groupRecord = reader.getNext()) != null) {
+          groups.put(groupRecord.getRecipientId(), groupRecord);
+        }
+      }
+    }
+
+    for (GroupRecord groupRecord : groups.values()) {
+      groupContacts.addRow(ContactsCursorRows.forGroup(groupRecord));
+    }
+
     return groupContacts;
   }
 
@@ -228,7 +260,7 @@ public class ContactsCursorLoader extends AbstractContactsCursorLoader {
   }
 
   private Cursor getUsernameSearchCursor() {
-    return ContactsCursorRows.forUsernameSearch(getUnknownContactTitle(), getFilter());
+    return ContactsCursorRows.forUsernameSearch(getFilter());
   }
 
   private String getUnknownContactTitle() {

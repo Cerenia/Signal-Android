@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import org.signal.core.util.PendingIntentFlags
 import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.components.settings.app.AppSettingsActivity
 import org.thoughtcrime.securesms.help.HelpFragment
@@ -19,7 +20,7 @@ import org.thoughtcrime.securesms.notifications.NotificationIds
 object DonationErrorNotifications {
   fun displayErrorNotification(context: Context, donationError: DonationError) {
     val parameters = DonationErrorParams.create(context, donationError, NotificationCallback)
-    val notification = NotificationCompat.Builder(context, NotificationChannels.FAILURES)
+    val notification = NotificationCompat.Builder(context, NotificationChannels.getInstance().FAILURES)
       .setSmallIcon(R.drawable.ic_notification)
       .setContentTitle(context.getString(parameters.title))
       .setContentText(context.getString(parameters.message)).apply {
@@ -62,6 +63,8 @@ object DonationErrorNotifications {
       )
     }
 
+    override fun onTryCreditCardAgain(context: Context): DonationErrorParams.ErrorAction<PendingIntent>? = null
+
     override fun onGoToGooglePay(context: Context): DonationErrorParams.ErrorAction<PendingIntent> {
       return createAction(
         context = context,
@@ -90,7 +93,7 @@ object DonationErrorNotifications {
             context,
             0,
             actionIntent,
-            if (Build.VERSION.SDK_INT >= 23) PendingIntent.FLAG_ONE_SHOT else 0
+            if (Build.VERSION.SDK_INT >= 23) PendingIntentFlags.oneShot() else PendingIntentFlags.mutable()
           )
         }
       )

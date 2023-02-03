@@ -13,6 +13,7 @@ import android.net.Uri;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
+import org.signal.core.util.PendingIntentFlags;
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.notifications.NotificationChannels;
@@ -61,9 +62,9 @@ public class UpdateApkReadyListener extends BroadcastReceiver {
     intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
     intent.setData(uri);
 
-    PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
+    PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntentFlags.mutable());
 
-    Notification notification = new NotificationCompat.Builder(context, NotificationChannels.APP_UPDATES)
+    Notification notification = new NotificationCompat.Builder(context, NotificationChannels.getInstance().APP_UPDATES)
         .setOngoing(true)
         .setContentTitle(context.getString(R.string.UpdateApkReadyListener_Signal_update))
         .setContentText(context.getString(R.string.UpdateApkReadyListener_a_new_version_of_signal_is_available_tap_to_update))

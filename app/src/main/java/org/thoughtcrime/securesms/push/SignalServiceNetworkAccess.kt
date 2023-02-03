@@ -34,7 +34,7 @@ import java.util.Optional
  * Provides a [SignalServiceConfiguration] to be used with our service layer.
  * If you're looking for a place to start, look at [getConfiguration].
  */
-class SignalServiceNetworkAccess(context: Context) {
+open class SignalServiceNetworkAccess(context: Context) {
   companion object {
     private val TAG = Log.tag(SignalServiceNetworkAccess::class.java)
 
@@ -69,7 +69,7 @@ class SignalServiceNetworkAccess(context: Context) {
     private const val COUNTRY_CODE_UZBEKISTAN = 998
     private const val COUNTRY_CODE_UKRAINE = 380
 
-    private const val G_HOST = "europe-west1-signal-cdn-reflector.cloudfunctions.net"
+    private const val G_HOST = "reflector-nrgwuv7kwq-uc.a.run.app"
     private const val F_SERVICE_HOST = "textsecure-service.whispersystems.org.global.prod.fastly.net"
     private const val F_STORAGE_HOST = "storage.signal.org.global.prod.fastly.net"
     private const val F_CDN_HOST = "cdn.signal.org.global.prod.fastly.net"
@@ -141,7 +141,7 @@ class SignalServiceNetworkAccess(context: Context) {
     StandardUserAgentInterceptor(),
     RemoteDeprecationDetectorInterceptor(),
     DeprecatedClientPreventionInterceptor(),
-    DeviceTransferBlockingInterceptor.getInstance()
+    DeviceTransferBlockingInterceptor.getInstance(),
   )
 
   private val zkGroupServerPublicParams: ByteArray = try {
@@ -173,7 +173,8 @@ class SignalServiceNetworkAccess(context: Context) {
     interceptors,
     Optional.of(DNS),
     Optional.empty(),
-    zkGroupServerPublicParams
+    zkGroupServerPublicParams,
+    false
   )
 
   private val censorshipConfiguration: Map<Int, SignalServiceConfiguration> = mapOf(
@@ -211,7 +212,7 @@ class SignalServiceNetworkAccess(context: Context) {
     COUNTRY_CODE_UZBEKISTAN,
   )
 
-  val uncensoredConfiguration: SignalServiceConfiguration = SignalServiceConfiguration(
+  open val uncensoredConfiguration: SignalServiceConfiguration = SignalServiceConfiguration(
     arrayOf(SignalServiceUrl(BuildConfig.SIGNAL_URL, serviceTrustStore)),
     mapOf(
       0 to arrayOf(SignalCdnUrl(BuildConfig.SIGNAL_CDN_URL, serviceTrustStore)),
@@ -224,14 +225,15 @@ class SignalServiceNetworkAccess(context: Context) {
     interceptors,
     Optional.of(DNS),
     if (SignalStore.proxy().isProxyEnabled) Optional.ofNullable(SignalStore.proxy().proxy) else Optional.empty(),
-    zkGroupServerPublicParams
+    zkGroupServerPublicParams,
+    true
   )
 
-  fun getConfiguration(): SignalServiceConfiguration {
+  open fun getConfiguration(): SignalServiceConfiguration {
     return getConfiguration(SignalStore.account().e164)
   }
 
-  fun getConfiguration(localNumber: String?): SignalServiceConfiguration {
+  open fun getConfiguration(localNumber: String?): SignalServiceConfiguration {
     if (localNumber == null || SignalStore.proxy().isProxyEnabled) {
       return uncensoredConfiguration
     }
@@ -267,6 +269,10 @@ class SignalServiceNetworkAccess(context: Context) {
     return defaultCensoredCountryCodes.contains(countryCode)
   }
 
+  fun supportsWebsockets(): Boolean {
+    return !isCensored() || getConfiguration().supportsWebSockets()
+  }
+
   private fun buildGConfiguration(
     hostConfigs: List<HostConfig>
   ): SignalServiceConfiguration {
@@ -276,7 +282,7 @@ class SignalServiceNetworkAccess(context: Context) {
     val cdsUrls: Array<SignalContactDiscoveryUrl> = hostConfigs.map { SignalContactDiscoveryUrl("${it.baseUrl}/directory", it.host, gTrustStore, it.connectionSpec) }.toTypedArray()
     val kbsUrls: Array<SignalKeyBackupServiceUrl> = hostConfigs.map { SignalKeyBackupServiceUrl("${it.baseUrl}/backup", it.host, gTrustStore, it.connectionSpec) }.toTypedArray()
     val storageUrls: Array<SignalStorageUrl> = hostConfigs.map { SignalStorageUrl("${it.baseUrl}/storage", it.host, gTrustStore, it.connectionSpec) }.toTypedArray()
-    val cdsiUrls: Array<SignalCdsiUrl> = listOf(SignalCdsiUrl(BuildConfig.SIGNAL_CDSI_URL, serviceTrustStore)).toTypedArray()
+    val cdsiUrls: Array<SignalCdsiUrl> = hostConfigs.map { SignalCdsiUrl("${it.baseUrl}/cdsi", it.host, gTrustStore, it.connectionSpec) }.toTypedArray()
 
     return SignalServiceConfiguration(
       serviceUrls,
@@ -291,7 +297,8 @@ class SignalServiceNetworkAccess(context: Context) {
       interceptors,
       Optional.of(DNS),
       Optional.empty(),
-      zkGroupServerPublicParams
+      zkGroupServerPublicParams,
+      true
     )
   }
 

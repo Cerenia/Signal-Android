@@ -17,6 +17,7 @@ import org.thoughtcrime.securesms.database.LocalMetricsDatabase
 import org.thoughtcrime.securesms.database.LogDatabase
 import org.thoughtcrime.securesms.database.MegaphoneDatabase
 import org.thoughtcrime.securesms.database.MessageBitmaskColumnTransformer
+import org.thoughtcrime.securesms.database.ProfileKeyCredentialTransformer
 import org.thoughtcrime.securesms.database.QueryMonitor
 import org.thoughtcrime.securesms.database.SignalDatabase
 import org.thoughtcrime.securesms.database.TimestampTransformer
@@ -50,25 +51,25 @@ class SpinnerApplicationContext : ApplicationContext() {
     Spinner.init(
       this,
       mapOf(
-        "Device" to "${Build.MODEL} (Android ${Build.VERSION.RELEASE}, API ${Build.VERSION.SDK_INT})",
-        "Package" to "$packageName (${AppSignatureUtil.getAppSignature(this)})",
-        "App Version" to "${BuildConfig.VERSION_NAME} (${BuildConfig.CANONICAL_VERSION_CODE}, ${BuildConfig.GIT_HASH})",
-        "Profile Name" to (if (SignalStore.account().isRegistered) Recipient.self().profileName.toString() else "none"),
-        "E164" to (SignalStore.account().e164 ?: "none"),
-        "ACI" to (SignalStore.account().aci?.toString() ?: "none"),
-        "PNI" to (SignalStore.account().pni?.toString() ?: "none"),
-        Spinner.KEY_ENVIRONMENT to BuildConfig.FLAVOR_environment.toUpperCase(Locale.US)
+        "Device" to { "${Build.MODEL} (Android ${Build.VERSION.RELEASE}, API ${Build.VERSION.SDK_INT})" },
+        "Package" to { "$packageName (${AppSignatureUtil.getAppSignature(this)})" },
+        "App Version" to { "${BuildConfig.VERSION_NAME} (${BuildConfig.CANONICAL_VERSION_CODE}, ${BuildConfig.GIT_HASH})" },
+        "Profile Name" to { (if (SignalStore.account().isRegistered) Recipient.self().profileName.toString() else "none") },
+        "E164" to { SignalStore.account().e164 ?: "none" },
+        "ACI" to { SignalStore.account().aci?.toString() ?: "none" },
+        "PNI" to { SignalStore.account().pni?.toString() ?: "none" },
+        Spinner.KEY_ENVIRONMENT to { BuildConfig.FLAVOR_environment.uppercase(Locale.US) }
       ),
       linkedMapOf(
         "signal" to DatabaseConfig(
-          db = SignalDatabase.rawDatabase,
-          columnTransformers = listOf(MessageBitmaskColumnTransformer, GV2Transformer, GV2UpdateTransformer, IsStoryTransformer, TimestampTransformer)
+          db = { SignalDatabase.rawDatabase },
+          columnTransformers = listOf(MessageBitmaskColumnTransformer, GV2Transformer, GV2UpdateTransformer, IsStoryTransformer, TimestampTransformer, ProfileKeyCredentialTransformer)
         ),
-        "jobmanager" to DatabaseConfig(db = JobDatabase.getInstance(this).sqlCipherDatabase),
-        "keyvalue" to DatabaseConfig(db = KeyValueDatabase.getInstance(this).sqlCipherDatabase),
-        "megaphones" to DatabaseConfig(db = MegaphoneDatabase.getInstance(this).sqlCipherDatabase),
-        "localmetrics" to DatabaseConfig(db = LocalMetricsDatabase.getInstance(this).sqlCipherDatabase),
-        "logs" to DatabaseConfig(db = LogDatabase.getInstance(this).sqlCipherDatabase),
+        "jobmanager" to DatabaseConfig(db = { JobDatabase.getInstance(this).sqlCipherDatabase }),
+        "keyvalue" to DatabaseConfig(db = { KeyValueDatabase.getInstance(this).sqlCipherDatabase }),
+        "megaphones" to DatabaseConfig(db = { MegaphoneDatabase.getInstance(this).sqlCipherDatabase }),
+        "localmetrics" to DatabaseConfig(db = { LocalMetricsDatabase.getInstance(this).sqlCipherDatabase }),
+        "logs" to DatabaseConfig(db = { LogDatabase.getInstance(this).sqlCipherDatabase }),
       ),
       linkedMapOf(
         StorageServicePlugin.PATH to StorageServicePlugin()

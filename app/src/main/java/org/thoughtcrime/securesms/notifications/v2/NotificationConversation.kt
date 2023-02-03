@@ -36,9 +36,9 @@ import java.lang.NullPointerException
 data class NotificationConversation(
   val recipient: Recipient,
   val thread: ConversationId,
-  val notificationItems: List<NotificationItemV2>
+  val notificationItems: List<NotificationItem>
 ) {
-  val mostRecentNotification: NotificationItemV2 = notificationItems.last()
+  val mostRecentNotification: NotificationItem = notificationItems.last()
   val notificationId: Int = NotificationIds.getNotificationIdForThread(thread)
   val sortKey: Long = Long.MAX_VALUE - mostRecentNotification.timestamp
   val messageCount: Int = notificationItems.size
@@ -99,11 +99,11 @@ data class NotificationConversation(
     return notificationItems.any { it.isNewNotification }
   }
 
-  fun getChannelId(context: Context): String {
+  fun getChannelId(): String {
     return if (isOnlyContactJoinedEvent) {
-      NotificationChannels.JOIN_EVENTS
+      NotificationChannels.getInstance().JOIN_EVENTS
     } else {
-      recipient.notificationChannel ?: NotificationChannels.getMessagesChannel(context)
+      recipient.notificationChannel ?: NotificationChannels.getInstance().messagesChannel
     }
   }
 
@@ -136,11 +136,14 @@ data class NotificationConversation(
     return try {
       TaskStackBuilder.create(context)
         .addNextIntentWithParentStack(intent)
-        .getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT)
+        .getPendingIntent(0, PendingIntentFlags.updateCurrent())
     } catch (e: NullPointerException) {
       Log.w(NotificationFactory.TAG, "Vivo device quirk sometimes throws NPE", e)
       intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-      PendingIntent.getActivity(context, 0, intent, PendingIntentFlags.updateCurrent())
+      NotificationPendingIntentHelper.getActivity(context, 0, intent, PendingIntentFlags.updateCurrent())
+    } catch (e: SecurityException) {
+      Log.w(NotificationFactory.TAG, "TaskStackBuilder too many pending intents device quirk: ${e.message}")
+      null
     }
   }
 
@@ -159,28 +162,28 @@ data class NotificationConversation(
       .putParcelableArrayListExtra(DeleteNotificationReceiver.EXTRA_THREADS, arrayListOf(thread))
       .makeUniqueToPreventMerging()
 
-    return PendingIntent.getBroadcast(context, 0, intent, PendingIntentFlags.updateCurrent())
+    return NotificationPendingIntentHelper.getBroadcast(context, 0, intent, PendingIntentFlags.updateCurrent())
   }
 
-  fun getMarkAsReadIntent(context: Context): PendingIntent {
+  fun getMarkAsReadIntent(context: Context): PendingIntent? {
     val intent = Intent(context, MarkReadReceiver::class.java)
       .setAction(MarkReadReceiver.CLEAR_ACTION)
       .putParcelableArrayListExtra(MarkReadReceiver.THREADS_EXTRA, arrayListOf(mostRecentNotification.thread))
       .putExtra(MarkReadReceiver.NOTIFICATION_ID_EXTRA, notificationId)
       .makeUniqueToPreventMerging()
 
-    return PendingIntent.getBroadcast(context, (thread.threadId * 2).toInt(), intent, PendingIntentFlags.updateCurrent())
+    return NotificationPendingIntentHelper.getBroadcast(context, (thread.threadId * 2).toInt(), intent, PendingIntentFlags.updateCurrent())
   }
 
-  fun getQuickReplyIntent(context: Context): PendingIntent {
+  fun getQuickReplyIntent(context: Context): PendingIntent? {
     val intent: Intent = ConversationIntents.createPopUpBuilder(context, recipient.id, mostRecentNotification.thread.threadId)
       .build()
       .makeUniqueToPreventMerging()
 
-    return PendingIntent.getActivity(context, (thread.threadId * 2).toInt() + 1, intent, PendingIntentFlags.updateCurrent())
+    return NotificationPendingIntentHelper.getActivity(context, (thread.threadId * 2).toInt() + 1, intent, PendingIntentFlags.updateCurrent())
   }
 
-  fun getRemoteReplyIntent(context: Context, replyMethod: ReplyMethod): PendingIntent {
+  fun getRemoteReplyIntent(context: Context, replyMethod: ReplyMethod): PendingIntent? {
     val intent = Intent(context, RemoteReplyReceiver::class.java)
       .setAction(RemoteReplyReceiver.REPLY_ACTION)
       .putExtra(RemoteReplyReceiver.RECIPIENT_EXTRA, recipient.id)
@@ -189,11 +192,11 @@ data class NotificationConversation(
       .putExtra(RemoteReplyReceiver.GROUP_STORY_ID_EXTRA, notificationItems.first().thread.groupStoryId ?: Long.MIN_VALUE)
       .makeUniqueToPreventMerging()
 
-    return PendingIntent.getBroadcast(context, (thread.threadId * 2).toInt() + 1, intent, PendingIntentFlags.updateCurrent())
+    return NotificationPendingIntentHelper.getBroadcast(context, (thread.threadId * 2).toInt() + 1, intent, PendingIntentFlags.updateCurrent())
   }
 
-  fun getTurnOffJoinedNotificationsIntent(context: Context): PendingIntent {
-    return PendingIntent.getActivity(
+  fun getTurnOffJoinedNotificationsIntent(context: Context): PendingIntent? {
+    return NotificationPendingIntentHelper.getActivity(
       context,
       0,
       TurnOffContactJoinedNotificationsActivity.newIntent(context, thread.threadId),

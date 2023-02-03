@@ -40,25 +40,27 @@ public final class CdsiV2Service {
   private static final UUID EMPTY_UUID         = new UUID(0, 0);
   private static final int  RESPONSE_ITEM_SIZE = 8 + 16 + 16; // 1 uint64 + 2 UUIDs
 
-  private final CdsiSocket cdshSocket;
+  private final CdsiSocket cdsiSocket;
 
   public CdsiV2Service(SignalServiceConfiguration configuration, String mrEnclave) {
-    this.cdshSocket = new CdsiSocket(configuration, mrEnclave);
+    this.cdsiSocket = new CdsiSocket(configuration, mrEnclave);
   }
 
   public Single<ServiceResponse<Response>> getRegisteredUsers(String username, String password, Request request, Consumer<byte[]> tokenSaver) {
-    return cdshSocket
+    return cdsiSocket
         .connect(username, password, buildClientRequest(request), tokenSaver)
         .map(CdsiV2Service::parseEntries)
         .collect(Collectors.toList())
         .flatMap(pages -> {
-          Map<String, ResponseItem> all   = new HashMap<>();
+          Map<String, ResponseItem> all       = new HashMap<>();
+          int                       quotaUsed = 0;
 
           for (Response page : pages) {
             all.putAll(page.getResults());
+            quotaUsed += page.getQuotaUsedDebugOnly();
           }
 
-          return Single.just(new Response(all));
+          return Single.just(new Response(all, quotaUsed));
         })
         .map(result -> ServiceResponse.forResult(result, 200, null))
         .onErrorReturn(error -> {
@@ -87,7 +89,7 @@ public final class CdsiV2Service {
       }
     }
 
-    return new Response(results);
+    return new Response(results, clientResponse.getDebugPermitsUsed());
   }
 
   private static ClientRequest buildClientRequest(Request request) {
@@ -99,7 +101,8 @@ public final class CdsiV2Service {
                                                  .setPrevE164S(toByteString(previousE164s))
                                                  .setNewE164S(toByteString(newE164s))
                                                  .setDiscardE164S(toByteString(removedE164s))
-                                                 .setAciUakPairs(toByteString(request.serviceIds));
+                                                 .setAciUakPairs(toByteString(request.serviceIds))
+                                                 .setReturnAcisWithoutUaks(request.requireAcis);
 
     if (request.token != null) {
       builder.setToken(ByteString.copyFrom(request.token));
@@ -146,15 +149,17 @@ public final class CdsiV2Service {
   }
 
   public static final class Request {
-    private final Set<String> previousE164s;
-    private final Set<String> newE164s;
-    private final Set<String> removedE164s;
+    final Set<String> previousE164s;
+    final Set<String> newE164s;
+    final Set<String> removedE164s;
 
-    private final Map<ServiceId, ProfileKey> serviceIds;
+    final Map<ServiceId, ProfileKey> serviceIds;
 
-    private final byte[] token;
+    final boolean requireAcis;
 
-    public Request(Set<String> previousE164s, Set<String> newE164s, Map<ServiceId, ProfileKey> serviceIds, Optional<byte[]> token) {
+    final byte[] token;
+
+    public Request(Set<String> previousE164s, Set<String> newE164s, Map<ServiceId, ProfileKey> serviceIds, boolean requireAcis, Optional<byte[]> token) {
       if (previousE164s.size() > 0 && !token.isPresent()) {
         throw new IllegalArgumentException("You must have a token if you have previousE164s!");
       }
@@ -163,11 +168,8 @@ public final class CdsiV2Service {
       this.newE164s      = newE164s;
       this.removedE164s  = Collections.emptySet();
       this.serviceIds    = serviceIds;
+      this.requireAcis   = requireAcis;
       this.token         = token.orElse(null);
-    }
-
-    public int totalE164s() {
-      return previousE164s.size() + newE164s.size() - removedE164s.size();
     }
 
     public int serviceIdSize() {
@@ -177,13 +179,23 @@ public final class CdsiV2Service {
 
   public static final class Response {
     private final Map<String, ResponseItem> results;
+    private final int                       quotaUsed;
 
-    public Response(Map<String, ResponseItem> results) {
-      this.results = results;
+    public Response(Map<String, ResponseItem> results, int quoteUsed) {
+      this.results   = results;
+      this.quotaUsed = quoteUsed;
     }
 
     public Map<String, ResponseItem> getResults() {
       return results;
+    }
+
+    /**
+     * Tells you how much quota you used in the request. This should only be used for debugging/logging purposed, and should never be relied upon for making
+     * actual decisions.
+     */
+    public int getQuotaUsedDebugOnly() {
+      return quotaUsed;
     }
   }
 

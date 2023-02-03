@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <merge xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:viewBindingIgnore="true"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/quote_container"
     android:layout_width="wrap_content"
@@ -20,7 +21,7 @@
             android:id="@+id/quote_bar"
             android:layout_width="@dimen/quote_corner_radius_bottom"
             android:layout_height="match_parent"
-            tools:background="@color/purple_400" />
+            tools:background="@color/signal_colorPrimary" />
 
         <LinearLayout
             android:layout_width="match_parent"

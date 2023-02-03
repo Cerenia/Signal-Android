@@ -12,11 +12,12 @@ import org.signal.libsignal.protocol.IdentityKeyPair;
 import org.signal.libsignal.protocol.InvalidKeyException;
 import org.signal.libsignal.protocol.util.Pair;
 import org.signal.libsignal.zkgroup.InvalidInputException;
+import org.signal.libsignal.zkgroup.profiles.ExpiringProfileKeyCredential;
 import org.signal.libsignal.zkgroup.profiles.ProfileKey;
 import org.thoughtcrime.securesms.badges.models.Badge;
 import org.thoughtcrime.securesms.crypto.ProfileKeyUtil;
 import org.thoughtcrime.securesms.crypto.UnidentifiedAccessUtil;
-import org.thoughtcrime.securesms.database.RecipientDatabase;
+import org.thoughtcrime.securesms.database.RecipientTable;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.jobmanager.Job;
@@ -282,6 +283,35 @@ public final class ProfileUtil {
                   Recipient.self().getBadges());
   }
 
+  /**
+   * Attempts to update just the expiring profile key credential with a new one. If unable, an empty optional is returned.
+   *
+   * Note: It will try to find missing profile key credentials from the server and persist locally.
+   */
+  public static Optional<ExpiringProfileKeyCredential> updateExpiringProfileKeyCredential(@NonNull Recipient recipient) throws IOException {
+    ProfileKey profileKey = ProfileKeyUtil.profileKeyOrNull(recipient.getProfileKey());
+
+    if (profileKey != null) {
+      Log.i(TAG, String.format("Updating profile key credential on recipient %s, fetching", recipient.getId()));
+
+      Optional<ExpiringProfileKeyCredential> profileKeyCredentialOptional = ApplicationDependencies.getSignalServiceAccountManager()
+                                                                                                   .resolveProfileKeyCredential(recipient.requireServiceId(), profileKey, Locale.getDefault());
+
+      if (profileKeyCredentialOptional.isPresent()) {
+        boolean updatedProfileKey = SignalDatabase.recipients().setProfileKeyCredential(recipient.getId(), profileKey, profileKeyCredentialOptional.get());
+
+        if (!updatedProfileKey) {
+          Log.w(TAG, String.format("Failed to update the profile key credential on recipient %s", recipient.getId()));
+        } else {
+          Log.i(TAG, String.format("Got new profile key credential for recipient %s", recipient.getId()));
+          return profileKeyCredentialOptional;
+        }
+      }
+    }
+
+    return Optional.empty();
+  }
+
   private static void uploadProfile(@NonNull ProfileName profileName,
                                     @Nullable String about,
                                     @Nullable String aboutEmoji,
@@ -348,7 +378,7 @@ public final class ProfileUtil {
   }
 
   private static @NonNull SignalServiceAddress toSignalServiceAddress(@NonNull Context context, @NonNull Recipient recipient) throws IOException {
-    if (recipient.getRegistered() == RecipientDatabase.RegisteredState.NOT_REGISTERED) {
+    if (recipient.getRegistered() == RecipientTable.RegisteredState.NOT_REGISTERED) {
       if (recipient.hasServiceId()) {
         return new SignalServiceAddress(recipient.requireServiceId(), recipient.getE164().orElse(null));
       } else {

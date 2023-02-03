@@ -2,13 +2,13 @@ package org.thoughtcrime.securesms.badges.gifts.flow
 
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.schedulers.Schedulers
+import org.signal.core.util.logging.Log
 import org.signal.core.util.money.FiatMoney
-import org.thoughtcrime.securesms.badges.Badges
 import org.thoughtcrime.securesms.badges.models.Badge
+import org.thoughtcrime.securesms.components.settings.app.subscription.getGiftBadgeAmounts
+import org.thoughtcrime.securesms.components.settings.app.subscription.getGiftBadges
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies
-import org.thoughtcrime.securesms.util.PlatformCurrencyUtil
-import org.whispersystems.signalservice.api.profiles.SignalServiceProfile
-import org.whispersystems.signalservice.internal.ServiceResponse
+import org.whispersystems.signalservice.internal.push.DonationsConfiguration
 import java.util.Currency
 import java.util.Locale
 
@@ -17,25 +17,29 @@ import java.util.Locale
  */
 class GiftFlowRepository {
 
-  fun getGiftBadge(): Single<Pair<Long, Badge>> {
-    return ApplicationDependencies.getDonationsService()
-      .getGiftBadges(Locale.getDefault())
-      .flatMap(ServiceResponse<Map<Long, SignalServiceProfile.Badge>>::flattenResult)
-      .map { gifts -> gifts.map { it.key to Badges.fromServiceBadge(it.value) } }
-      .map { it.first() }
+  companion object {
+    private val TAG = Log.tag(GiftFlowRepository::class.java)
+  }
+
+  fun getGiftBadge(): Single<Pair<Int, Badge>> {
+    return Single
+      .fromCallable {
+        ApplicationDependencies.getDonationsService()
+          .getDonationsConfiguration(Locale.getDefault())
+      }
+      .flatMap { it.flattenResult() }
+      .map { DonationsConfiguration.GIFT_LEVEL to it.getGiftBadges().first() }
       .subscribeOn(Schedulers.io())
   }
 
   fun getGiftPricing(): Single<Map<Currency, FiatMoney>> {
-    return ApplicationDependencies.getDonationsService()
-      .giftAmount
+    return Single
+      .fromCallable {
+        ApplicationDependencies.getDonationsService()
+          .getDonationsConfiguration(Locale.getDefault())
+      }
       .subscribeOn(Schedulers.io())
       .flatMap { it.flattenResult() }
-      .map { result ->
-        result
-          .filter { PlatformCurrencyUtil.getAvailableCurrencyCodes().contains(it.key) }
-          .mapKeys { (code, _) -> Currency.getInstance(code) }
-          .mapValues { (currency, price) -> FiatMoney(price, currency) }
-      }
+      .map { it.getGiftBadgeAmounts() }
   }
 }

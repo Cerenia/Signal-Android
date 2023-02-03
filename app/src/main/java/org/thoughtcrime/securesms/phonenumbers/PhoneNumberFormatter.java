@@ -79,7 +79,7 @@ public class PhoneNumberFormatter {
   }
 
   public static @NonNull String prettyPrint(@NonNull String e164) {
-    return get(ApplicationDependencies.getApplication()).prettyPrintFormat(e164);
+    return StringUtil.forceLtr(get(ApplicationDependencies.getApplication()).prettyPrintFormat(e164));
   }
 
   public @NonNull String prettyPrintFormat(@NonNull String e164) {
@@ -95,7 +95,7 @@ public class PhoneNumberFormatter {
         return StringUtil.isolateBidi(phoneNumberUtil.format(parsedNumber, PhoneNumberUtil.PhoneNumberFormat.INTERNATIONAL));
       }
     } catch (NumberParseException e) {
-      Log.w(TAG, "Failed to format number.");
+      Log.w(TAG, "Failed to format number: " + e.toString());
       return StringUtil.isolateBidi(e164);
     }
   }
@@ -136,7 +136,7 @@ public class PhoneNumberFormatter {
       Phonenumber.PhoneNumber parsedNumber = phoneNumberUtil.parse(processedNumber, localCountryCode);
       return phoneNumberUtil.format(parsedNumber, PhoneNumberUtil.PhoneNumberFormat.E164);
     } catch (NumberParseException e) {
-      Log.w(TAG, e);
+      Log.w(TAG, e.toString());
       if (bareNumber.charAt(0) == '+') {
         return bareNumber;
       }

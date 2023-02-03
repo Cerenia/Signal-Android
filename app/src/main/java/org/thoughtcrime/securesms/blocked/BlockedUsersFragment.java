@@ -9,17 +9,20 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProviders;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
 import org.thoughtcrime.securesms.BlockUnblockDialog;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.recipients.Recipient;
+import org.thoughtcrime.securesms.util.LifecycleDisposable;
 
 public class BlockedUsersFragment extends Fragment {
 
   private BlockedUsersViewModel viewModel;
   private Listener              listener;
+
+  private final LifecycleDisposable lifecycleDisposable = new LifecycleDisposable();
 
   @Override
   public void onAttach(@NonNull Context context) {
@@ -59,16 +62,19 @@ public class BlockedUsersFragment extends Fragment {
       }
     });
 
-    viewModel = ViewModelProviders.of(requireActivity()).get(BlockedUsersViewModel.class);
-    viewModel.getRecipients().observe(getViewLifecycleOwner(), list -> {
-      if (list.isEmpty()) {
-        empty.setVisibility(View.VISIBLE);
-      } else {
-        empty.setVisibility(View.GONE);
-      }
+    lifecycleDisposable.bindTo(getViewLifecycleOwner());
+    viewModel = new ViewModelProvider(requireActivity()).get(BlockedUsersViewModel.class);
+    lifecycleDisposable.add(
+        viewModel.getRecipients().subscribe(list -> {
+          if (list.isEmpty()) {
+            empty.setVisibility(View.VISIBLE);
+          } else {
+            empty.setVisibility(View.GONE);
+          }
 
-      adapter.submitList(list);
-    });
+          adapter.submitList(list);
+        })
+    );
   }
 
   private void handleRecipientClicked(@NonNull Recipient recipient) {

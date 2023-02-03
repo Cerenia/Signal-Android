@@ -7,6 +7,7 @@ import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.util.AttributeSet;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -17,6 +18,7 @@ import android.widget.TextView;
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.lifecycle.Observer;
 
 import com.airbnb.lottie.LottieAnimationView;
@@ -33,7 +35,7 @@ import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.audio.AudioWaveForm;
 import org.thoughtcrime.securesms.components.voice.VoiceNotePlaybackState;
-import org.thoughtcrime.securesms.database.AttachmentDatabase;
+import org.thoughtcrime.securesms.database.AttachmentTable;
 import org.thoughtcrime.securesms.events.PartProgressEvent;
 import org.thoughtcrime.securesms.mms.AudioSlide;
 import org.thoughtcrime.securesms.mms.SlideClickListener;
@@ -126,6 +128,11 @@ public final class AudioView extends FrameLayout {
 
       setTint(typedArray.getColor(R.styleable.AudioView_foregroundTintColor, Color.WHITE));
 
+      int backgroundTintColor = typedArray.getColor(R.styleable.AudioView_backgroundTintColor, Color.TRANSPARENT);
+      if (getBackground() != null && backgroundTintColor != Color.TRANSPARENT) {
+        DrawableCompat.setTint(getBackground(), backgroundTintColor);
+      }
+
       this.waveFormPlayedBarsColor   = typedArray.getColor(R.styleable.AudioView_waveformPlayedBarsColor, Color.WHITE);
       this.waveFormUnplayedBarsColor = typedArray.getColor(R.styleable.AudioView_waveformUnplayedBarsColor, Color.WHITE);
       this.waveFormThumbTint         = typedArray.getColor(R.styleable.AudioView_waveformThumbTint, Color.WHITE);
@@ -186,7 +193,7 @@ public final class AudioView extends FrameLayout {
         if (circleProgress.isSpinning()) circleProgress.stopSpinning();
         circleProgress.setVisibility(View.GONE);
       }
-    } else if (showControls && audio.getTransferState() == AttachmentDatabase.TRANSFER_PROGRESS_STARTED) {
+    } else if (showControls && audio.getTransferState() == AttachmentTable.TRANSFER_PROGRESS_STARTED) {
       controlToggle.displayQuick(progressAndPlay);
       seekBar.setEnabled(false);
       if (circleProgress != null) {
@@ -331,7 +338,7 @@ public final class AudioView extends FrameLayout {
     super.setClickable(clickable);
     this.playPauseButton.setClickable(clickable);
     this.seekBar.setClickable(clickable);
-    this.seekBar.setOnTouchListener(clickable ? null : new TouchIgnoringListener());
+    this.seekBar.setOnTouchListener(clickable ? new LongTapAwareTouchListener() : new TouchIgnoringListener());
     this.downloadButton.setClickable(clickable);
   }
 
@@ -496,6 +503,20 @@ public final class AudioView extends FrameLayout {
           callbacks.onProgressUpdated(durationMillis, Math.round(durationMillis * getProgress()));
         }
       }
+    }
+  }
+
+  private class LongTapAwareTouchListener implements OnTouchListener {
+    private final GestureDetector gestureDetector = new GestureDetector(AudioView.this.getContext(), new GestureDetector.SimpleOnGestureListener() {
+      @Override
+      public void onLongPress(MotionEvent e) {
+        performLongClick();
+      }
+    });
+
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+      return gestureDetector.onTouchEvent(event);
     }
   }
 

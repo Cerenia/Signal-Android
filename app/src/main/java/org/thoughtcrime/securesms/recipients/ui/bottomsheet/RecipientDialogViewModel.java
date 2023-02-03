@@ -21,7 +21,7 @@ import org.signal.libsignal.protocol.util.Pair;
 import org.thoughtcrime.securesms.BlockUnblockDialog;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.components.settings.conversation.ConversationSettingsActivity;
-import org.thoughtcrime.securesms.database.GroupDatabase;
+import org.thoughtcrime.securesms.database.GroupTable;
 import org.thoughtcrime.securesms.database.model.IdentityRecord;
 import org.thoughtcrime.securesms.database.model.StoryViewState;
 import org.thoughtcrime.securesms.groups.GroupId;
@@ -72,14 +72,14 @@ final class RecipientDialogViewModel extends ViewModel {
     if (recipientDialogRepository.getGroupId() != null && recipientDialogRepository.getGroupId().isV2() && !recipientIsSelf) {
       LiveGroup source = new LiveGroup(recipientDialogRepository.getGroupId());
 
-      LiveData<Pair<Boolean, Boolean>>    localStatus          = LiveDataUtil.combineLatest(source.isSelfAdmin(), Transformations.map(source.getGroupLink(), s -> s == null || s.isEnabled()), Pair::new);
-      LiveData<GroupDatabase.MemberLevel> recipientMemberLevel = Transformations.switchMap(recipient, source::getMemberLevel);
+      LiveData<Pair<Boolean, Boolean>> localStatus          = LiveDataUtil.combineLatest(source.isSelfAdmin(), Transformations.map(source.getGroupLink(), s -> s == null || s.isEnabled()), Pair::new);
+      LiveData<GroupTable.MemberLevel> recipientMemberLevel = Transformations.switchMap(recipient, source::getMemberLevel);
 
       adminActionStatus = LiveDataUtil.combineLatest(localStatus, recipientMemberLevel, (statuses, memberLevel) -> {
         boolean localAdmin     = statuses.first();
         boolean isLinkActive   = statuses.second();
         boolean inGroup        = memberLevel.isInGroup();
-        boolean recipientAdmin = memberLevel == GroupDatabase.MemberLevel.ADMINISTRATOR;
+        boolean recipientAdmin = memberLevel == GroupTable.MemberLevel.ADMINISTRATOR;
 
         return new AdminActionStatus(inGroup && localAdmin,
                                      inGroup && localAdmin && !recipientAdmin,
@@ -144,6 +144,7 @@ final class RecipientDialogViewModel extends ViewModel {
       activity.startActivity(StoryViewerActivity.createIntent(
           activity,
           new StoryViewerArgs.Builder(recipientDialogRepository.getRecipientId(), recipient.getValue().shouldHideStory())
+                             .isFromQuote(true)
                              .build()));
     }
   }
@@ -169,7 +170,7 @@ final class RecipientDialogViewModel extends ViewModel {
   }
 
   void onUnblockClicked(@NonNull FragmentActivity activity) {
-    recipientDialogRepository.getRecipient(recipient -> BlockUnblockDialog.showUnblockFor(activity, activity.getLifecycle(), recipient, () -> RecipientUtil.unblock(context, recipient)));
+    recipientDialogRepository.getRecipient(recipient -> BlockUnblockDialog.showUnblockFor(activity, activity.getLifecycle(), recipient, () -> RecipientUtil.unblock(recipient)));
   }
 
   void onViewSafetyNumberClicked(@NonNull Activity activity, @NonNull IdentityRecord identityRecord) {
@@ -183,6 +184,7 @@ final class RecipientDialogViewModel extends ViewModel {
       activity.startActivity(StoryViewerActivity.createIntent(
           activity,
           new StoryViewerArgs.Builder(recipientDialogRepository.getRecipientId(), recipient.getValue().shouldHideStory())
+                             .isFromQuote(true)
                              .build()));
     }
   }

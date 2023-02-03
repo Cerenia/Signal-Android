@@ -9,6 +9,7 @@ import androidx.annotation.StringRes
 import kotlinx.parcelize.Parcelize
 import org.signal.core.util.logging.Log
 import org.thoughtcrime.securesms.R
+import org.thoughtcrime.securesms.keyvalue.SignalStore
 import org.thoughtcrime.securesms.util.CharacterCalculator
 import org.thoughtcrime.securesms.util.MmsCharacterCalculator
 import org.thoughtcrime.securesms.util.PushCharacterCalculator
@@ -138,22 +139,24 @@ sealed class MessageSendType(
 
       options += SignalMessageSendType
 
-      try {
-        val subscriptions: Collection<SubscriptionInfoCompat> = SubscriptionManagerCompat(context).activeAndReadySubscriptionInfos
+      if (SignalStore.misc().smsExportPhase.allowSmsFeatures()) {
+        try {
+          val subscriptions: Collection<SubscriptionInfoCompat> = SubscriptionManagerCompat(context).activeAndReadySubscriptionInfos
 
-        if (subscriptions.size < 2) {
-          options += if (isMedia) MmsMessageSendType() else SmsMessageSendType()
-        } else {
-          options += subscriptions.map {
-            if (isMedia) {
-              MmsMessageSendType(simName = it.displayName, simSubscriptionId = it.subscriptionId)
-            } else {
-              SmsMessageSendType(simName = it.displayName, simSubscriptionId = it.subscriptionId)
+          if (subscriptions.size < 2) {
+            options += if (isMedia) MmsMessageSendType() else SmsMessageSendType()
+          } else {
+            options += subscriptions.map {
+              if (isMedia) {
+                MmsMessageSendType(simName = it.displayName, simSubscriptionId = it.subscriptionId)
+              } else {
+                SmsMessageSendType(simName = it.displayName, simSubscriptionId = it.subscriptionId)
+              }
             }
           }
+        } catch (e: SecurityException) {
+          Log.w(TAG, "Did not have permission to get SMS subscription details!")
         }
-      } catch (e: SecurityException) {
-        Log.w(TAG, "Did not have permission to get SMS subscription details!")
       }
 
       return options

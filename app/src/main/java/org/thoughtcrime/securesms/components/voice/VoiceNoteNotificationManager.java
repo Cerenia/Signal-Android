@@ -13,6 +13,7 @@ import androidx.annotation.Nullable;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.ui.PlayerNotificationManager;
 
+import org.signal.core.util.PendingIntentFlags;
 import org.signal.core.util.concurrent.SignalExecutors;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.conversation.ConversationIntents;
@@ -39,7 +40,7 @@ class VoiceNoteNotificationManager {
   {
     this.context        = context;
     controller          = new MediaControllerCompat(context, token);
-    notificationManager = new PlayerNotificationManager.Builder(context, NOW_PLAYING_NOTIFICATION_ID, NotificationChannels.VOICE_NOTES)
+    notificationManager = new PlayerNotificationManager.Builder(context, NOW_PLAYING_NOTIFICATION_ID, NotificationChannels.getInstance().VOICE_NOTES)
                                                        .setChannelNameResourceId(R.string.NotificationChannel_voice_notes)
                                                        .setMediaDescriptionAdapter(new DescriptionAdapter())
                                                        .setNotificationListener(listener)
@@ -107,7 +108,7 @@ class VoiceNoteNotificationManager {
       return PendingIntent.getActivity(context,
                                        0,
                                        conversationActivity,
-                                       PendingIntent.FLAG_CANCEL_CURRENT);
+                                       PendingIntentFlags.cancelCurrent());
     }
 
     @Override

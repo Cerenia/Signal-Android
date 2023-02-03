@@ -6,6 +6,7 @@ import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.view.KeyEvent
+import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.viewModels
@@ -13,7 +14,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.FragmentManager
+import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.NavHostFragment
@@ -25,15 +26,12 @@ import org.signal.core.util.logging.Log
 import org.thoughtcrime.securesms.PassphraseRequiredActivity
 import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.components.emoji.EmojiEventListener
-import org.thoughtcrime.securesms.contacts.paged.ContactSearchConfiguration
 import org.thoughtcrime.securesms.contacts.paged.ContactSearchKey
-import org.thoughtcrime.securesms.contacts.paged.ContactSearchState
 import org.thoughtcrime.securesms.conversation.MessageSendType
-import org.thoughtcrime.securesms.conversation.mutiselect.forward.MultiselectForwardFullScreenDialogFragment
-import org.thoughtcrime.securesms.conversation.mutiselect.forward.SearchConfigurationProvider
 import org.thoughtcrime.securesms.keyboard.emoji.EmojiKeyboardPageFragment
 import org.thoughtcrime.securesms.keyboard.emoji.search.EmojiSearchFragment
 import org.thoughtcrime.securesms.linkpreview.LinkPreviewUtil
+import org.thoughtcrime.securesms.mediasend.CameraDisplay
 import org.thoughtcrime.securesms.mediasend.Media
 import org.thoughtcrime.securesms.mediasend.MediaSendActivityResult
 import org.thoughtcrime.securesms.mediasend.v2.review.MediaReviewFragment
@@ -42,6 +40,8 @@ import org.thoughtcrime.securesms.mediasend.v2.text.send.TextStoryPostSendReposi
 import org.thoughtcrime.securesms.recipients.RecipientId
 import org.thoughtcrime.securesms.safety.SafetyNumberBottomSheet
 import org.thoughtcrime.securesms.stories.Stories
+import org.thoughtcrime.securesms.util.FullscreenHelper
+import org.thoughtcrime.securesms.util.WindowUtil
 import org.thoughtcrime.securesms.util.navigation.safeNavigate
 import org.thoughtcrime.securesms.util.visible
 
@@ -50,9 +50,7 @@ class MediaSelectionActivity :
   MediaReviewFragment.Callback,
   EmojiKeyboardPageFragment.Callback,
   EmojiEventListener,
-  EmojiSearchFragment.Callback,
-  SearchConfigurationProvider,
-  MultiselectForwardFullScreenDialogFragment.Callback {
+  EmojiSearchFragment.Callback {
 
   private var animateInShadowLayerValueAnimator: ValueAnimator? = null
   private var animateInTextColorValueAnimator: ValueAnimator? = null
@@ -87,15 +85,26 @@ class MediaSelectionActivity :
   override fun onCreate(savedInstanceState: Bundle?, ready: Boolean) {
     setContentView(R.layout.media_selection_activity)
 
+    FullscreenHelper.showSystemUI(window)
+    WindowUtil.setNavigationBarColor(this, 0x01000000)
+    WindowUtil.setStatusBarColor(window, Color.TRANSPARENT)
+
     val sendType: MessageSendType = requireNotNull(intent.getParcelableExtra(MESSAGE_SEND_TYPE))
     val initialMedia: List<Media> = intent.getParcelableArrayListExtra(MEDIA) ?: listOf()
     val message: CharSequence? = if (shareToTextStory) null else draftText
     val isReply: Boolean = intent.getBooleanExtra(IS_REPLY, false)
+    val isAddToGroupStoryFlow: Boolean = intent.getBooleanExtra(IS_ADD_TO_GROUP_STORY_FLOW, false)
 
-    val factory = MediaSelectionViewModel.Factory(destination, sendType, initialMedia, message, isReply, isStory, MediaSelectionRepository(this))
+    val factory = MediaSelectionViewModel.Factory(destination, sendType, initialMedia, message, isReply, isStory, isAddToGroupStoryFlow, MediaSelectionRepository(this))
     viewModel = ViewModelProvider(this, factory)[MediaSelectionViewModel::class.java]
 
     val textStoryToggle: ConstraintLayout = findViewById(R.id.switch_widget)
+    val cameraDisplay = CameraDisplay.getDisplay(this)
+
+    textStoryToggle.updateLayoutParams<FrameLayout.LayoutParams> {
+      bottomMargin = cameraDisplay.getToggleBottomMargin()
+    }
+
     val cameraSelectedConstraintSet = ConstraintSet().apply {
       clone(textStoryToggle)
     }
@@ -213,7 +222,7 @@ class MediaSelectionActivity :
     return Stories.isFeatureEnabled() &&
       isCameraFirst() &&
       !viewModel.hasSelectedMedia() &&
-      destination == MediaSelectionDestination.ChooseAfterMediaSelection
+      (destination == MediaSelectionDestination.ChooseAfterMediaSelection || destination is MediaSelectionDestination.SingleStory)
   }
 
   override fun onSaveInstanceState(outState: Bundle) {
@@ -313,28 +322,6 @@ class MediaSelectionActivity :
     viewModel.sendCommand(HudCommand.CloseEmojiSearch)
   }
 
-  override fun getSearchConfiguration(fragmentManager: FragmentManager, contactSearchState: ContactSearchState): ContactSearchConfiguration? {
-    return if (isStory) {
-      ContactSearchConfiguration.build {
-        query = contactSearchState.query
-
-        addSection(
-          ContactSearchConfiguration.Section.Stories(
-            groupStories = contactSearchState.groupStories,
-            includeHeader = true,
-            headerAction = Stories.getHeaderAction(fragmentManager)
-          )
-        )
-      }
-    } else {
-      null
-    }
-  }
-
-  override fun getStorySendRequirements(): Stories.MediaTransform.SendRequirements {
-    return viewModel.getStorySendRequirements()
-  }
-
   private inner class OnBackPressed : OnBackPressedCallback(true) {
     override fun handleOnBackPressed() {
       val navController = Navigation.findNavController(this@MediaSelectionActivity, R.id.fragment_container)
@@ -362,6 +349,7 @@ class MediaSelectionActivity :
     private const val IS_REPLY = "is_reply"
     private const val IS_STORY = "is_story"
     private const val AS_TEXT_STORY = "as_text_story"
+    private const val IS_ADD_TO_GROUP_STORY_FLOW = "is_add_to_group_story_flow"
 
     @JvmStatic
     fun camera(context: Context): Intent {
@@ -374,6 +362,19 @@ class MediaSelectionActivity :
         context = context,
         startAction = R.id.action_directly_to_mediaCaptureFragment,
         isStory = isStory
+      )
+    }
+
+    fun addToGroupStory(
+      context: Context,
+      recipientId: RecipientId
+    ): Intent {
+      return buildIntent(
+        context = context,
+        startAction = R.id.action_directly_to_mediaCaptureFragment,
+        isStory = true,
+        isAddToGroupStoryFlow = true,
+        destination = MediaSelectionDestination.SingleStory(recipientId)
       )
     }
 
@@ -431,6 +432,17 @@ class MediaSelectionActivity :
     }
 
     @JvmStatic
+    fun editor(
+      context: Context,
+      media: List<Media>,
+    ): Intent {
+      return buildIntent(
+        context = context,
+        media = media
+      )
+    }
+
+    @JvmStatic
     fun share(
       context: Context,
       messageSendType: MessageSendType,
@@ -446,7 +458,8 @@ class MediaSelectionActivity :
         destination = MediaSelectionDestination.MultipleRecipients(recipientSearchKeys),
         message = message,
         asTextStory = asTextStory,
-        startAction = if (asTextStory) R.id.action_directly_to_textPostCreationFragment else -1
+        startAction = if (asTextStory) R.id.action_directly_to_textPostCreationFragment else -1,
+        isStory = recipientSearchKeys.any { it.isStory }
       )
     }
 
@@ -459,7 +472,8 @@ class MediaSelectionActivity :
       message: CharSequence? = null,
       isReply: Boolean = false,
       isStory: Boolean = false,
-      asTextStory: Boolean = false
+      asTextStory: Boolean = false,
+      isAddToGroupStoryFlow: Boolean = false
     ): Intent {
       return Intent(context, MediaSelectionActivity::class.java).apply {
         putExtra(START_ACTION, startAction)
@@ -470,6 +484,7 @@ class MediaSelectionActivity :
         putExtra(IS_REPLY, isReply)
         putExtra(IS_STORY, isStory)
         putExtra(AS_TEXT_STORY, asTextStory)
+        putExtra(IS_ADD_TO_GROUP_STORY_FLOW, isAddToGroupStoryFlow)
       }
     }
   }

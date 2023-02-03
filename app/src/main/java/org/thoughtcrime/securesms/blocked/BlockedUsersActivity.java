@@ -10,7 +10,7 @@ import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProviders;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
@@ -24,6 +24,7 @@ import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.util.DynamicNoActionBarTheme;
 import org.thoughtcrime.securesms.util.DynamicTheme;
+import org.thoughtcrime.securesms.util.LifecycleDisposable;
 import org.thoughtcrime.securesms.util.ViewUtil;
 
 import java.util.Optional;
@@ -37,10 +38,13 @@ public class BlockedUsersActivity extends PassphraseRequiredActivity implements 
 
   private BlockedUsersViewModel viewModel;
 
+  private final LifecycleDisposable lifecycleDisposable = new LifecycleDisposable();
+
   @Override
   protected void onCreate(Bundle savedInstanceState, boolean ready) {
     super.onCreate(savedInstanceState, ready);
 
+    lifecycleDisposable.bindTo(this);
     dynamicTheme.onCreate(this);
 
     setContentView(R.layout.blocked_users_activity);
@@ -48,7 +52,7 @@ public class BlockedUsersActivity extends PassphraseRequiredActivity implements 
     BlockedUsersRepository        repository = new BlockedUsersRepository(this);
     BlockedUsersViewModel.Factory factory    = new BlockedUsersViewModel.Factory(repository);
 
-    viewModel = ViewModelProviders.of(this, factory).get(BlockedUsersViewModel.class);
+    viewModel = new ViewModelProvider(this, factory).get(BlockedUsersViewModel.class);
 
     Toolbar           toolbar           = findViewById(R.id.toolbar);
     ContactFilterView contactFilterView = findViewById(R.id.contact_filter_edit_text);
@@ -78,7 +82,11 @@ public class BlockedUsersActivity extends PassphraseRequiredActivity implements 
                                .add(R.id.fragment_container, new BlockedUsersFragment())
                                .commit();
 
-    viewModel.getEvents().observe(this, event -> handleEvent(container, event));
+    lifecycleDisposable.add(
+        viewModel
+            .getEvents()
+            .subscribe(event -> handleEvent(container, event))
+    );
   }
 
   @Override

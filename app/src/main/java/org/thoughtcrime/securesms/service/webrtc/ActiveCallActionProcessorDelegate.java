@@ -165,7 +165,7 @@ public class ActiveCallActionProcessorDelegate extends WebRtcActionProcessor {
       state = Objects.requireNonNull(ENDED_REMOTE_EVENT_TO_STATE.get(endedRemoteEvent));
     }
 
-    if (endedRemoteEvent == CallEvent.ENDED_REMOTE_HANGUP) {
+    if (endedRemoteEvent == CallEvent.ENDED_REMOTE_HANGUP || endedRemoteEvent == CallEvent.ENDED_REMOTE_HANGUP_BUSY) {
       if (remotePeerIsActive) {
         state = outgoingBeforeAccept ? WebRtcViewModel.State.RECIPIENT_UNAVAILABLE : WebRtcViewModel.State.CALL_DISCONNECTED;
       }
@@ -248,6 +248,11 @@ public class ActiveCallActionProcessorDelegate extends WebRtcActionProcessor {
       }
 
       return terminate(currentState, activePeer);
+    } else {
+      RemotePeer peerByCallId = currentState.getCallInfoState().getPeerByCallId(callId);
+      if (peerByCallId != null) {
+        webRtcInteractor.terminateCall(peerByCallId.getId());
+      }
     }
 
     return currentState;

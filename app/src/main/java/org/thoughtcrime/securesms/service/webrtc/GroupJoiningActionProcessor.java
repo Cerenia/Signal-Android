@@ -13,7 +13,6 @@ import org.thoughtcrime.securesms.ringrtc.Camera;
 import org.thoughtcrime.securesms.ringrtc.RemotePeer;
 import org.thoughtcrime.securesms.service.webrtc.state.WebRtcServiceState;
 import org.thoughtcrime.securesms.service.webrtc.state.WebRtcServiceStateBuilder;
-import org.thoughtcrime.securesms.util.FeatureFlags;
 import org.thoughtcrime.securesms.util.NetworkUtil;
 import org.thoughtcrime.securesms.webrtc.locks.LockManager;
 
@@ -41,6 +40,8 @@ public class GroupJoiningActionProcessor extends GroupActionProcessor {
   @Override
   protected @NonNull WebRtcServiceState handleGroupLocalDeviceStateChanged(@NonNull WebRtcServiceState currentState) {
     Log.i(tag, "handleGroupLocalDeviceStateChanged():");
+
+    currentState = super.handleGroupLocalDeviceStateChanged(currentState);
 
     GroupCall                  groupCall = currentState.getCallInfoState().requireGroupCall();
     GroupCall.LocalDeviceState device    = groupCall.getLocalDeviceState();
@@ -78,7 +79,7 @@ public class GroupJoiningActionProcessor extends GroupActionProcessor {
             throw new RuntimeException(e);
           }
 
-          if (FeatureFlags.groupCallRinging() && currentState.getCallSetupState(RemotePeer.GROUP_CALL_ID).shouldRingGroup()) {
+          if (currentState.getCallSetupState(RemotePeer.GROUP_CALL_ID).shouldRingGroup()) {
             try {
               groupCall.ringAll();
             } catch (CallException e) {

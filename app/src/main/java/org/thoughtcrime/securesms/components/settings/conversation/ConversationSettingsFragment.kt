@@ -1,5 +1,6 @@
 package org.thoughtcrime.securesms.components.settings.conversation
 
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.graphics.PorterDuff
@@ -27,7 +28,6 @@ import org.signal.core.util.DimensionUnit
 import org.thoughtcrime.securesms.AvatarPreviewActivity
 import org.thoughtcrime.securesms.BlockUnblockDialog
 import org.thoughtcrime.securesms.InviteActivity
-import org.thoughtcrime.securesms.MediaPreviewActivity
 import org.thoughtcrime.securesms.MuteDialog
 import org.thoughtcrime.securesms.PushContactSelectionActivity
 import org.thoughtcrime.securesms.R
@@ -39,7 +39,6 @@ import org.thoughtcrime.securesms.badges.view.ViewBadgeBottomSheetDialogFragment
 import org.thoughtcrime.securesms.components.AvatarImageView
 import org.thoughtcrime.securesms.components.recyclerview.OnScrollAnimationHelper
 import org.thoughtcrime.securesms.components.settings.DSLConfiguration
-import org.thoughtcrime.securesms.components.settings.DSLSettingsAdapter
 import org.thoughtcrime.securesms.components.settings.DSLSettingsFragment
 import org.thoughtcrime.securesms.components.settings.DSLSettingsIcon
 import org.thoughtcrime.securesms.components.settings.DSLSettingsText
@@ -69,6 +68,7 @@ import org.thoughtcrime.securesms.groups.ui.managegroup.dialogs.GroupInviteSentD
 import org.thoughtcrime.securesms.groups.ui.managegroup.dialogs.GroupsLearnMoreBottomSheetDialogFragment
 import org.thoughtcrime.securesms.groups.ui.migration.GroupsV1MigrationInitiationBottomSheetDialogFragment
 import org.thoughtcrime.securesms.mediaoverview.MediaOverviewActivity
+import org.thoughtcrime.securesms.mediapreview.MediaIntentFactory
 import org.thoughtcrime.securesms.profiles.edit.EditProfileActivity
 import org.thoughtcrime.securesms.recipients.Recipient
 import org.thoughtcrime.securesms.recipients.RecipientExporter
@@ -77,13 +77,15 @@ import org.thoughtcrime.securesms.recipients.ui.bottomsheet.RecipientBottomSheet
 import org.thoughtcrime.securesms.stories.Stories
 import org.thoughtcrime.securesms.stories.StoryViewerArgs
 import org.thoughtcrime.securesms.stories.dialogs.StoryDialogs
+import org.thoughtcrime.securesms.stories.viewer.AddToGroupStoryDelegate
 import org.thoughtcrime.securesms.stories.viewer.StoryViewerActivity
 import org.thoughtcrime.securesms.util.CommunicationActions
 import org.thoughtcrime.securesms.util.ContextUtil
 import org.thoughtcrime.securesms.util.ExpirationUtil
-import org.thoughtcrime.securesms.util.FeatureFlags
+import org.thoughtcrime.securesms.util.LifecycleDisposable
 import org.thoughtcrime.securesms.util.Material3OnScrollHelper
 import org.thoughtcrime.securesms.util.ViewUtil
+import org.thoughtcrime.securesms.util.adapter.mapping.MappingAdapter
 import org.thoughtcrime.securesms.util.navigation.safeNavigate
 import org.thoughtcrime.securesms.util.views.SimpleProgressDialog
 import org.thoughtcrime.securesms.verify.VerifyIdentityActivity
@@ -137,8 +139,10 @@ class ConversationSettingsFragment : DSLSettingsFragment(
   private lateinit var toolbarBadge: BadgeImageView
   private lateinit var toolbarTitle: TextView
   private lateinit var toolbarBackground: View
+  private lateinit var addToGroupStoryDelegate: AddToGroupStoryDelegate
 
   private val navController get() = Navigation.findNavController(requireView())
+  private val lifecycleDisposable = LifecycleDisposable()
 
   override fun onAttach(context: Context) {
     super.onAttach(context)
@@ -201,7 +205,7 @@ class ConversationSettingsFragment : DSLSettingsFragment(
     }
   }
 
-  override fun bindAdapter(adapter: DSLSettingsAdapter) {
+  override fun bindAdapter(adapter: MappingAdapter) {
     val args = ConversationSettingsFragmentArgs.fromBundle(requireArguments())
 
     BioTextPreference.register(adapter)
@@ -221,6 +225,7 @@ class ConversationSettingsFragment : DSLSettingsFragment(
       }
     }
 
+    addToGroupStoryDelegate = AddToGroupStoryDelegate(this)
     viewModel.state.observe(viewLifecycleOwner) { state ->
 
       if (state.recipient != Recipient.UNKNOWN) {
@@ -230,7 +235,7 @@ class ConversationSettingsFragment : DSLSettingsFragment(
           .withFixedSize(ViewUtil.dpToPx(80))
           .load(state.recipient)
 
-        if (FeatureFlags.displayDonorBadges() && !state.recipient.isSelf) {
+        if (!state.recipient.isSelf) {
           toolbarBadge.setBadgeFromRecipient(state.recipient)
         }
 
@@ -253,7 +258,8 @@ class ConversationSettingsFragment : DSLSettingsFragment(
       }
     }
 
-    viewModel.events.observe(viewLifecycleOwner) { event ->
+    lifecycleDisposable.bindTo(viewLifecycleOwner)
+    lifecycleDisposable += viewModel.events.subscribe { event ->
       @Exhaustive
       when (event) {
         is ConversationSettingsEvent.AddToAGroup -> handleAddToAGroup(event)
@@ -286,7 +292,8 @@ class ConversationSettingsFragment : DSLSettingsFragment(
                 requireContext(),
                 StoryViewerArgs(
                   recipientId = state.recipient.id,
-                  isInHiddenStoryMode = state.recipient.shouldHideStory()
+                  isInHiddenStoryMode = state.recipient.shouldHideStory(),
+                  isFromQuote = true
                 )
               )
               StoryDialogs.displayStoryOrProfileImage(
@@ -367,6 +374,17 @@ class ConversationSettingsFragment : DSLSettingsFragment(
       customPref(
         ButtonStripPreference.Model(
           state = state.buttonStripState,
+          onAddToStoryClick = {
+            if (state.recipient.isPushV2Group && state.requireGroupSettingsState().isAnnouncementGroup && !state.requireGroupSettingsState().isSelfAdmin) {
+              MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.ConversationSettingsFragment__cant_add_to_group_story)
+                .setMessage(R.string.ConversationSettingsFragment__only_admins_of_this_group_can_add_to_its_story)
+                .setPositiveButton(android.R.string.ok) { d, _ -> d.dismiss() }
+                .show()
+            } else {
+              addToGroupStoryDelegate.addToStory(state.recipient.id)
+            }
+          },
           onVideoClick = {
             if (state.recipient.isPushV2Group && state.requireGroupSettingsState().isAnnouncementGroup && !state.requireGroupSettingsState().isSelfAdmin) {
               MaterialAlertDialogBuilder(requireContext())
@@ -477,7 +495,11 @@ class ConversationSettingsFragment : DSLSettingsFragment(
               title = DSLSettingsText.from(R.string.ConversationSettingsFragment__add_as_a_contact),
               icon = DSLSettingsIcon.from(R.drawable.ic_plus_24),
               onClick = {
-                startActivityForResult(RecipientExporter.export(state.recipient).asAddContactIntent(), REQUEST_CODE_ADD_CONTACT)
+                try {
+                  startActivityForResult(RecipientExporter.export(state.recipient).asAddContactIntent(), REQUEST_CODE_ADD_CONTACT)
+                } catch (e: ActivityNotFoundException) {
+                  Toast.makeText(context, R.string.ConversationSettingsFragment__contacts_app_not_found, Toast.LENGTH_SHORT).show()
+                }
               }
             )
           }
@@ -508,7 +530,7 @@ class ConversationSettingsFragment : DSLSettingsFragment(
             mediaIds = state.sharedMediaIds,
             onMediaRecordClick = { mediaRecord, isLtr ->
               startActivityForResult(
-                MediaPreviewActivity.intentFromMediaRecord(requireContext(), mediaRecord, isLtr),
+                MediaIntentFactory.intentFromMediaRecord(requireContext(), mediaRecord, isLtr, allMediaInRail = true),
                 REQUEST_CODE_RETURN_FROM_MEDIA
               )
             }

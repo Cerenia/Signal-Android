@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:minHeight="48dp"
-    android:orientation="horizontal">
+    android:orientation="horizontal"
+    tools:viewBindingIgnore="true">
 
     <TextView
         android:id="@+id/section_header"
@@ -19,20 +20,18 @@
         android:textAppearance="@style/Signal.Text.TitleSmall"
         tools:text="Section Header" />
 
-    <androidx.appcompat.widget.AppCompatTextView
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/section_header_action"
+        style="@style/Signal.Widget.Button.Large.Tonal"
         android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:background="?selectableItemBackground"
-        android:drawablePadding="4dp"
-        android:paddingStart="@dimen/dsl_settings_gutter"
-        android:paddingTop="16dp"
-        android:paddingEnd="@dimen/dsl_settings_gutter"
-        android:paddingBottom="12dp"
-        android:textAppearance="@style/Signal.Text.TitleSmall"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_marginStart="@dimen/dsl_settings_gutter"
+        android:layout_marginEnd="@dimen/dsl_settings_gutter"
         android:visibility="gone"
-        app:drawableStartCompat="@drawable/ic_plus_20"
-        app:drawableTint="@color/signal_inverse_primary"
+        app:icon="@drawable/ic_plus_12"
+        app:iconSize="12dp"
+        app:materialThemeOverlay="@style/ThemeOverlay.Signal.Button.Surface2"
         tools:text="New Story"
         tools:visibility="visible" />
 </LinearLayout>

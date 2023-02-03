@@ -78,7 +78,7 @@
         <item name="android:textColor">@color/signal_button_secondary_text_selector</item>
         <item name="background">@color/signal_background_tertiary</item>
         <item name="rippleColor">@color/core_ultramarine</item>
-        <item name="shapeAppearanceOverlay">@style/ShapeAppearanceOverlay.Signal.Button.Rounded</item>
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearanceOverlay.Signal.Circle</item>
     </style>
 
     <style name="Widget.Signal.Button.Small" parent="Widget.Material3.Button.TonalButton">
@@ -105,6 +105,11 @@
     <style name="ThemeOverlay.Signal.Button.Small" parent="ThemeOverlay.Material3.Button">
         <item name="colorOnContainer">@color/signal_colorOnSurfaceVariant</item>
         <item name="colorContainer">@color/signal_colorSurface1</item>
+    </style>
+    
+    <style name="ThemeOverlay.Signal.Button.Surface2" parent="ThemeOverlay.Material3.Button">
+        <item name="colorOnContainer">@color/signal_colorOnSurface</item>
+        <item name="colorContainer">@color/signal_colorSurface2</item>
     </style>
 
     <style name="Signal.Widget.Button.Base.Secondary" parent="Widget.Material3.Button.TextButton">
@@ -205,6 +210,9 @@
         <item name="android:windowAnimationStyle">@style/TextSecure.Animation.FullScreenDialog</item>
     </style>
 
+    <style name="Signal.DayNight.Dialog.FullScreen.Donate">
+    </style>
+    
     <style name="Signal.Media.Dialog.AddMessageDialog" parent="TextSecure.MediaPreview">
         <item name="android:windowAnimationStyle">@style/TextSecure.Animation.AddMessageDialog</item>
     </style>
@@ -262,6 +270,11 @@
 
     <style name="ThemeOverlay.Signal.CircularProgressIndicator.Primary" parent="ThemeOverlay.Material3">
         <item name="circularProgressMaterialButtonStyle">@style/Signal.Widget.Button.Large.Primary</item>
+        <item name="circularProgressIndicatorStyle">@style/Widget.Signal.CircularProgressIndicator.Medium.Indeterminate</item>
+    </style>
+
+    <style name="ThemeOverlay.Signal.CircularProgressIndicator.Tonal" parent="ThemeOverlay.Material3">
+        <item name="circularProgressMaterialButtonStyle">@style/Signal.Widget.Button.Large.Tonal</item>
         <item name="circularProgressIndicatorStyle">@style/Widget.Signal.CircularProgressIndicator.Medium.Indeterminate</item>
     </style>
 

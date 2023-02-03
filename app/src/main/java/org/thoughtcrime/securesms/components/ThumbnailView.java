@@ -5,6 +5,7 @@ import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.util.AttributeSet;
@@ -14,8 +15,10 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.Px;
 import androidx.annotation.UiThread;
+import androidx.appcompat.widget.AppCompatImageView;
 
 import com.bumptech.glide.RequestBuilder;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
@@ -23,18 +26,22 @@ import com.bumptech.glide.load.resource.bitmap.BitmapTransformation;
 import com.bumptech.glide.load.resource.bitmap.CenterCrop;
 import com.bumptech.glide.load.resource.bitmap.FitCenter;
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
+import com.bumptech.glide.request.Request;
+import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.RequestOptions;
 
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.blurhash.BlurHash;
-import org.thoughtcrime.securesms.database.AttachmentDatabase;
+import org.thoughtcrime.securesms.database.AttachmentTable;
 import org.thoughtcrime.securesms.mms.DecryptableStreamUriLoader.DecryptableUri;
 import org.thoughtcrime.securesms.mms.GlideRequest;
 import org.thoughtcrime.securesms.mms.GlideRequests;
+import org.thoughtcrime.securesms.mms.ImageSlide;
 import org.thoughtcrime.securesms.mms.Slide;
 import org.thoughtcrime.securesms.mms.SlideClickListener;
 import org.thoughtcrime.securesms.mms.SlidesClickedListener;
+import org.thoughtcrime.securesms.mms.VideoSlide;
 import org.thoughtcrime.securesms.stories.StoryTextPostModel;
 import org.thoughtcrime.securesms.util.MediaUtil;
 import org.thoughtcrime.securesms.util.Util;
@@ -60,10 +67,12 @@ public class ThumbnailView extends FrameLayout {
   private static final int    MIN_HEIGHT = 2;
   private static final int    MAX_HEIGHT = 3;
 
-  private ImageView         image;
-  private ImageView         blurhash;
-  private View              playOverlay;
-  private View              captionIcon;
+  private final ImageView          image;
+  private final ImageView          blurhash;
+  private final View               playOverlay;
+  private final View               captionIcon;
+  private final AppCompatImageView errorImage;
+
   private OnClickListener   parentClickListener;
 
   private final int[] dimens        = new int[2];
@@ -95,6 +104,7 @@ public class ThumbnailView extends FrameLayout {
     this.blurhash    = findViewById(R.id.thumbnail_blurhash);
     this.playOverlay = findViewById(R.id.play_overlay);
     this.captionIcon = findViewById(R.id.thumbnail_caption_icon);
+    this.errorImage  = findViewById(R.id.thumbnail_error);
 
     super.setOnClickListener(new ThumbnailClickDispatcher());
 
@@ -280,6 +290,14 @@ public class ThumbnailView extends FrameLayout {
     forceLayout();
   }
 
+  public void setImageDrawable(@NonNull GlideRequests glideRequests, @Nullable Drawable drawable) {
+    glideRequests.clear(image);
+    glideRequests.clear(blurhash);
+
+    image.setImageDrawable(drawable);
+    blurhash.setImageDrawable(null);
+  }
+
   @UiThread
   public ListenableFuture<Boolean> setImageResource(@NonNull GlideRequests glideRequests, @NonNull Slide slide,
                                                     boolean showControls, boolean isPreview)
@@ -292,6 +310,34 @@ public class ThumbnailView extends FrameLayout {
                                                     boolean showControls, boolean isPreview,
                                                     int naturalWidth, int naturalHeight)
   {
+    if (slide.asAttachment().isPermanentlyFailed()) {
+      this.slide = slide;
+
+      transferControls.ifPresent(c -> c.setVisibility(View.GONE));
+      playOverlay.setVisibility(View.GONE);
+
+      glideRequests.clear(blurhash);
+      blurhash.setImageDrawable(null);
+
+      glideRequests.clear(image);
+      image.setImageDrawable(null);
+
+      int errorImageResource;
+      if (slide instanceof ImageSlide) {
+        errorImageResource = R.drawable.ic_photo_slash_outline_24;
+      } else if (slide instanceof VideoSlide) {
+        errorImageResource = R.drawable.ic_video_slash_outline_24;
+      } else {
+        errorImageResource = R.drawable.ic_error_outline_24;
+      }
+      errorImage.setImageResource(errorImageResource);
+      errorImage.setVisibility(View.VISIBLE);
+
+      return new SettableFuture<>(true);
+    } else {
+      errorImage.setVisibility(View.GONE);
+    }
+
     if (showControls) {
       getTransferControls().setSlide(slide);
       getTransferControls().setDownloadClickListener(new DownloadClickDispatcher());
@@ -300,7 +346,7 @@ public class ThumbnailView extends FrameLayout {
     }
 
     if (slide.getUri() != null && slide.hasPlayOverlay() &&
-        (slide.getTransferState() == AttachmentDatabase.TRANSFER_PROGRESS_DONE || isPreview))
+        (slide.getTransferState() == AttachmentTable.TRANSFER_PROGRESS_DONE || isPreview))
     {
       this.playOverlay.setVisibility(View.VISIBLE);
     } else {
@@ -374,13 +420,21 @@ public class ThumbnailView extends FrameLayout {
   }
 
   public ListenableFuture<Boolean> setImageResource(@NonNull GlideRequests glideRequests, @NonNull Uri uri, int width, int height) {
+    return setImageResource(glideRequests, uri, width, height, true, null);
+  }
+
+  public ListenableFuture<Boolean> setImageResource(@NonNull GlideRequests glideRequests, @NonNull Uri uri, int width, int height, boolean animate, @Nullable ThumbnailRequestListener listener) {
     SettableFuture<Boolean> future = new SettableFuture<>();
 
     if (transferControls.isPresent()) getTransferControls().setVisibility(View.GONE);
 
-    GlideRequest request = glideRequests.load(new DecryptableUri(uri))
-                                        .diskCacheStrategy(DiskCacheStrategy.NONE)
-                                        .transition(withCrossFade());
+    GlideRequest<Drawable> request = glideRequests.load(new DecryptableUri(uri))
+                                                  .diskCacheStrategy(DiskCacheStrategy.NONE)
+                                                  .listener(listener);
+
+    if (animate) {
+      request = request.transition(withCrossFade());
+    }
 
     if (width > 0 && height > 0) {
       request = request.override(width, height);
@@ -392,7 +446,17 @@ public class ThumbnailView extends FrameLayout {
       request = request.transforms(new CenterCrop());
     }
 
-    request.into(new GlideDrawableListeningTarget(image, future));
+    GlideDrawableListeningTarget target = new GlideDrawableListeningTarget(image, future);
+    Request previousRequest = target.getRequest();
+    boolean previousRequestRunning = previousRequest != null && previousRequest.isRunning();
+    request.into(target);
+    if (listener != null) {
+      listener.onLoadScheduled();
+      if (previousRequestRunning) {
+        listener.onLoadCanceled();
+      }
+    }
+
     blurhash.setImageDrawable(null);
 
     return future;
@@ -519,14 +583,21 @@ public class ThumbnailView extends FrameLayout {
     return 0;
   }
 
+  public interface ThumbnailRequestListener extends RequestListener<Drawable> {
+    void onLoadCanceled();
+    void onLoadScheduled();
+  }
+
   private class ThumbnailClickDispatcher implements View.OnClickListener {
     @Override
     public void onClick(View view) {
-      if (thumbnailClickListener        != null &&
-          slide                         != null &&
-          slide.asAttachment().getUri() != null &&
-          slide.getTransferState()      == AttachmentDatabase.TRANSFER_PROGRESS_DONE)
-      {
+      boolean validThumbnail = slide != null &&
+                               slide.asAttachment().getUri() != null &&
+                               slide.getTransferState() == AttachmentTable.TRANSFER_PROGRESS_DONE;
+
+      boolean permanentFailure = slide != null && slide.asAttachment().isPermanentlyFailed();
+
+      if (thumbnailClickListener != null && (validThumbnail || permanentFailure)) {
         thumbnailClickListener.onClick(view, slide);
       } else if (parentClickListener != null) {
         parentClickListener.onClick(view);

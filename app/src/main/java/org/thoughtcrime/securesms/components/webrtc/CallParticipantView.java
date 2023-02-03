@@ -149,8 +149,8 @@ public class CallParticipantView extends ConstraintLayout {
 
       boolean hasContentToRender = (participant.isVideoEnabled() || participant.isScreenSharing()) && participant.isForwardingVideo();
 
-      rendererFrame.setVisibility(hasContentToRender ? View.VISIBLE : View.GONE);
-      renderer.setVisibility(hasContentToRender ? View.VISIBLE : View.GONE);
+      rendererFrame.setVisibility(hasContentToRender ? View.VISIBLE : View.INVISIBLE);
+      renderer.setVisibility(hasContentToRender ? View.VISIBLE : View.INVISIBLE);
 
       if (participant.isVideoEnabled()) {
         participant.getVideoSink().getLockableEglBase().performWithValidEglBase(eglBase -> {
@@ -253,7 +253,7 @@ public class CallParticipantView extends ConstraintLayout {
   }
 
   private void setPipAvatar(@NonNull Recipient recipient) {
-    ContactPhoto         contactPhoto  = recipient.isSelf() ? new ProfileContactPhoto(Recipient.self(), Recipient.self().getProfileAvatar())
+    ContactPhoto         contactPhoto  = recipient.isSelf() ? new ProfileContactPhoto(Recipient.self())
                                                             : recipient.getContactPhoto();
     FallbackContactPhoto fallbackPhoto = recipient.getFallbackContactPhoto(FALLBACK_PHOTO_PROVIDER);
 

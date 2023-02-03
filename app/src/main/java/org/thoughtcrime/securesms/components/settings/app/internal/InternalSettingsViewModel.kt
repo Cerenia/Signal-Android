@@ -4,8 +4,11 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import org.signal.ringrtc.CallManager
+import org.thoughtcrime.securesms.jobs.StoryOnboardingDownloadJob
 import org.thoughtcrime.securesms.keyvalue.InternalValues
 import org.thoughtcrime.securesms.keyvalue.SignalStore
+import org.thoughtcrime.securesms.recipients.Recipient
+import org.thoughtcrime.securesms.stories.Stories
 import org.thoughtcrime.securesms.util.livedata.Store
 
 class InternalSettingsViewModel(private val repository: InternalSettingsRepository) : ViewModel() {
@@ -36,11 +39,6 @@ class InternalSettingsViewModel(private val repository: InternalSettingsReposito
     refresh()
   }
 
-  fun setGv2DoNotCreateGv2Groups(enabled: Boolean) {
-    preferenceDataStore.putBoolean(InternalValues.GV2_DO_NOT_CREATE_GV2, enabled)
-    refresh()
-  }
-
   fun setGv2ForceInvites(enabled: Boolean) {
     preferenceDataStore.putBoolean(InternalValues.GV2_FORCE_INVITES, enabled)
     refresh()
@@ -56,18 +54,18 @@ class InternalSettingsViewModel(private val repository: InternalSettingsReposito
     refresh()
   }
 
-  fun setDisableAutoMigrationInitiation(enabled: Boolean) {
-    preferenceDataStore.putBoolean(InternalValues.GV2_DISABLE_AUTOMIGRATE_INITIATION, enabled)
-    refresh()
-  }
-
-  fun setDisableAutoMigrationNotification(enabled: Boolean) {
-    preferenceDataStore.putBoolean(InternalValues.GV2_DISABLE_AUTOMIGRATE_NOTIFICATION, enabled)
-    refresh()
-  }
-
   fun setAllowCensorshipSetting(enabled: Boolean) {
     preferenceDataStore.putBoolean(InternalValues.ALLOW_CENSORSHIP_SETTING, enabled)
+    refresh()
+  }
+
+  fun setForceWebsocketMode(enabled: Boolean) {
+    preferenceDataStore.putBoolean(InternalValues.FORCE_WEBSOCKET_MODE, enabled)
+    refresh()
+  }
+
+  fun resetPnpInitializedState() {
+    SignalStore.misc().setPniInitializedDevices(false)
     refresh()
   }
 
@@ -106,30 +104,22 @@ class InternalSettingsViewModel(private val repository: InternalSettingsReposito
     refresh()
   }
 
-  fun toggleStories() {
-    val newState = !SignalStore.storyValues().isFeatureDisabled
-    SignalStore.storyValues().isFeatureDisabled = newState
-    store.update { getState().copy(disableStories = newState) }
-  }
-
   fun addSampleReleaseNote() {
     repository.addSampleReleaseNote()
   }
 
-  private fun refresh() {
+  fun refresh() {
     store.update { getState().copy(emojiVersion = it.emojiVersion) }
   }
 
   private fun getState() = InternalSettingsState(
     seeMoreUserDetails = SignalStore.internalValues().recipientDetails(),
     shakeToReport = SignalStore.internalValues().shakeToReport(),
-    gv2doNotCreateGv2Groups = SignalStore.internalValues().gv2DoNotCreateGv2Groups(),
     gv2forceInvites = SignalStore.internalValues().gv2ForceInvites(),
     gv2ignoreServerChanges = SignalStore.internalValues().gv2IgnoreServerChanges(),
     gv2ignoreP2PChanges = SignalStore.internalValues().gv2IgnoreP2PChanges(),
-    disableAutoMigrationInitiation = SignalStore.internalValues().disableGv1AutoMigrateInitiation(),
-    disableAutoMigrationNotification = SignalStore.internalValues().disableGv1AutoMigrateNotification(),
     allowCensorshipSetting = SignalStore.internalValues().allowChangingCensorshipSetting(),
+    forceWebsocketMode = SignalStore.internalValues().isWebsocketModeForced,
     callingServer = SignalStore.internalValues().groupCallingServer(),
     callingAudioProcessingMethod = SignalStore.internalValues().callingAudioProcessingMethod(),
     callingBandwidthMode = SignalStore.internalValues().callingBandwidthMode(),
@@ -139,8 +129,17 @@ class InternalSettingsViewModel(private val repository: InternalSettingsReposito
     removeSenderKeyMinimium = SignalStore.internalValues().removeSenderKeyMinimum(),
     delayResends = SignalStore.internalValues().delayResends(),
     disableStorageService = SignalStore.internalValues().storageServiceDisabled(),
-    disableStories = SignalStore.storyValues().isFeatureDisabled
+    canClearOnboardingState = SignalStore.storyValues().hasDownloadedOnboardingStory && Stories.isFeatureEnabled(),
+    pnpInitialized = SignalStore.misc().hasPniInitializedDevices()
   )
+
+  fun onClearOnboardingState() {
+    SignalStore.storyValues().hasDownloadedOnboardingStory = false
+    SignalStore.storyValues().userHasViewedOnboardingStory = false
+    Stories.onStorySettingsChanged(Recipient.self().id)
+    refresh()
+    StoryOnboardingDownloadJob.enqueueIfNeeded()
+  }
 
   class Factory(private val repository: InternalSettingsRepository) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {

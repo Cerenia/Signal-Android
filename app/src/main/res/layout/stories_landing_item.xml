@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:viewBindingIgnore="true"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -25,6 +26,21 @@
         app:badge_size="medium"
         app:layout_constraintStart_toStartOf="@id/avatar"
         app:layout_constraintTop_toTopOf="@id/avatar" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/add_to_story"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="28dp"
+        android:padding="5dp"
+        android:background="@drawable/stories_my_story_add_background"
+        android:scaleType="centerInside"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="@id/avatar"
+        app:layout_constraintTop_toTopOf="@id/avatar"
+        app:tint="@color/signal_colorBackground"
+        app:srcCompat="@drawable/symbol_plus_compact_16" />
 
     <org.thoughtcrime.securesms.components.emoji.EmojiTextView
         android:id="@+id/sender"
@@ -94,7 +110,7 @@
         app:layout_constraintBottom_toBottomOf="@id/story"
         app:layout_constraintEnd_toEndOf="@id/story"
         app:shapeAppearance="@style/ShapeAppearanceOverlay.Signal.Story.Preview"
-        tools:background="@color/green"
+        tools:background="@color/green_500"
         tools:visibility="visible" />
 
     <com.google.android.material.imageview.ShapeableImageView

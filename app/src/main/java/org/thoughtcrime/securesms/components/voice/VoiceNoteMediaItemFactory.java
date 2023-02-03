@@ -80,9 +80,9 @@ class VoiceNoteMediaItemFactory {
   @Nullable static MediaItem buildMediaItem(@NonNull Context context,
                                             @NonNull MessageRecord messageRecord)
   {
-    int startingPosition = SignalDatabase.mmsSms()
-                                          .getMessagePositionInConversation(messageRecord.getThreadId(),
-                                                                            messageRecord.getDateReceived());
+    int startingPosition = SignalDatabase.messages()
+                                         .getMessagePositionInConversation(messageRecord.getThreadId(),
+                                                                           messageRecord.getDateReceived());
 
     Recipient threadRecipient = Objects.requireNonNull(SignalDatabase.threads()
                                                                       .getRecipientForThreadId(messageRecord.getThreadId()));
@@ -175,8 +175,8 @@ class VoiceNoteMediaItemFactory {
                                sender.getDisplayName(context),
                                threadRecipient.getDisplayName(context));
     } else if (preference.isDisplayContact()) {
-      return sender.isSelf() ? context.getString(R.string.note_to_self)
-                             : sender.getDisplayName(context);
+      return sender.isSelf() && threadRecipient.isSelf() ? context.getString(R.string.note_to_self)
+                                                         : sender.getDisplayName(context);
     } else {
       return context.getString(R.string.MessageNotifier_signal_message);
     }

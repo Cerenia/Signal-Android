@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <org.thoughtcrime.securesms.components.InsetAwareConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:viewBindingIgnore="true"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -133,13 +134,12 @@
                 android:text="@string/ConversationActivity_unblock"
                 android:visibility="gone" />
 
-            <Button
-                android:id="@+id/make_default_sms_button"
-                android:layout_width="fill_parent"
+            <ViewStub
+                android:id="@+id/sms_export_stub"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="20dp"
-                android:text="@string/conversation_activity__enable_signal_for_sms"
-                android:visibility="gone" />
+                android:inflatedId="@+id/sms_export_view"
+                android:layout="@layout/conversation_activity_sms_export_stub" />
 
             <TextView
                 android:id="@+id/space_left"

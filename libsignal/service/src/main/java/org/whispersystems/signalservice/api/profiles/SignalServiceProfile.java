@@ -9,7 +9,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import org.signal.libsignal.protocol.logging.Log;
 import org.signal.libsignal.zkgroup.InvalidInputException;
-import org.signal.libsignal.zkgroup.profiles.ProfileKeyCredentialResponse;
+import org.signal.libsignal.zkgroup.profiles.ExpiringProfileKeyCredentialResponse;
 import org.whispersystems.signalservice.api.push.ServiceId;
 import org.whispersystems.signalservice.internal.util.JsonUtil;
 
@@ -203,10 +203,16 @@ public class SignalServiceProfile {
     @JsonProperty
     private boolean giftBadges;
 
+    @JsonProperty
+    private boolean pnp;
+
+    @JsonProperty
+    private boolean paymentActivation;
+
     @JsonCreator
     public Capabilities() {}
 
-    public Capabilities(boolean storage, boolean gv1Migration, boolean senderKey, boolean announcementGroup, boolean changeNumber, boolean stories, boolean giftBadges) {
+    public Capabilities(boolean storage, boolean gv1Migration, boolean senderKey, boolean announcementGroup, boolean changeNumber, boolean stories, boolean giftBadges, boolean pnp, boolean paymentActivation) {
       this.storage           = storage;
       this.gv1Migration      = gv1Migration;
       this.senderKey         = senderKey;
@@ -214,6 +220,8 @@ public class SignalServiceProfile {
       this.changeNumber      = changeNumber;
       this.stories           = stories;
       this.giftBadges        = giftBadges;
+      this.pnp               = pnp;
+      this.paymentActivation = paymentActivation;
     }
 
     public boolean isStorage() {
@@ -243,13 +251,21 @@ public class SignalServiceProfile {
     public boolean isGiftBadges() {
       return giftBadges;
     }
+
+    public boolean isPnp() {
+      return pnp;
+    }
+
+    public boolean isPaymentActivation() {
+      return paymentActivation;
+    }
   }
 
-  public ProfileKeyCredentialResponse getProfileKeyCredentialResponse() {
+  public ExpiringProfileKeyCredentialResponse getExpiringProfileKeyCredentialResponse() {
     if (credential == null) return null;
 
     try {
-      return new ProfileKeyCredentialResponse(credential);
+      return new ExpiringProfileKeyCredentialResponse(credential);
     } catch (InvalidInputException e) {
       Log.w(TAG, e);
       return null;

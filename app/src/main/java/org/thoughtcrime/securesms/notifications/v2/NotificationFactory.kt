@@ -2,7 +2,6 @@ package org.thoughtcrime.securesms.notifications.v2
 
 import android.annotation.TargetApi
 import android.app.Notification
-import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
@@ -15,6 +14,7 @@ import android.os.TransactionTooLargeException
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import org.signal.core.util.PendingIntentFlags
 import org.signal.core.util.concurrent.SignalExecutors
 import org.signal.core.util.logging.Log
 import org.thoughtcrime.securesms.MainActivity
@@ -37,18 +37,18 @@ import org.thoughtcrime.securesms.util.TextSecurePreferences
  */
 object NotificationFactory {
 
-  val TAG = Log.tag(NotificationFactory::class.java)
+  val TAG: String = Log.tag(NotificationFactory::class.java)
 
   fun notify(
     context: Context,
-    state: NotificationStateV2,
+    state: NotificationState,
     visibleThread: ConversationId?,
     targetThread: ConversationId?,
     defaultBubbleState: BubbleUtil.BubbleState,
     lastAudibleNotification: Long,
     notificationConfigurationChanged: Boolean,
     alertOverrides: Set<ConversationId>,
-    previousState: NotificationStateV2
+    previousState: NotificationState
   ): Set<ConversationId> {
     if (state.isEmpty) {
       Log.d(TAG, "State is empty, bailing")
@@ -85,7 +85,7 @@ object NotificationFactory {
 
   private fun notify19(
     context: Context,
-    state: NotificationStateV2,
+    state: NotificationState,
     visibleThread: ConversationId?,
     targetThread: ConversationId?,
     defaultBubbleState: BubbleUtil.BubbleState,
@@ -127,7 +127,7 @@ object NotificationFactory {
   @TargetApi(24)
   private fun notify24(
     context: Context,
-    state: NotificationStateV2,
+    state: NotificationState,
     visibleThread: ConversationId?,
     targetThread: ConversationId?,
     defaultBubbleState: BubbleUtil.BubbleState,
@@ -135,7 +135,7 @@ object NotificationFactory {
     notificationConfigurationChanged: Boolean,
     alertOverrides: Set<ConversationId>,
     nonVisibleThreadCount: Int,
-    previousState: NotificationStateV2
+    previousState: NotificationState
   ): Set<ConversationId> {
     val threadsThatNewlyAlerted: MutableSet<ConversationId> = mutableSetOf()
 
@@ -186,9 +186,9 @@ object NotificationFactory {
       setSmallIcon(R.drawable.ic_notification)
       setColor(ContextCompat.getColor(context, R.color.core_ultramarine))
       setCategory(NotificationCompat.CATEGORY_MESSAGE)
-      setGroup(MessageNotifierV2.NOTIFICATION_GROUP)
+      setGroup(DefaultMessageNotifier.NOTIFICATION_GROUP)
       setGroupAlertBehavior(NotificationCompat.GROUP_ALERT_CHILDREN)
-      setChannelId(conversation.getChannelId(context))
+      setChannelId(conversation.getChannelId())
       setContentTitle(conversation.getContentTitle(context))
       setLargeIcon(conversation.getContactLargeIcon(context).toLargeBitmap(context))
       addPerson(conversation.recipient)
@@ -221,10 +221,10 @@ object NotificationFactory {
 
     val notificationId: Int = if (Build.VERSION.SDK_INT < 24) NotificationIds.MESSAGE_SUMMARY else conversation.notificationId
 
-    NotificationManagerCompat.from(context).safelyNotify(context, conversation.recipient, notificationId, builder.build())
+    NotificationManagerCompat.from(context).safelyNotify(conversation.recipient, notificationId, builder.build())
   }
 
-  private fun notifySummary(context: Context, state: NotificationStateV2) {
+  private fun notifySummary(context: Context, state: NotificationState) {
     if (state.messageCount == 0) {
       return
     }
@@ -235,11 +235,11 @@ object NotificationFactory {
       setSmallIcon(R.drawable.ic_notification)
       setColor(ContextCompat.getColor(context, R.color.core_ultramarine))
       setCategory(NotificationCompat.CATEGORY_MESSAGE)
-      setGroup(MessageNotifierV2.NOTIFICATION_GROUP)
+      setGroup(DefaultMessageNotifier.NOTIFICATION_GROUP)
       setGroupAlertBehavior(NotificationCompat.GROUP_ALERT_CHILDREN)
-      setChannelId(NotificationChannels.getMessagesChannel(context))
+      setChannelId(NotificationChannels.getInstance().messagesChannel)
       setContentTitle(context.getString(R.string.app_name))
-      setContentIntent(PendingIntent.getActivity(context, 0, MainActivity.clearTop(context), 0))
+      setContentIntent(NotificationPendingIntentHelper.getActivity(context, 0, MainActivity.clearTop(context), PendingIntentFlags.mutable()))
       setGroupSummary(true)
       setSubText(context.getString(R.string.MessageNotifier_d_new_messages_in_d_conversations, state.messageCount, state.threadCount))
       setContentInfo(state.messageCount.toString())
@@ -257,19 +257,19 @@ object NotificationFactory {
     }
 
     Log.d(TAG, "showing summary notification")
-    NotificationManagerCompat.from(context).safelyNotify(context, null, NotificationIds.MESSAGE_SUMMARY, builder.build())
+    NotificationManagerCompat.from(context).safelyNotify(null, NotificationIds.MESSAGE_SUMMARY, builder.build())
   }
 
   private fun notifyInThread(context: Context, recipient: Recipient, lastAudibleNotification: Long) {
     if (!SignalStore.settings().isMessageNotificationsInChatSoundsEnabled ||
       ServiceUtil.getAudioManager(context).ringerMode != AudioManager.RINGER_MODE_NORMAL ||
-      (System.currentTimeMillis() - lastAudibleNotification) < MessageNotifierV2.MIN_AUDIBLE_PERIOD_MILLIS
+      (System.currentTimeMillis() - lastAudibleNotification) < DefaultMessageNotifier.MIN_AUDIBLE_PERIOD_MILLIS
     ) {
       return
     }
 
     val uri: Uri = if (NotificationChannels.supported()) {
-      NotificationChannels.getMessageRingtone(context, recipient) ?: NotificationChannels.getMessageRingtone(context)
+      NotificationChannels.getInstance().getMessageRingtone(recipient) ?: NotificationChannels.getInstance().messageRingtone
     } else {
       recipient.messageRingtone ?: SignalStore.settings().messageNotificationSound
     }
@@ -286,15 +286,10 @@ object NotificationFactory {
       return
     }
 
-    if (Build.VERSION.SDK_INT >= 21) {
-      ringtone.audioAttributes = AudioAttributes.Builder()
-        .setContentType(AudioAttributes.CONTENT_TYPE_UNKNOWN)
-        .setUsage(AudioAttributes.USAGE_NOTIFICATION_COMMUNICATION_INSTANT)
-        .build()
-    } else {
-      @Suppress("DEPRECATION")
-      ringtone.streamType = AudioManager.STREAM_NOTIFICATION
-    }
+    ringtone.audioAttributes = AudioAttributes.Builder()
+      .setContentType(AudioAttributes.CONTENT_TYPE_UNKNOWN)
+      .setUsage(AudioAttributes.USAGE_NOTIFICATION_COMMUNICATION_INSTANT)
+      .build()
 
     ringtone.play()
   }
@@ -320,13 +315,13 @@ object NotificationFactory {
       setContentTitle(context.getString(R.string.MessageNotifier_message_delivery_failed))
       setContentText(context.getString(R.string.MessageNotifier_failed_to_deliver_message))
       setTicker(context.getString(R.string.MessageNotifier_error_delivering_message))
-      setContentIntent(PendingIntent.getActivity(context, 0, intent, 0))
+      setContentIntent(NotificationPendingIntentHelper.getActivity(context, 0, intent, PendingIntentFlags.mutable()))
       setAutoCancel(true)
       setAlarms(recipient)
-      setChannelId(NotificationChannels.FAILURES)
+      setChannelId(NotificationChannels.getInstance().FAILURES)
     }
 
-    NotificationManagerCompat.from(context).safelyNotify(context, recipient, NotificationIds.getNotificationIdForMessageDeliveryFailed(thread), builder.build())
+    NotificationManagerCompat.from(context).safelyNotify(recipient, NotificationIds.getNotificationIdForMessageDeliveryFailed(thread), builder.build())
   }
 
   fun notifyProofRequired(context: Context, recipient: Recipient, thread: ConversationId, visibleThread: ConversationId?) {
@@ -349,14 +344,14 @@ object NotificationFactory {
       setLargeIcon(BitmapFactory.decodeResource(context.resources, R.drawable.ic_info_outline))
       setContentTitle(context.getString(R.string.MessageNotifier_message_delivery_paused))
       setContentText(context.getString(R.string.MessageNotifier_verify_to_continue_messaging_on_signal))
-      setContentIntent(PendingIntent.getActivity(context, 0, intent, 0))
+      setContentIntent(NotificationPendingIntentHelper.getActivity(context, 0, intent, PendingIntentFlags.mutable()))
       setOnlyAlertOnce(true)
       setAutoCancel(true)
       setAlarms(recipient)
-      setChannelId(NotificationChannels.FAILURES)
+      setChannelId(NotificationChannels.getInstance().FAILURES)
     }
 
-    NotificationManagerCompat.from(context).safelyNotify(context, recipient, NotificationIds.getNotificationIdForMessageDeliveryFailed(thread), builder.build())
+    NotificationManagerCompat.from(context).safelyNotify(recipient, NotificationIds.getNotificationIdForMessageDeliveryFailed(thread), builder.build())
   }
 
   @JvmStatic
@@ -378,8 +373,8 @@ object NotificationFactory {
       setSmallIcon(R.drawable.ic_notification)
       setColor(ContextCompat.getColor(context, R.color.core_ultramarine))
       setCategory(NotificationCompat.CATEGORY_MESSAGE)
-      setGroup(MessageNotifierV2.NOTIFICATION_GROUP)
-      setChannelId(conversation.getChannelId(context))
+      setGroup(DefaultMessageNotifier.NOTIFICATION_GROUP)
+      setChannelId(conversation.getChannelId())
       setContentTitle(conversation.getContentTitle(context))
       setLargeIcon(conversation.getContactLargeIcon(context).toLargeBitmap(context))
       addPerson(conversation.recipient)
@@ -390,10 +385,10 @@ object NotificationFactory {
     }
 
     Log.d(TAG, "Posting Notification for requested bubble")
-    NotificationManagerCompat.from(context).safelyNotify(context, recipient, conversation.notificationId, builder.build())
+    NotificationManagerCompat.from(context).safelyNotify(recipient, conversation.notificationId, builder.build())
   }
 
-  private fun NotificationManagerCompat.safelyNotify(context: Context, threadRecipient: Recipient?, notificationId: Int, notification: Notification) {
+  private fun NotificationManagerCompat.safelyNotify(threadRecipient: Recipient?, notificationId: Int, notification: Notification) {
     try {
       notify(notificationId, notification)
       Log.internal().i(TAG, "Posted notification: $notification")
@@ -402,7 +397,7 @@ object NotificationFactory {
       if (threadRecipient != null) {
         SignalExecutors.BOUNDED.execute {
           SignalDatabase.recipients.setMessageRingtone(threadRecipient.id, null)
-          NotificationChannels.updateMessageRingtone(context, threadRecipient, null)
+          NotificationChannels.getInstance().updateMessageRingtone(threadRecipient, null)
         }
       }
     } catch (runtimeException: RuntimeException) {

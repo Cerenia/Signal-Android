@@ -26,6 +26,15 @@ class LifecycleDisposable : DefaultLifecycleObserver {
     return this
   }
 
+  fun addAll(vararg disposable: Disposable): LifecycleDisposable {
+    disposables.addAll(*disposable)
+    return this
+  }
+
+  fun clear() {
+    disposables.clear()
+  }
+
   override fun onDestroy(owner: LifecycleOwner) {
     owner.lifecycle.removeObserver(this)
     disposables.clear()

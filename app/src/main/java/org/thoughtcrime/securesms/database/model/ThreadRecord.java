@@ -22,10 +22,9 @@ import android.net.Uri;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import org.thoughtcrime.securesms.database.MmsSmsColumns;
-import org.thoughtcrime.securesms.database.SmsDatabase;
-import org.thoughtcrime.securesms.database.ThreadDatabase;
-import org.thoughtcrime.securesms.database.ThreadDatabase.Extra;
+import org.thoughtcrime.securesms.database.MessageTypes;
+import org.thoughtcrime.securesms.database.ThreadTable;
+import org.thoughtcrime.securesms.database.ThreadTable.Extra;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.whispersystems.signalservice.api.util.Preconditions;
@@ -33,7 +32,7 @@ import org.whispersystems.signalservice.api.util.Preconditions;
 import java.util.Objects;
 
 /**
- * Represents an entry in the {@link org.thoughtcrime.securesms.database.ThreadDatabase}.
+ * Represents an entry in the {@link org.thoughtcrime.securesms.database.ThreadTable}.
  */
 public final class ThreadRecord {
 
@@ -56,27 +55,29 @@ public final class ThreadRecord {
   private final long      expiresIn;
   private final long      lastSeen;
   private final boolean   isPinned;
+  private final int       unreadSelfMentionsCount;
 
   private ThreadRecord(@NonNull Builder builder) {
-    this.threadId             = builder.threadId;
-    this.body                 = builder.body;
-    this.recipient            = builder.recipient;
-    this.date                 = builder.date;
-    this.type                 = builder.type;
-    this.deliveryStatus       = builder.deliveryStatus;
-    this.deliveryReceiptCount = builder.deliveryReceiptCount;
-    this.readReceiptCount     = builder.readReceiptCount;
-    this.snippetUri           = builder.snippetUri;
-    this.contentType          = builder.contentType;
-    this.extra                = builder.extra;
-    this.meaningfulMessages   = builder.meaningfulMessages;
-    this.unreadCount          = builder.unreadCount;
-    this.forcedUnread         = builder.forcedUnread;
-    this.distributionType     = builder.distributionType;
-    this.archived             = builder.archived;
-    this.expiresIn            = builder.expiresIn;
-    this.lastSeen             = builder.lastSeen;
-    this.isPinned             = builder.isPinned;
+    this.threadId                = builder.threadId;
+    this.body                    = builder.body;
+    this.recipient               = builder.recipient;
+    this.date                    = builder.date;
+    this.type                    = builder.type;
+    this.deliveryStatus          = builder.deliveryStatus;
+    this.deliveryReceiptCount    = builder.deliveryReceiptCount;
+    this.readReceiptCount        = builder.readReceiptCount;
+    this.snippetUri              = builder.snippetUri;
+    this.contentType             = builder.contentType;
+    this.extra                   = builder.extra;
+    this.meaningfulMessages      = builder.meaningfulMessages;
+    this.unreadCount             = builder.unreadCount;
+    this.forcedUnread            = builder.forcedUnread;
+    this.distributionType        = builder.distributionType;
+    this.archived                = builder.archived;
+    this.expiresIn               = builder.expiresIn;
+    this.lastSeen                = builder.lastSeen;
+    this.isPinned                = builder.isPinned;
+    this.unreadSelfMentionsCount = builder.unreadSelfMentionsCount;
   }
 
   public long getThreadId() {
@@ -101,10 +102,6 @@ public final class ThreadRecord {
 
   public @Nullable String getContentType() {
     return contentType;
-  }
-
-  public boolean hasMeaningfulMessages() {
-    return meaningfulMessages;
   }
 
   public int getUnreadCount() {
@@ -144,15 +141,15 @@ public final class ThreadRecord {
   }
 
   public boolean isOutgoing() {
-    return MmsSmsColumns.Types.isOutgoingMessageType(type);
+    return MessageTypes.isOutgoingMessageType(type);
   }
 
   public boolean isOutgoingAudioCall() {
-    return SmsDatabase.Types.isOutgoingAudioCall(type);
+    return MessageTypes.isOutgoingAudioCall(type);
   }
 
   public boolean isOutgoingVideoCall() {
-    return SmsDatabase.Types.isOutgoingVideoCall(type);
+    return MessageTypes.isOutgoingVideoCall(type);
   }
 
   public boolean isVerificationStatusChange() {
@@ -172,7 +169,7 @@ public final class ThreadRecord {
   }
 
   public boolean isPendingInsecureSmsFallback() {
-    return SmsDatabase.Types.isPendingInsecureSmsFallbackType(type);
+    return MessageTypes.isPendingInsecureSmsFallbackType(type);
   }
 
   public boolean isDelivered() {
@@ -207,10 +204,6 @@ public final class ThreadRecord {
     }
   }
 
-  public boolean isGv2Invite() {
-    return extra != null && extra.isGv2Invite();
-  }
-
   public boolean isMessageRequestAccepted() {
     if (extra != null) return extra.isMessageRequestAccepted();
     else               return true;
@@ -220,29 +213,34 @@ public final class ThreadRecord {
     return isPinned;
   }
 
+  public int getUnreadSelfMentionsCount() {
+    return unreadSelfMentionsCount;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     ThreadRecord that = (ThreadRecord) o;
-    return threadId == that.threadId                         &&
-           type == that.type                                 &&
-           date == that.date                                 &&
-           deliveryStatus == that.deliveryStatus             &&
+    return threadId == that.threadId &&
+           type == that.type &&
+           date == that.date &&
+           deliveryStatus == that.deliveryStatus &&
            deliveryReceiptCount == that.deliveryReceiptCount &&
-           readReceiptCount == that.readReceiptCount         &&
-           meaningfulMessages == that.meaningfulMessages     &&
-           unreadCount == that.unreadCount                   &&
-           forcedUnread == that.forcedUnread                 &&
-           distributionType == that.distributionType         &&
-           archived == that.archived                         &&
-           expiresIn == that.expiresIn                       &&
-           lastSeen == that.lastSeen                         &&
-           isPinned == that.isPinned                         &&
-           body.equals(that.body)                            &&
-           recipient.equals(that.recipient)                  &&
-           Objects.equals(snippetUri, that.snippetUri)       &&
-           Objects.equals(contentType, that.contentType)     &&
+           readReceiptCount == that.readReceiptCount &&
+           meaningfulMessages == that.meaningfulMessages &&
+           unreadCount == that.unreadCount &&
+           forcedUnread == that.forcedUnread &&
+           distributionType == that.distributionType &&
+           archived == that.archived &&
+           expiresIn == that.expiresIn &&
+           lastSeen == that.lastSeen &&
+           isPinned == that.isPinned &&
+           body.equals(that.body) &&
+           recipient.equals(that.recipient) &&
+           unreadSelfMentionsCount == that.unreadSelfMentionsCount &&
+           Objects.equals(snippetUri, that.snippetUri) &&
+           Objects.equals(contentType, that.contentType) &&
            Objects.equals(extra, that.extra);
   }
 
@@ -266,7 +264,8 @@ public final class ThreadRecord {
                         archived,
                         expiresIn,
                         lastSeen,
-                        isPinned);
+                        isPinned,
+                        unreadSelfMentionsCount);
   }
 
   public static class Builder {
@@ -289,6 +288,7 @@ public final class ThreadRecord {
     private long      expiresIn;
     private long      lastSeen;
     private boolean   isPinned;
+    private int       unreadSelfMentionsCount;
 
     public Builder(long threadId) {
       this.threadId = threadId;
@@ -389,8 +389,13 @@ public final class ThreadRecord {
       return this;
     }
 
+    public Builder setUnreadSelfMentionsCount(int unreadSelfMentionsCount) {
+      this.unreadSelfMentionsCount = unreadSelfMentionsCount;
+      return this;
+    }
+
     public ThreadRecord build() {
-      if (distributionType == ThreadDatabase.DistributionTypes.CONVERSATION) {
+      if (distributionType == ThreadTable.DistributionTypes.CONVERSATION) {
         Preconditions.checkArgument(threadId > 0);
         Preconditions.checkNotNull(body);
         Preconditions.checkNotNull(recipient);

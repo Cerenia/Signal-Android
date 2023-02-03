@@ -11,7 +11,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ScrollView;
 import android.widget.Spinner;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -43,6 +42,7 @@ import org.thoughtcrime.securesms.registration.util.RegistrationNumberInputContr
 import org.thoughtcrime.securesms.registration.viewmodel.NumberViewState;
 import org.thoughtcrime.securesms.registration.viewmodel.RegistrationViewModel;
 import org.thoughtcrime.securesms.util.CommunicationActions;
+import org.thoughtcrime.securesms.util.Debouncer;
 import org.thoughtcrime.securesms.util.Dialogs;
 import org.thoughtcrime.securesms.util.LifecycleDisposable;
 import org.thoughtcrime.securesms.util.PlayServicesUtil;
@@ -50,6 +50,9 @@ import org.thoughtcrime.securesms.util.SupportEmailUtil;
 import org.thoughtcrime.securesms.util.ViewUtil;
 import org.thoughtcrime.securesms.util.navigation.SafeNavigation;
 import org.thoughtcrime.securesms.util.views.CircularProgressMaterialButton;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.Disposable;
@@ -142,12 +145,12 @@ public final class EnterPhoneNumberFragment extends LoggingFragment implements R
 
   private void handleRegister(@NonNull Context context) {
     if (TextUtils.isEmpty(countryCode.getText())) {
-      Toast.makeText(context, getString(R.string.RegistrationActivity_you_must_specify_your_country_code), Toast.LENGTH_LONG).show();
+      showErrorDialog(context, getString(R.string.RegistrationActivity_you_must_specify_your_country_code));
       return;
     }
 
     if (TextUtils.isEmpty(this.number.getText())) {
-      Toast.makeText(context, getString(R.string.RegistrationActivity_you_must_specify_your_phone_number), Toast.LENGTH_LONG).show();
+      showErrorDialog(context, getString(R.string.RegistrationActivity_you_must_specify_your_phone_number));
       return;
     }
 
@@ -183,15 +186,34 @@ public final class EnterPhoneNumberFragment extends LoggingFragment implements R
     if (fcmSupported) {
       SmsRetrieverClient client = SmsRetriever.getClient(context);
       Task<Void>         task   = client.startSmsRetriever();
+      AtomicBoolean      handled = new AtomicBoolean(false);
+
+      Debouncer debouncer = new Debouncer(TimeUnit.SECONDS.toMillis(5));
+      debouncer.publish(() -> {
+        if (!handled.getAndSet(true)) {
+          Log.w(TAG, "Timed out waiting for SMS listener!");
+          requestVerificationCode(Mode.SMS_WITHOUT_LISTENER);
+        }
+      });
 
       task.addOnSuccessListener(none -> {
-        Log.i(TAG, "Successfully registered SMS listener.");
-        requestVerificationCode(Mode.SMS_WITH_LISTENER);
+        if (!handled.getAndSet(true)) {
+          Log.i(TAG, "Successfully registered SMS listener.");
+          requestVerificationCode(Mode.SMS_WITH_LISTENER);
+        } else {
+          Log.w(TAG, "Successfully registered listener after timeout.");
+        }
+        debouncer.clear();
       });
 
       task.addOnFailureListener(e -> {
-        Log.w(TAG, "Failed to register SMS listener.", e);
-        requestVerificationCode(Mode.SMS_WITHOUT_LISTENER);
+        if (!handled.getAndSet(true)) {
+          Log.w(TAG, "Failed to register SMS listener.", e);
+          requestVerificationCode(Mode.SMS_WITHOUT_LISTENER);
+        } else {
+          Log.w(TAG, "Failed to register listener after timeout.");
+        }
+        debouncer.clear();
       });
     } else {
       Log.i(TAG, "FCM is not supported, using no SMS listener");
@@ -232,7 +254,7 @@ public final class EnterPhoneNumberFragment extends LoggingFragment implements R
                                       SafeNavigation.safeNavigate(navController, EnterPhoneNumberFragmentDirections.actionRequestCaptcha());
                                     } else if (processor.rateLimit()) {
                                       Log.i(TAG, "Unable to request sms code due to rate limit");
-                                      Toast.makeText(register.getContext(), R.string.RegistrationActivity_rate_limited_to_service, Toast.LENGTH_LONG).show();
+                                      showErrorDialog(register.getContext(), getString(R.string.RegistrationActivity_rate_limited_to_service));
                                     } else if (processor.isImpossibleNumber()) {
                                       Log.w(TAG, "Impossible number", processor.getError());
                                       Dialogs.showAlertDialog(requireContext(),
@@ -242,7 +264,7 @@ public final class EnterPhoneNumberFragment extends LoggingFragment implements R
                                       handleNonNormalizedNumberError(processor.getOriginalNumber(), processor.getNormalizedNumber(), mode);
                                     } else {
                                       Log.i(TAG, "Unknown error during verification code request", processor.getError());
-                                      Toast.makeText(register.getContext(), R.string.RegistrationActivity_unable_to_connect_to_service, Toast.LENGTH_LONG).show();
+                                      showErrorDialog(register.getContext(), getString(R.string.RegistrationActivity_unable_to_connect_to_service));
                                     }
 
                                     register.cancelSpinning();
@@ -250,6 +272,10 @@ public final class EnterPhoneNumberFragment extends LoggingFragment implements R
                                   });
 
     disposables.add(request);
+  }
+
+  public void showErrorDialog(Context context, String msg) {
+    new MaterialAlertDialogBuilder(context).setMessage(msg).setPositiveButton(R.string.ok, null).show();
   }
 
   @Override

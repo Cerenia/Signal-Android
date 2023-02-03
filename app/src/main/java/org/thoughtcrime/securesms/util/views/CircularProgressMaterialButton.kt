@@ -2,13 +2,13 @@ package org.thoughtcrime.securesms.util.views
 
 import android.animation.Animator
 import android.content.Context
-import android.os.Build
 import android.os.Bundle
 import android.os.Parcelable
 import android.util.AttributeSet
 import android.view.ViewAnimationUtils
 import android.widget.FrameLayout
 import androidx.annotation.StringRes
+import androidx.annotation.VisibleForTesting
 import androidx.core.animation.doOnEnd
 import androidx.core.content.withStyledAttributes
 import com.google.android.material.button.MaterialButton
@@ -88,6 +88,11 @@ class CircularProgressMaterialButton @JvmOverloads constructor(
     materialButton.setOnClickListener(onClickListener)
   }
 
+  @VisibleForTesting
+  fun getRequestedState(): State {
+    return requestedState
+  }
+
   fun setSpinning() {
     transformTo(State.PROGRESS, true)
   }
@@ -110,7 +115,7 @@ class CircularProgressMaterialButton @JvmOverloads constructor(
       return
     }
 
-    if (!animate || Build.VERSION.SDK_INT < 21) {
+    if (!animate) {
       materialButton.visibility = state.materialButtonVisibility
       currentState = state
       return

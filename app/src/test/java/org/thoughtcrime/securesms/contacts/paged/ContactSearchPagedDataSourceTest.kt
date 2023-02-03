@@ -11,6 +11,7 @@ import org.mockito.kotlin.isNull
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import org.thoughtcrime.securesms.MockCursor
+import org.thoughtcrime.securesms.database.model.DistributionListPrivacyMode
 import org.thoughtcrime.securesms.recipients.Recipient
 import org.thoughtcrime.securesms.recipients.RecipientId
 
@@ -19,19 +20,22 @@ class ContactSearchPagedDataSourceTest {
 
   private val repository: ContactSearchPagedDataSourceRepository = mock()
   private val cursor: MockCursor = mock()
-  private val groupStoryData = ContactSearchData.Story(Recipient.UNKNOWN, 0)
+  private val groupStoryData = ContactSearchData.Story(Recipient.UNKNOWN, 0, DistributionListPrivacyMode.ALL)
 
   @Before
   fun setUp() {
-    whenever(repository.getRecipientFromGroupCursor(cursor)).thenReturn(Recipient.UNKNOWN)
+    whenever(repository.getRecipientFromGroupRecord(any())).thenReturn(Recipient.UNKNOWN)
     whenever(repository.getRecipientFromRecipientCursor(cursor)).thenReturn(Recipient.UNKNOWN)
     whenever(repository.getRecipientFromThreadCursor(cursor)).thenReturn(Recipient.UNKNOWN)
     whenever(repository.getRecipientFromDistributionListCursor(cursor)).thenReturn(Recipient.UNKNOWN)
+    whenever(repository.getPrivacyModeFromDistributionListCursor(cursor)).thenReturn(DistributionListPrivacyMode.ALL)
     whenever(repository.getGroupStories()).thenReturn(emptySet())
     whenever(repository.getLatestStorySends(any())).thenReturn(emptyList())
     whenever(cursor.moveToPosition(any())).thenCallRealMethod()
     whenever(cursor.moveToNext()).thenCallRealMethod()
     whenever(cursor.position).thenCallRealMethod()
+    whenever(cursor.isLast).thenCallRealMethod()
+    whenever(cursor.isAfterLast).thenCallRealMethod()
   }
 
   @Test
@@ -47,16 +51,16 @@ class ContactSearchPagedDataSourceTest {
 
     val expected = listOf(
       ContactSearchKey.Header(ContactSearchConfiguration.SectionKey.RECENTS),
-      ContactSearchKey.RecipientSearchKey.KnownRecipient(RecipientId.UNKNOWN),
-      ContactSearchKey.RecipientSearchKey.KnownRecipient(RecipientId.UNKNOWN),
-      ContactSearchKey.RecipientSearchKey.KnownRecipient(RecipientId.UNKNOWN),
-      ContactSearchKey.RecipientSearchKey.KnownRecipient(RecipientId.UNKNOWN),
-      ContactSearchKey.RecipientSearchKey.KnownRecipient(RecipientId.UNKNOWN),
-      ContactSearchKey.RecipientSearchKey.KnownRecipient(RecipientId.UNKNOWN),
-      ContactSearchKey.RecipientSearchKey.KnownRecipient(RecipientId.UNKNOWN),
-      ContactSearchKey.RecipientSearchKey.KnownRecipient(RecipientId.UNKNOWN),
-      ContactSearchKey.RecipientSearchKey.KnownRecipient(RecipientId.UNKNOWN),
-      ContactSearchKey.RecipientSearchKey.KnownRecipient(RecipientId.UNKNOWN),
+      ContactSearchKey.RecipientSearchKey(RecipientId.UNKNOWN, false),
+      ContactSearchKey.RecipientSearchKey(RecipientId.UNKNOWN, false),
+      ContactSearchKey.RecipientSearchKey(RecipientId.UNKNOWN, false),
+      ContactSearchKey.RecipientSearchKey(RecipientId.UNKNOWN, false),
+      ContactSearchKey.RecipientSearchKey(RecipientId.UNKNOWN, false),
+      ContactSearchKey.RecipientSearchKey(RecipientId.UNKNOWN, false),
+      ContactSearchKey.RecipientSearchKey(RecipientId.UNKNOWN, false),
+      ContactSearchKey.RecipientSearchKey(RecipientId.UNKNOWN, false),
+      ContactSearchKey.RecipientSearchKey(RecipientId.UNKNOWN, false),
+      ContactSearchKey.RecipientSearchKey(RecipientId.UNKNOWN, false),
       ContactSearchKey.Header(ContactSearchConfiguration.SectionKey.INDIVIDUALS)
     )
 
@@ -71,15 +75,15 @@ class ContactSearchPagedDataSourceTest {
     val result = testSubject.load(5, 10) { false }
 
     val expected = listOf(
-      ContactSearchKey.RecipientSearchKey.KnownRecipient(RecipientId.UNKNOWN),
-      ContactSearchKey.RecipientSearchKey.KnownRecipient(RecipientId.UNKNOWN),
-      ContactSearchKey.RecipientSearchKey.KnownRecipient(RecipientId.UNKNOWN),
-      ContactSearchKey.RecipientSearchKey.KnownRecipient(RecipientId.UNKNOWN),
-      ContactSearchKey.RecipientSearchKey.KnownRecipient(RecipientId.UNKNOWN),
-      ContactSearchKey.RecipientSearchKey.KnownRecipient(RecipientId.UNKNOWN),
+      ContactSearchKey.RecipientSearchKey(RecipientId.UNKNOWN, false),
+      ContactSearchKey.RecipientSearchKey(RecipientId.UNKNOWN, false),
+      ContactSearchKey.RecipientSearchKey(RecipientId.UNKNOWN, false),
+      ContactSearchKey.RecipientSearchKey(RecipientId.UNKNOWN, false),
+      ContactSearchKey.RecipientSearchKey(RecipientId.UNKNOWN, false),
+      ContactSearchKey.RecipientSearchKey(RecipientId.UNKNOWN, false),
       ContactSearchKey.Header(ContactSearchConfiguration.SectionKey.INDIVIDUALS),
-      ContactSearchKey.RecipientSearchKey.KnownRecipient(RecipientId.UNKNOWN),
-      ContactSearchKey.RecipientSearchKey.KnownRecipient(RecipientId.UNKNOWN),
+      ContactSearchKey.RecipientSearchKey(RecipientId.UNKNOWN, false),
+      ContactSearchKey.RecipientSearchKey(RecipientId.UNKNOWN, false),
       ContactSearchKey.Expand(ContactSearchConfiguration.SectionKey.INDIVIDUALS)
     )
 
@@ -95,17 +99,17 @@ class ContactSearchPagedDataSourceTest {
 
     val expected = listOf(
       ContactSearchKey.Header(ContactSearchConfiguration.SectionKey.STORIES),
-      ContactSearchKey.RecipientSearchKey.Story(RecipientId.UNKNOWN),
-      ContactSearchKey.RecipientSearchKey.Story(RecipientId.UNKNOWN),
-      ContactSearchKey.RecipientSearchKey.Story(RecipientId.UNKNOWN),
-      ContactSearchKey.RecipientSearchKey.Story(RecipientId.UNKNOWN),
-      ContactSearchKey.RecipientSearchKey.Story(RecipientId.UNKNOWN),
-      ContactSearchKey.RecipientSearchKey.Story(RecipientId.UNKNOWN),
-      ContactSearchKey.RecipientSearchKey.Story(RecipientId.UNKNOWN),
-      ContactSearchKey.RecipientSearchKey.Story(RecipientId.UNKNOWN),
-      ContactSearchKey.RecipientSearchKey.Story(RecipientId.UNKNOWN),
-      ContactSearchKey.RecipientSearchKey.Story(RecipientId.UNKNOWN),
-      ContactSearchKey.RecipientSearchKey.Story(RecipientId.UNKNOWN),
+      ContactSearchKey.RecipientSearchKey(RecipientId.UNKNOWN, true),
+      ContactSearchKey.RecipientSearchKey(RecipientId.UNKNOWN, true),
+      ContactSearchKey.RecipientSearchKey(RecipientId.UNKNOWN, true),
+      ContactSearchKey.RecipientSearchKey(RecipientId.UNKNOWN, true),
+      ContactSearchKey.RecipientSearchKey(RecipientId.UNKNOWN, true),
+      ContactSearchKey.RecipientSearchKey(RecipientId.UNKNOWN, true),
+      ContactSearchKey.RecipientSearchKey(RecipientId.UNKNOWN, true),
+      ContactSearchKey.RecipientSearchKey(RecipientId.UNKNOWN, true),
+      ContactSearchKey.RecipientSearchKey(RecipientId.UNKNOWN, true),
+      ContactSearchKey.RecipientSearchKey(RecipientId.UNKNOWN, true),
+      ContactSearchKey.RecipientSearchKey(RecipientId.UNKNOWN, true),
     )
 
     val resultKeys = result.map { it.contactSearchKey }

@@ -14,9 +14,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
-import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
-import androidx.core.content.res.ColorStateListInflaterCompat;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
@@ -51,8 +49,6 @@ import org.thoughtcrime.securesms.util.Util;
 import org.thoughtcrime.securesms.util.ViewUtil;
 import org.thoughtcrime.securesms.util.concurrent.ListenableFuture;
 import org.thoughtcrime.securesms.util.livedata.LiveDataUtil;
-import org.thoughtcrime.securesms.util.views.AutoRounder;
-import org.thoughtcrime.securesms.util.views.Stub;
 import org.thoughtcrime.securesms.verify.VerifyIdentityActivity;
 import org.whispersystems.signalservice.api.push.ServiceId;
 
@@ -129,7 +125,7 @@ public final class ConversationUpdateItem extends FrameLayout
                    boolean isMessageRequestAccepted,
                    boolean allowedToPlayInline,
                    @NonNull Colorizer colorizer,
-                   boolean isCondensedMode)
+                   @NonNull ConversationItemDisplayMode displayMode)
   {
     this.batchSelected = batchSelected;
 
@@ -539,7 +535,32 @@ public final class ConversationUpdateItem extends FrameLayout
       });
 
       actionButton.setText(R.string.ConversationUpdateItem_donate);
-    } else {
+    } else if (conversationMessage.getMessageRecord().isSmsExportType()) {
+      actionButton.setVisibility(View.VISIBLE);
+      actionButton.setOnClickListener(v -> {
+        if (batchSelected.isEmpty() && eventListener != null) {
+          eventListener.onInviteToSignalClicked();
+        }
+      });
+
+      actionButton.setText(R.string.ConversationActivity__invite_to_signal);
+    } else if (conversationMessage.getMessageRecord().isPaymentsRequestToActivate() && !conversationMessage.getMessageRecord().isOutgoing() && !SignalStore.paymentsValues().mobileCoinPaymentsEnabled()) {
+      actionButton.setText(R.string.ConversationUpdateItem_activate_payments);
+      actionButton.setVisibility(VISIBLE);
+      actionButton.setOnClickListener(v -> {
+        if (batchSelected.isEmpty() && eventListener != null) {
+          eventListener.onActivatePaymentsClicked();
+        }
+      });
+    } else if (conversationMessage.getMessageRecord().isPaymentsActivated() && !conversationMessage.getMessageRecord().isOutgoing()) {
+      actionButton.setText(R.string.ConversationUpdateItem_send_payment);
+      actionButton.setVisibility(VISIBLE);
+      actionButton.setOnClickListener(v -> {
+        if (batchSelected.isEmpty() && eventListener != null) {
+          eventListener.onSendPaymentClicked(conversationMessage.getMessageRecord().getIndividualRecipient().getId());
+        }
+      });
+    } else{
       actionButton.setVisibility(GONE);
       actionButton.setOnClickListener(null);
     }

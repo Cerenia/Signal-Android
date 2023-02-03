@@ -39,7 +39,7 @@ import org.thoughtcrime.securesms.components.emoji.MediaKeyboard;
 import org.thoughtcrime.securesms.components.voice.VoiceNotePlaybackState;
 import org.thoughtcrime.securesms.conversation.ConversationStickerSuggestionAdapter;
 import org.thoughtcrime.securesms.conversation.VoiceNoteDraftView;
-import org.thoughtcrime.securesms.database.DraftDatabase;
+import org.thoughtcrime.securesms.database.DraftTable;
 import org.thoughtcrime.securesms.database.model.StickerRecord;
 import org.thoughtcrime.securesms.keyboard.KeyboardPage;
 import org.thoughtcrime.securesms.keyvalue.SignalStore;
@@ -50,6 +50,7 @@ import org.thoughtcrime.securesms.mms.GlideRequests;
 import org.thoughtcrime.securesms.mms.QuoteModel;
 import org.thoughtcrime.securesms.mms.SlideDeck;
 import org.thoughtcrime.securesms.recipients.Recipient;
+import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.util.ViewUtil;
 import org.thoughtcrime.securesms.util.concurrent.AssertedSuccessListener;
 import org.thoughtcrime.securesms.util.concurrent.ListenableFuture;
@@ -210,6 +211,10 @@ public class InputPanel extends LinearLayout
       int cornerRadius = readDimen(R.dimen.message_corner_collapse_radius);
       this.linkPreview.setCorners(cornerRadius, cornerRadius);
     }
+
+    if (listener != null) {
+      listener.onQuoteChanged(id, author.getId());
+    }
   }
 
   public void clearQuote() {
@@ -230,6 +235,10 @@ public class InputPanel extends LinearLayout
     });
 
     quoteAnimator.start();
+
+    if (listener != null) {
+      listener.onQuoteCleared();
+    }
   }
 
   private static ValueAnimator createHeightAnimator(@NonNull View view,
@@ -466,7 +475,9 @@ public class InputPanel extends LinearLayout
     future.addListener(new AssertedSuccessListener<Void>() {
       @Override
       public void onSuccess(Void result) {
-        fadeInNormalComposeViews();
+        if (voiceNoteDraftView.getDraft() == null) {
+          fadeInNormalComposeViews();
+        }
       }
     });
 
@@ -476,6 +487,10 @@ public class InputPanel extends LinearLayout
   @Override
   public void onKeyboardShown() {
     mediaKeyboard.setToMedia();
+  }
+
+  public void setToIme() {
+    mediaKeyboard.setToIme();
   }
 
   @Override
@@ -507,7 +522,7 @@ public class InputPanel extends LinearLayout
     microphoneRecorderView.unlockAction();
   }
 
-  public void setVoiceNoteDraft(@Nullable DraftDatabase.Draft voiceNoteDraft) {
+  public void setVoiceNoteDraft(@Nullable DraftTable.Draft voiceNoteDraft) {
     if (voiceNoteDraft != null) {
       voiceNoteDraftView.setDraft(voiceNoteDraft);
       voiceNoteDraftView.setVisibility(VISIBLE);
@@ -520,7 +535,7 @@ public class InputPanel extends LinearLayout
     }
   }
 
-  public @Nullable DraftDatabase.Draft getVoiceNoteDraft() {
+  public @Nullable DraftTable.Draft getVoiceNoteDraft() {
     return voiceNoteDraftView.getDraft();
   }
 
@@ -572,6 +587,8 @@ public class InputPanel extends LinearLayout
     void onEmojiToggle();
     void onLinkPreviewCanceled();
     void onStickerSuggestionSelected(@NonNull StickerRecord sticker);
+    void onQuoteChanged(long id, @NonNull RecipientId author);
+    void onQuoteCleared();
   }
 
   private static class SlideToCancel {

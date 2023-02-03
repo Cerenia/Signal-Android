@@ -8,7 +8,7 @@ import android.provider.ContactsContract;
 import androidx.annotation.NonNull;
 
 import org.thoughtcrime.securesms.R;
-import org.thoughtcrime.securesms.database.GroupDatabase;
+import org.thoughtcrime.securesms.database.model.GroupRecord;
 import org.thoughtcrime.securesms.phonenumbers.PhoneNumberFormatter;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.whispersystems.signalservice.api.util.OptionalUtil;
@@ -74,7 +74,7 @@ public final class ContactsCursorRows {
   /**
    * Create a row for a contacts cursor based off the given group record.
    */
-  public static @NonNull Object[] forGroup(@NonNull GroupDatabase.GroupRecord groupRecord) {
+  public static @NonNull Object[] forGroup(@NonNull GroupRecord groupRecord) {
     return new Object[]{groupRecord.getRecipientId().serialize(),
                         groupRecord.getTitle(),
                         groupRecord.getId(),
@@ -104,11 +104,11 @@ public final class ContactsCursorRows {
   /**
    * Create a row for a contacts cursor for a username the user is entering or has entered.
    */
-  public static @NonNull MatrixCursor forUsernameSearch(@NonNull String unknownContactTitle, @NonNull String filter) {
+  public static @NonNull MatrixCursor forUsernameSearch(@NonNull String filter) {
     MatrixCursor matrixCursor = createMatrixCursor(1);
 
     matrixCursor.addRow(new Object[]{null,
-                                     unknownContactTitle,
+                                     null,
                                      filter,
                                      ContactsContract.CommonDataKinds.Phone.TYPE_CUSTOM,
                                      "\u21e2",
@@ -119,7 +119,7 @@ public final class ContactsCursorRows {
   }
 
   public static @NonNull MatrixCursor forUsernameSearchHeader(@NonNull Context context) {
-    return forHeader(context.getString(R.string.ContactsCursorLoader_username_search));
+    return forHeader(context.getString(R.string.ContactsCursorLoader_find_by_username));
   }
 
   public static @NonNull MatrixCursor forPhoneNumberSearchHeader(@NonNull Context context) {

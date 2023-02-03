@@ -26,16 +26,6 @@ internal class StoryValues(store: KeyValueStore) : SignalStoreValues(store) {
     private const val LATEST_STORY_SENDS = "latest.story.sends"
 
     /**
-     * Video Trim tooltip marker
-     */
-    private const val VIDEO_TOOLTIP_SEEN_MARKER = "stories.video.will.be.trimmed.tooltip.seen"
-
-    /**
-     * Cannot send to story tooltip marker
-     */
-    private const val CANNOT_SEND_SEEN_MARKER = "stories.cannot.send.video.tooltip.seen"
-
-    /**
      * Whether or not the user has see the "Navigation education" view
      */
     private const val USER_HAS_SEEN_FIRST_NAV_VIEW = "stories.user.has.seen.first.navigation.view"
@@ -46,20 +36,39 @@ internal class StoryValues(store: KeyValueStore) : SignalStoreValues(store) {
     private const val HAS_DOWNLOADED_ONBOARDING_STORY = "stories.has.downloaded.onboarding"
 
     /**
-     * Marks whether the user has seen the onboarding story
+     * Marks whether the user has opened and viewed the onboarding story
      */
-    private const val USER_HAS_SEEN_ONBOARDING_STORY = "stories.user.has.seen.onboarding"
+    private const val USER_HAS_VIEWED_ONBOARDING_STORY = "stories.user.has.seen.onboarding"
+
+    /**
+     * Marks whether the user has seen the onboarding story in the stories landing page
+     */
+    private const val USER_HAS_READ_ONBOARDING_STORY = "stories.user.has.read.onboarding"
+
+    /**
+     * Whether or not the user will send and receive viewed receipts for stories
+     */
+    private const val STORY_VIEWED_RECEIPTS = "stories.viewed.receipts"
+
+    /**
+     * Whether or not the user has seen the group story education sheet
+     */
+    private const val USER_HAS_SEEN_GROUP_STORY_EDUCATION_SHEET = "stories.user.has.seen.group.story.education.sheet"
   }
 
-  override fun onFirstEverAppLaunch() = Unit
+  override fun onFirstEverAppLaunch() {
+    viewedReceiptsEnabled = true
+  }
 
   override fun getKeysToIncludeInBackup(): MutableList<String> = mutableListOf(
     MANUAL_FEATURE_DISABLE,
     USER_HAS_ADDED_TO_A_STORY,
-    VIDEO_TOOLTIP_SEEN_MARKER,
-    CANNOT_SEND_SEEN_MARKER,
     USER_HAS_SEEN_FIRST_NAV_VIEW,
-    HAS_DOWNLOADED_ONBOARDING_STORY
+    HAS_DOWNLOADED_ONBOARDING_STORY,
+    USER_HAS_VIEWED_ONBOARDING_STORY,
+    USER_HAS_READ_ONBOARDING_STORY,
+    STORY_VIEWED_RECEIPTS,
+    USER_HAS_SEEN_GROUP_STORY_EDUCATION_SHEET
   )
 
   var isFeatureDisabled: Boolean by booleanValue(MANUAL_FEATURE_DISABLE, false)
@@ -68,15 +77,25 @@ internal class StoryValues(store: KeyValueStore) : SignalStoreValues(store) {
 
   var userHasBeenNotifiedAboutStories: Boolean by booleanValue(USER_HAS_ADDED_TO_A_STORY, false)
 
-  var videoTooltipSeen by booleanValue(VIDEO_TOOLTIP_SEEN_MARKER, false)
-
-  var cannotSendTooltipSeen by booleanValue(CANNOT_SEND_SEEN_MARKER, false)
-
   var userHasSeenFirstNavView: Boolean by booleanValue(USER_HAS_SEEN_FIRST_NAV_VIEW, false)
 
   var hasDownloadedOnboardingStory: Boolean by booleanValue(HAS_DOWNLOADED_ONBOARDING_STORY, false)
 
-  var userHasSeenOnboardingStory: Boolean by booleanValue(USER_HAS_SEEN_ONBOARDING_STORY, false)
+  var userHasViewedOnboardingStory: Boolean by booleanValue(USER_HAS_VIEWED_ONBOARDING_STORY, false)
+
+  var userHasReadOnboardingStory: Boolean by booleanValue(USER_HAS_READ_ONBOARDING_STORY, false)
+
+  var viewedReceiptsEnabled: Boolean by booleanValue(STORY_VIEWED_RECEIPTS, false)
+
+  var userHasSeenGroupStoryEducationSheet: Boolean by booleanValue(USER_HAS_SEEN_GROUP_STORY_EDUCATION_SHEET, false)
+
+  fun isViewedReceiptsStateSet(): Boolean {
+    return store.containsKey(STORY_VIEWED_RECEIPTS)
+  }
+
+  fun hasUserOnboardingStoryReadBeenSet(): Boolean {
+    return store.containsKey(USER_HAS_READ_ONBOARDING_STORY)
+  }
 
   fun setLatestStorySend(storySend: StorySend) {
     synchronized(this) {

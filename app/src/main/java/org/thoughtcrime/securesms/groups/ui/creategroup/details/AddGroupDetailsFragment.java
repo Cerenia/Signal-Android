@@ -20,7 +20,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
-import androidx.lifecycle.ViewModelProviders;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
 
@@ -100,6 +100,7 @@ public class AddGroupDetailsFragment extends LoggingFragment {
     GroupMemberListView members                  = view.findViewById(R.id.member_list);
     ImageView           avatar                   = view.findViewById(R.id.group_avatar);
     View                mmsWarning               = view.findViewById(R.id.mms_warning);
+    TextView            mmsWarningText           = view.findViewById(R.id.mms_warning_text);
     View                addLater                 = view.findViewById(R.id.add_later);
     TextView            disappearingMessageValue = view.findViewById(R.id.group_disappearing_messages_value);
 
@@ -127,6 +128,7 @@ public class AddGroupDetailsFragment extends LoggingFragment {
     viewModel.getIsMms().observe(getViewLifecycleOwner(), isMms -> {
       disappearingMessagesRow.setVisibility(isMms ? View.GONE : View.VISIBLE);
       mmsWarning.setVisibility(isMms ? View.VISIBLE : View.GONE);
+      mmsWarningText.setText(R.string.AddGroupDetailsFragment__youve_selected_a_contact_that_doesnt_support_signal_groups_mms_removal);
       name.setHint(isMms ? R.string.AddGroupDetailsFragment__group_name_optional : R.string.AddGroupDetailsFragment__group_name_required);
       toolbar.setTitle(isMms ? R.string.AddGroupDetailsFragment__create_group : R.string.AddGroupDetailsFragment__name_this_group);
     });
@@ -200,7 +202,7 @@ public class AddGroupDetailsFragment extends LoggingFragment {
     AddGroupDetailsRepository        repository = new AddGroupDetailsRepository(requireContext());
     AddGroupDetailsViewModel.Factory factory    = new AddGroupDetailsViewModel.Factory(Arrays.asList(args.getRecipientIds()), repository);
 
-    viewModel = ViewModelProviders.of(this, factory).get(AddGroupDetailsViewModel.class);
+    viewModel = new ViewModelProvider(this, factory).get(AddGroupDetailsViewModel.class);
 
     viewModel.getGroupCreateResult().observe(getViewLifecycleOwner(), this::handleGroupCreateResult);
   }

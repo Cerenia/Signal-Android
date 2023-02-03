@@ -11,7 +11,7 @@ import com.annimon.stream.Stream;
 
 import org.signal.core.util.SetUtil;
 import org.signal.core.util.logging.Log;
-import org.thoughtcrime.securesms.database.RecipientDatabase;
+import org.thoughtcrime.securesms.database.RecipientTable;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.database.model.RecipientRecord;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
@@ -31,6 +31,7 @@ import org.whispersystems.signalservice.api.storage.SignalStorageManifest;
 import org.whispersystems.signalservice.api.storage.SignalStorageRecord;
 import org.whispersystems.signalservice.api.storage.StorageId;
 import org.whispersystems.signalservice.api.util.OptionalUtil;
+import org.whispersystems.signalservice.internal.storage.protos.OptionalBool;
 
 import java.util.Collection;
 import java.util.List;
@@ -56,10 +57,9 @@ public final class StorageSyncHelper {
    * you which keys are exclusively remote and which are exclusively local.
    *
    * @param remoteIds All remote keys available.
-   * @param localIds All local keys available.
-   *
+   * @param localIds  All local keys available.
    * @return An object describing which keys are exclusive to the remote data set and which keys are
-   *         exclusive to the local data set.
+   * exclusive to the local data set.
    */
   public static @NonNull IdDifferenceResult findIdDifference(@NonNull Collection<StorageId> remoteIds,
                                                              @NonNull Collection<StorageId> localIds)
@@ -105,11 +105,23 @@ public final class StorageSyncHelper {
   }
 
   public static SignalStorageRecord buildAccountRecord(@NonNull Context context, @NonNull Recipient self) {
-    RecipientDatabase     recipientDatabase = SignalDatabase.recipients();
-    RecipientRecord       record            = recipientDatabase.getRecordForSync(self.getId());
+    RecipientTable  recipientTable = SignalDatabase.recipients();
+    RecipientRecord record         = recipientTable.getRecordForSync(self.getId());
     List<RecipientRecord> pinned            = Stream.of(SignalDatabase.threads().getPinnedRecipientIds())
-                                                    .map(recipientDatabase::getRecordForSync)
+                                                    .map(recipientTable::getRecordForSync)
                                                     .toList();
+
+    final OptionalBool storyViewReceiptsState = SignalStore.storyValues().getViewedReceiptsEnabled() ? OptionalBool.ENABLED
+                                                                                                     : OptionalBool.DISABLED;
+
+    if (self.getStorageServiceId() == null) {
+      Log.w(TAG, "[buildAccountRecord] No storageId for self! Generating. (Record had ID: " + (record != null && record.getStorageId() != null) + ")");
+      SignalDatabase.recipients().updateStorageId(self.getId(), generateKey());
+      self = Recipient.self().fresh();
+      record = recipientTable.getRecordForSync(self.getId());
+    }
+
+    final boolean hasReadOnboardingStory = SignalStore.storyValues().getUserHasViewedOnboardingStory() || SignalStore.storyValues().getUserHasReadOnboardingStory();
 
     SignalAccountRecord account = new SignalAccountRecord.Builder(self.getStorageServiceId(), record != null ? record.getSyncExtras().getStorageProto() : null)
                                                          .setProfileKey(self.getProfileKey())
@@ -134,6 +146,13 @@ public final class StorageSyncHelper {
                                                          .setSubscriber(StorageSyncModels.localToRemoteSubscriber(SignalStore.donationsValues().getSubscriber()))
                                                          .setDisplayBadgesOnProfile(SignalStore.donationsValues().getDisplayBadgesOnProfile())
                                                          .setSubscriptionManuallyCancelled(SignalStore.donationsValues().isUserManuallyCancelled())
+                                                         .setKeepMutedChatsArchived(SignalStore.settings().shouldKeepMutedChatsArchived())
+                                                         .setHasSetMyStoriesPrivacy(SignalStore.storyValues().getUserHasBeenNotifiedAboutStories())
+                                                         .setHasViewedOnboardingStory(SignalStore.storyValues().getUserHasViewedOnboardingStory())
+                                                         .setStoriesDisabled(SignalStore.storyValues().isFeatureDisabled())
+                                                         .setStoryViewReceiptsState(storyViewReceiptsState)
+                                                         .setHasReadOnboardingStory(hasReadOnboardingStory)
+                                                         .setHasSeenGroupStoryEducationSheet(SignalStore.storyValues().getUserHasSeenGroupStoryEducationSheet())
                                                          .build();
 
     return SignalStorageRecord.forAccount(account);
@@ -158,6 +177,24 @@ public final class StorageSyncHelper {
     SignalStore.settings().setUniversalExpireTimer(update.getNew().getUniversalExpireTimer());
     SignalStore.emojiValues().setReactions(update.getNew().getDefaultReactions());
     SignalStore.donationsValues().setDisplayBadgesOnProfile(update.getNew().isDisplayBadgesOnProfile());
+    SignalStore.settings().setKeepMutedChatsArchived(update.getNew().isKeepMutedChatsArchived());
+    SignalStore.storyValues().setUserHasBeenNotifiedAboutStories(update.getNew().hasSetMyStoriesPrivacy());
+    SignalStore.storyValues().setUserHasViewedOnboardingStory(update.getNew().hasViewedOnboardingStory());
+    SignalStore.storyValues().setFeatureDisabled(update.getNew().isStoriesDisabled());
+    SignalStore.storyValues().setUserHasReadOnboardingStory(update.getNew().hasReadOnboardingStory());
+    SignalStore.storyValues().setUserHasSeenGroupStoryEducationSheet(update.getNew().hasSeenGroupStoryEducationSheet());
+
+    if (update.getNew().getStoryViewReceiptsState() == OptionalBool.UNSET) {
+      SignalStore.storyValues().setViewedReceiptsEnabled(update.getNew().isReadReceiptsEnabled());
+    } else {
+      SignalStore.storyValues().setViewedReceiptsEnabled(update.getNew().getStoryViewReceiptsState() == OptionalBool.ENABLED);
+    }
+
+    if (update.getNew().getStoryViewReceiptsState() == OptionalBool.UNSET) {
+      SignalStore.storyValues().setViewedReceiptsEnabled(update.getNew().isReadReceiptsEnabled());
+    } else {
+      SignalStore.storyValues().setViewedReceiptsEnabled(update.getNew().getStoryViewReceiptsState() == OptionalBool.ENABLED);
+    }
 
     if (update.getNew().isSubscriptionManuallyCancelled()) {
       SignalStore.donationsValues().updateLocalStateForManualCancellation();
@@ -218,7 +255,7 @@ public final class StorageSyncHelper {
 
     /**
      * @return True if there exist some keys that have matching raw ID's but different types,
-     *         otherwise false.
+     * otherwise false.
      */
     public boolean hasTypeMismatches() {
       return hasTypeMismatches;

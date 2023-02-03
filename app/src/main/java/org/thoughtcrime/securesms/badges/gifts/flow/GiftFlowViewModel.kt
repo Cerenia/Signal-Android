@@ -1,10 +1,7 @@
 package org.thoughtcrime.securesms.badges.gifts.flow
 
-import android.content.Intent
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.google.android.gms.wallet.PaymentData
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Flowable
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.disposables.CompositeDisposable
@@ -14,15 +11,9 @@ import io.reactivex.rxjava3.kotlin.subscribeBy
 import io.reactivex.rxjava3.subjects.PublishSubject
 import org.signal.core.util.logging.Log
 import org.signal.core.util.money.FiatMoney
-import org.signal.donations.GooglePayApi
-import org.thoughtcrime.securesms.badges.gifts.Gifts
 import org.thoughtcrime.securesms.badges.models.Badge
 import org.thoughtcrime.securesms.components.settings.app.subscription.DonationEvent
-import org.thoughtcrime.securesms.components.settings.app.subscription.DonationPaymentRepository
-import org.thoughtcrime.securesms.components.settings.app.subscription.errors.DonationError
-import org.thoughtcrime.securesms.components.settings.app.subscription.errors.DonationErrorSource
 import org.thoughtcrime.securesms.contacts.paged.ContactSearchKey
-import org.thoughtcrime.securesms.dependencies.ApplicationDependencies
 import org.thoughtcrime.securesms.keyvalue.SignalStore
 import org.thoughtcrime.securesms.recipients.Recipient
 import org.thoughtcrime.securesms.util.InternetConnectionObserver
@@ -33,11 +24,8 @@ import java.util.Currency
  * Maintains state as a user works their way through the gift flow.
  */
 class GiftFlowViewModel(
-  val repository: GiftFlowRepository,
-  val donationPaymentRepository: DonationPaymentRepository
+  private val giftFlowRepository: GiftFlowRepository
 ) : ViewModel() {
-
-  private var giftToPurchase: Gift? = null
 
   private val store = RxStore(
     GiftFlowState(
@@ -82,7 +70,7 @@ class GiftFlowViewModel(
       }
     }
 
-    disposables += repository.getGiftPricing().subscribe { giftPrices ->
+    disposables += giftFlowRepository.getGiftPricing().subscribe { giftPrices ->
       store.update {
         it.copy(
           giftPrices = giftPrices,
@@ -91,11 +79,11 @@ class GiftFlowViewModel(
       }
     }
 
-    disposables += repository.getGiftBadge().subscribeBy(
+    disposables += giftFlowRepository.getGiftBadge().subscribeBy(
       onSuccess = { (giftLevel, giftBadge) ->
         store.update {
           it.copy(
-            giftLevel = giftLevel,
+            giftLevel = giftLevel.toLong(),
             giftBadge = giftBadge,
             stage = getLoadState(it, giftBadge = giftBadge)
           )
@@ -124,79 +112,6 @@ class GiftFlowViewModel(
 
   fun getSupportedCurrencyCodes(): List<String> {
     return store.state.giftPrices.keys.map { it.currencyCode }
-  }
-
-  fun requestTokenFromGooglePay(label: String) {
-    val giftLevel = store.state.giftLevel ?: return
-    val giftPrice = store.state.giftPrices[store.state.currency] ?: return
-    val giftRecipient = store.state.recipient?.id ?: return
-
-    this.giftToPurchase = Gift(giftLevel, giftPrice)
-
-    store.update { it.copy(stage = GiftFlowState.Stage.RECIPIENT_VERIFICATION) }
-    disposables += donationPaymentRepository.verifyRecipientIsAllowedToReceiveAGift(giftRecipient)
-      .observeOn(AndroidSchedulers.mainThread())
-      .subscribeBy(
-        onComplete = {
-          store.update { it.copy(stage = GiftFlowState.Stage.TOKEN_REQUEST) }
-          donationPaymentRepository.requestTokenFromGooglePay(giftToPurchase!!.price, label, Gifts.GOOGLE_PAY_REQUEST_CODE)
-        },
-        onError = this::onPaymentFlowError
-      )
-  }
-
-  fun onActivityResult(
-    requestCode: Int,
-    resultCode: Int,
-    data: Intent?
-  ) {
-    val gift = giftToPurchase
-    giftToPurchase = null
-
-    val recipient = store.state.recipient?.id
-
-    donationPaymentRepository.onActivityResult(
-      requestCode, resultCode, data, Gifts.GOOGLE_PAY_REQUEST_CODE,
-      object : GooglePayApi.PaymentRequestCallback {
-        override fun onSuccess(paymentData: PaymentData) {
-          if (gift != null && recipient != null) {
-            eventPublisher.onNext(DonationEvent.RequestTokenSuccess)
-
-            store.update { it.copy(stage = GiftFlowState.Stage.PAYMENT_PIPELINE) }
-
-            donationPaymentRepository.continuePayment(gift.price, paymentData, recipient, store.state.additionalMessage?.toString(), gift.level).subscribeBy(
-              onError = this@GiftFlowViewModel::onPaymentFlowError,
-              onComplete = {
-                store.update { it.copy(stage = GiftFlowState.Stage.READY) }
-                eventPublisher.onNext(DonationEvent.PaymentConfirmationSuccess(store.state.giftBadge!!))
-              }
-            )
-          } else {
-            store.update { it.copy(stage = GiftFlowState.Stage.READY) }
-          }
-        }
-
-        override fun onError(googlePayException: GooglePayApi.GooglePayException) {
-          store.update { it.copy(stage = GiftFlowState.Stage.READY) }
-          DonationError.routeDonationError(ApplicationDependencies.getApplication(), DonationError.getGooglePayRequestTokenError(DonationErrorSource.GIFT, googlePayException))
-        }
-
-        override fun onCancelled() {
-          store.update { it.copy(stage = GiftFlowState.Stage.READY) }
-        }
-      }
-    )
-  }
-
-  private fun onPaymentFlowError(throwable: Throwable) {
-    store.update { it.copy(stage = GiftFlowState.Stage.READY) }
-    val donationError: DonationError = if (throwable is DonationError) {
-      throwable
-    } else {
-      Log.w(TAG, "Failed to complete payment or redemption", throwable, true)
-      DonationError.genericBadgeRedemptionFailure(DonationErrorSource.GIFT)
-    }
-    DonationError.routeDonationError(ApplicationDependencies.getApplication(), donationError)
   }
 
   private fun getLoadState(
@@ -236,14 +151,12 @@ class GiftFlowViewModel(
   }
 
   class Factory(
-    private val repository: GiftFlowRepository,
-    private val donationPaymentRepository: DonationPaymentRepository
+    private val repository: GiftFlowRepository
   ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
       return modelClass.cast(
         GiftFlowViewModel(
-          repository,
-          donationPaymentRepository
+          repository
         )
       ) as T
     }

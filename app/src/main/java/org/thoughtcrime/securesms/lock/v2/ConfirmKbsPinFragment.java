@@ -10,7 +10,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.autofill.HintConstants;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
-import androidx.lifecycle.ViewModelProviders;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.airbnb.lottie.LottieAnimationView;
 import com.airbnb.lottie.LottieDrawable;
@@ -50,7 +50,7 @@ public class ConfirmKbsPinFragment extends BaseKbsPinFragment<ConfirmKbsPinViewM
     ConfirmKbsPinRepository        repository = new ConfirmKbsPinRepository();
     ConfirmKbsPinViewModel.Factory factory    = new ConfirmKbsPinViewModel.Factory(userEntry, keyboard, repository);
 
-    viewModel = ViewModelProviders.of(this, factory).get(ConfirmKbsPinViewModel.class);
+    viewModel = new ViewModelProvider(this, factory).get(ConfirmKbsPinViewModel.class);
 
     viewModel.getLabel().observe(getViewLifecycleOwner(), this::updateLabel);
     viewModel.getSaveAnimation().observe(getViewLifecycleOwner(), this::updateSaveAnimation);
@@ -87,7 +87,7 @@ public class ConfirmKbsPinFragment extends BaseKbsPinFragment<ConfirmKbsPinViewM
         getLabel().setText(R.string.ConfirmKbsPinFragment__re_enter_your_pin);
         break;
       case PIN_DOES_NOT_MATCH:
-        getLabel().setText(SpanUtil.color(ContextCompat.getColor(requireContext(), R.color.red),
+        getLabel().setText(SpanUtil.color(ContextCompat.getColor(requireContext(), R.color.red_500),
                            getString(R.string.ConfirmKbsPinFragment__pins_dont_match)));
         getInput().getText().clear();
         break;

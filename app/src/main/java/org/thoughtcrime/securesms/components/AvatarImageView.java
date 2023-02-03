@@ -64,6 +64,7 @@ public final class AvatarImageView extends AppCompatImageView {
 
   private @Nullable RecipientContactPhoto recipientContactPhoto;
   private @NonNull  Drawable              unknownRecipientDrawable;
+  private @Nullable AvatarColor           fallbackPhotoColor;
 
   public AvatarImageView(Context context) {
     super(context);
@@ -103,6 +104,10 @@ public final class AvatarImageView extends AppCompatImageView {
 
   public void setFallbackPhotoProvider(Recipient.FallbackPhotoProvider fallbackPhotoProvider) {
     this.fallbackPhotoProvider = fallbackPhotoProvider;
+  }
+
+  public void setFallbackPhotoColor(@Nullable AvatarColor fallbackPhotoColor) {
+    this.fallbackPhotoColor = fallbackPhotoColor;
   }
 
   /**
@@ -160,8 +165,7 @@ public final class AvatarImageView extends AppCompatImageView {
   private void setAvatar(@NonNull GlideRequests requestManager, @Nullable Recipient recipient, @NonNull AvatarOptions avatarOptions) {
     if (recipient != null) {
       RecipientContactPhoto photo = (recipient.isSelf() && avatarOptions.useSelfProfileAvatar) ? new RecipientContactPhoto(recipient,
-                                                                                                                           new ProfileContactPhoto(Recipient.self(),
-                                                                                                                                                   Recipient.self().getProfileAvatar()))
+                                                                                                                           new ProfileContactPhoto(Recipient.self()))
                                                                                                : new RecipientContactPhoto(recipient);
 
       boolean    shouldBlur = recipient.shouldBlurAvatar();
@@ -214,7 +218,7 @@ public final class AvatarImageView extends AppCompatImageView {
       requestManager.clear(this);
       if (fallbackPhotoProvider != null) {
         setImageDrawable(fallbackPhotoProvider.getPhotoForRecipientWithoutName()
-                                              .asDrawable(getContext(), AvatarColor.UNKNOWN, inverted));
+                                              .asDrawable(getContext(), Util.firstNonNull(fallbackPhotoColor, AvatarColor.UNKNOWN), inverted));
       } else {
         setImageDrawable(unknownRecipientDrawable);
       }

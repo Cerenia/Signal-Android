@@ -4,6 +4,10 @@ package org.thoughtcrime.securesms.groups
 
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.slot
+import io.mockk.verify
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers
 import org.hamcrest.Matchers.`is`
@@ -11,9 +15,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.ArgumentCaptor
-import org.mockito.Mockito
-import org.mockito.Mockito.mock
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.signal.core.util.Hex
@@ -27,8 +28,8 @@ import org.signal.storageservice.protos.groups.local.DecryptedGroup
 import org.signal.storageservice.protos.groups.local.DecryptedMember
 import org.thoughtcrime.securesms.SignalStoreRule
 import org.thoughtcrime.securesms.TestZkGroupServer
-import org.thoughtcrime.securesms.database.GroupDatabase
 import org.thoughtcrime.securesms.database.GroupStateTestData
+import org.thoughtcrime.securesms.database.GroupTable
 import org.thoughtcrime.securesms.database.model.databaseprotos.member
 import org.thoughtcrime.securesms.groups.v2.GroupCandidateHelper
 import org.thoughtcrime.securesms.groups.v2.processing.GroupsV2StateProcessor
@@ -41,6 +42,7 @@ import org.whispersystems.signalservice.api.groupsv2.GroupsV2Operations
 import org.whispersystems.signalservice.api.push.ACI
 import org.whispersystems.signalservice.api.push.PNI
 import org.whispersystems.signalservice.api.push.ServiceId
+import org.whispersystems.signalservice.api.push.ServiceIds
 import java.util.UUID
 
 @RunWith(RobolectricTestRunner::class)
@@ -55,12 +57,13 @@ class GroupManagerV2Test_edit {
 
     val selfAci: ACI = ACI.from(UUID.randomUUID())
     val selfPni: PNI = PNI.from(UUID.randomUUID())
+    val serviceIds: ServiceIds = ServiceIds(selfAci, selfPni)
     val otherSid: ServiceId = ServiceId.from(UUID.randomUUID())
     val selfAndOthers: List<DecryptedMember> = listOf(member(selfAci), member(otherSid))
     val others: List<DecryptedMember> = listOf(member(otherSid))
   }
 
-  private lateinit var groupDatabase: GroupDatabase
+  private lateinit var groupTable: GroupTable
   private lateinit var groupsV2API: GroupsV2Api
   private lateinit var groupsV2Operations: GroupsV2Operations
   private lateinit var groupsV2Authorization: GroupsV2Authorization
@@ -68,8 +71,6 @@ class GroupManagerV2Test_edit {
   private lateinit var groupCandidateHelper: GroupCandidateHelper
   private lateinit var sendGroupUpdateHelper: GroupManagerV2.SendGroupUpdateHelper
   private lateinit var groupOperations: GroupsV2Operations.GroupOperations
-
-  private lateinit var patchedDecryptedGroup: ArgumentCaptor<DecryptedGroup>
 
   private lateinit var manager: GroupManagerV2
 
@@ -85,26 +86,23 @@ class GroupManagerV2Test_edit {
 
     val clientZkOperations = ClientZkOperations(server.getServerPublicParams())
 
-    groupDatabase = mock(GroupDatabase::class.java)
-    groupsV2API = mock(GroupsV2Api::class.java)
+    groupTable = mockk()
+    groupsV2API = mockk()
     groupsV2Operations = GroupsV2Operations(clientZkOperations, 1000)
-    groupsV2Authorization = mock(GroupsV2Authorization::class.java)
-    groupsV2StateProcessor = mock(GroupsV2StateProcessor::class.java)
-    groupCandidateHelper = mock(GroupCandidateHelper::class.java)
-    sendGroupUpdateHelper = mock(GroupManagerV2.SendGroupUpdateHelper::class.java)
+    groupsV2Authorization = mockk(relaxed = true)
+    groupsV2StateProcessor = mockk()
+    groupCandidateHelper = mockk()
+    sendGroupUpdateHelper = mockk()
     groupOperations = groupsV2Operations.forGroup(groupSecretParams)
-
-    patchedDecryptedGroup = ArgumentCaptor.forClass(DecryptedGroup::class.java)
 
     manager = GroupManagerV2(
       ApplicationProvider.getApplicationContext(),
-      groupDatabase,
+      groupTable,
       groupsV2API,
       groupsV2Operations,
       groupsV2Authorization,
       groupsV2StateProcessor,
-      selfAci,
-      selfPni,
+      serviceIds,
       groupCandidateHelper,
       sendGroupUpdateHelper
     )
@@ -114,12 +112,11 @@ class GroupManagerV2Test_edit {
     val data = GroupStateTestData(masterKey, groupOperations)
     data.init()
 
-    Mockito.doReturn(data.groupRecord).`when`(groupDatabase).getGroup(groupId)
-    Mockito.doReturn(data.groupRecord.get()).`when`(groupDatabase).requireGroup(groupId)
-
-    Mockito.doReturn(GroupManagerV2.RecipientAndThread(Recipient.UNKNOWN, 1)).`when`(sendGroupUpdateHelper).sendGroupUpdate(Mockito.eq(masterKey), Mockito.any(), Mockito.any(), Mockito.anyBoolean())
-
-    Mockito.doReturn(data.groupChange!!).`when`(groupsV2API).patchGroup(Mockito.any(), Mockito.any(), Mockito.any())
+    every { groupTable.getGroup(groupId) } returns data.groupRecord
+    every { groupTable.requireGroup(groupId) } returns data.groupRecord.get()
+    every { groupTable.update(any<GroupId.V2>(), any()) } returns Unit
+    every { sendGroupUpdateHelper.sendGroupUpdate(masterKey, any(), any(), any()) } returns GroupManagerV2.RecipientAndThread(Recipient.UNKNOWN, 1)
+    every { groupsV2API.patchGroup(any(), any(), any()) } returns data.groupChange!!
   }
 
   private fun editGroup(perform: GroupManagerV2.GroupEditor.() -> Unit) {
@@ -127,8 +124,9 @@ class GroupManagerV2Test_edit {
   }
 
   private fun then(then: (DecryptedGroup) -> Unit) {
-    Mockito.verify(groupDatabase).update(Mockito.eq(groupId), patchedDecryptedGroup.capture())
-    then(patchedDecryptedGroup.value)
+    val decryptedGroupArg = slot<DecryptedGroup>()
+    verify { groupTable.update(groupId, capture(decryptedGroupArg)) }
+    then(decryptedGroupArg.captured)
   }
 
   @Test
@@ -139,8 +137,7 @@ class GroupManagerV2Test_edit {
         members = listOf(
           member(selfAci, role = Member.Role.ADMINISTRATOR),
           member(otherSid)
-        ),
-        serviceId = selfAci.toString()
+        )
       )
       groupChange(6) {
         source(selfAci)

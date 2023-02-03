@@ -1,5 +1,8 @@
 package org.thoughtcrime.securesms.logsubmit;
 
+import android.app.Activity;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.SpannableString;
 import android.text.Spanned;
@@ -12,27 +15,30 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.SearchView;
 import androidx.core.app.ShareCompat;
 import androidx.core.text.util.LinkifyCompat;
-import androidx.lifecycle.ViewModelProviders;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import org.thoughtcrime.securesms.BaseActivity;
 import org.thoughtcrime.securesms.R;
+import org.thoughtcrime.securesms.components.ProgressCard;
 import org.thoughtcrime.securesms.util.DynamicTheme;
 import org.thoughtcrime.securesms.util.LongClickCopySpan;
 import org.thoughtcrime.securesms.util.LongClickMovementMethod;
 import org.thoughtcrime.securesms.util.ThemeUtil;
 import org.thoughtcrime.securesms.util.ViewUtil;
 import org.thoughtcrime.securesms.util.views.CircularProgressMaterialButton;
-import org.thoughtcrime.securesms.util.views.SimpleProgressDialog;
 
 import java.util.List;
 
 public class SubmitDebugLogActivity extends BaseActivity implements SubmitDebugLogAdapter.Listener {
+
+  private static final int CODE_SAVE = 24601;
 
   private RecyclerView            lineList;
   private SubmitDebugLogAdapter   adapter;
@@ -41,13 +47,14 @@ public class SubmitDebugLogActivity extends BaseActivity implements SubmitDebugL
   private View                           warningBanner;
   private View                           editBanner;
   private CircularProgressMaterialButton submitButton;
-  private AlertDialog                    loadingDialog;
   private View                           scrollToBottomButton;
   private View                           scrollToTopButton;
+  private ProgressCard                   progressCard;
 
   private MenuItem editMenuItem;
   private MenuItem doneMenuItem;
   private MenuItem searchMenuItem;
+  private MenuItem saveMenuItem;
 
   private final DynamicTheme dynamicTheme = new DynamicTheme();
 
@@ -59,7 +66,7 @@ public class SubmitDebugLogActivity extends BaseActivity implements SubmitDebugL
     getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     getSupportActionBar().setTitle(R.string.HelpSettingsFragment__debug_log);
 
-    this.viewModel = ViewModelProviders.of(this, new SubmitDebugLogViewModel.Factory()).get(SubmitDebugLogViewModel.class);
+    this.viewModel = new ViewModelProvider(this, new SubmitDebugLogViewModel.Factory()).get(SubmitDebugLogViewModel.class);
 
     initView();
     initViewModel();
@@ -78,6 +85,7 @@ public class SubmitDebugLogActivity extends BaseActivity implements SubmitDebugL
     this.editMenuItem   = menu.findItem(R.id.menu_edit_log);
     this.doneMenuItem   = menu.findItem(R.id.menu_done_editing_log);
     this.searchMenuItem = menu.findItem(R.id.menu_search);
+    this.saveMenuItem   = menu.findItem(R.id.menu_save);
 
     SearchView searchView                        = (SearchView) searchMenuItem.getActionView();
     SearchView.OnQueryTextListener queryListener = new SearchView.OnQueryTextListener() {
@@ -123,6 +131,13 @@ public class SubmitDebugLogActivity extends BaseActivity implements SubmitDebugL
       viewModel.onEditButtonPressed();
     } else if (item.getItemId() == R.id.menu_done_editing_log) {
       viewModel.onDoneEditingButtonPressed();
+    } else if (item.getItemId() == R.id.menu_save) {
+      Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+      intent.addCategory(Intent.CATEGORY_OPENABLE);
+      intent.setType("application/zip");
+      intent.putExtra(Intent.EXTRA_TITLE, "signal-log-" + System.currentTimeMillis() + ".zip");
+
+      startActivityForResult(intent, CODE_SAVE);
     }
 
     return false;
@@ -132,6 +147,19 @@ public class SubmitDebugLogActivity extends BaseActivity implements SubmitDebugL
   public void onBackPressed() {
     if (!viewModel.onBackPressed()) {
       super.onBackPressed();
+    }
+  }
+
+  @Override
+  protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+    super.onActivityResult(requestCode, resultCode, data);
+
+    if (requestCode == CODE_SAVE && resultCode == Activity.RESULT_OK) {
+      Uri uri = data != null ? data.getData() : null;
+      viewModel.onDiskSaveLocationReady(uri);
+      if (progressCard != null) {
+        progressCard.setVisibility(View.VISIBLE);
+      }
     }
   }
 
@@ -147,6 +175,7 @@ public class SubmitDebugLogActivity extends BaseActivity implements SubmitDebugL
     this.submitButton         = findViewById(R.id.debug_log_submit_button);
     this.scrollToBottomButton = findViewById(R.id.debug_log_scroll_to_bottom);
     this.scrollToTopButton    = findViewById(R.id.debug_log_scroll_to_top);
+    this.progressCard         = findViewById(R.id.debug_log_progress_card);
 
     this.adapter = new SubmitDebugLogAdapter(this, viewModel.getPagingController());
 
@@ -175,19 +204,19 @@ public class SubmitDebugLogActivity extends BaseActivity implements SubmitDebugL
         }
       }
     });
+    this.progressCard.setVisibility(View.VISIBLE);
 
-    this.loadingDialog = SimpleProgressDialog.show(this);
   }
 
   private void initViewModel() {
     viewModel.getLines().observe(this, this::presentLines);
     viewModel.getMode().observe(this, this::presentMode);
+    viewModel.getEvents().observe(this, this::presentEvents);
   }
 
   private void presentLines(@NonNull List<LogLine> lines) {
-    if (loadingDialog != null && lines.size() > 0) {
-      loadingDialog.dismiss();
-      loadingDialog = null;
+    if (progressCard != null && lines.size() > 0) {
+      progressCard.setVisibility(View.GONE);
 
       warningBanner.setVisibility(View.VISIBLE);
       submitButton.setVisibility(View.VISIBLE);
@@ -201,6 +230,7 @@ public class SubmitDebugLogActivity extends BaseActivity implements SubmitDebugL
       case NORMAL:
         editBanner.setVisibility(View.GONE);
         adapter.setEditing(false);
+        saveMenuItem.setVisible(true);
         // TODO [greyson][log] Not yet implemented
 //        editMenuItem.setVisible(true);
 //        doneMenuItem.setVisible(false);
@@ -212,6 +242,7 @@ public class SubmitDebugLogActivity extends BaseActivity implements SubmitDebugL
         editMenuItem.setVisible(false);
         doneMenuItem.setVisible(false);
         searchMenuItem.setVisible(false);
+        saveMenuItem.setVisible(false);
         break;
       case EDIT:
         editBanner.setVisibility(View.VISIBLE);
@@ -219,6 +250,21 @@ public class SubmitDebugLogActivity extends BaseActivity implements SubmitDebugL
         editMenuItem.setVisible(false);
         doneMenuItem.setVisible(true);
         searchMenuItem.setVisible(true);
+        saveMenuItem.setVisible(false);
+        break;
+    }
+  }
+
+  private void presentEvents(@NonNull SubmitDebugLogViewModel.Event event) {
+    switch (event) {
+      case FILE_SAVE_SUCCESS:
+        Toast.makeText(this, R.string.SubmitDebugLogActivity_save_complete, Toast.LENGTH_SHORT).show();
+        if (progressCard != null) {
+          progressCard.setVisibility(View.GONE);
+        }
+        break;
+      case FILE_SAVE_ERROR:
+        Toast.makeText(this, R.string.SubmitDebugLogActivity_failed_to_save, Toast.LENGTH_SHORT).show();
         break;
     }
   }

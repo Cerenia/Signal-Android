@@ -11,6 +11,7 @@ android {
     defaultConfig {
         minSdkVersion MINIMUM_SDK
         targetSdkVersion TARGET_SDK
+        multiDexEnabled true
     }
 
     compileOptions {
@@ -29,14 +30,14 @@ ktlint {
 }
 
 dependencies {
-    // Can't use the newest version because it hits some weird NoClassDefFoundException
-    implementation 'com.github.jknack:handlebars:4.0.7'
+    implementation libs.jknack.handlebars
 
     implementation libs.androidx.appcompat
     implementation libs.material.material
+    implementation libs.androidx.multidex
     implementation libs.androidx.sqlite
     implementation project(':core-util')
     testImplementation testLibs.junit.junit
 
-    implementation 'org.nanohttpd:nanohttpd-webserver:2.3.1'
+    implementation libs.nanohttpd.webserver
 }

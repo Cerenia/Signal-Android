@@ -19,13 +19,13 @@ import org.thoughtcrime.securesms.ContactSelectionListFragment;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.contacts.ContactsCursorLoader;
 import org.thoughtcrime.securesms.contacts.sync.ContactDiscovery;
-import org.thoughtcrime.securesms.database.RecipientDatabase;
+import org.thoughtcrime.securesms.database.RecipientTable;
 import org.thoughtcrime.securesms.groups.ui.creategroup.details.AddGroupDetailsActivity;
+import org.thoughtcrime.securesms.keyvalue.SignalStore;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.util.FeatureFlags;
-import org.thoughtcrime.securesms.util.Stopwatch;
-import org.thoughtcrime.securesms.util.Util;
+import org.signal.core.util.Stopwatch;
 import org.thoughtcrime.securesms.util.views.SimpleProgressDialog;
 
 import java.io.IOException;
@@ -50,8 +50,9 @@ public class CreateGroupActivity extends ContactSelectionActivity {
     intent.putExtra(ContactSelectionListFragment.REFRESHABLE, false);
     intent.putExtra(ContactSelectionActivity.EXTRA_LAYOUT_RES_ID, R.layout.create_group_activity);
 
-    int displayMode = Util.isDefaultSmsProvider(context) ? ContactsCursorLoader.DisplayMode.FLAG_SMS | ContactsCursorLoader.DisplayMode.FLAG_PUSH
-                                                         : ContactsCursorLoader.DisplayMode.FLAG_PUSH;
+    boolean smsEnabled = SignalStore.misc().getSmsExportPhase().allowSmsFeatures();
+    int displayMode = smsEnabled ? ContactsCursorLoader.DisplayMode.FLAG_SMS | ContactsCursorLoader.DisplayMode.FLAG_PUSH
+                                 : ContactsCursorLoader.DisplayMode.FLAG_PUSH;
 
     intent.putExtra(ContactSelectionListFragment.DISPLAY_MODE, displayMode);
     intent.putExtra(ContactSelectionListFragment.SELECTION_LIMITS, FeatureFlags.groupLimits().excludingSelf());
@@ -149,7 +150,7 @@ public class CreateGroupActivity extends ContactSelectionActivity {
       stopwatch.split("resolve");
 
       Set<Recipient> registeredChecks = resolved.stream()
-                                                .filter(r -> r.getRegistered() == RecipientDatabase.RegisteredState.UNKNOWN)
+                                                .filter(r -> r.getRegistered() == RecipientTable.RegisteredState.UNKNOWN)
                                                 .collect(Collectors.toSet());
 
       Log.i(TAG, "Need to do " + registeredChecks.size() + " registration checks.");

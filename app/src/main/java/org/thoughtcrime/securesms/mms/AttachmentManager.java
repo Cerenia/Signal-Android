@@ -18,7 +18,6 @@ package org.thoughtcrime.securesms.mms;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
@@ -39,9 +38,11 @@ import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+
 import org.signal.core.util.ThreadUtil;
+import org.signal.core.util.concurrent.SimpleTask;
 import org.signal.core.util.logging.Log;
-import org.thoughtcrime.securesms.MediaPreviewActivity;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.attachments.Attachment;
 import org.thoughtcrime.securesms.components.AudioView;
@@ -51,25 +52,37 @@ import org.thoughtcrime.securesms.components.ThumbnailView;
 import org.thoughtcrime.securesms.components.location.SignalMapView;
 import org.thoughtcrime.securesms.components.location.SignalPlace;
 import org.thoughtcrime.securesms.conversation.MessageSendType;
+import org.thoughtcrime.securesms.database.AttachmentTable;
+import org.thoughtcrime.securesms.database.MediaTable;
+import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.giph.ui.GiphyActivity;
 import org.thoughtcrime.securesms.maps.PlacePickerActivity;
+import org.thoughtcrime.securesms.mediapreview.MediaIntentFactory;
+import org.thoughtcrime.securesms.mediapreview.MediaPreviewV2Fragment;
 import org.thoughtcrime.securesms.mediasend.v2.MediaSelectionActivity;
+import org.thoughtcrime.securesms.payments.CanNotSendPaymentDialog;
+import org.thoughtcrime.securesms.payments.PaymentsAddressException;
 import org.thoughtcrime.securesms.payments.create.CreatePaymentFragmentArgs;
 import org.thoughtcrime.securesms.payments.preferences.PaymentsActivity;
+import org.thoughtcrime.securesms.payments.preferences.RecipientHasNotEnabledPaymentsDialog;
 import org.thoughtcrime.securesms.payments.preferences.model.PayeeParcelable;
 import org.thoughtcrime.securesms.permissions.Permissions;
 import org.thoughtcrime.securesms.providers.BlobProvider;
 import org.thoughtcrime.securesms.providers.DeprecatedPersistentBlobProvider;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
+import org.thoughtcrime.securesms.sms.MessageSender;
 import org.thoughtcrime.securesms.util.BitmapUtil;
+import org.thoughtcrime.securesms.util.FeatureFlags;
 import org.thoughtcrime.securesms.util.MediaUtil;
+import org.thoughtcrime.securesms.util.ProfileUtil;
 import org.thoughtcrime.securesms.util.ViewUtil;
 import org.thoughtcrime.securesms.util.concurrent.AssertedSuccessListener;
 import org.thoughtcrime.securesms.util.concurrent.ListenableFuture;
 import org.thoughtcrime.securesms.util.concurrent.ListenableFuture.Listener;
 import org.thoughtcrime.securesms.util.concurrent.SettableFuture;
 import org.thoughtcrime.securesms.util.views.Stub;
+import org.whispersystems.signalservice.api.util.ExpiringProfileCredentialUtil;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -98,10 +111,10 @@ public class AttachmentManager {
   private @NonNull  Optional<Slide> slide   = Optional.empty();
   private @Nullable Uri             captureUri;
 
-  public AttachmentManager(@NonNull Activity activity, @NonNull AttachmentListener listener) {
-    this.context            = activity;
+  public AttachmentManager(@NonNull Context context, @NonNull View rootView, @NonNull AttachmentListener listener) {
+    this.context            = context;
     this.attachmentListener = listener;
-    this.attachmentViewStub = ViewUtil.findStubById(activity, R.id.attachment_editor_stub);
+    this.attachmentViewStub = ViewUtil.findStubById(rootView, R.id.attachment_editor_stub);
   }
 
   private void inflateStub() {
@@ -316,7 +329,7 @@ public class AttachmentManager {
             }
 
             Log.d(TAG, "remote slide with size " + fileSize + " took " + (System.currentTimeMillis() - start) + "ms");
-            return mediaType.createSlide(context, uri, fileName, mimeType, null, fileSize, width, height, false);
+            return mediaType.createSlide(context, uri, fileName, mimeType, null, fileSize, width, height, false, null);
           }
         } finally {
           if (cursor != null) cursor.close();
@@ -326,17 +339,19 @@ public class AttachmentManager {
       }
 
       private @NonNull Slide getManuallyCalculatedSlideInfo(Uri uri, int width, int height) throws IOException {
-        long     start     = System.currentTimeMillis();
-        Long     mediaSize = null;
-        String   fileName  = null;
-        String   mimeType  = null;
-        boolean  gif       = false;
+        long                                   start               = System.currentTimeMillis();
+        Long                                   mediaSize           = null;
+        String                                 fileName            = null;
+        String                                 mimeType            = null;
+        boolean                             gif                 = false;
+        AttachmentTable.TransformProperties transformProperties = null;
 
         if (PartAuthority.isLocalUri(uri)) {
-          mediaSize = PartAuthority.getAttachmentSize(context, uri);
-          fileName  = PartAuthority.getAttachmentFileName(context, uri);
-          mimeType  = PartAuthority.getAttachmentContentType(context, uri);
-          gif       = PartAuthority.getAttachmentIsVideoGif(context, uri);
+          mediaSize           = PartAuthority.getAttachmentSize(context, uri);
+          fileName            = PartAuthority.getAttachmentFileName(context, uri);
+          mimeType            = PartAuthority.getAttachmentContentType(context, uri);
+          gif                 = PartAuthority.getAttachmentIsVideoGif(context, uri);
+          transformProperties = PartAuthority.getAttachmentTransformProperties(uri);
         }
 
         if (mediaSize == null) {
@@ -354,7 +369,7 @@ public class AttachmentManager {
         }
 
         Log.d(TAG, "local slide with size " + mediaSize + " took " + (System.currentTimeMillis() - start) + "ms");
-        return mediaType.createSlide(context, uri, fileName, mimeType, null, mediaSize, width, height, gif);
+        return mediaType.createSlide(context, uri, fileName, mimeType, null, mediaSize, width, height, gif, transformProperties);
       }
     }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
@@ -414,11 +429,45 @@ public class AttachmentManager {
     fragment.startActivityForResult(intent, requestCode);
   }
 
-  public static void selectPayment(@NonNull Fragment fragment, @NonNull RecipientId recipientId) {
-    Intent intent = new Intent(fragment.requireContext(), PaymentsActivity.class);
-    intent.putExtra(PaymentsActivity.EXTRA_PAYMENTS_STARTING_ACTION, R.id.action_directly_to_createPayment);
-    intent.putExtra(PaymentsActivity.EXTRA_STARTING_ARGUMENTS, new CreatePaymentFragmentArgs.Builder(new PayeeParcelable(recipientId)).build().toBundle());
-    fragment.startActivity(intent);
+  public static void selectPayment(@NonNull Fragment fragment, @NonNull Recipient recipient) {
+    if (!ExpiringProfileCredentialUtil.isValid(recipient.getExpiringProfileKeyCredential())) {
+      CanNotSendPaymentDialog.show(fragment.requireContext());
+      return;
+    }
+
+    SimpleTask.run(fragment.getViewLifecycleOwner().getLifecycle(),
+                   () -> {
+                     try {
+                       return ProfileUtil.getAddressForRecipient(recipient);
+                     } catch (IOException | PaymentsAddressException e) {
+                       Log.w(TAG, "Could not get address for recipient: ", e);
+                       return null;
+                     }
+                   },
+                   (address) -> {
+                     if (address != null) {
+                       Intent intent = new Intent(fragment.requireContext(), PaymentsActivity.class);
+                       intent.putExtra(PaymentsActivity.EXTRA_PAYMENTS_STARTING_ACTION, R.id.action_directly_to_createPayment);
+                       intent.putExtra(PaymentsActivity.EXTRA_STARTING_ARGUMENTS, new CreatePaymentFragmentArgs.Builder(new PayeeParcelable(recipient.getId())).setFinishOnConfirm(true).build().toBundle());
+                       fragment.startActivity(intent);
+                     } else if (FeatureFlags.paymentsRequestActivateFlow() && recipient.getPaymentActivationCapability().isSupported()) {
+                       showRequestToActivatePayments(fragment.requireContext(), recipient);
+                     } else {
+                       RecipientHasNotEnabledPaymentsDialog.show(fragment.requireContext());
+                     }
+                   });
+  }
+
+  public static void showRequestToActivatePayments(@NonNull Context context, @NonNull Recipient recipient) {
+    new MaterialAlertDialogBuilder(context)
+        .setTitle(context.getString(R.string.AttachmentManager__not_activated_payments, recipient.getShortDisplayName(context)))
+        .setMessage(context.getString(R.string.AttachmentManager__request_to_activate_payments))
+        .setPositiveButton(context.getString(R.string.AttachmentManager__send_request), (dialog, which) -> {
+          OutgoingMessage outgoingMessage = OutgoingMessage.requestToActivatePaymentsMessage(recipient, System.currentTimeMillis(), 0);
+          MessageSender.send(context, outgoingMessage, SignalDatabase.threads().getOrCreateThreadIdFor(recipient), MessageSender.SendType.SIGNAL, null, null);
+        })
+        .setNegativeButton(context.getString(R.string.AttachmentManager__cancel), null)
+        .show();
   }
 
   private @Nullable Uri getSlideUri() {
@@ -465,14 +514,21 @@ public class AttachmentManager {
   }
 
   private void previewImageDraft(final @NonNull Slide slide) {
-    if (MediaPreviewActivity.isContentTypeSupported(slide.getContentType()) && slide.getUri() != null) {
-      Intent intent = new Intent(context, MediaPreviewActivity.class);
-      intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-      intent.putExtra(MediaPreviewActivity.SIZE_EXTRA, slide.asAttachment().getSize());
-      intent.putExtra(MediaPreviewActivity.CAPTION_EXTRA, slide.getCaption().orElse(null));
-      intent.setDataAndType(slide.getUri(), slide.getContentType());
-
-      context.startActivity(intent);
+    if (MediaPreviewV2Fragment.isContentTypeSupported(slide.getContentType()) && slide.getUri() != null) {
+      MediaIntentFactory.MediaPreviewArgs args = new MediaIntentFactory.MediaPreviewArgs(
+          MediaIntentFactory.NOT_IN_A_THREAD,
+          MediaIntentFactory.UNKNOWN_TIMESTAMP,
+          slide.getUri(),
+          slide.getContentType(),
+          slide.asAttachment().getSize(),
+          slide.getCaption().orElse(null),
+          false,
+          false,
+          false,
+          false,
+          MediaTable.Sorting.Newest,
+          slide.isVideoGif());
+      context.startActivity(MediaIntentFactory.create(context, args));
     }
   }
 
@@ -486,6 +542,12 @@ public class AttachmentManager {
   private class RemoveButtonListener implements View.OnClickListener {
     @Override
     public void onClick(View v) {
+      slide.ifPresent(oldSlide -> {
+        if (oldSlide instanceof LocationSlide) {
+          attachmentListener.onLocationRemoved();
+        }
+      });
+
       cleanup();
       clear(GlideApp.with(context.getApplicationContext()), true);
     }
@@ -493,6 +555,7 @@ public class AttachmentManager {
 
   public interface AttachmentListener {
     void onAttachmentChanged();
+    void onLocationRemoved();
   }
 
 }

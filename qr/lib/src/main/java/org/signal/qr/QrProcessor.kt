@@ -43,6 +43,8 @@ class QrProcessor {
         previousHeight = source.height
       }
 
+      listener?.invoke(source)
+
       val bitmap = BinaryBitmap(HybridBinarizer(source))
       val result: Result? = reader.decode(bitmap, mapOf(DecodeHintType.TRY_HARDER to true, DecodeHintType.CHARACTER_SET to "ISO-8859-1"))
 
@@ -63,5 +65,7 @@ class QrProcessor {
 
   companion object {
     private val TAG = Log.tag(QrProcessor::class.java)
+    /** For debugging only */
+    var listener: ((LuminanceSource) -> Unit)? = null
   }
 }

@@ -12,8 +12,8 @@ import org.signal.libsignal.protocol.IdentityKey;
 import org.signal.libsignal.protocol.SignalProtocolAddress;
 import org.signal.libsignal.protocol.state.IdentityKeyStore;
 import org.thoughtcrime.securesms.crypto.storage.SignalIdentityKeyStore.SaveResult;
-import org.thoughtcrime.securesms.database.IdentityDatabase;
-import org.thoughtcrime.securesms.database.IdentityDatabase.VerifiedStatus;
+import org.thoughtcrime.securesms.database.IdentityTable;
+import org.thoughtcrime.securesms.database.IdentityTable.VerifiedStatus;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.database.identity.IdentityRecordList;
 import org.thoughtcrime.securesms.database.model.IdentityRecord;
@@ -53,7 +53,7 @@ public class SignalBaseIdentityKeyStore {
     this(context, SignalDatabase.identities());
   }
 
-  SignalBaseIdentityKeyStore(@NonNull Context context, @NonNull IdentityDatabase identityDatabase) {
+  SignalBaseIdentityKeyStore(@NonNull Context context, @NonNull IdentityTable identityDatabase) {
     this.context = context;
     this.cache   = new Cache(identityDatabase);
   }
@@ -126,10 +126,9 @@ public class SignalBaseIdentityKeyStore {
   }
 
   public boolean isTrustedIdentity(SignalProtocolAddress address, IdentityKey identityKey, IdentityKeyStore.Direction direction) {
-    Recipient self = Recipient.self();
-
-    boolean isSelf = address.getName().equals(self.requireServiceId().toString()) ||
-                     address.getName().equals(self.requireE164());
+    boolean isSelf = address.getName().equals(SignalStore.account().requireAci().toString()) ||
+                     address.getName().equals(SignalStore.account().requirePni().toString()) ||
+                     address.getName().equals(SignalStore.account().getE164());
 
     if (isSelf) {
       return identityKey.equals(SignalStore.account().getAciIdentityKey().getPublicKey());
@@ -264,9 +263,9 @@ public class SignalBaseIdentityKeyStore {
   private static final class Cache {
 
     private final Map<String, IdentityStoreRecord> cache;
-    private final IdentityDatabase                 identityDatabase;
+    private final IdentityTable                    identityDatabase;
 
-    Cache(@NonNull IdentityDatabase identityDatabase) {
+    Cache(@NonNull IdentityTable identityDatabase) {
       this.identityDatabase = identityDatabase;
       this.cache            = new LRUCache<>(200);
     }

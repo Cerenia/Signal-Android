@@ -4,18 +4,19 @@ import android.view.View
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import org.signal.core.util.DimensionUnit
 import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.components.settings.DSLConfiguration
-import org.thoughtcrime.securesms.components.settings.DSLSettingsAdapter
 import org.thoughtcrime.securesms.components.settings.DSLSettingsFragment
-import org.thoughtcrime.securesms.components.settings.app.subscription.DonationPaymentComponent
+import org.thoughtcrime.securesms.components.settings.DSLSettingsText
 import org.thoughtcrime.securesms.components.settings.app.subscription.models.CurrencySelection
 import org.thoughtcrime.securesms.components.settings.app.subscription.models.NetworkFailure
 import org.thoughtcrime.securesms.components.settings.configure
 import org.thoughtcrime.securesms.components.settings.models.IndeterminateLoadingCircle
+import org.thoughtcrime.securesms.components.settings.models.SplashImage
 import org.thoughtcrime.securesms.util.LifecycleDisposable
 import org.thoughtcrime.securesms.util.ViewUtil
-import org.thoughtcrime.securesms.util.fragments.requireListener
+import org.thoughtcrime.securesms.util.adapter.mapping.MappingAdapter
 import org.thoughtcrime.securesms.util.navigation.safeNavigate
 
 /**
@@ -27,16 +28,19 @@ class GiftFlowStartFragment : DSLSettingsFragment(
 
   private val viewModel: GiftFlowViewModel by viewModels(
     ownerProducer = { requireActivity() },
-    factoryProducer = { GiftFlowViewModel.Factory(GiftFlowRepository(), requireListener<DonationPaymentComponent>().donationPaymentRepository) }
+    factoryProducer = {
+      GiftFlowViewModel.Factory(GiftFlowRepository())
+    }
   )
 
   private val lifecycleDisposable = LifecycleDisposable()
 
-  override fun bindAdapter(adapter: DSLSettingsAdapter) {
+  override fun bindAdapter(adapter: MappingAdapter) {
     CurrencySelection.register(adapter)
     GiftRowItem.register(adapter)
     NetworkFailure.register(adapter)
     IndeterminateLoadingCircle.register(adapter)
+    SplashImage.register(adapter)
 
     val next = requireView().findViewById<View>(R.id.next)
     next.setOnClickListener {
@@ -58,6 +62,28 @@ class GiftFlowStartFragment : DSLSettingsFragment(
 
   private fun getConfiguration(state: GiftFlowState): DSLConfiguration {
     return configure {
+      customPref(
+        SplashImage.Model(
+          R.drawable.ic_gift_chat
+        )
+      )
+
+      noPadTextPref(
+        title = DSLSettingsText.from(
+          R.string.GiftFlowStartFragment__donate_for_a_friend,
+          DSLSettingsText.CenterModifier,
+          DSLSettingsText.TextAppearanceModifier(R.style.Signal_Text_Headline)
+        )
+      )
+
+      space(DimensionUnit.DP.toPixels(16f).toInt())
+
+      noPadTextPref(
+        title = DSLSettingsText.from(resources.getQuantityString(R.plurals.GiftFlowStartFragment__support_signal_by, 30, 30), DSLSettingsText.CenterModifier)
+      )
+
+      space(DimensionUnit.DP.toPixels(16f).toInt())
+
       customPref(
         CurrencySelection.Model(
           selectedCurrency = state.currency,

@@ -10,7 +10,11 @@ import org.thoughtcrime.securesms.jobmanager.JobTracker;
 import org.thoughtcrime.securesms.jobs.MarkerJob;
 import org.thoughtcrime.securesms.jobs.PushDecryptMessageJob;
 import org.thoughtcrime.securesms.jobs.PushProcessMessageJob;
+import org.thoughtcrime.securesms.keyvalue.SignalStore;
+import org.thoughtcrime.securesms.stories.Stories;
+import org.thoughtcrime.securesms.util.TextSecurePreferences;
 import org.whispersystems.signalservice.api.SignalServiceMessageReceiver;
+import org.whispersystems.signalservice.api.push.exceptions.AuthorizationFailedException;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -68,6 +72,9 @@ public class RestStrategy extends MessageRetrievalStrategy {
     } catch (IOException e) {
       Log.w(TAG, "Failed to retrieve messages. Resetting the SignalServiceMessageReceiver.", e);
       ApplicationDependencies.resetSignalServiceMessageReceiver();
+      if (e instanceof AuthorizationFailedException && SignalStore.account().isRegistered() && SignalStore.account().getAci() != null) {
+        TextSecurePreferences.setUnauthorizedReceived(ApplicationDependencies.getApplication(), true);
+      }
       return false;
     } finally {
       jobManager.removeListener(queueListener);
@@ -82,7 +89,7 @@ public class RestStrategy extends MessageRetrievalStrategy {
 
     receiver.setSoTimeoutMillis(timeout);
 
-    receiver.retrieveMessages(envelope -> {
+    receiver.retrieveMessages(Stories.isFeatureEnabled(), envelope -> {
       Log.i(TAG, "Retrieved an envelope." + timeSuffix(startTime));
       String jobId = processor.processEnvelope(envelope);
 

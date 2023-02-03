@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.ActionMenuView
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
 import androidx.core.view.children
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -108,6 +109,9 @@ class MainActivityListHostFragment : Fragment(R.layout.main_activity_list_host_f
       val cameraFab = requireView().findViewById<View>(R.id.camera_fab)
       val newConvoFab = requireView().findViewById<View>(R.id.fab)
 
+      ViewCompat.setTransitionName(cameraFab, "camera_fab")
+      ViewCompat.setTransitionName(newConvoFab, "new_convo_fab")
+
       val extras: Navigator.Extras? = if (cameraFab == null || newConvoFab == null) {
         null
       } else {
@@ -172,7 +176,7 @@ class MainActivityListHostFragment : Fragment(R.layout.main_activity_list_host_f
 
   private fun presentToolbarForStoriesLandingFragment() {
     _toolbar.visible = true
-    _searchAction.visible = false
+    _searchAction.visible = true
     if (_basicToolbar.resolved()) {
       _basicToolbar.get().visible = false
     }
@@ -212,6 +216,8 @@ class MainActivityListHostFragment : Fragment(R.layout.main_activity_list_host_f
 
   override fun onSearchOpened() {
     conversationListTabsViewModel.onSearchOpened()
+    _searchToolbar.get().clearText()
+    _searchToolbar.get().display(_searchAction.x + (_searchAction.width / 2.0f), _searchAction.y + (_searchAction.height / 2.0f))
   }
 
   override fun onSearchClosed() {

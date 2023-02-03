@@ -1,17 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:viewBindingIgnore="true"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginStart="@dimen/dsl_settings_gutter"
-    android:layout_marginTop="20dp"
+    android:layout_marginTop="10dp"
     android:layout_marginEnd="@dimen/dsl_settings_gutter"
     android:alpha="0.8">
 
     <View
         android:id="@+id/boost_1"
         android:layout_width="0dp"
-        android:layout_height="48sp"
+        android:layout_height="58sp"
         android:background="@drawable/boost_loading_preference_background"
         app:layout_constraintEnd_toStartOf="@id/boost_2"
         app:layout_constraintStart_toStartOf="parent"
@@ -20,7 +22,7 @@
     <View
         android:id="@+id/boost_2"
         android:layout_width="0dp"
-        android:layout_height="48sp"
+        android:layout_height="58sp"
         android:layout_marginStart="10dp"
         android:layout_marginEnd="10dp"
         android:background="@drawable/boost_loading_preference_background"
@@ -31,7 +33,7 @@
     <View
         android:id="@+id/boost_3"
         android:layout_width="0dp"
-        android:layout_height="48sp"
+        android:layout_height="58sp"
         android:background="@drawable/boost_loading_preference_background"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/boost_2"
@@ -40,8 +42,8 @@
     <View
         android:id="@+id/boost_4"
         android:layout_width="0dp"
-        android:layout_height="48sp"
-        android:layout_marginTop="12dp"
+        android:layout_height="58sp"
+        android:layout_marginTop="19dp"
         android:background="@drawable/boost_loading_preference_background"
         app:layout_constraintEnd_toStartOf="@id/boost_5"
         app:layout_constraintStart_toStartOf="parent"
@@ -50,9 +52,9 @@
     <View
         android:id="@+id/boost_5"
         android:layout_width="0dp"
-        android:layout_height="48sp"
+        android:layout_height="58sp"
         android:layout_marginStart="10dp"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="19dp"
         android:layout_marginEnd="10dp"
         android:background="@drawable/boost_loading_preference_background"
         app:layout_constraintEnd_toStartOf="@id/boost_6"
@@ -62,8 +64,8 @@
     <View
         android:id="@+id/boost_6"
         android:layout_width="0dp"
-        android:layout_height="48sp"
-        android:layout_marginTop="12dp"
+        android:layout_height="58sp"
+        android:layout_marginTop="19dp"
         android:background="@drawable/boost_loading_preference_background"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/boost_5"
@@ -72,8 +74,8 @@
     <View
         android:id="@+id/boost_custom"
         android:layout_width="0dp"
-        android:layout_height="48sp"
-        android:layout_marginTop="12dp"
+        android:layout_height="58sp"
+        android:layout_marginTop="19dp"
         android:background="@drawable/boost_loading_preference_background"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

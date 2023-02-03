@@ -22,10 +22,11 @@ import androidx.fragment.app.Fragment;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+import org.signal.core.util.ThreadUtil;
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.backup.BackupDialog;
-import org.thoughtcrime.securesms.backup.FullBackupBase;
+import org.thoughtcrime.securesms.backup.BackupEvent;
 import org.thoughtcrime.securesms.database.NoExternalStorageException;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.jobs.LocalBackupJob;
@@ -83,7 +84,6 @@ public class BackupsPreferenceFragment extends Fragment {
     EventBus.getDefault().register(this);
   }
 
-  @SuppressWarnings("ConstantConditions")
   @Override
   public void onResume() {
     super.onResume();
@@ -120,10 +120,11 @@ public class BackupsPreferenceFragment extends Fragment {
   }
 
   @Subscribe(threadMode = ThreadMode.MAIN)
-  public void onEvent(FullBackupBase.BackupEvent event) {
-    if (event.getType() == FullBackupBase.BackupEvent.Type.PROGRESS) {
+  public void onEvent(BackupEvent event) {
+    if (event.getType() == BackupEvent.Type.PROGRESS || event.getType() == BackupEvent.Type.PROGRESS_VERIFYING) {
       create.setEnabled(false);
-      summary.setText(getString(R.string.BackupsPreferenceFragment__in_progress));
+      summary.setText(getString(event.getType() == BackupEvent.Type.PROGRESS ? R.string.BackupsPreferenceFragment__in_progress
+                                                                             : R.string.BackupsPreferenceFragment__verifying_backup));
       progress.setVisibility(View.VISIBLE);
       progressSummary.setVisibility(event.getCount() > 0 ? View.VISIBLE : View.GONE);
 
@@ -138,11 +139,12 @@ public class BackupsPreferenceFragment extends Fragment {
         progress.setProgress((int) completionPercentage);
         progressSummary.setText(getString(R.string.BackupsPreferenceFragment__s_so_far, formatter.format(completionPercentage)));
       }
-    } else if (event.getType() == FullBackupBase.BackupEvent.Type.FINISHED) {
+    } else if (event.getType() == BackupEvent.Type.FINISHED) {
       create.setEnabled(true);
       progress.setVisibility(View.GONE);
       progressSummary.setVisibility(View.GONE);
       setBackupSummary();
+      ThreadUtil.runOnMainDelayed(this::setBackupSummary, 100);
     }
   }
 
@@ -237,7 +239,7 @@ public class BackupsPreferenceFragment extends Fragment {
 
   @RequiresApi(29)
   private void onCreateClickedApi29() {
-    Log.i(TAG, "Queing backup...");
+    Log.i(TAG, "Queueing backup...");
     LocalBackupJob.enqueue(true);
   }
 

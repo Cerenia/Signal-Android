@@ -52,7 +52,7 @@ message DecryptedGroupV2Context {
 }
 
 message TemporalAuthCredentialResponse {
-    int32 date                   = 1;
+    int64 date                   = 1;
     bytes authCredentialResponse = 2;
 }
 
@@ -118,9 +118,9 @@ message GroupCallUpdateDetails {
              bool   isCallFull           = 5;
 }
 
-message ProfileKeyCredentialColumnData {
+message ExpiringProfileKeyCredentialColumnData {
     bytes profileKey           = 1;
-    bytes profileKeyCredential = 2;
+    bytes expiringProfileKeyCredential = 2;
 }
 
 message DeviceLastResetTime {
@@ -238,4 +238,31 @@ message GiftBadge {
 
 message SignalStoreList {
     repeated string contents = 1;
+}
+
+message PendingChangeNumberMetadata {
+    bytes previousPni        = 1;
+    bytes pniIdentityKeyPair = 2;
+    int32 pniRegistrationId  = 3;
+    int32 pniSignedPreKeyId  = 4;
+}
+
+message MessageExportState {
+
+    enum Progress {
+        INIT      = 0;
+        STARTED   = 1;
+        COMPLETED = 2;
+    }
+
+    int64 messageId                      = 1;
+    repeated string startedRecipients    = 2;
+    repeated string completedRecipients  = 3;
+    repeated string startedAttachments   = 4;
+    repeated string completedAttachments = 5;
+    Progress progress                    = 6;
+}
+
+message ThreadMergeEvent {
+    string previousE164 = 1;
 }

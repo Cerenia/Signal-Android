@@ -26,6 +26,7 @@ fun ZoneId.toOffset(): ZoneOffset {
 /**
  * Convert [LocalDateTime] to be same as [System.currentTimeMillis]
  */
+@JvmOverloads
 fun LocalDateTime.toMillis(zoneOffset: ZoneOffset = ZoneId.systemDefault().toOffset()): Long {
   return TimeUnit.SECONDS.toMillis(toEpochSecond(zoneOffset))
 }
@@ -42,6 +43,13 @@ fun LocalDateTime.isBetween(start: LocalDateTime, end: LocalDateTime): Boolean {
  */
 fun Long.toLocalDateTime(zoneId: ZoneId = ZoneId.systemDefault()): LocalDateTime {
   return LocalDateTime.ofInstant(Instant.ofEpochMilli(this), zoneId)
+}
+
+/**
+ * Convert milliseconds to local date time with provided [zoneId].
+ */
+fun Instant.toLocalDateTime(zoneId: ZoneId = ZoneId.systemDefault()): LocalDateTime {
+  return LocalDateTime.ofInstant(this, zoneId)
 }
 
 /**

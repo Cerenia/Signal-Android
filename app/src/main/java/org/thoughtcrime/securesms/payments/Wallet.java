@@ -8,18 +8,22 @@ import androidx.annotation.WorkerThread;
 import com.google.protobuf.ByteString;
 import com.mobilecoin.lib.AccountKey;
 import com.mobilecoin.lib.AccountSnapshot;
+import com.mobilecoin.lib.Amount;
 import com.mobilecoin.lib.DefragmentationDelegate;
 import com.mobilecoin.lib.MobileCoinClient;
 import com.mobilecoin.lib.OwnedTxOut;
 import com.mobilecoin.lib.PendingTransaction;
 import com.mobilecoin.lib.Receipt;
+import com.mobilecoin.lib.TokenId;
 import com.mobilecoin.lib.Transaction;
+import com.mobilecoin.lib.TxOutMemoBuilder;
 import com.mobilecoin.lib.UnsignedLong;
 import com.mobilecoin.lib.exceptions.AmountDecoderException;
 import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.BadEntropyException;
 import com.mobilecoin.lib.exceptions.FeeRejectedException;
 import com.mobilecoin.lib.exceptions.FogReportException;
+import com.mobilecoin.lib.exceptions.FogSyncException;
 import com.mobilecoin.lib.exceptions.FragmentedAccountException;
 import com.mobilecoin.lib.exceptions.InsufficientFundsException;
 import com.mobilecoin.lib.exceptions.InvalidFogResponse;
@@ -29,6 +33,7 @@ import com.mobilecoin.lib.exceptions.InvalidUriException;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.exceptions.SerializationException;
 import com.mobilecoin.lib.exceptions.TransactionBuilderException;
+import com.mobilecoin.lib.network.TransportProtocol;
 
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.keyvalue.PaymentsValues;
@@ -49,12 +54,16 @@ import java.util.concurrent.TimeoutException;
 
 public final class Wallet {
 
-  private static final String TAG = Log.tag(Wallet.class);
+  private static final String TAG         = Log.tag(Wallet.class);
+  private static final Object LEDGER_LOCK = new Object();
 
   private final MobileCoinConfig        mobileCoinConfig;
   private final MobileCoinClient        mobileCoinClient;
   private final AccountKey              account;
   private final MobileCoinPublicAddress publicAddress;
+
+  private AccountSnapshot cachedAccountSnapshot;
+  private Amount          cachedMinimumTxFee;
 
   public Wallet(@NonNull MobileCoinConfig mobileCoinConfig, @NonNull Entropy paymentsEntropy) {
     this.mobileCoinConfig = mobileCoinConfig;
@@ -64,8 +73,9 @@ public final class Wallet {
 
       this.mobileCoinClient = new MobileCoinClient(account,
                                                    mobileCoinConfig.getFogUri(),
-                                                   mobileCoinConfig.getConsensusUri(),
-                                                   mobileCoinConfig.getConfig());
+                                                   mobileCoinConfig.getConsensusUris(),
+                                                   mobileCoinConfig.getConfig(),
+                                                   TransportProtocol.forGRPC());
     } catch (InvalidUriException | BadEntropyException e) {
       throw new AssertionError(e);
     }
@@ -102,7 +112,7 @@ public final class Wallet {
       MobileCoinLedgerWrapper ledger = tryGetFullLedger(null);
 
       paymentsValues.setMobileCoinFullLedger(Objects.requireNonNull(ledger));
-    } catch (IOException e) {
+    } catch (IOException | FogSyncException e) {
       if ((retryOnAuthFailure && e.getCause() instanceof NetworkException) &&
           (((NetworkException) e.getCause()).statusCode == 401))
       {
@@ -116,16 +126,30 @@ public final class Wallet {
     return getCachedLedger();
   }
 
+  /**
+   * Retrieve a user owned ledger
+   * @param minimumBlockIndex require the returned ledger to include all TxOuts to at least minimumBlockIndex
+   * @return a wrapped MobileCoin ledger that contains only TxOuts owned by the AccountKey
+   *         or null if the requested minimumBlockIndex cannot be retrieved
+   */
   @WorkerThread
-  public @Nullable MobileCoinLedgerWrapper tryGetFullLedger(@Nullable Long minimumBlockIndex) throws IOException {
+  public @Nullable MobileCoinLedgerWrapper tryGetFullLedger(@Nullable Long minimumBlockIndex) throws IOException, FogSyncException {
     try {
       MobileCoinLedger.Builder builder               = MobileCoinLedger.newBuilder();
       BigInteger               totalUnspent          = BigInteger.ZERO;
       long                     highestBlockTimeStamp = 0;
       UnsignedLong             highestBlockIndex     = UnsignedLong.ZERO;
       final long               asOfTimestamp         = System.currentTimeMillis();
-      AccountSnapshot          accountSnapshot       = mobileCoinClient.getAccountSnapshot();
-      final BigInteger         minimumTxFee          = mobileCoinClient.getOrFetchMinimumTxFee();
+      Amount                   minimumTxFee;
+      AccountSnapshot          accountSnapshot;
+
+      synchronized (LEDGER_LOCK) {
+        minimumTxFee    = mobileCoinClient.getOrFetchMinimumTxFee(TokenId.MOB);
+        accountSnapshot = mobileCoinClient.getAccountSnapshot();
+
+        cachedMinimumTxFee = minimumTxFee;
+        cachedAccountSnapshot = accountSnapshot;
+      }
 
       if (minimumBlockIndex != null) {
         long snapshotBlockIndex = accountSnapshot.getBlockIndex().longValue();
@@ -135,9 +159,10 @@ public final class Wallet {
         }
       }
 
-      for (OwnedTxOut txOut : accountSnapshot.getAccountActivity().getAllTxOuts()) {
+      for (OwnedTxOut txOut : accountSnapshot.getAccountActivity().getAllTokenTxOuts(TokenId.MOB)) {
+        final Amount txOutAmount = txOut.getAmount();
         MobileCoinLedger.OwnedTXO.Builder txoBuilder = MobileCoinLedger.OwnedTXO.newBuilder()
-                                                                                .setAmount(Uint64Util.bigIntegerToUInt64(txOut.getValue()))
+                                                                                .setAmount(Uint64Util.bigIntegerToUInt64(txOutAmount.getValue()))
                                                                                 .setReceivedInBlock(getBlock(txOut.getReceivedBlockIndex(), txOut.getReceivedBlockTimestamp()))
                                                                                 .setKeyImage(ByteString.copyFrom(txOut.getKeyImage().getData()))
                                                                                 .setPublicKey(ByteString.copyFrom(txOut.getPublicKey().getKeyBytes()));
@@ -147,7 +172,7 @@ public final class Wallet {
           txoBuilder.setSpentInBlock(getBlock(txOut.getSpentBlockIndex(), txOut.getSpentBlockTimestamp()));
           builder.addSpentTxos(txoBuilder);
         } else {
-          totalUnspent = totalUnspent.add(txOut.getValue());
+          totalUnspent = totalUnspent.add(txOutAmount.getValue());
           builder.addUnspentTxos(txoBuilder);
         }
 
@@ -168,12 +193,12 @@ public final class Wallet {
         }
       }
       builder.setBalance(Uint64Util.bigIntegerToUInt64(totalUnspent))
-             .setTransferableBalance(Uint64Util.bigIntegerToUInt64(accountSnapshot.getTransferableAmount(minimumTxFee)))
+             .setTransferableBalance(Uint64Util.bigIntegerToUInt64(accountSnapshot.getTransferableAmount(minimumTxFee).getValue()))
              .setAsOfTimeStamp(asOfTimestamp)
              .setHighestBlock(MobileCoinLedger.Block.newBuilder()
                                                     .setBlockNumber(highestBlockIndex.longValue())
                                                     .setTimestamp(highestBlockTimeStamp));
-
+      SignalStore.paymentsValues().setEnclaveFailure(false);
       return new MobileCoinLedgerWrapper(builder.build());
     } catch (InvalidFogResponse e) {
       Log.w(TAG, "Problem getting ledger", e);
@@ -186,6 +211,7 @@ public final class Wallet {
       }
       throw new IOException(e);
     } catch (AttestationException e) {
+      SignalStore.paymentsValues().setEnclaveFailure(true);
       Log.w(TAG, "Attestation problem getting ledger", e);
       throw new IOException(e);
     } catch (Uint64RangeException e) {
@@ -205,12 +231,24 @@ public final class Wallet {
   @WorkerThread
   public @NonNull Money.MobileCoin getFee(@NonNull Money.MobileCoin amount) throws IOException {
     try {
-      BigInteger picoMob = amount.requireMobileCoin().toPicoMobBigInteger();
-      return Money.picoMobileCoin(mobileCoinClient.estimateTotalFee(picoMob));
-    } catch (InvalidFogResponse | AttestationException | InsufficientFundsException e) {
+      BigInteger      picoMob         = amount.requireMobileCoin().toPicoMobBigInteger();
+      AccountSnapshot accountSnapshot = getCachedAccountSnapshot();
+      Amount          minimumFee      = getCachedMinimumTxFee();
+      Money.MobileCoin money;
+      if (accountSnapshot != null && minimumFee != null) {
+        money = Money.picoMobileCoin(accountSnapshot.estimateTotalFee(Amount.ofMOB(picoMob), minimumFee).getValue());
+      } else {
+        money = Money.picoMobileCoin(mobileCoinClient.estimateTotalFee(Amount.ofMOB(picoMob)).getValue());
+      }
+      SignalStore.paymentsValues().setEnclaveFailure(false);
+      return money;
+    } catch (AttestationException e) {
+      SignalStore.paymentsValues().setEnclaveFailure(true);
+      return Money.MobileCoin.ZERO;
+    } catch (InvalidFogResponse | InsufficientFundsException e) {
       Log.w(TAG, "Failed to get fee", e);
       return Money.MobileCoin.ZERO;
-    } catch (NetworkException e) {
+    } catch (NetworkException  | FogSyncException e) {
       Log.w(TAG, "Failed to get fee", e);
       throw new IOException(e);
     }
@@ -227,13 +265,11 @@ public final class Wallet {
   }
 
   @WorkerThread
-  public @NonNull TransactionStatusResult getSentTransactionStatus(@NonNull PaymentTransactionId transactionId) throws IOException {
+  public @NonNull TransactionStatusResult getSentTransactionStatus(@NonNull PaymentTransactionId transactionId) throws IOException, FogSyncException {
     try {
       PaymentTransactionId.MobileCoin mobcoinTransaction = (PaymentTransactionId.MobileCoin) transactionId;
       Transaction                     transaction        = Transaction.fromBytes(mobcoinTransaction.getTransaction());
-      Transaction.Status              status             = mobileCoinClient.getAccountSnapshot()
-                                                                           .getTransactionStatus(transaction);
-
+      Transaction.Status              status             = mobileCoinClient.getTransactionStatusQuick(transaction);
       switch (status) {
         case UNKNOWN:
           Log.w(TAG, "Unknown sent Transaction Status");
@@ -245,36 +281,45 @@ public final class Wallet {
         default:
           throw new IllegalStateException("Unknown Transaction Status: " + status);
       }
-    } catch (SerializationException | InvalidFogResponse e) {
+    } catch (SerializationException e) {
       Log.w(TAG, e);
       return TransactionStatusResult.failed();
-    } catch (NetworkException | AttestationException e) {
+    } catch (NetworkException e) {
       Log.w(TAG, e);
       throw new IOException(e);
     }
   }
 
   @WorkerThread
-  public @NonNull ReceivedTransactionStatus getReceivedTransactionStatus(@NonNull byte[] receiptBytes) throws IOException {
+  public @NonNull ReceivedTransactionStatus getReceivedTransactionStatus(@NonNull byte[] receiptBytes) throws IOException, FogSyncException {
     try {
       Receipt        receipt = Receipt.fromBytes(receiptBytes);
       Receipt.Status status  = mobileCoinClient.getReceiptStatus(receipt);
+      ReceivedTransactionStatus txStatus = null;
       switch (status) {
         case UNKNOWN:
           Log.w(TAG, "Unknown received Transaction Status");
-          return ReceivedTransactionStatus.inProgress();
+          txStatus = ReceivedTransactionStatus.inProgress();
+          break;
         case FAILED:
-          return ReceivedTransactionStatus.failed();
+          txStatus = ReceivedTransactionStatus.failed();
+          break;
         case RECEIVED:
-          BigInteger amount = receipt.getAmount(account);
-          return ReceivedTransactionStatus.complete(Money.picoMobileCoin(amount), status.getBlockIndex().longValue());
+          final Amount amount = receipt.getAmountData(account);
+          txStatus = ReceivedTransactionStatus.complete(Money.picoMobileCoin(amount.getValue()), status.getBlockIndex().longValue());
+          break;
         default:
-          throw new IllegalStateException("Unknown Transaction Status: " + status);
       }
+      SignalStore.paymentsValues().setEnclaveFailure(false);
+      if (txStatus == null) throw new IllegalStateException("Unknown Transaction Status: " + status);
+      return txStatus;
     } catch (SerializationException | InvalidFogResponse | InvalidReceiptException e) {
       Log.w(TAG, e);
       return ReceivedTransactionStatus.failed();
-    } catch (NetworkException | AttestationException e) {
+    } catch (NetworkException e) {
+      throw new IOException(e);
+    } catch (AttestationException e) {
+      SignalStore.paymentsValues().setEnclaveFailure(true);
       throw new IOException(e);
     } catch (AmountDecoderException e) {
       Log.w(TAG, "Failed to decode amount", e);
@@ -293,11 +338,16 @@ public final class Wallet {
     if (defragmentFirst) {
       try {
         defragmentFees = defragment(amount, results);
+        SignalStore.paymentsValues().setEnclaveFailure(false);
       } catch (InsufficientFundsException e) {
         Log.w(TAG, "Insufficient funds", e);
         results.add(TransactionSubmissionResult.failure(TransactionSubmissionResult.ErrorCode.INSUFFICIENT_FUNDS, true));
         return;
-      } catch (TimeoutException | InvalidTransactionException | InvalidFogResponse | AttestationException | TransactionBuilderException | NetworkException | FogReportException e) {
+      } catch (AttestationException e) {
+        results.add(TransactionSubmissionResult.failure(TransactionSubmissionResult.ErrorCode.GENERIC_FAILURE, true));
+        SignalStore.paymentsValues().setEnclaveFailure(true);
+        return;
+      } catch (TimeoutException | InvalidTransactionException | InvalidFogResponse | TransactionBuilderException | NetworkException | FogReportException | FogSyncException e) {
         Log.w(TAG, "Defragment failed", e);
         results.add(TransactionSubmissionResult.failure(TransactionSubmissionResult.ErrorCode.GENERIC_FAILURE, true));
         return;
@@ -317,9 +367,19 @@ public final class Wallet {
     }
 
     try {
-      pendingTransaction = mobileCoinClient.prepareTransaction(to.getAddress(),
-                                                               picoMob,
-                                                               feeMobileCoin.toPicoMobBigInteger());
+      AccountSnapshot accountSnapshot = getCachedAccountSnapshot();
+      if (accountSnapshot != null) {
+        pendingTransaction = accountSnapshot.prepareTransaction(to.getAddress(),
+                                                                Amount.ofMOB(picoMob),
+                                                                Amount.ofMOB(feeMobileCoin.toPicoMobBigInteger()),
+                                                                TxOutMemoBuilder.createSenderAndDestinationRTHMemoBuilder(account));
+      } else {
+        pendingTransaction = mobileCoinClient.prepareTransaction(to.getAddress(),
+                                                                 Amount.ofMOB(picoMob),
+                                                                 Amount.ofMOB(feeMobileCoin.toPicoMobBigInteger()),
+                                                                 TxOutMemoBuilder.createSenderAndDestinationRTHMemoBuilder(account));
+      }
+      SignalStore.paymentsValues().setEnclaveFailure(false);
     } catch (InsufficientFundsException e) {
       Log.w(TAG, "Insufficient funds", e);
       results.add(TransactionSubmissionResult.failure(TransactionSubmissionResult.ErrorCode.INSUFFICIENT_FUNDS, false));
@@ -340,12 +400,16 @@ public final class Wallet {
     } catch (AttestationException e) {
       Log.w(TAG, "Attestation problem", e);
       results.add(TransactionSubmissionResult.failure(TransactionSubmissionResult.ErrorCode.GENERIC_FAILURE, false));
+      SignalStore.paymentsValues().setEnclaveFailure(true);
     } catch (NetworkException e) {
       Log.w(TAG, "Network problem", e);
       results.add(TransactionSubmissionResult.failure(TransactionSubmissionResult.ErrorCode.GENERIC_FAILURE, false));
     } catch (TransactionBuilderException e) {
       Log.w(TAG, "Builder problem", e);
       results.add(TransactionSubmissionResult.failure(TransactionSubmissionResult.ErrorCode.GENERIC_FAILURE, false));
+    } catch(FogSyncException e) {
+      Log.w(TAG, "Fog currently out of sync", e);
+      results.add(TransactionSubmissionResult.failure(TransactionSubmissionResult.ErrorCode.NETWORK_FAILURE, false));
     }
 
     if (pendingTransaction == null) {
@@ -358,6 +422,7 @@ public final class Wallet {
       mobileCoinClient.submitTransaction(pendingTransaction.getTransaction());
       Log.i(TAG, "Transaction submitted");
       results.add(TransactionSubmissionResult.successfullySubmitted(new PaymentTransactionId.MobileCoin(pendingTransaction.getTransaction().toByteArray(), pendingTransaction.getReceipt().toByteArray(), feeMobileCoin)));
+      SignalStore.paymentsValues().setEnclaveFailure(false);
     } catch (NetworkException e) {
       Log.w(TAG, "Network problem", e);
       results.add(TransactionSubmissionResult.failure(TransactionSubmissionResult.ErrorCode.NETWORK_FAILURE, false));
@@ -367,6 +432,7 @@ public final class Wallet {
     } catch (AttestationException e) {
       Log.w(TAG, "Attestation problem", e);
       results.add(TransactionSubmissionResult.failure(TransactionSubmissionResult.ErrorCode.GENERIC_FAILURE, false));
+      SignalStore.paymentsValues().setEnclaveFailure(true);
     } catch (SerializationException e) {
       Log.w(TAG, "Serialization problem", e);
       results.add(TransactionSubmissionResult.failure(TransactionSubmissionResult.ErrorCode.GENERIC_FAILURE, false));
@@ -379,11 +445,11 @@ public final class Wallet {
    */
   @WorkerThread
   private @NonNull Money.MobileCoin defragment(@NonNull Money.MobileCoin amount, @NonNull List<TransactionSubmissionResult> results)
-      throws TransactionBuilderException, NetworkException, InvalidTransactionException, AttestationException, FogReportException, InvalidFogResponse, TimeoutException, InsufficientFundsException
+      throws TransactionBuilderException, NetworkException, InvalidTransactionException, AttestationException, FogReportException, InvalidFogResponse, TimeoutException, InsufficientFundsException, FogSyncException
   {
     Log.i(TAG, "Defragmenting account");
     DefragDelegate defragDelegate = new DefragDelegate(mobileCoinClient, results);
-    mobileCoinClient.defragmentAccount(amount.toPicoMobBigInteger(), defragDelegate);
+    mobileCoinClient.defragmentAccount(Amount.ofMOB(amount.toPicoMobBigInteger()), defragDelegate, true);
     Log.i(TAG, "Account defragmented at a cost of " + defragDelegate.totalFeesSpent);
     return defragDelegate.totalFeesSpent;
   }
@@ -395,6 +461,30 @@ public final class Wallet {
 
   public void refresh() {
     getFullLedger();
+  }
+
+  /**
+   * @return cached account snapshot or null if it's not available
+   * @apiNote This method is synchronized with {@link #tryGetFullLedger}
+   * to wait for an updated value if ledger update is in progress.
+   */
+  @WorkerThread
+  private @Nullable AccountSnapshot getCachedAccountSnapshot() {
+    synchronized (LEDGER_LOCK) {
+      return cachedAccountSnapshot;
+    }
+  }
+
+  /**
+   * @return cached minimum transaction fee or null if it's not available
+   * @apiNote This method is synchronized with {@link #tryGetFullLedger}
+   * to wait for an updated value if ledger update is in progress.
+   */
+  @WorkerThread
+  private @Nullable Amount getCachedMinimumTxFee() {
+    synchronized (LEDGER_LOCK) {
+      return cachedMinimumTxFee;
+    }
   }
 
   public enum TransactionStatus {

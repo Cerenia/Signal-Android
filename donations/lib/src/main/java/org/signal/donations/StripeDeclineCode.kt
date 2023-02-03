@@ -8,7 +8,7 @@ sealed class StripeDeclineCode {
   data class Known(val code: Code) : StripeDeclineCode()
   data class Unknown(val code: String) : StripeDeclineCode()
 
-  fun isKnown(): Boolean = this.isKnown()
+  fun isKnown(): Boolean = this is Known
 
   enum class Code(val code: String) {
     AUTHENTICATION_REQUIRED("authentication_required"),
@@ -53,7 +53,11 @@ sealed class StripeDeclineCode {
   }
 
   companion object {
-    fun getFromCode(code: String): StripeDeclineCode {
+    fun getFromCode(code: String?): StripeDeclineCode {
+      if (code == null) {
+        return Unknown("null")
+      }
+
       val typedCode: Code? = Code.values().firstOrNull { it.code == code }
       return typedCode?.let { Known(typedCode) } ?: Unknown(code)
     }

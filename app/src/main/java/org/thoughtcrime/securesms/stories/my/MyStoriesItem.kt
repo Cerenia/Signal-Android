@@ -16,11 +16,11 @@ import org.thoughtcrime.securesms.components.menu.SignalContextMenu
 import org.thoughtcrime.securesms.components.settings.PreferenceModel
 import org.thoughtcrime.securesms.conversation.ConversationMessage
 import org.thoughtcrime.securesms.database.model.MmsMessageRecord
+import org.thoughtcrime.securesms.keyvalue.SignalStore
 import org.thoughtcrime.securesms.mms.DecryptableStreamUriLoader
 import org.thoughtcrime.securesms.mms.GlideApp
 import org.thoughtcrime.securesms.stories.StoryTextPostModel
 import org.thoughtcrime.securesms.util.DateUtils
-import org.thoughtcrime.securesms.util.TextSecurePreferences
 import org.thoughtcrime.securesms.util.adapter.mapping.LayoutFactory
 import org.thoughtcrime.securesms.util.adapter.mapping.MappingAdapter
 import org.thoughtcrime.securesms.util.adapter.mapping.MappingViewHolder
@@ -38,11 +38,11 @@ object MyStoriesItem {
   class Model(
     val distributionStory: ConversationMessage,
     val onClick: (Model, View) -> Unit,
-    val onLongClick: (Model) -> Boolean,
     val onSaveClick: (Model) -> Unit,
     val onDeleteClick: (Model) -> Unit,
     val onForwardClick: (Model) -> Unit,
-    val onShareClick: (Model) -> Unit
+    val onShareClick: (Model) -> Unit,
+    val onInfoClick: (Model, View) -> Unit
   ) : PreferenceModel<Model>() {
     override fun areItemsTheSame(newItem: Model): Boolean {
       return distributionStory.messageRecord.id == newItem.distributionStory.messageRecord.id
@@ -71,9 +71,20 @@ object MyStoriesItem {
       val oldRecord = distributionStory.messageRecord
       val newRecord = newItem.distributionStory.messageRecord
 
+      val oldRecordHasIdentityMismatch = distributionStory.messageRecord.identityKeyMismatches.isNotEmpty()
+      val newRecordHasIdentityMismatch = newItem.distributionStory.messageRecord.identityKeyMismatches.isNotEmpty()
+      val oldRecordHasNetworkFailures = distributionStory.messageRecord.hasNetworkFailures()
+      val newRecordHasNetworkFailures = newItem.distributionStory.messageRecord.hasNetworkFailures()
+
       return oldRecord.isOutgoing &&
         newRecord.isOutgoing &&
-        (oldRecord.isPending != newRecord.isPending || oldRecord.isSent != newRecord.isSent || oldRecord.isFailed != newRecord.isFailed)
+        (
+          oldRecord.isPending != newRecord.isPending ||
+            oldRecord.isSent != newRecord.isSent ||
+            oldRecord.isFailed != newRecord.isFailed ||
+            oldRecordHasIdentityMismatch != newRecordHasIdentityMismatch ||
+            oldRecordHasNetworkFailures != newRecordHasNetworkFailures
+          )
     }
   }
 
@@ -94,13 +105,12 @@ object MyStoriesItem {
     override fun bind(model: Model) {
       storyPreview.isClickable = false
       itemView.setOnClickListener { model.onClick(model, storyPreview) }
-      itemView.setOnLongClickListener { model.onLongClick(model) }
       downloadTarget.setOnClickListener { model.onSaveClick(model) }
       moreTarget.setOnClickListener { showContextMenu(model) }
       presentDateOrStatus(model)
 
       if (model.distributionStory.messageRecord.isSent) {
-        if (TextSecurePreferences.isReadReceiptsEnabled(context)) {
+        if (SignalStore.storyValues().viewedReceiptsEnabled) {
           viewCount.text = context.resources.getQuantityString(
             R.plurals.MyStories__d_views,
             model.distributionStory.messageRecord.viewedReceiptCount,
@@ -156,6 +166,11 @@ object MyStoriesItem {
         date.visible = true
         viewCount.setText(R.string.StoriesLandingItem__send_failed)
         date.setText(R.string.StoriesLandingItem__tap_to_retry)
+      } else if (model.distributionStory.messageRecord.isIdentityMismatchFailure) {
+        errorIndicator.visible = true
+        date.visible = true
+        viewCount.setText(R.string.StoriesLandingItem__partially_sent)
+        date.setText(R.string.StoriesLandingItem__tap_to_retry)
       } else {
         errorIndicator.visible = false
         date.visible = true
@@ -171,9 +186,9 @@ object MyStoriesItem {
         .show(
           listOf(
             ActionItem(R.drawable.ic_delete_24_tinted, context.getString(R.string.delete)) { model.onDeleteClick(model) },
-            ActionItem(R.drawable.ic_download_24_tinted, context.getString(R.string.save)) { model.onSaveClick(model) },
             ActionItem(R.drawable.ic_forward_24_tinted, context.getString(R.string.MyStories_forward)) { model.onForwardClick(model) },
-            ActionItem(R.drawable.ic_share_24_tinted, context.getString(R.string.StoriesLandingItem__share)) { model.onShareClick(model) }
+            ActionItem(R.drawable.ic_share_24_tinted, context.getString(R.string.StoriesLandingItem__share)) { model.onShareClick(model) },
+            ActionItem(R.drawable.ic_info_outline_message_details_24, context.getString(R.string.StoriesLandingItem__info)) { model.onInfoClick(model, storyPreview) }
           )
         )
     }

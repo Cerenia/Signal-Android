@@ -7,11 +7,15 @@ import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
+import org.signal.core.util.PendingIntentFlags;
 import org.signal.core.util.logging.Log;
+import org.signal.libsignal.protocol.IdentityKey;
 import org.signal.libsignal.protocol.SignalProtocolAddress;
 import org.signal.libsignal.protocol.message.SenderKeyDistributionMessage;
 import org.thoughtcrime.securesms.MainActivity;
 import org.thoughtcrime.securesms.R;
+import org.thoughtcrime.securesms.crypto.storage.SignalIdentityKeyStore;
+import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.jobmanager.Data;
 import org.thoughtcrime.securesms.jobmanager.Job;
@@ -21,9 +25,12 @@ import org.thoughtcrime.securesms.messages.MessageDecryptionUtil.DecryptionResul
 import org.thoughtcrime.securesms.notifications.NotificationChannels;
 import org.thoughtcrime.securesms.notifications.NotificationIds;
 import org.thoughtcrime.securesms.transport.RetryLaterException;
+import org.thoughtcrime.securesms.util.FeatureFlags;
 import org.thoughtcrime.securesms.util.TextSecurePreferences;
 import org.whispersystems.signalservice.api.SignalServiceMessageSender;
 import org.whispersystems.signalservice.api.messages.SignalServiceEnvelope;
+import org.whispersystems.signalservice.api.messages.SignalServicePniSignatureMessage;
+import org.whispersystems.signalservice.api.push.PNI;
 import org.whispersystems.signalservice.api.push.SignalServiceAddress;
 
 import java.util.LinkedList;
@@ -95,9 +102,20 @@ public final class PushDecryptMessageJob extends BaseJob {
     List<Job>        jobs = new LinkedList<>();
     DecryptionResult result = MessageDecryptionUtil.decrypt(context, envelope);
 
+    if (result.getState() == MessageState.DECRYPTED_OK && envelope.isStory() && !isStoryMessage(result)) {
+      Log.w(TAG, "Envelope was flagged as a story, but it did not have any story-related content! Dropping.");
+      return;
+    }
+
     if (result.getContent() != null) {
       if (result.getContent().getSenderKeyDistributionMessage().isPresent()) {
         handleSenderKeyDistributionMessage(result.getContent().getSender(), result.getContent().getSenderDevice(), result.getContent().getSenderKeyDistributionMessage().get());
+      }
+
+      if (FeatureFlags.phoneNumberPrivacy() && result.getContent().getPniSignatureMessage().isPresent()) {
+        handlePniSignatureMessage(result.getContent().getSender(), result.getContent().getSenderDevice(), result.getContent().getPniSignatureMessage().get());
+      } else if (result.getContent().getPniSignatureMessage().isPresent()) {
+        Log.w(TAG, "Ignoring PNI signature because the feature flag is disabled!");
       }
 
       jobs.add(new PushProcessMessageJob(result.getContent(), smsMessageId, envelope.getTimestamp()));
@@ -122,9 +140,72 @@ public final class PushDecryptMessageJob extends BaseJob {
   }
 
   private void handleSenderKeyDistributionMessage(@NonNull SignalServiceAddress address, int deviceId, @NonNull SenderKeyDistributionMessage message) {
-    Log.i(TAG, "Processing SenderKeyDistributionMessage.");
+    Log.i(TAG, "Processing SenderKeyDistributionMessage from " + address.getServiceId() + "." + deviceId);
     SignalServiceMessageSender sender = ApplicationDependencies.getSignalServiceMessageSender();
     sender.processSenderKeyDistributionMessage(new SignalProtocolAddress(address.getIdentifier(), deviceId), message);
+  }
+
+  private void handlePniSignatureMessage(@NonNull SignalServiceAddress address, int deviceId, @NonNull SignalServicePniSignatureMessage pniSignatureMessage) {
+    Log.i(TAG, "Processing PniSignatureMessage from " + address.getServiceId() + "." + deviceId);
+
+    PNI pni = pniSignatureMessage.getPni();
+
+    if (SignalDatabase.recipients().isAssociated(address.getServiceId(), pni)) {
+      Log.i(TAG, "[handlePniSignatureMessage] ACI (" + address.getServiceId() + ") and PNI (" + pni + ") are already associated.");
+      return;
+    }
+
+    SignalIdentityKeyStore identityStore = ApplicationDependencies.getProtocolStore().aci().identities();
+    SignalProtocolAddress  aciAddress    = new SignalProtocolAddress(address.getIdentifier(), deviceId);
+    SignalProtocolAddress  pniAddress    = new SignalProtocolAddress(pni.toString(), deviceId);
+    IdentityKey            aciIdentity   = identityStore.getIdentity(aciAddress);
+    IdentityKey            pniIdentity   = identityStore.getIdentity(pniAddress);
+
+    if (aciIdentity == null) {
+      Log.w(TAG, "[validatePniSignature] No identity found for ACI address " + aciAddress);
+      return;
+    }
+
+    if (pniIdentity == null) {
+      Log.w(TAG, "[validatePniSignature] No identity found for PNI address " + pniAddress);
+      return;
+    }
+
+    if (pniIdentity.verifyAlternateIdentity(aciIdentity, pniSignatureMessage.getSignature())) {
+      Log.i(TAG, "[validatePniSignature] PNI signature is valid. Associating ACI (" + address.getServiceId() + ") with PNI (" + pni + ")");
+      SignalDatabase.recipients().getAndPossiblyMergePnpVerified(address.getServiceId(), pni, address.getNumber().orElse(null));
+    } else {
+      Log.w(TAG, "[validatePniSignature] Invalid PNI signature! Cannot associate ACI (" + address.getServiceId() + ") with PNI (" + pni + ")");
+    }
+  }
+
+  private boolean isStoryMessage(@NonNull DecryptionResult result) {
+    if (result.getContent() == null) {
+      return false;
+    }
+
+    if (result.getContent().getSenderKeyDistributionMessage().isPresent()) {
+      return true;
+    }
+
+    if (result.getContent().getStoryMessage().isPresent()) {
+      return true;
+    }
+
+    if (result.getContent().getDataMessage().isPresent() &&
+        result.getContent().getDataMessage().get().getStoryContext().isPresent() &&
+        result.getContent().getDataMessage().get().getGroupContext().isPresent())
+    {
+      return true;
+    }
+
+    if (result.getContent().getDataMessage().isPresent() &&
+        result.getContent().getDataMessage().get().getRemoteDelete().isPresent())
+    {
+      return true;
+    }
+
+    return false;
   }
 
   private boolean needsMigration() {
@@ -133,13 +214,13 @@ public final class PushDecryptMessageJob extends BaseJob {
 
   private void postMigrationNotification() {
     NotificationManagerCompat.from(context).notify(NotificationIds.LEGACY_SQLCIPHER_MIGRATION,
-                                                   new NotificationCompat.Builder(context, NotificationChannels.getMessagesChannel(context))
+                                                   new NotificationCompat.Builder(context, NotificationChannels.getInstance().getMessagesChannel())
                                                                          .setSmallIcon(R.drawable.ic_notification)
                                                                          .setPriority(NotificationCompat.PRIORITY_HIGH)
                                                                          .setCategory(NotificationCompat.CATEGORY_MESSAGE)
                                                                          .setContentTitle(context.getString(R.string.PushDecryptJob_new_locked_message))
                                                                          .setContentText(context.getString(R.string.PushDecryptJob_unlock_to_view_pending_messages))
-                                                                         .setContentIntent(PendingIntent.getActivity(context, 0, MainActivity.clearTop(context), 0))
+                                                                         .setContentIntent(PendingIntent.getActivity(context, 0, MainActivity.clearTop(context), PendingIntentFlags.mutable()))
                                                                          .setDefaults(NotificationCompat.DEFAULT_SOUND | NotificationCompat.DEFAULT_VIBRATE)
                                                                          .build());
 
