@@ -95,21 +95,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
       TIMESTAMP,
       STATE
   };
-
-  /*
-  Check for duplicate Introductions when an intro is incoming.
-   */
-  private static final String[] TI_DUPLICATE_PROJECTION = new String[]{
-      ID,
-      INTRODUCER_RECIPIENT_ID,
-      INTRODUCEE_RECIPIENT_ID,
-      INTRODUCEE_SERVICE_ID,
-      INTRODUCEE_PUBLIC_IDENTITY_KEY,
-      INTRODUCEE_NAME,
-      INTRODUCEE_NUMBER,
-      PREDICTED_FINGERPRINT,
-      TIMESTAMP
-  };
+  
 
   /**
    * An Introduction can either be waiting for a decision from the user (PENDING),
@@ -349,18 +335,16 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     String[] args = SqlUtil.buildArgs(data.getIntroducerId().serialize(),
                                       data.getIntroduceeId() == null ? "NULL" : data.getIntroduceeId().serialize(),
                                       data.getIntroduceeServiceId(),
-                                      data.getIntroduceeIdentityKey()); 
+                                      data.getIntroduceeIdentityKey());
 
     SQLiteDatabase writeableDatabase = databaseHelper.getSignalWritableDatabase();
-    Cursor c = writeableDatabase.query(TABLE_NAME, TI_DUPLICATE_PROJECTION, selectionBuilder.toString(), args, null, null, null);
+    Cursor c = writeableDatabase.query(TABLE_NAME, TI_ALL_PROJECTION, selectionBuilder.toString(), args, null, null, null);
     if (c.getCount() == 1){
       c.moveToFirst();
-      if(c.getString(c.getColumnIndex(INTRODUCEE_PUBLIC_IDENTITY_KEY)).equals(data.getIntroduceeIdentityKey())) {
-        long result = writeableDatabase.update(TABLE_NAME, buildContentValuesForTimestampUpdate(c, data.getTimestamp()), ID + " = ?", SqlUtil.buildArgs(c.getInt(c.getColumnIndex(ID))));
-        Log.e(TAG, "Updated timestamp of introduction " + result + " to: " + TI_Utils.INTRODUCTION_DATE_PATTERN.format(data.getTimestamp()));
-        c.close();
-        return result;
-      }
+      long result = writeableDatabase.update(TABLE_NAME, buildContentValuesForTimestampUpdate(c, data.getTimestamp()), ID + " = ?", SqlUtil.buildArgs(c.getInt(c.getColumnIndex(ID))));
+      Log.e(TAG, "Updated timestamp of introduction " + result + " to: " + TI_Utils.INTRODUCTION_DATE_PATTERN.format(data.getTimestamp()));
+      c.close();
+      return result;
     }
     if(c.getCount() != 0) throw new AssertionError(TAG + " Either there is one entry or none, nothing else valid.");
     c.close();
