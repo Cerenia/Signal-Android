@@ -2583,7 +2583,6 @@ public class MessageContentProcessor {
     MessageTable database = SignalDatabase.messages();
     String       body     = message.getBody().isPresent() ? message.getBody().get() : "";
 
-    // TODO: Still not quite sure if sender or thread is the correct source of the message?... probably sender, threadRecipient could be a group
     handleTIMessage(senderRecipient.getId(), body, message.getTimestamp());
 
     handlePossibleExpirationUpdate(content, message, groupId, senderRecipient, threadRecipient, receivedTime);

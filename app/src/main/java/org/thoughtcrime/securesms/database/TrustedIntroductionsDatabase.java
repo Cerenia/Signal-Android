@@ -371,8 +371,6 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     selectionBuilder.append(String.format(andAppend, INTRODUCEE_SERVICE_ID));
     selectionBuilder.append(String.format(andAppend, INTRODUCEE_PUBLIC_IDENTITY_KEY));
 
-    int s = State.PENDING.toInt();
-
     // TODO: if this works well, use in other dbs where you build queries
     String[] args = SqlUtil.buildArgs(data.getIntroducerId().serialize(),
                                       data.getIntroduceeId() == null ? "NULL" : data.getIntroduceeId().serialize(),
@@ -730,8 +728,9 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
      * advances one row and returns it, null if empty, or cursor after last.
      */
     public @Nullable TI_Data getNext(){
+      TI_Data current = getCurrent();
       cursor.moveToNext();
-      return getCurrent();
+      return current;
     }
 
     public boolean hasNext(){
