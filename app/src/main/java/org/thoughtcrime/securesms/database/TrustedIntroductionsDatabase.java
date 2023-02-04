@@ -349,8 +349,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     String[] args = SqlUtil.buildArgs(data.getIntroducerId().serialize(),
                                       data.getIntroduceeId() == null ? "NULL" : data.getIntroduceeId().serialize(),
                                       data.getIntroduceeServiceId(),
-                                      data.getIntroduceeIdentityKey(),
-                                      s); // for now checking for pending state TODO: does that make sense?
+                                      data.getIntroduceeIdentityKey()); 
 
     SQLiteDatabase writeableDatabase = databaseHelper.getSignalWritableDatabase();
     Cursor c = writeableDatabase.query(TABLE_NAME, TI_DUPLICATE_PROJECTION, selectionBuilder.toString(), args, null, null, null);
