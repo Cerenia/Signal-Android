@@ -313,6 +313,48 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
                                        introduction.getTimestamp());
   }
 
+  /**
+   *
+   * @param introduction PRE: none of it's fields may be null, state != stale.
+   * @return A populated contentValues object, to use when turning introductions stale.
+   */
+  private @NonNull ContentValues buildContentValuesForStale(@NonNull TI_Data introduction){
+    Preconditions.checkNotNull(introduction.getId());
+    Preconditions.checkNotNull(introduction.getState());
+    Preconditions.checkNotNull(introduction.getIntroduceeId());
+    Preconditions.checkNotNull(introduction.getIntroducerId());
+    Preconditions.checkNotNull(introduction.getPredictedSecurityNumber());
+    Preconditions.checkArgument(!introduction.getState().isStale());
+    State newState;
+    // Find stale state
+    switch(introduction.getState()){
+      case PENDING:
+        newState = State.STALE_PENDING;
+        break;
+      case ACCEPTED:
+        newState = State.ACCEPTED;
+        break;
+      case REJECTED:
+        newState = State.REJECTED;
+        break;
+      case CONFLICTING:
+        newState = State.CONFLICTING;
+      default:
+          throw new AssertionError();
+    }
+
+    return buildContentValuesForUpdate(introduction.getId(),
+                                       newState,
+                                       introduction.getIntroducerId().toLong(),
+                                       introduction.getIntroduceeId().toLong(),
+                                       introduction.getIntroduceeServiceId(),
+                                       introduction.getIntroduceeName(),
+                                       introduction.getIntroduceeNumber(),
+                                       introduction.getIntroduceeIdentityKey(),
+                                       introduction.getPredictedSecurityNumber(),
+                                       introduction.getTimestamp());
+  }
+
 
   /**
    *
@@ -487,7 +529,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
       default:
         throw new AssertionError("Invalid verification status: " + previousIntroduceeVerification.toInt());
     }
-    if(newIntroduceeVerification != previousIntroduceeVerification){
+    if (newIntroduceeVerification != previousIntroduceeVerification) {
       // Something changed
       TI_Utils.updateContactsVerifiedStatus(introduceeID, TI_Utils.getIdentityKey(introduceeID), newIntroduceeVerification);
       Log.e(TAG, logmessage);
@@ -563,12 +605,42 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
 
    int update = database.update(TABLE_NAME, values, query, args);
    Log.d(TAG, "Forgot introducer for introduction with id: " + introduction.getId());
-   if ( update > 0 ){
+   if( update > 0 ){
      // TODO: For multidevice, syncing would be handled here
      return true;
    }
    return false;
  }
+
+  @WorkerThread
+  /**
+   * Turns all introductions for the introducee named by id stale.
+   * @param id the introducee whose security nr. changed. != UNKNOWN or NULL
+   * @return true if all updates succeeded, false otherwise
+   */
+  public boolean turnAllIntroductionsStale(RecipientId id){
+     boolean updateSucceeded = true;
+     Preconditions.checkArgument(id != null && id != RecipientId.UNKNOWN);
+     String query = INTRODUCEE_RECIPIENT_ID + " = ?";
+     String[] args = SqlUtil.buildArgs(id.toLong());
+
+     SQLiteDatabase writeableDatabase = databaseHelper.getSignalWritableDatabase();
+     Cursor c = writeableDatabase.query(TABLE_NAME, TI_ALL_PROJECTION, query, args, null, null, null);
+     IntroductionReader reader = new IntroductionReader(c);
+     TI_Data introduction;
+     while((introduction = reader.getNext()) != null){
+       ContentValues cv = buildContentValuesForStale(introduction);
+       int res = writeableDatabase.update(TABLE_NAME, cv, ID + " = ?", SqlUtil.buildArgs(introduction.getId()));
+       if (res < 0){
+         Log.e(TAG, "Introduction " + introduction.getId() + " for " + introduction.getIntroduceeName() + " with state " + introduction.getState().toString() + " could not be turned stale!");
+         updateSucceeded = false;
+       } else {
+         Log.i(TAG, "Introduction " + introduction.getId() + " for " + introduction.getIntroduceeName() + " with state " + introduction.getState().toString() + " was turned stale!");
+         // TODO: For multidevice, syncing would be handled here
+       }
+     }
+     return updateSucceeded;
+  }
 
   @WorkerThread
   /**
@@ -622,13 +694,14 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
 
   // TODO: Method which returns all non-stale introductions for a given recipient ID
 
-  public class IntroductionReader implements Closeable{
+  public static class IntroductionReader implements Closeable{
     private final Cursor cursor;
 
     // TODO: Make it slightly more flexible in terms of which data you pass around.
     // A cursor pointing to the result of a query using TI_DATA_PROJECTION
     IntroductionReader(Cursor c){
       cursor = c;
+      cursor.moveToFirst();
     }
 
     // This is now has a guarantee w.r.t. calling the constructor

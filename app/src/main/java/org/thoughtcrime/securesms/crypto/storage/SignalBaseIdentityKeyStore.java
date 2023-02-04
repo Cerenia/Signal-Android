@@ -89,7 +89,10 @@ public class SignalBaseIdentityKeyStore {
         if (identityRecord.getVerifiedStatus() != VerifiedStatus.DEFAULT)
         {
           verifiedStatus = VerifiedStatus.UNVERIFIED;
+          // Security nr. changed, change all introductions for this introducee to stale
+
         } else {
+          // If still on Default, No introductions were present, do nothing
           verifiedStatus = VerifiedStatus.DEFAULT;
         }
 
