@@ -212,9 +212,6 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
     viewModel.forgetIntroducer(introductionId);
   }
 
-  public void acceptIntroduction(@NonNull Long introductionId){
-    viewModel.acceptIntroduction(introductionId);
-  }
 
   @Override public void accept(@NonNull Long introductionId) {
     viewModel.acceptIntroduction(introductionId);

@@ -95,7 +95,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
       TIMESTAMP,
       STATE
   };
-  
+
 
   /**
    * An Introduction can either be waiting for a decision from the user (PENDING),
@@ -316,7 +316,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
 
   /**
    *
-   * @return -1 -> conflict occured on insert, else id of introduction.
+   * @return -1 -> conflict occured on insert, 0 -> Profile Fetch Job started, else id of introduction.
    */
   @SuppressLint("Range") @WorkerThread
   public long incomingIntroduction(@NonNull TI_Data data){
@@ -419,8 +419,6 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     Preconditions.checkArgument(introduction.getId() != null);
     Cursor rdc = fetchRecipientDBCursor(introduction.getIntroduceeId());
     if(rdc.getCount() <= 0){
-      // TODO: Add introducee if not present in the database
-      // I think it should always be there now since I retreived the profile in any case...
       // Investigate if errors occur
       throw new AssertionError("Unexpected missing recipient " + introduction.getIntroduceeName() + " in database while trying to change introduction state...");
     }
@@ -428,12 +426,11 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     RecipientId introduceeID = introduction.getIntroduceeId();
     IdentityTable.VerifiedStatus previousIntroduceeVerification = SignalDatabase.identities().getVerifiedStatus(introduceeID);
 
-    // TODO: missing utilization of previousIntroduceeVerification, FSM needs to be implemented here and newState must be adapted accordingly
-
-    // If the state turned stale we only change the introduction, not the verification status
+    // If the state turned stale we only change the introduction, not the verification status. Changing security nr. already has a hook for that.
+    // TODO: Potential Race condition
     if(!newState.isStale()){
       modifyIntroduceeVerification(introduceeID,
-                                   SignalDatabase.identities().getVerifiedStatus(introduceeID),
+                                   previousIntroduceeVerification,
                                    newState,
                                    String.format("Updated %s's verification state to: %s", introduction.getIntroduceeName(), newState.toString()));
     }
@@ -446,7 +443,6 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     if ( result > 0 ){
       // Log message on success
       Log.e(TAG, log_message);
-      // TODO: multidevice add here
       return true;
     }
     Log.e(TAG, "State modification of introduction: " + introduction.getId() + " failed!");
@@ -461,6 +457,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
    * @param logmessage what to print to logcat iff status was modified
    */
   private void modifyIntroduceeVerification(@NonNull RecipientId introduceeID, @NonNull IdentityTable.VerifiedStatus previousIntroduceeVerification, @NonNull State newState, @NonNull String logmessage){
+    // Initialize with what it was
     IdentityTable.VerifiedStatus newIntroduceeVerification = previousIntroduceeVerification;
     switch (previousIntroduceeVerification){
       case DEFAULT:
