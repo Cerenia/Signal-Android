@@ -7,6 +7,7 @@ import androidx.annotation.Nullable;
 
 import net.zetetic.database.sqlcipher.SQLiteDatabase;
 
+import org.signal.core.util.concurrent.SignalExecutors;
 import org.signal.core.util.logging.Log;
 import org.signal.libsignal.protocol.IdentityKey;
 import org.signal.libsignal.protocol.SignalProtocolAddress;
@@ -89,7 +90,12 @@ public class SignalBaseIdentityKeyStore {
         {
           verifiedStatus = VerifiedStatus.UNVERIFIED;
           // Security nr. changed, change all introductions for this introducee to stale
-
+          SignalExecutors.BOUNDED.execute(() -> {
+            boolean res = SignalDatabase.trustedIntroductions().turnAllIntroductionsStale(recipientId);
+            if(!res){
+              Log.e(TAG, "Error occured while turning all introductions stale for recipient: " + recipientId);
+            }
+          });
         } else {
           // If still on Default, No introductions were present, do nothing
           verifiedStatus = VerifiedStatus.DEFAULT;
