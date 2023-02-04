@@ -189,9 +189,6 @@ public class ManageViewModel extends ViewModel {
     return introductions;
   }
 
-  //TODO:
-  // accept, reject etc...
-
   static class IntroducerInformation {
     String name;
     String number;
