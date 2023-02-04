@@ -96,6 +96,20 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
       STATE
   };
 
+  /*
+  Check for duplicate Introductions when an intro is incoming.
+   */
+  private static final String[] TI_DUPLICATE_PROJECTION = new String[]{
+      ID,
+      INTRODUCER_RECIPIENT_ID,
+      INTRODUCEE_RECIPIENT_ID,
+      INTRODUCEE_SERVICE_ID,
+      INTRODUCEE_PUBLIC_IDENTITY_KEY,
+      INTRODUCEE_NAME,
+      INTRODUCEE_NUMBER,
+      PREDICTED_FINGERPRINT,
+      TIMESTAMP
+  };
 
   /**
    * An Introduction can either be waiting for a decision from the user (PENDING),
@@ -127,7 +141,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
         case STALE_CONFLICTING:
           return 7;
         default:
-          throw new AssertionError();
+          throw new AssertionError("No such state " + this);
       }
     }
 
@@ -150,7 +164,6 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
         case 7:
           return STALE_CONFLICTING;
         default:
-          // TODO: add back when you know what's up
           throw new AssertionError("No such state: " + state);
       }
     }
@@ -168,7 +181,6 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
         case STALE_CONFLICTING:
           return true;
         default:
-          // TODO: add back when you know what's up
           throw new AssertionError("No such state: " + this);
       }
     }
@@ -323,14 +335,13 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
   @SuppressLint("Range") @WorkerThread
   public long incomingIntroduction(@NonNull TI_Data data){
 
-    // Fetch Data out of database where everything is identical but timestamp.
+    // Fetch Data out of database where everything is identical but timestamp & maybe state.
     StringBuilder selectionBuilder = new StringBuilder();
     selectionBuilder.append(String.format("%s=?", INTRODUCER_RECIPIENT_ID)); // if ID was purged, duplicate detection no longer possible // TODO: issue for, e.g., count if pure distance-1 case (future problem)
     String andAppend = " AND %s=?";
     selectionBuilder.append(String.format(andAppend, INTRODUCEE_RECIPIENT_ID));
     selectionBuilder.append(String.format(andAppend, INTRODUCEE_SERVICE_ID));
     selectionBuilder.append(String.format(andAppend, INTRODUCEE_PUBLIC_IDENTITY_KEY));
-    selectionBuilder.append(String.format(andAppend, STATE));
 
     int s = State.PENDING.toInt();
 
@@ -342,7 +353,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
                                       s); // for now checking for pending state TODO: does that make sense?
 
     SQLiteDatabase writeableDatabase = databaseHelper.getSignalWritableDatabase();
-    Cursor c = writeableDatabase.query(TABLE_NAME, TI_ALL_PROJECTION, selectionBuilder.toString(), args, null, null, null);
+    Cursor c = writeableDatabase.query(TABLE_NAME, TI_DUPLICATE_PROJECTION, selectionBuilder.toString(), args, null, null, null);
     if (c.getCount() == 1){
       c.moveToFirst();
       if(c.getString(c.getColumnIndex(INTRODUCEE_PUBLIC_IDENTITY_KEY)).equals(data.getIntroduceeIdentityKey())) {
@@ -359,14 +370,8 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     RecipientId introduceeId = data.getIntroduceeId();
     if(introduceeId == null){
       values.put(STATE, State.PENDING.toInt()); // if recipient does not exist, we have nothing to compare against.
-      // TODO: How to fetch a recipient based on ServiceID? Should compare in any case...
-      // TODO: Have a look at Retrieve Profile Job! => Add a callback in the database?
-      // TODO: After doing this, the recipient Id will no longer be null. Is this generally a problem because of leaking state?
-      // TODO: After this is devd, simplify this function by calling helpers to build content values.
-      // for now, adding unknown recipient id
-      //values.put(INTRODUCEE_RECIPIENT_ID, UNKNOWN_INTRODUCEE_RECIPIENT_ID);
       ApplicationDependencies.getJobManager().add(new TrustedIntroductionsRetreiveIdentityJob(new TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult(data, null, null)));
-      // TODO: testing
+      // TODO: testing, change to i later
       Log.e(TAG, "Unknown recipient, deferred insertion of Introduction into database for: " + data.getIntroduceeName());
       // This is expected and not an error.
       return 0;
