@@ -734,7 +734,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     }
 
     public boolean hasNext(){
-      return !cursor.isAfterLast() && !cursor.isLast();
+      return !cursor.isAfterLast();
     }
 
     @Override public void close() throws IOException {
