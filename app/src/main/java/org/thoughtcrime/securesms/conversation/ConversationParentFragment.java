@@ -1265,7 +1265,7 @@ public class ConversationParentFragment extends Fragment
       case TRUSTED_INTRODUCTION:
         Optional<IdentityRecord> recipientRecord = ApplicationDependencies.getProtocolStore().aci().identities().getIdentityRecord(recipient.getId());
         CanNotIntroduceDialog.ConversationType conversationType;
-        if (!viewModel.isDefaultSmsApplication()){
+        if (viewModel.isDefaultSmsApplication()){
           conversationType = CanNotIntroduceDialog.ConversationType.SMS;
         } else if (!isSingleConversation()){
           // Dialogue for Group (at some point this can be implemented)
