@@ -332,13 +332,13 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
         newState = State.STALE_PENDING;
         break;
       case ACCEPTED:
-        newState = State.ACCEPTED;
+        newState = State.STALE_ACCEPTED;
         break;
       case REJECTED:
-        newState = State.REJECTED;
+        newState = State.STALE_REJECTED;
         break;
       case CONFLICTING:
-        newState = State.CONFLICTING;
+        newState = State.STALE_CONFLICTING;
       default:
           throw new AssertionError();
     }
