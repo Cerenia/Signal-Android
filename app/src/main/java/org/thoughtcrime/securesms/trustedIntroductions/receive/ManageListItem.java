@@ -210,13 +210,13 @@ public class ManageListItem extends ConstraintLayout {
         break;
       case STALE_ACCEPTED:
         toggleSwitch.setChecked(true);
-        switchLabel.setText(R.string.ManageIntroductionsListItem__Accepted);
+        switchLabel.setText(R.string.ManageIntroductionsListItem__Stale);
         toggleSwitch.setClickable(false);
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_stale));
         break;
       case STALE_REJECTED:
         toggleSwitch.setChecked(false);
-        switchLabel.setText(R.string.ManageIntroductionsListItem__Rejected);
+        switchLabel.setText(R.string.ManageIntroductionsListItem__Stale);
         toggleSwitch.setClickable(false);
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_stale));
         break;
@@ -228,7 +228,7 @@ public class ManageListItem extends ConstraintLayout {
         break;
       case STALE_CONFLICTING:
         toggleSwitch.setChecked(false);
-        switchLabel.setText(R.string.ManageIntroductionsListItem__Conflicting);
+        switchLabel.setText(R.string.ManageIntroductionsListItem__Stale);
         toggleSwitch.setClickable(false);
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_stale_conflicting));
         break;
