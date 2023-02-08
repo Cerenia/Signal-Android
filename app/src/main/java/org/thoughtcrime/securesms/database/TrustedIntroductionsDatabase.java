@@ -177,10 +177,24 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
   }
 
 
+  /**
+   *
+   * @param introductionId
+   * @param state
+   * @param introducerId serialized
+   * @param introduceeId serialized
+   * @param serviceId
+   * @param name
+   * @param number
+   * @param identityKey
+   * @param predictedFingerprint
+   * @param timestamp
+   * @return
+   */
   private @NonNull ContentValues buildContentValuesForUpdate(@NonNull Long introductionId,
                                                     @NonNull State state,
-                                                    @NonNull Long introducerId,
-                                                    @NonNull Long introduceeId,
+                                                    @NonNull String introducerId,
+                                                    @NonNull String introduceeId,
                                                     @NonNull String serviceId,
                                                     @NonNull String name,
                                                     @NonNull String number,
@@ -272,16 +286,14 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     Preconditions.checkArgument(introId > 0);
     int s = Integer.parseInt(state);
     Preconditions.checkArgument(s >= 0 && s <= 7);
-    long introducerIdLong = Long.parseLong(introducerId);
-    Preconditions.checkArgument(introducerIdLong > 0);
-    long introduceeIdLong = Long.parseLong(introduceeId);
-    Preconditions.checkArgument(introduceeIdLong > 0);
+    Preconditions.checkArgument(Long.parseLong(introducerId) > 0);
+    Preconditions.checkArgument(Long.parseLong(introduceeId) > 0);
     long timestampLong = Long.parseLong(timestamp);
     Preconditions.checkArgument(timestampLong > 0);
     return buildContentValuesForUpdate(introId,
                                        State.forState(s),
-                                       introducerIdLong,
-                                       introduceeIdLong,
+                                       introducerId,
+                                       introduceeId,
                                        serviceId,
                                        name,
                                        number,
@@ -303,8 +315,8 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     Preconditions.checkNotNull(introduction.getPredictedSecurityNumber());
     return buildContentValuesForUpdate(introduction.getId(),
                                        introduction.getState(),
-                                       introduction.getIntroducerId().toLong(),
-                                       introduction.getIntroduceeId().toLong(),
+                                       introduction.getIntroducerId().serialize(),
+                                       introduction.getIntroduceeId().serialize(),
                                        introduction.getIntroduceeServiceId(),
                                        introduction.getIntroduceeName(),
                                        introduction.getIntroduceeNumber(),
@@ -345,8 +357,8 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
 
     return buildContentValuesForUpdate(introduction.getId(),
                                        newState,
-                                       introduction.getIntroducerId().toLong(),
-                                       introduction.getIntroduceeId().toLong(),
+                                       introduction.getIntroducerId().serialize(),
+                                       introduction.getIntroduceeId().serialize(),
                                        introduction.getIntroduceeServiceId(),
                                        introduction.getIntroduceeName(),
                                        introduction.getIntroduceeNumber(),
@@ -399,7 +411,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
       // This is expected and not an error.
       return 0;
     } else {
-      values.put(INTRODUCEE_RECIPIENT_ID, introduceeId.toLong());
+      values.put(INTRODUCEE_RECIPIENT_ID, introduceeId.serialize());
       if (TI_Utils.encodedIdentityKeysEqual(introduceeId, data.getIntroduceeIdentityKey())){
         values.put(STATE, State.PENDING.toInt());
       } else {
@@ -407,7 +419,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
       }
     }
 
-    values.put(INTRODUCER_RECIPIENT_ID, data.getIntroducerId().toLong());
+    values.put(INTRODUCER_RECIPIENT_ID, data.getIntroducerId().serialize());
     values.put(INTRODUCEE_SERVICE_ID, data.getIntroduceeServiceId());
     values.put(INTRODUCEE_PUBLIC_IDENTITY_KEY, data.getIntroduceeIdentityKey());
     values.put(INTRODUCEE_NAME, data.getIntroduceeName());
@@ -434,7 +446,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     } else {
       values.put(STATE, State.CONFLICTING.toInt());
     }
-    values.put(INTRODUCER_RECIPIENT_ID, result.TIData.getIntroducerId().toLong());
+    values.put(INTRODUCER_RECIPIENT_ID, result.TIData.getIntroducerId().serialize());
     values.put(INTRODUCEE_SERVICE_ID, result.TIData.getIntroduceeServiceId());
     values.put(INTRODUCEE_PUBLIC_IDENTITY_KEY, result.TIData.getIntroduceeIdentityKey());
     values.put(INTRODUCEE_NAME, result.TIData.getIntroduceeName());
@@ -493,10 +505,11 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
    * FSMs for verification status implemented here.
    * @param introduceeID The recipient whose verification status may change
    * @param previousIntroduceeVerification the previous verification status of the introducee
-   * @param newState PRE: !STALE
+   * @param newState PRE: !STALE (security number changes are handled in a seperate codepath)
    * @param logmessage what to print to logcat iff status was modified
    */
   private void modifyIntroduceeVerification(@NonNull RecipientId introduceeID, @NonNull IdentityTable.VerifiedStatus previousIntroduceeVerification, @NonNull State newState, @NonNull String logmessage){
+    Preconditions.checkArgument(!newState.isStale());
     // Initialize with what it was
     IdentityTable.VerifiedStatus newIntroduceeVerification = previousIntroduceeVerification;
     switch (previousIntroduceeVerification){
@@ -509,8 +522,9 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
         break;
       case DUPLEX_VERIFIED:
         if (newState == State.REJECTED){
-          // Back to "directly verified"
-          newIntroduceeVerification = IdentityTable.VerifiedStatus.DIRECTLY_VERIFIED;
+          // Stay "duplex verified" iff only more than 1 accepted introduction for this contact exist else "directly verified"
+          newIntroduceeVerification = multipleAcceptedIntroductions(introduceeID) ? IdentityTable.VerifiedStatus.DUPLEX_VERIFIED :
+                                      IdentityTable.VerifiedStatus.DIRECTLY_VERIFIED;
         }
         break;
       case DIRECTLY_VERIFIED:
@@ -520,8 +534,9 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
         break;
       case INTRODUCED:
         if (newState == State.REJECTED){
-          // There was some interaction so we go to unverified instead of default
-          newIntroduceeVerification = IdentityTable.VerifiedStatus.UNVERIFIED;
+          // Stay "introduced" iff more than 1 accepted introduction for this contact exist else "unverified"
+          newIntroduceeVerification = multipleAcceptedIntroductions(introduceeID) ? IdentityTable.VerifiedStatus.INTRODUCED :
+                                      IdentityTable.VerifiedStatus.UNVERIFIED;
         }
         break;
       default:
@@ -533,6 +548,26 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
       Log.e(TAG, logmessage);
     }
   }
+
+  /**
+   * PRE: at least one accepted introduction for introduceeID
+   * @param introduceeID The recipient whose verification status may change
+   */
+  private boolean multipleAcceptedIntroductions(RecipientId introduceeID){
+    final String selection = String.format("%s=?", INTRODUCEE_RECIPIENT_ID)
+                                    + String.format(" AND %s=?", STATE);
+
+    String[] args = SqlUtil.buildArgs(introduceeID.serialize());
+
+    SQLiteDatabase writeableDatabase = databaseHelper.getSignalWritableDatabase();
+    Cursor c = writeableDatabase.query(TABLE_NAME, TI_ALL_PROJECTION, selection, args, null, null, null);
+
+    // check precondition
+    Preconditions.checkArgument(c.getCount() > 0);
+
+    return c.getCount() > 1;
+   }
+
 
 
   /**
@@ -578,7 +613,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     } else {
       // query only the Introductions made by introducerId
       query = INTRODUCER_RECIPIENT_ID + " = ?";
-      String[] arg = SqlUtil.buildArgs(introducerId.toLong());
+      String[] arg = SqlUtil.buildArgs(introducerId.serialize());
       return new IntroductionReader(db.query(TABLE_NAME, TI_ALL_PROJECTION, query, arg, null, null, null));
     }
   }
@@ -620,7 +655,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
      boolean updateSucceeded = true;
      Preconditions.checkArgument(id != null && id != RecipientId.UNKNOWN);
      String query = INTRODUCEE_RECIPIENT_ID + " = ?";
-     String[] args = SqlUtil.buildArgs(id.toLong());
+     String[] args = SqlUtil.buildArgs(id.serialize());
 
      SQLiteDatabase writeableDatabase = databaseHelper.getSignalWritableDatabase();
      Cursor c = writeableDatabase.query(TABLE_NAME, TI_ALL_PROJECTION, query, args, null, null, null);
