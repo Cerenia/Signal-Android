@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.R;
+import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
 
 import java.util.Date;
 
@@ -17,7 +18,7 @@ import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.INTRODUCT
  */
 public final class ForgetIntroducerDialog {
 
-    private static final String TAG = Log.tag(ForgetIntroducerDialog.class);
+    private static final String TAG = String.format(TI_Utils.TI_LOG_TAG, Log.tag(ForgetIntroducerDialog.class));
 
     public interface ForgetIntroducer {
         void forgetIntroducer(@NonNull Long introductionId);
@@ -39,7 +40,6 @@ public final class ForgetIntroducerDialog {
             default:
                 throw new AssertionError("Invalid management screen type!");
         }
-        Log.e(TAG, text);
         builder.setMessage(text);
         builder.setNegativeButton(android.R.string.no, (dialog, which) -> dialog.dismiss())
                .setPositiveButton(R.string.ForgetIntroucerDialog__forget, (dialog, which) -> {

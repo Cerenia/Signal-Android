@@ -42,7 +42,7 @@ import java.util.Set;
  */
 public class TrustedIntroductionsDatabase extends DatabaseTable {
 
-  private final String TAG = Log.tag(TrustedIntroductionsDatabase.class);
+  private static final String TAG = String.format(TI_Utils.TI_LOG_TAG, Log.tag(TrustedIntroductionsDatabase.class));
 
   public static final String TABLE_NAME = "trusted_introductions";
 
@@ -394,7 +394,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     if (c.getCount() == 1){
       c.moveToFirst();
       long result = writeableDatabase.update(TABLE_NAME, buildContentValuesForTimestampUpdate(c, data.getTimestamp()), ID + " = ?", SqlUtil.buildArgs(c.getInt(c.getColumnIndex(ID))));
-      Log.e(TAG, "Updated timestamp of introduction " + result + " to: " + TI_Utils.INTRODUCTION_DATE_PATTERN.format(data.getTimestamp()));
+      Log.i(TAG, "Updated timestamp of introduction " + result + " to: " + TI_Utils.INTRODUCTION_DATE_PATTERN.format(data.getTimestamp()));
       c.close();
       return result;
     }
@@ -406,8 +406,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     if(introduceeId == null){
       values.put(STATE, State.PENDING.toInt()); // if recipient does not exist, we have nothing to compare against.
       ApplicationDependencies.getJobManager().add(new TrustedIntroductionsRetreiveIdentityJob(new TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult(data, null, null)));
-      // TODO: testing, change to i later
-      Log.e(TAG, "Unknown recipient, deferred insertion of Introduction into database for: " + data.getIntroduceeName());
+      Log.i(TAG, "Unknown recipient, deferred insertion of Introduction into database for: " + data.getIntroduceeName());
       // This is expected and not an error.
       return 0;
     } else {
@@ -428,8 +427,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     values.put(TIMESTAMP, data.getTimestamp());
 
     long id = writeableDatabase.insert(TABLE_NAME, null, values);
-    // TODO: testing
-    Log.e(TAG, "Inserted new introduction for: " + data.getIntroduceeName() + ", with id: " + id);
+    Log.i(TAG, "Inserted new introduction for: " + data.getIntroduceeName() + ", with id: " + id);
     return id;
   }
 
@@ -455,7 +453,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     values.put(TIMESTAMP, result.TIData.getTimestamp());
     SQLiteDatabase writeableDatabase = databaseHelper.getSignalWritableDatabase();
     long id = writeableDatabase.insert(TABLE_NAME, null, values);
-    Log.e(TAG, "Inserted new introduction for: " + result.TIData.getIntroduceeName() + ", with id: " + id);
+    Log.i(TAG, "Inserted new introduction for: " + result.TIData.getIntroduceeName() + ", with id: " + id);
     return id;
   }
 
@@ -494,7 +492,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
 
     if ( result > 0 ){
       // Log message on success
-      Log.e(TAG, log_message);
+      Log.i(TAG, log_message);
       return true;
     }
     Log.e(TAG, "State modification of introduction: " + introduction.getId() + " failed!");
@@ -545,7 +543,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     if (newIntroduceeVerification != previousIntroduceeVerification) {
       // Something changed
       TI_Utils.updateContactsVerifiedStatus(introduceeID, TI_Utils.getIdentityKey(introduceeID), newIntroduceeVerification);
-      Log.e(TAG, logmessage);
+      Log.i(TAG, logmessage);
     }
   }
 
@@ -638,7 +636,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
    ContentValues values = buildContentValuesForUpdate(introduction);
 
    int update = database.update(TABLE_NAME, values, query, args);
-   Log.d(TAG, "Forgot introducer for introduction with id: " + introduction.getId());
+   Log.i(TAG, "Forgot introducer for introduction with id: " + introduction.getId());
    if( update > 0 ){
      // TODO: For multidevice, syncing would be handled here
      return true;
@@ -692,7 +690,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     int count = database.delete(TABLE_NAME, query, args);
 
     if(count == 1){
-      Log.e(TAG, String.format("Deleted introduction with id: %d from the database.", introductionId));
+      Log.i(TAG, String.format("Deleted introduction with id: %d from the database.", introductionId));
       return true;
     } else if(count > 1){
       // matching with id, which must be unique

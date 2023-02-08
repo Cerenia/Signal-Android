@@ -39,7 +39,7 @@ import kotlin.jvm.functions.Function0;
 
 public class ManageListFragment extends Fragment implements ContactFilterView.OnFilterChangedListener, DeleteIntroductionDialog.DeleteIntroduction, ForgetIntroducerDialog.ForgetIntroducer, ManageListItem.SwitchClickListener {
 
-  private String TAG = Log.tag(ManageListFragment.class);
+  private static final String TAG = String.format(TI_Utils.TI_LOG_TAG, Log.tag(ManageListFragment.class));
 
   // TODO: Will probably need that for all screen
   private ProgressWheel showIntroductionsProgress;

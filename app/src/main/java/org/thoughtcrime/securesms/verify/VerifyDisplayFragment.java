@@ -81,6 +81,7 @@ import java.util.Optional;
 public class VerifyDisplayFragment extends Fragment implements ViewTreeObserver.OnScrollChangedListener, ClearVerificationDialog.Callback {
 
   private static final String TAG = Log.tag(VerifyDisplayFragment.class);
+  private static final String TAG_TI = String.format(TI_Utils.TI_LOG_TAG, TAG);
 
   private static final String RECIPIENT_ID    = "recipient_id";
   private static final String REMOTE_IDENTITY = "remote_identity";
@@ -546,7 +547,7 @@ public class VerifyDisplayFragment extends Fragment implements ViewTreeObserver.
     final RecipientId recipientId = recipient.getId();
     // Check the current verification status
     IdentityTable.VerifiedStatus previousStatus = SignalDatabase.identities().getVerifiedStatus(recipientId);
-    Log.i(TAG, "Saving identity: " + recipientId);
+    Log.i(TAG_TI, "Saving identity: " + recipientId);
     if (IdentityTable.VerifiedStatus.stronglyVerified(previousStatus)) {
       androidx.fragment.app.FragmentActivity activity = getActivity();
       // TODO: when would this activity ever be null?
@@ -578,12 +579,12 @@ public class VerifyDisplayFragment extends Fragment implements ViewTreeObserver.
    */
   private void updateContactsVerifiedStatus(IdentityTable.VerifiedStatus status) {
     final RecipientId recipientId = recipient.getId();
-    Log.i(TAG, "Saving identity: " + recipientId);
+    Log.i(TAG_TI, "Saving identity: " + recipientId);
     SignalExecutors.BOUNDED.execute(() -> {
       try (SignalSessionLock.Lock unused = ReentrantSessionLock.INSTANCE.acquire()) {
         final boolean verified = IdentityTable.VerifiedStatus.isVerified(status);
         if (verified) {
-          Log.i(TAG, "Saving identity: " + recipientId);
+          Log.i(TAG_TI, "Saving identity: " + recipientId);
           ApplicationDependencies.getProtocolStore().aci().identities()
                                  .saveIdentityWithoutSideEffects(recipientId,
                                                                  remoteIdentity,
@@ -596,7 +597,6 @@ public class VerifyDisplayFragment extends Fragment implements ViewTreeObserver.
         }
 
         // For other devices but the Android phone, we map the finer statusses to verified or unverified.
-        // TODO: Change once we add new devices for TI
         ApplicationDependencies.getJobManager()
                                .add(new MultiDeviceVerifiedUpdateJob(recipientId,
                                                                      remoteIdentity,

@@ -14,6 +14,7 @@ import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
+import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
 import org.thoughtcrime.securesms.util.DynamicNoActionBarTheme;
 import org.thoughtcrime.securesms.util.DynamicTheme;
 import org.thoughtcrime.securesms.util.Util;
@@ -36,7 +37,7 @@ import java.util.stream.Collectors;
  */
 public final class ContactsSelectionActivity extends PassphraseRequiredActivity implements ContactsSelectionListFragment.OnContactSelectedListener {
 
-  private static final String TAG = Log.tag(ContactsSelectionActivity.class);
+  private static final String TAG = String.format(TI_Utils.TI_LOG_TAG, Log.tag(ContactsSelectionActivity.class));
 
   public static final String RECIPIENT_ID                 = "recipient_id";
   public static final String SELECTED_CONTACTS_TO_FORWARD = "forwarding_contacts";

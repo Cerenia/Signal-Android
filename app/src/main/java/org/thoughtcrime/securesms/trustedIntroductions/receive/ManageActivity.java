@@ -15,6 +15,7 @@ import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.components.ContactFilterView;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
+import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
 import org.thoughtcrime.securesms.util.DynamicNoActionBarTheme;
 import org.thoughtcrime.securesms.util.DynamicTheme;
 
@@ -29,7 +30,7 @@ import static org.thoughtcrime.securesms.trustedIntroductions.receive.ManageList
  */
 public class ManageActivity extends PassphraseRequiredActivity implements ManageListFragment.onAllNavigationClicked {
 
-  private static final String TAG = Log.tag(ManageActivity.class);
+  private static final String TAG = String.format(TI_Utils.TI_LOG_TAG, Log.tag(ManageActivity.class));
 
   private long introducerId;
 

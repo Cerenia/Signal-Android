@@ -22,6 +22,7 @@ import org.thoughtcrime.securesms.mms.GlideApp;
 import org.thoughtcrime.securesms.mms.GlideRequests;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
+import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
 import org.thoughtcrime.securesms.util.ViewUtil;
 import org.thoughtcrime.securesms.util.adapter.mapping.MappingAdapter;
 import org.thoughtcrime.securesms.util.adapter.mapping.MappingModelList;
@@ -44,7 +45,7 @@ import kotlin.Unit;
  */
 public class ContactsSelectionListFragment extends Fragment implements ContactFilterView.OnFilterChangedListener {
 
-  private static final String TAG = Log.tag(ContactsSelectionListFragment.class);
+  private static final String TAG = String.format(TI_Utils.TI_LOG_TAG, Log.tag(ContactsSelectionListFragment.class));
 
   // TODO: have a progress wheel for more substantial data? (cosmetic, not super important)
   private ProgressWheel              showContactsProgress;

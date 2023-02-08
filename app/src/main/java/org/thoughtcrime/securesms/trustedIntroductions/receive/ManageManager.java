@@ -21,8 +21,7 @@ public class ManageManager {
 
   // Introducer ID, or special iff all.
   private final RecipientId recipientId;
-  // TODO: Does this cause problems?
-  private final RecipientId ALL_INTRODUCERS = RecipientId.from(ManageActivity.ALL_INTRODUCTIONS);
+
   @NonNull private final String forgottenPlaceholder;
   // Dependency injection
   private final TrustedIntroductionsDatabase tdb;
