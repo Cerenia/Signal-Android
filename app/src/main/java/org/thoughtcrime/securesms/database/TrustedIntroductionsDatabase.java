@@ -558,7 +558,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
                                     + String.format(" AND %s=?", STATE);
 
     String[] args = SqlUtil.buildArgs(introduceeID.serialize(),
-                                      State.ACCEPTED);
+                                      State.ACCEPTED.toInt());
 
     SQLiteDatabase writeableDatabase = databaseHelper.getSignalWritableDatabase();
     Cursor c = writeableDatabase.query(TABLE_NAME, TI_ALL_PROJECTION, selection, args, null, null, null);
