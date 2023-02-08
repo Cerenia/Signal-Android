@@ -334,6 +334,7 @@ class IdentityTable internal constructor(context: Context?, databaseHelper: Sign
         }
       }
 
+
       /**
        * Adding this in order to be able to change my mind easily on what should unlock a TI.
        * For now, only direct verification unlocks forwarding a contact's public key,
