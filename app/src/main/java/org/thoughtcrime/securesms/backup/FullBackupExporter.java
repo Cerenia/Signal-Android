@@ -52,6 +52,7 @@ import org.thoughtcrime.securesms.database.SenderKeySharedTable;
 import org.thoughtcrime.securesms.database.SessionTable;
 import org.thoughtcrime.securesms.database.SignedPreKeyTable;
 import org.thoughtcrime.securesms.database.StickerTable;
+import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
 import org.thoughtcrime.securesms.database.model.AvatarPickerDatabase;
 import org.thoughtcrime.securesms.database.model.MessageId;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
@@ -386,10 +387,12 @@ public class FullBackupExporter extends FullBackupBase {
     boolean isReservedTable       = table.startsWith("sqlite_");
     boolean isMmsFtsSecretTable   = !table.equals(SearchTable.FTS_TABLE_NAME) && table.startsWith(SearchTable.FTS_TABLE_NAME);
     boolean isEmojiFtsSecretTable = !table.equals(EmojiSearchTable.TABLE_NAME) && table.startsWith(EmojiSearchTable.TABLE_NAME);
+    boolean isTrustedIntroductionsDatabase = !table.equals(TrustedIntroductionsDatabase.TABLE_NAME);
 
     return !isReservedTable &&
            !isMmsFtsSecretTable &&
-           !isEmojiFtsSecretTable;
+           !isEmojiFtsSecretTable &&
+           !isTrustedIntroductionsDatabase;
   }
 
   private static int exportTable(@NonNull String table,
