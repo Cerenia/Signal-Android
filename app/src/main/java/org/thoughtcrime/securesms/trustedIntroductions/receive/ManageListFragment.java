@@ -256,14 +256,14 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
         return;
       }
       // All screen
-      Toast.makeText(c, R.string.ManageIntroductionsFragment__already_erased_toast, Toast.LENGTH_SHORT).show();
+      Toast.makeText(c, R.string.ManageIntroductionsFragment__already_erased_toast, Toast.LENGTH_LONG).show();
     }
 
     @Override public void onItemLongClick(ManageListItem item) {
       TrustedIntroductionsDatabase.State s = item.getState();
       if(s.equals(TrustedIntroductionsDatabase.State.CONFLICTING)){
         // TODO: Propper go through managing conflicts path, to implement later.
-        Toast.makeText(c, R.string.ManageIntroductionsFragment__conflict_resolution_todo, Toast.LENGTH_SHORT).show();
+        Toast.makeText(c, R.string.ManageIntroductionsFragment__conflict_resolution_todo, Toast.LENGTH_LONG).show();
       }
       DeleteIntroductionDialog.show(c, item.getIntroductionId(), item.getIntroduceeName(), getIntroducerName(item), item.getDate(), deleteHandler);
     }
