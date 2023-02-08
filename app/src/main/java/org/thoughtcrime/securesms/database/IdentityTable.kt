@@ -74,6 +74,20 @@ class IdentityTable internal constructor(context: Context?, databaseHelper: Sign
       )
     """
     const private val  TI_ADDRESS_PROJECTION    = ADDRESS;
+
+    /**
+     * Expose all keys of the database for Precondition check in @TI_Cursor.java
+     */
+    fun getAllDatabaseKeys(): ArrayList<String> {
+      val res = arrayListOf<String>();
+      res.add(ID)
+      res.add(ADDRESS)
+      res.add(IDENTITY_KEY)
+      res.add(FIRST_USE)
+      res.add(VERIFIED)
+      res.add(NONBLOCKING_APPROVAL)
+      return res
+    }
   }
 
   fun getIdentityStoreRecord(addressName: String): IdentityStoreRecord? {
@@ -162,8 +176,7 @@ class IdentityTable internal constructor(context: Context?, databaseHelper: Sign
    * @return Returns a Cursor which iterates through all contacts that are unlocked for
    * trusted introductions (for which @see VerifiedStatus.tiUnlocked returns true)
    */
-  @NonNull
-  fun getCursorForTIUnlocked(): Cursor? {
+  fun getCursorForTIUnlocked(): Cursor {
     val validStates: ArrayList<String> = ArrayList()
     // dynamically compute the valid states and query the Signal database for these contacts
     for (e in VerifiedStatus.values()) {
@@ -315,6 +328,19 @@ class IdentityTable internal constructor(context: Context?, databaseHelper: Sign
           else -> throw AssertionError("No such state: $state")
         }
       }
+
+        @JvmStatic
+        fun toVanilla(state: Int): Int {
+          val s = forState(state)
+          return when (s) {
+            DEFAULT -> 0
+            DIRECTLY_VERIFIED -> 1
+            INTRODUCED -> 1
+            DUPLEX_VERIFIED -> 1
+            MANUALLY_VERIFIED -> 1
+            UNVERIFIED -> 2
+          }
+        }
 
       /**
        * Much of the code relies on checks of the verification status that are not interested in the finer details.
