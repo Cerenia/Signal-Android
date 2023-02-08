@@ -139,8 +139,6 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
       from_title_view.setText(String.format(getString(R.string.ManageIntroductionsFragment__Title_Introductions_from), viewModel.getIntroducerName()));
       from_title_view.setVisibility(View.VISIBLE);
     }
-    // Make sure filter stays active on fragment change
-    onFilterChanged(viewModel.getFilter().getValue());
   }
 
   private void initializeNavigationButton(@NonNull View view){
