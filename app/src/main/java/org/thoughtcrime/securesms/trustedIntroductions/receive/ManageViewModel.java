@@ -15,6 +15,7 @@ import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
+import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
 
 import java.util.List;
 import java.util.Objects;
@@ -22,7 +23,7 @@ import java.util.Objects;
 
 public class ManageViewModel extends ViewModel {
 
-  private final String TAG = Log.tag(ManageViewModel.class);
+  private static final String TAG = String.format(TI_Utils.TI_LOG_TAG, Log.tag(ManageViewModel.class));
 
   private final ManageManager             manager;
   private final MutableLiveData<String>   filter;

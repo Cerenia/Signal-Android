@@ -18,7 +18,6 @@ import org.thoughtcrime.securesms.database.model.IdentityRecord;
  */
 public final class CanNotIntroduceDialog {
 
-
     public enum ConversationType {
         SMS,
         GROUP,

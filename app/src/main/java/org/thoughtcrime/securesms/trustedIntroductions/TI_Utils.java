@@ -56,7 +56,9 @@ import static org.webrtc.ContextUtils.getApplicationContext;
 
 public class TI_Utils {
 
-  static final String TAG = Log.tag(TI_Utils.class);
+  // Prefix all logging with this tag for ease of search
+  public static final String TI_LOG_TAG = "_TI:%s";
+  static final String TAG = String.format(TI_LOG_TAG, Log.tag(TI_Utils.class));
 
   // Random String to mark a message as a trustedIntroduction, since I'm tunneling through normal messages
   static final String TI_IDENTIFYER = "QOikEX9PPGIuXfiejT9nC2SsDB8d9AG0dUPQ9gERBQ8qHF30Xj --- This message is part of an experimental feature and not meant to be read by humans --- Introduction Data:\n";
@@ -199,12 +201,12 @@ public class TI_Utils {
     // @see VerifyDisplayFragment for verification version differences
     if (FeatureFlags.verifyV2()){
       version = 2;
-      Log.e(TAG, introductionRecipientResolved.requireServiceId().toString());
+      Log.i(TAG, "using " + introductionRecipientResolved.requireServiceId());
       introductionRecipientFingerprintId = introductionRecipientResolved.requireServiceId().toByteArray();
       introduceeFingerprintId = introduceeServiceId.getBytes();
     } else {
       version = 1;
-      Log.e(TAG, introductionRecipientResolved.requireE164());
+      Log.i(TAG, "using " + introductionRecipientResolved.requireE164());
       introductionRecipientFingerprintId = introductionRecipientResolved.requireE164().getBytes();
       introduceeFingerprintId = introduceeE164.getBytes();
     }

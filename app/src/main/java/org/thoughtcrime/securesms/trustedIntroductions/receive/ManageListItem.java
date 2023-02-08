@@ -212,18 +212,12 @@ public class ManageListItem extends ConstraintLayout {
         toggleSwitch.setVisibility(GONE);
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_conflicting));
         break;
-      case STALE_ACCEPTED:
+      case STALE_ACCEPTED: // Keep the visible state of the switch in these cases
+      case STALE_REJECTED:
         toggleSwitch.setChecked(true);
         switchLabel.setText(R.string.ManageIntroductionsListItem__Stale);
         toggleSwitch.setClickable(false);
         toggleSwitch.setVisibility(VISIBLE);
-        this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_stale));
-        break;
-      case STALE_REJECTED:
-        toggleSwitch.setChecked(false);
-        switchLabel.setText(R.string.ManageIntroductionsListItem__Stale);
-        toggleSwitch.setClickable(false);
-        toggleSwitch.setVisibility(GONE);
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_stale));
         break;
       case STALE_PENDING:
