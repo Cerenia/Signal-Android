@@ -188,48 +188,56 @@ public class ManageListItem extends ConstraintLayout {
         switchLabel.setText(R.string.ManageIntroductionsListItem__Pending);
         toggleSwitch.setChecked(false);
         toggleSwitch.setClickable(true);
+        toggleSwitch.setVisibility(VISIBLE);
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_default));
         break;
       case ACCEPTED:
         switchLabel.setText(R.string.ManageIntroductionsListItem__Accepted);
         toggleSwitch.setChecked(true);
         toggleSwitch.setClickable(true);
+        toggleSwitch.setVisibility(VISIBLE);
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_default));
         break;
       case REJECTED:
         switchLabel.setText(R.string.ManageIntroductionsListItem__Rejected);
         toggleSwitch.setChecked(false);
         toggleSwitch.setClickable(true);
+        toggleSwitch.setVisibility(VISIBLE);
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_default));
         break;
       case CONFLICTING:
         switchLabel.setText(R.string.ManageIntroductionsListItem__Conflicting);
         toggleSwitch.setChecked(false);
         toggleSwitch.setClickable(false);
+        toggleSwitch.setVisibility(GONE);
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_conflicting));
         break;
       case STALE_ACCEPTED:
         toggleSwitch.setChecked(true);
         switchLabel.setText(R.string.ManageIntroductionsListItem__Stale);
         toggleSwitch.setClickable(false);
+        toggleSwitch.setVisibility(VISIBLE);
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_stale));
         break;
       case STALE_REJECTED:
         toggleSwitch.setChecked(false);
         switchLabel.setText(R.string.ManageIntroductionsListItem__Stale);
         toggleSwitch.setClickable(false);
+        toggleSwitch.setVisibility(GONE);
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_stale));
         break;
       case STALE_PENDING:
         toggleSwitch.setChecked(false);
         switchLabel.setText(R.string.ManageIntroductionsListItem__Stale);
         toggleSwitch.setClickable(false);
+        toggleSwitch.setVisibility(GONE);
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_stale));
         break;
       case STALE_CONFLICTING:
         toggleSwitch.setChecked(false);
         switchLabel.setText(R.string.ManageIntroductionsListItem__Stale);
         toggleSwitch.setClickable(false);
+        toggleSwitch.setVisibility(GONE);
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_stale_conflicting));
         break;
     }
