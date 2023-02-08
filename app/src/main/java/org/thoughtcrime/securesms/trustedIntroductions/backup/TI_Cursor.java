@@ -42,11 +42,11 @@ public class TI_Cursor implements Cursor {
       Preconditions.checkArgument(cursor.getColumnIndex(t) > -1);
     }
     cursor_TI = cursor;
-    initializeMaps(cursor);
+    initializeMap(cursor);
     convertVanilla(cursor_TI);
   }
 
-  private void initializeMaps(Cursor cursor){
+  private void initializeMap(Cursor cursor){
     idx_to_key = new HashMap<>();
     for (String t: types) {
       Integer idx = cursor.getColumnIndex(t);
@@ -59,7 +59,7 @@ public class TI_Cursor implements Cursor {
     Preconditions.checkArgument((idx_to_key != null) &&
                                 (idx_to_key.size()) > 0);
     values = new ArrayList<>();
-    cursor.moveToFirst();
+    moveToFirst();
     while(!cursor.isAfterLast()){
       ArrayList<Object> v = new ArrayList<>(types.size());
       for (String t: types) {
@@ -68,9 +68,9 @@ public class TI_Cursor implements Cursor {
         if(t.equals(IdentityTable.VERIFIED)){
           v.set(idx, IdentityTable.VerifiedStatus.toVanilla(cursor.getInt(idx)));
         } else if(type == Cursor.FIELD_TYPE_INTEGER){ // We have Strings and Integers in the IdentityTable that do not need to be mapped
-          v.set(idx, cursor.getInt(idx));
-        } else if(type == Cursor.FIELD_TYPE_STRING){
-          v.set(idx, cursor.getString(idx));
+          v.set(idx, getInt(idx));
+        } else if(type == Cursor.FIELD_TYPE_STRING) {
+          v.set(idx, getString(idx));
         } else if(type == Cursor.FIELD_TYPE_NULL){
           v.set(idx, null);
         } else {
@@ -83,167 +83,174 @@ public class TI_Cursor implements Cursor {
     return this;
   }
 
+  private ArrayList<Object> getCurrent(){
+    return values.get(cursor_TI.getPosition());
+  }
+
   @Override public int getCount() {
-    return 0;
+    return cursor_TI.getCount();
   }
 
   @Override public int getPosition() {
-    return 0;
+    return cursor_TI.getPosition();
   }
 
   @Override public boolean move(int offset) {
-    return false;
+    return cursor_TI.move(offset);
   }
 
   @Override public boolean moveToPosition(int position) {
-    return false;
+    return cursor_TI.moveToPosition(position);
   }
 
   @Override public boolean moveToFirst() {
-    return false;
+    return cursor_TI.moveToFirst();
   }
 
   @Override public boolean moveToLast() {
-    return false;
+    return cursor_TI.moveToLast();
   }
 
   @Override public boolean moveToNext() {
-    return false;
+    return cursor_TI.moveToNext();
   }
 
   @Override public boolean moveToPrevious() {
-    return false;
+    return cursor_TI.moveToPrevious();
   }
 
   @Override public boolean isFirst() {
-    return false;
+    return cursor_TI.isFirst();
   }
 
   @Override public boolean isLast() {
-    return false;
+    return cursor_TI.isLast();
   }
 
   @Override public boolean isBeforeFirst() {
-    return false;
+    return cursor_TI.isBeforeFirst();
   }
 
   @Override public boolean isAfterLast() {
-    return false;
+    return cursor_TI.isAfterLast();
   }
 
   @Override public int getColumnIndex(String columnName) {
-    return 0;
+    return cursor_TI.getColumnIndex(columnName);
   }
 
   @Override public int getColumnIndexOrThrow(String columnName) throws IllegalArgumentException {
-    return 0;
+    return cursor_TI.getColumnIndexOrThrow(columnName);
   }
 
   @Override public String getColumnName(int columnIndex) {
-    return null;
+    return cursor_TI.getColumnName(columnIndex);
   }
 
   @Override public String[] getColumnNames() {
-    return new String[0];
+    return cursor_TI.getColumnNames();
   }
 
   @Override public int getColumnCount() {
-    return 0;
+    return cursor_TI.getColumnCount();
   }
 
   @Override public byte[] getBlob(int columnIndex) {
-    return new byte[0];
+    return (byte[])getCurrent().get(columnIndex);
   }
 
   @Override public String getString(int columnIndex) {
-    return null;
+    return (String)getCurrent().get(columnIndex);
   }
 
   @Override public void copyStringToBuffer(int columnIndex, CharArrayBuffer buffer) {
-
+    //cursor_TI.copyStringToBuffer(columnIndex, buffer); TODO
   }
 
   @Override public short getShort(int columnIndex) {
-    return 0;
+    return (short)getCurrent().get(columnIndex);
   }
 
   @Override public int getInt(int columnIndex) {
-    return 0;
+    return (int)getCurrent().get(columnIndex);
   }
 
   @Override public long getLong(int columnIndex) {
-    return 0;
+    return (long)getCurrent().get(columnIndex);
   }
 
   @Override public float getFloat(int columnIndex) {
-    return 0;
+    return (float)getCurrent().get(columnIndex);
   }
 
   @Override public double getDouble(int columnIndex) {
-    return 0;
+    return (double)getCurrent().get(columnIndex);
   }
 
   @Override public int getType(int columnIndex) {
-    return 0;
+    return cursor_TI.getType(columnIndex);
   }
 
   @Override public boolean isNull(int columnIndex) {
-    return false;
+    return getCurrent().get(columnIndex) == null;
   }
 
   @Override public void deactivate() {
-
+    // TODO: Meep! this currently does not do what its supposed to... may need to add a check in all the getters
+    cursor_TI.deactivate();
   }
 
   @Override public boolean requery() {
-    return false;
+    boolean res = cursor_TI.requery();
+    convertVanilla(cursor_TI);
+    return res;
   }
 
   @Override public void close() {
-
+    cursor_TI.close();
   }
 
   @Override public boolean isClosed() {
-    return false;
+    return cursor_TI.isClosed();
   }
 
   @Override public void registerContentObserver(ContentObserver observer) {
-
+    // TODO
   }
 
   @Override public void unregisterContentObserver(ContentObserver observer) {
-
+    // TODO
   }
 
   @Override public void registerDataSetObserver(DataSetObserver observer) {
-
+    // TODO
   }
 
   @Override public void unregisterDataSetObserver(DataSetObserver observer) {
-
+    // TODO
   }
 
   @Override public void setNotificationUri(ContentResolver cr, Uri uri) {
-
+    // TODO
   }
 
   @Override public Uri getNotificationUri() {
-    return null;
+    return null; // TODO
   }
 
   @Override public boolean getWantsAllOnMoveCalls() {
-    return false;
+    return false; // TODO
   }
 
   @Override public void setExtras(Bundle extras) {
-
+    // pass
   }
 
   @Override public Bundle getExtras() {
-    return null;
+    return null; // TODO
   }
 
   @Override public Bundle respond(Bundle extras) {
-    return null;
+    return null; // TODO
   }
 }
