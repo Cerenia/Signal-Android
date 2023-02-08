@@ -387,7 +387,7 @@ public class FullBackupExporter extends FullBackupBase {
     boolean isReservedTable       = table.startsWith("sqlite_");
     boolean isMmsFtsSecretTable   = !table.equals(SearchTable.FTS_TABLE_NAME) && table.startsWith(SearchTable.FTS_TABLE_NAME);
     boolean isEmojiFtsSecretTable = !table.equals(EmojiSearchTable.TABLE_NAME) && table.startsWith(EmojiSearchTable.TABLE_NAME);
-    boolean isTrustedIntroductionsDatabase = !table.equals(TrustedIntroductionsDatabase.TABLE_NAME);
+    boolean isTrustedIntroductionsDatabase = table.equals(TrustedIntroductionsDatabase.TABLE_NAME);
 
     return !isReservedTable &&
            !isMmsFtsSecretTable &&
