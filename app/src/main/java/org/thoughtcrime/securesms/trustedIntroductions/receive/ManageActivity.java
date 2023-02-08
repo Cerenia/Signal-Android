@@ -134,6 +134,9 @@ public class ManageActivity extends PassphraseRequiredActivity implements Manage
     fragmentTransaction.add(R.id.trusted_introduction_manage_fragment, fragment, t.toString());
     fragmentTransaction.commit();
     contactFilterView.setOnFilterChangedListener(fragment);
+    // clearing to avoid trailing text that does not filter
+    contactFilterView.clear();
+
   }
 
   /**
