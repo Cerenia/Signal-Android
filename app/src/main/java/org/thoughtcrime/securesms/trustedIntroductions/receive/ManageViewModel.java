@@ -157,7 +157,7 @@ public class ManageViewModel extends ViewModel {
       // only reassign if current was not deleted
       modifiedIntroduction = current.first;
       if (!(type == ManageActivity.IntroductionScreenType.RECIPIENT_SPECIFIC && modifiedIntroduction.getIntroducerId() == RecipientId.UNKNOWN)){ // recipient specific forgot introducer
-        all.add(current);
+        all.add(i, current);
       }
     } // else don't add back to list
 
