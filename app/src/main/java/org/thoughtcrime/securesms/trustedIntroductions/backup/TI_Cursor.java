@@ -32,11 +32,8 @@ public class TI_Cursor implements Cursor {
   private ArrayList<ArrayList<Object>> values;
   private final ArrayList<String> types = IdentityTable.Companion.getAllDatabaseKeys();
 
-  private TI_Cursor(){
+  public TI_Cursor(Cursor cursor){
     values = new ArrayList<>();
-  }
-
-  TI_Cursor(Cursor cursor){
     // check that the cursor points to identityTable entries
     for (String t: types){
       Preconditions.checkArgument(cursor.getColumnIndex(t) > -1);

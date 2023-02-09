@@ -59,6 +59,7 @@ import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.keyvalue.KeyValueDataSet;
 import org.thoughtcrime.securesms.keyvalue.SignalStore;
 import org.thoughtcrime.securesms.profiles.AvatarHelper;
+import org.thoughtcrime.securesms.trustedIntroductions.backup.TI_Cursor;
 import org.thoughtcrime.securesms.util.TextSecurePreferences;
 import org.thoughtcrime.securesms.util.Util;
 
@@ -408,8 +409,15 @@ public class FullBackupExporter extends FullBackupBase {
     Log.d(TAG, "Exporting table: " + table);
 
     String template = "INSERT INTO " + table + " VALUES ";
+    // Cursor had to be moved out of try(...) in order to be reassignable
+    // closing it explicitly in finally block now
+    Cursor cursor = null;
 
-    try (Cursor cursor = input.rawQuery("SELECT * FROM " + table, null)) {
+    try {
+       cursor = input.rawQuery("SELECT * FROM " + table, null);
+      if(table.equals(TrustedIntroductionsDatabase.TABLE_NAME)){
+        cursor = new TI_Cursor(cursor);
+      }
       while (cursor != null && cursor.moveToNext()) {
         throwIfCanceled(cancellationSignal);
 
@@ -452,6 +460,10 @@ public class FullBackupExporter extends FullBackupBase {
             count = postProcess.postProcess(cursor, count);
           }
         }
+      }
+    } finally {
+      if(cursor != null){
+        cursor.close();
       }
     }
 
