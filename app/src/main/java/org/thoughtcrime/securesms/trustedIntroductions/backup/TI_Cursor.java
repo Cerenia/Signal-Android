@@ -196,18 +196,21 @@ public class TI_Cursor implements Cursor {
   }
 
   @Override public void deactivate() {
-    // TODO: Meep! this currently does not do what its supposed to... may need to add a check in all the getters
-    cursor_TI.deactivate();
+    throw new AssertionError(String.format("Method %s is not implemented for TI_Cursor", new Throwable()
+        .getStackTrace()[0]
+        .getMethodName()));
   }
 
   @Override public boolean requery() {
-    boolean res = cursor_TI.requery();
-    convertVanilla(cursor_TI);
-    return res;
+    throw new AssertionError(String.format("Method %s is not implemented for TI_Cursor", new Throwable()
+        .getStackTrace()[0]
+        .getMethodName()));
   }
 
   @Override public void close() {
-    cursor_TI.close();
+    throw new AssertionError(String.format("Method %s is not implemented for TI_Cursor", new Throwable()
+        .getStackTrace()[0]
+        .getMethodName()));
   }
 
   @Override public boolean isClosed() {
@@ -215,42 +218,62 @@ public class TI_Cursor implements Cursor {
   }
 
   @Override public void registerContentObserver(ContentObserver observer) {
-    // TODO
+    throw new AssertionError(String.format("Method %s is not implemented for TI_Cursor", new Throwable()
+        .getStackTrace()[0]
+        .getMethodName()));
   }
 
   @Override public void unregisterContentObserver(ContentObserver observer) {
-    // TODO
+    throw new AssertionError(String.format("Method %s is not implemented for TI_Cursor", new Throwable()
+        .getStackTrace()[0]
+        .getMethodName()));
   }
 
   @Override public void registerDataSetObserver(DataSetObserver observer) {
-    // TODO
+    throw new AssertionError(String.format("Method %s is not implemented for TI_Cursor", new Throwable()
+        .getStackTrace()[0]
+        .getMethodName()));
   }
 
   @Override public void unregisterDataSetObserver(DataSetObserver observer) {
-    // TODO
+    throw new AssertionError(String.format("Method %s is not implemented for TI_Cursor", new Throwable()
+        .getStackTrace()[0]
+        .getMethodName()));
   }
 
   @Override public void setNotificationUri(ContentResolver cr, Uri uri) {
-    // TODO
+    throw new AssertionError(String.format("Method %s is not implemented for TI_Cursor", new Throwable()
+        .getStackTrace()[0]
+        .getMethodName()));
   }
 
   @Override public Uri getNotificationUri() {
-    return null; // TODO
+    throw new AssertionError(String.format("Method %s is not implemented for TI_Cursor", new Throwable()
+        .getStackTrace()[0]
+        .getMethodName()));
   }
 
   @Override public boolean getWantsAllOnMoveCalls() {
-    return false; // TODO
+    throw new AssertionError(String.format("Method %s is not implemented for TI_Cursor", new Throwable()
+        .getStackTrace()[0]
+        .getMethodName()));
   }
 
   @Override public void setExtras(Bundle extras) {
-    // pass
+    throw new AssertionError(String.format("Method %s is not implemented for TI_Cursor", new Throwable()
+        .getStackTrace()[0]
+        .getMethodName()));
   }
 
   @Override public Bundle getExtras() {
-    return null; // TODO
+    throw new AssertionError(String.format("Method %s is not implemented for TI_Cursor", new Throwable()
+        .getStackTrace()[0]
+        .getMethodName()));
   }
 
   @Override public Bundle respond(Bundle extras) {
-    return null; // TODO
+    throw new AssertionError(String.format("Method %s is not implemented for TI_Cursor", new Throwable()
+        .getStackTrace()[0]
+        .getMethodName()));
   }
 }
