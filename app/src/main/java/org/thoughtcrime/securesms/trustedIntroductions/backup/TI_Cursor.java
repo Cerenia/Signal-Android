@@ -15,6 +15,7 @@ import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
 import org.whispersystems.signalservice.api.util.Preconditions;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -58,7 +59,7 @@ public class TI_Cursor implements Cursor {
     values = new ArrayList<>();
     moveToFirst();
     while(!cursor.isAfterLast()){
-      ArrayList<Object> v = new ArrayList<>(types.size());
+      ArrayList<Object> v = new ArrayList<>(Arrays.asList(null, null, null, null, null, null));
       for (String t: types) {
         int idx = cursor.getColumnIndex(t);
         int type = cursor.getType(idx);
