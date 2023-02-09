@@ -59,7 +59,7 @@ public class TI_Cursor implements Cursor {
     values = new ArrayList<>();
     moveToFirst();
     while(!cursor.isAfterLast()){
-      ArrayList<Object> v = new ArrayList<>(Arrays.asList(null, null, null, null, null, null));
+      ArrayList<Object> v = new ArrayList<>(Arrays.asList(null, null, null, null, null, null, null));
       for (String t: types) {
         int idx = cursor.getColumnIndex(t);
         int type = cursor.getType(idx);
