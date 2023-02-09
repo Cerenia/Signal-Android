@@ -6,6 +6,7 @@ import android.database.CharArrayBuffer;
 import android.database.ContentObserver;
 import android.database.Cursor;
 import android.database.DataSetObserver;
+import android.database.sqlite.SQLiteException;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -22,6 +23,7 @@ import java.util.Map;
 /**
  * Cursor wrapper that modifies any Identity Verification state in Identity Database to Vanilla Signal States (VERIFIED, UNVERIFIED, DEFAULT)
  * // PRE: can only be constructed for cursors pointing to the "identities" table
+ * This implies that the cursor can only hold fields of type INTEGER, STRING, and NULL (Trying to access Blobs will result in an exception)
  */
 public class TI_Cursor implements Cursor {
 
@@ -154,36 +156,82 @@ public class TI_Cursor implements Cursor {
     return cursor_TI.getColumnCount();
   }
 
+  /**
+   * All the expected getters are modelled after this class:
+   * https://android.googlesource.com/platform/frameworks/base/+/master/core/java/android/database/CursorWindow.java
+   */
+
   @Override public byte[] getBlob(int columnIndex) {
-    return (byte[])getCurrent().get(columnIndex);
+    throw new AssertionError(String.format(TAG + "Method %s is not implemented for TI_Cursor", new Throwable()
+        .getStackTrace()[0]
+        .getMethodName()));
   }
 
-  @Override public String getString(int columnIndex) {
-    return (String)getCurrent().get(columnIndex);
+  @SuppressLint("DefaultLocale") @Override public String getString(int columnIndex) {
+    switch(cursor_TI.getType(columnIndex)){
+      case Cursor.FIELD_TYPE_NULL:
+        return "null";
+      case Cursor.FIELD_TYPE_INTEGER:
+        return String.format("%d", (int)getCurrent().get(columnIndex));
+      case Cursor.FIELD_TYPE_FLOAT:
+        return String.format("%f", (float)getCurrent().get(columnIndex));
+      case Cursor.FIELD_TYPE_STRING:
+        return (String)getCurrent().get(columnIndex);
+      case Cursor.FIELD_TYPE_BLOB:
+        throw new SQLiteException(TAG + "Cannot cast BLOB type to String");
+      default:
+        throw new SQLiteException(TAG + "Error casting to String");
+    }
   }
 
   @Override public void copyStringToBuffer(int columnIndex, CharArrayBuffer buffer) {
-    //cursor_TI.copyStringToBuffer(columnIndex, buffer); TODO
+    cursor_TI.copyStringToBuffer(columnIndex, buffer);
   }
 
   @Override public short getShort(int columnIndex) {
-    return (short)getCurrent().get(columnIndex);
+    return (short)getLong(columnIndex);
   }
 
   @Override public int getInt(int columnIndex) {
-    return (int)getCurrent().get(columnIndex);
+    return (int)getLong(columnIndex);
   }
 
   @Override public long getLong(int columnIndex) {
-    return (long)getCurrent().get(columnIndex);
+    switch(cursor_TI.getType(columnIndex)){
+      case Cursor.FIELD_TYPE_NULL:
+        return 0L;
+      case Cursor.FIELD_TYPE_STRING:
+        return Long.parseLong((String)getCurrent().get(columnIndex));
+      case Cursor.FIELD_TYPE_INTEGER:
+        return (long)getCurrent().get(columnIndex);
+      case Cursor.FIELD_TYPE_FLOAT:
+        return (long)(float)getCurrent().get(columnIndex);
+      case Cursor.FIELD_TYPE_BLOB:
+        throw new SQLiteException(TAG + "Cannot cast BLOB type to long");
+      default:
+        throw new SQLiteException(TAG + "Error casting to long");
+    }
   }
 
   @Override public float getFloat(int columnIndex) {
-    return (float)getCurrent().get(columnIndex);
+    return (float)getDouble(columnIndex);
   }
 
   @Override public double getDouble(int columnIndex) {
-    return (double)getCurrent().get(columnIndex);
+    switch(cursor_TI.getType(columnIndex)){
+      case Cursor.FIELD_TYPE_NULL:
+        return 0.0;
+      case Cursor.FIELD_TYPE_STRING:
+        return Double.parseDouble((String)getCurrent().get(columnIndex));
+      case Cursor.FIELD_TYPE_INTEGER:
+        return (double)(int)getCurrent().get(columnIndex);
+      case Cursor.FIELD_TYPE_FLOAT:
+        return (double)getCurrent().get(columnIndex);
+      case Cursor.FIELD_TYPE_BLOB:
+        throw new SQLiteException(TAG + "Cannot cast BLOB type to double");
+      default:
+        throw new SQLiteException(TAG + "Error casting to double");
+    }
   }
 
   @Override public int getType(int columnIndex) {
@@ -195,21 +243,19 @@ public class TI_Cursor implements Cursor {
   }
 
   @Override public void deactivate() {
-    throw new AssertionError(String.format("Method %s is not implemented for TI_Cursor", new Throwable()
+    throw new AssertionError(String.format(TAG + "Method %s is not implemented for TI_Cursor", new Throwable()
         .getStackTrace()[0]
         .getMethodName()));
   }
 
   @Override public boolean requery() {
-    throw new AssertionError(String.format("Method %s is not implemented for TI_Cursor", new Throwable()
+    throw new AssertionError(String.format(TAG + "Method %s is not implemented for TI_Cursor", new Throwable()
         .getStackTrace()[0]
         .getMethodName()));
   }
 
   @Override public void close() {
-    throw new AssertionError(String.format("Method %s is not implemented for TI_Cursor", new Throwable()
-        .getStackTrace()[0]
-        .getMethodName()));
+    cursor_TI.close();
   }
 
   @Override public boolean isClosed() {
@@ -217,61 +263,61 @@ public class TI_Cursor implements Cursor {
   }
 
   @Override public void registerContentObserver(ContentObserver observer) {
-    throw new AssertionError(String.format("Method %s is not implemented for TI_Cursor", new Throwable()
+    throw new AssertionError(String.format(TAG + "Method %s is not implemented for TI_Cursor", new Throwable()
         .getStackTrace()[0]
         .getMethodName()));
   }
 
   @Override public void unregisterContentObserver(ContentObserver observer) {
-    throw new AssertionError(String.format("Method %s is not implemented for TI_Cursor", new Throwable()
+    throw new AssertionError(String.format(TAG + "Method %s is not implemented for TI_Cursor", new Throwable()
         .getStackTrace()[0]
         .getMethodName()));
   }
 
   @Override public void registerDataSetObserver(DataSetObserver observer) {
-    throw new AssertionError(String.format("Method %s is not implemented for TI_Cursor", new Throwable()
+    throw new AssertionError(String.format(TAG + "Method %s is not implemented for TI_Cursor", new Throwable()
         .getStackTrace()[0]
         .getMethodName()));
   }
 
   @Override public void unregisterDataSetObserver(DataSetObserver observer) {
-    throw new AssertionError(String.format("Method %s is not implemented for TI_Cursor", new Throwable()
+    throw new AssertionError(String.format(TAG + "Method %s is not implemented for TI_Cursor", new Throwable()
         .getStackTrace()[0]
         .getMethodName()));
   }
 
   @Override public void setNotificationUri(ContentResolver cr, Uri uri) {
-    throw new AssertionError(String.format("Method %s is not implemented for TI_Cursor", new Throwable()
+    throw new AssertionError(String.format(TAG + "Method %s is not implemented for TI_Cursor", new Throwable()
         .getStackTrace()[0]
         .getMethodName()));
   }
 
   @Override public Uri getNotificationUri() {
-    throw new AssertionError(String.format("Method %s is not implemented for TI_Cursor", new Throwable()
+    throw new AssertionError(String.format(TAG + "Method %s is not implemented for TI_Cursor", new Throwable()
         .getStackTrace()[0]
         .getMethodName()));
   }
 
   @Override public boolean getWantsAllOnMoveCalls() {
-    throw new AssertionError(String.format("Method %s is not implemented for TI_Cursor", new Throwable()
+    throw new AssertionError(String.format(TAG + "Method %s is not implemented for TI_Cursor", new Throwable()
         .getStackTrace()[0]
         .getMethodName()));
   }
 
   @Override public void setExtras(Bundle extras) {
-    throw new AssertionError(String.format("Method %s is not implemented for TI_Cursor", new Throwable()
+    throw new AssertionError(String.format(TAG + "Method %s is not implemented for TI_Cursor", new Throwable()
         .getStackTrace()[0]
         .getMethodName()));
   }
 
   @Override public Bundle getExtras() {
-    throw new AssertionError(String.format("Method %s is not implemented for TI_Cursor", new Throwable()
+    throw new AssertionError(String.format(TAG + "Method %s is not implemented for TI_Cursor", new Throwable()
         .getStackTrace()[0]
         .getMethodName()));
   }
 
   @Override public Bundle respond(Bundle extras) {
-    throw new AssertionError(String.format("Method %s is not implemented for TI_Cursor", new Throwable()
+    throw new AssertionError(String.format(TAG + "Method %s is not implemented for TI_Cursor", new Throwable()
         .getStackTrace()[0]
         .getMethodName()));
   }
