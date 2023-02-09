@@ -40,6 +40,7 @@ import org.thoughtcrime.securesms.crypto.ModernDecryptingPartInputStream;
 import org.thoughtcrime.securesms.database.AttachmentTable;
 import org.thoughtcrime.securesms.database.EmojiSearchTable;
 import org.thoughtcrime.securesms.database.GroupReceiptTable;
+import org.thoughtcrime.securesms.database.IdentityTable;
 import org.thoughtcrime.securesms.database.KeyValueDatabase;
 import org.thoughtcrime.securesms.database.MentionTable;
 import org.thoughtcrime.securesms.database.MessageTable;
@@ -407,7 +408,7 @@ public class FullBackupExporter extends FullBackupBase {
 
     try {
        cursor = input.rawQuery("SELECT * FROM " + table, null);
-      if(table.equals(TrustedIntroductionsDatabase.TABLE_NAME)){
+      if(table.equals(IdentityTable.TABLE_NAME)){
         cursor = new TI_Cursor(cursor);
       }
       while (cursor != null && cursor.moveToNext()) {
