@@ -86,6 +86,7 @@ class IdentityTable internal constructor(context: Context?, databaseHelper: Sign
       res.add(FIRST_USE)
       res.add(VERIFIED)
       res.add(NONBLOCKING_APPROVAL)
+      res.add(TIMESTAMP)
       return res
     }
   }
