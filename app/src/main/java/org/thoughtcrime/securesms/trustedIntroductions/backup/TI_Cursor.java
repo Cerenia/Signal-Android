@@ -203,13 +203,13 @@ public class TI_Cursor implements Cursor {
       case Cursor.FIELD_TYPE_STRING:
         return Long.parseLong((String)getCurrent().get(columnIndex));
       case Cursor.FIELD_TYPE_INTEGER:
-        return (long)getCurrent().get(columnIndex);
+        return (long)(int) getCurrent().get(columnIndex);
       case Cursor.FIELD_TYPE_FLOAT:
         return (long)(float)getCurrent().get(columnIndex);
       case Cursor.FIELD_TYPE_BLOB:
         throw new SQLiteException(TAG + "Cannot cast BLOB type to long");
       default:
-        throw new SQLiteException(TAG + "Error casting to long");
+        throw new SQLiteException(TAG + " Error casting to long");
     }
   }
 
