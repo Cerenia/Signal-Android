@@ -65,9 +65,9 @@ public class TI_Cursor implements Cursor {
         if(t.equals(IdentityTable.VERIFIED)){
           v.set(idx, IdentityTable.VerifiedStatus.toVanilla(cursor.getInt(idx)));
         } else if(type == Cursor.FIELD_TYPE_INTEGER){ // We have Strings and Integers in the IdentityTable that do not need to be mapped
-          v.set(idx, getInt(idx));
+          v.set(idx, cursor.getInt(idx));
         } else if(type == Cursor.FIELD_TYPE_STRING) {
-          v.set(idx, getString(idx));
+          v.set(idx, cursor.getString(idx));
         } else if(type == Cursor.FIELD_TYPE_NULL){
           v.set(idx, null);
         } else {
@@ -77,6 +77,7 @@ public class TI_Cursor implements Cursor {
       values.add(v);
       cursor.moveToNext();
     }
+    cursor.moveToFirst();
     return this;
   }
 
