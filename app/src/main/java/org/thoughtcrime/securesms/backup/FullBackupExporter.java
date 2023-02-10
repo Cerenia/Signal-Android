@@ -417,7 +417,6 @@ public class FullBackupExporter extends FullBackupBase {
     try {
        cursor = input.rawQuery("SELECT * FROM " + table, null);
       if(table.equals(IdentityTable.TABLE_NAME)){
-        //return 0;
         cursor = new TI_Cursor(cursor);
       }
       while (cursor != null && cursor.moveToNext()) {
