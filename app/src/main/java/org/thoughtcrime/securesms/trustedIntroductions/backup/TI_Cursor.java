@@ -10,6 +10,8 @@ import android.database.sqlite.SQLiteException;
 import android.net.Uri;
 import android.os.Bundle;
 
+import com.google.protobuf.ByteString;
+
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.database.IdentityTable;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
@@ -67,12 +69,16 @@ public class TI_Cursor implements Cursor {
         int type = cursor.getType(idx);
         if(t.equals(IdentityTable.VERIFIED)){
           v.set(idx, IdentityTable.VerifiedStatus.toVanilla(cursor.getInt(idx)));
-        } else if(type == Cursor.FIELD_TYPE_INTEGER){ // We have Strings and Integers in the IdentityTable that do not need to be mapped
-          v.set(idx, cursor.getInt(idx));
+        } else if(type == Cursor.FIELD_TYPE_INTEGER){
+          v.set(idx, cursor.getLong(idx));
         } else if(type == Cursor.FIELD_TYPE_STRING) {
           v.set(idx, cursor.getString(idx));
         } else if(type == Cursor.FIELD_TYPE_NULL){
           v.set(idx, null);
+        } else if(type == Cursor.FIELD_TYPE_FLOAT){
+          v.set(idx, cursor.getDouble(idx));
+        } else if(type == Cursor.FIELD_TYPE_BLOB){
+          v.set(idx, ByteString.copyFrom(cursor.getBlob(idx)));
         } else {
           throw new AssertionError(TAG + "Unexpected field type: " + type);
         }
@@ -203,7 +209,12 @@ public class TI_Cursor implements Cursor {
       case Cursor.FIELD_TYPE_STRING:
         return Long.parseLong((String)getCurrent().get(columnIndex));
       case Cursor.FIELD_TYPE_INTEGER:
-        return (long)(int) getCurrent().get(columnIndex);
+        Object current = getCurrent().get(columnIndex);
+        if (current instanceof Long){
+          return (Long)current;
+        } else if(current instanceof Integer){
+          return Long.valueOf((Integer)current);
+        }
       case Cursor.FIELD_TYPE_FLOAT:
         return (long)(float)getCurrent().get(columnIndex);
       case Cursor.FIELD_TYPE_BLOB:
@@ -226,7 +237,7 @@ public class TI_Cursor implements Cursor {
       case Cursor.FIELD_TYPE_INTEGER:
         return (double)(int)getCurrent().get(columnIndex);
       case Cursor.FIELD_TYPE_FLOAT:
-        return (double)getCurrent().get(columnIndex);
+        return (double)(int)getCurrent().get(columnIndex);
       case Cursor.FIELD_TYPE_BLOB:
         throw new SQLiteException(TAG + "Cannot cast BLOB type to double");
       default:
