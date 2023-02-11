@@ -176,7 +176,7 @@ public class FullBackupExporter extends FullBackupBase {
       outputStream.writeDatabaseVersion(input.getVersion());
       count++;
 
-      List<String> tables = exportSchema(input, outputStream);
+      List<String> tables = exportSchema(input, outputStream, isVanilla);
       count += tables.size() * TABLE_RECORD_COUNT_MULTIPLIER;
 
       final long estimatedCount = calculateCount(context, input, tables);
@@ -284,10 +284,10 @@ public class FullBackupExporter extends FullBackupBase {
     }
   }
 
-  private static List<String> exportSchema(@NonNull SQLiteDatabase input, @NonNull BackupFrameOutputStream outputStream)
+  private static List<String> exportSchema(@NonNull SQLiteDatabase input, @NonNull BackupFrameOutputStream outputStream, boolean isVanilla)
       throws IOException
   {
-    List<String> tablesInOrder = getTablesToExportInOrder(input);
+    List<String> tablesInOrder = getTablesToExportInOrder(input, isVanilla);
 
     Log.i(TAG, "Exporting tables in the following order: " + tablesInOrder);
 
@@ -330,10 +330,10 @@ public class FullBackupExporter extends FullBackupBase {
    * Returns the list of tables we should export, in the order they should be exported in.
    * The order is chosen to ensure we won't violate any foreign key constraints when we import them.
    */
-  private static List<String> getTablesToExportInOrder(@NonNull SQLiteDatabase input) {
+  private static List<String> getTablesToExportInOrder(@NonNull SQLiteDatabase input, boolean isVanilla) {
     List<String> tables = SqlUtil.getAllTables(input)
                                  .stream()
-                                 .filter(FullBackupExporter::isTableAllowed)
+                                 .filter(new TableFilter(isVanilla)::isTableAllowed)
                                  .sorted()
                                  .collect(Collectors.toList());
 
@@ -385,20 +385,37 @@ public class FullBackupExporter extends FullBackupBase {
     outputOrder.add(current);
   }
 
-  private static boolean isTableAllowed(@Nullable String table) {
-    if (table == null) {
-      return true;
+  private static class TableFilter {
+    private final boolean isVanilla;
+
+    TableFilter(boolean isVanilla){
+      this.isVanilla = isVanilla;
     }
 
+    boolean isTableAllowed(@Nullable String table) {
+      if (table == null) {
+        return true;
+      }
+
+      if (table.equals(TrustedIntroductionsDatabase.TABLE_NAME)){
+        return !this.isVanilla;
+      }
+      
     boolean isReservedTable       = table.startsWith("sqlite_");
     boolean isMmsFtsSecretTable   = !table.equals(SearchTable.FTS_TABLE_NAME) && table.startsWith(SearchTable.FTS_TABLE_NAME);
     boolean isEmojiFtsSecretTable = !table.equals(EmojiSearchTable.TABLE_NAME) && table.startsWith(EmojiSearchTable.TABLE_NAME);
-    boolean isTrustedIntroductionsDatabase = table.equals(TrustedIntroductionsDatabase.TABLE_NAME);
+      
 
-    return !isReservedTable &&
-           !isMmsFtsSecretTable &&
-           !isEmojiFtsSecretTable &&
-           !isTrustedIntroductionsDatabase;
+
+      boolean isReservedTable       = table.startsWith("sqlite_");
+      boolean isMmsFtsSecretTable   = !table.equals(SearchTable.MMS_FTS_TABLE_NAME) && table.startsWith(SearchTable.MMS_FTS_TABLE_NAME);
+      boolean isEmojiFtsSecretTable = !table.equals(EmojiSearchTable.TABLE_NAME) && table.startsWith(EmojiSearchTable.TABLE_NAME);
+
+      return !isReservedTable &&
+             !isMmsFtsSecretTable &&
+             !isEmojiFtsSecretTable;
+    }
+
   }
 
   private static int exportTable(@NonNull String table,
