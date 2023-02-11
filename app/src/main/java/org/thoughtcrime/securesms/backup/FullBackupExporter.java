@@ -419,6 +419,7 @@ public class FullBackupExporter extends FullBackupBase {
       if(table.equals(IdentityTable.TABLE_NAME)){
         cursor = new TI_Cursor(cursor);
       }
+
       while (cursor != null && cursor.moveToNext()) {
         throwIfCanceled(cancellationSignal);
 
