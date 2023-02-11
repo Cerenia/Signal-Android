@@ -123,11 +123,12 @@ public class FullBackupExporter extends FullBackupBase {
                             @NonNull SQLiteDatabase input,
                             @NonNull File output,
                             @NonNull String passphrase,
-                            @NonNull BackupCancellationSignal cancellationSignal)
+                            @NonNull BackupCancellationSignal cancellationSignal,
+                                   boolean isVanilla)
       throws IOException
   {
     try (OutputStream outputStream = new FileOutputStream(output)) {
-      return internalExport(context, attachmentSecret, input, outputStream, passphrase, true, cancellationSignal);
+      return internalExport(context, attachmentSecret, input, outputStream, passphrase, true, cancellationSignal, isVanilla);
     }
   }
 
@@ -137,11 +138,12 @@ public class FullBackupExporter extends FullBackupBase {
                             @NonNull SQLiteDatabase input,
                             @NonNull DocumentFile output,
                             @NonNull String passphrase,
-                            @NonNull BackupCancellationSignal cancellationSignal)
+                            @NonNull BackupCancellationSignal cancellationSignal,
+                                   boolean isVanilla)
       throws IOException
   {
     try (OutputStream outputStream = Objects.requireNonNull(context.getContentResolver().openOutputStream(output.getUri()))) {
-      return internalExport(context, attachmentSecret, input, outputStream, passphrase, true, cancellationSignal);
+      return internalExport(context, attachmentSecret, input, outputStream, passphrase, true, cancellationSignal, isVanilla);
     }
   }
 
@@ -152,7 +154,8 @@ public class FullBackupExporter extends FullBackupBase {
                               @NonNull String passphrase)
       throws IOException
   {
-    EventBus.getDefault().post(internalExport(context, attachmentSecret, input, outputStream, passphrase, false, () -> false));
+    // TODO: Assume Vanilla for transfer for now
+    EventBus.getDefault().post(internalExport(context, attachmentSecret, input, outputStream, passphrase, false, () -> false, true));
   }
 
   private static BackupEvent internalExport(@NonNull Context context,
@@ -161,7 +164,8 @@ public class FullBackupExporter extends FullBackupBase {
                                             @NonNull OutputStream fileOutputStream,
                                             @NonNull String passphrase,
                                             boolean closeOutputStream,
-                                            @NonNull BackupCancellationSignal cancellationSignal)
+                                            @NonNull BackupCancellationSignal cancellationSignal,
+                                            boolean isVanilla)
       throws IOException
   {
     BackupFrameOutputStream outputStream          = new BackupFrameOutputStream(fileOutputStream, passphrase);
@@ -183,19 +187,19 @@ public class FullBackupExporter extends FullBackupBase {
       for (String table : tables) {
         throwIfCanceled(cancellationSignal);
         if (table.equals(MessageTable.TABLE_NAME)) {
-          count = exportTable(table, input, outputStream, FullBackupExporter::isNonExpiringMmsMessage, null, count, estimatedCount, cancellationSignal);
+          count = exportTable(table, input, outputStream, FullBackupExporter::isNonExpiringMmsMessage, null, count, estimatedCount, cancellationSignal, isVanilla);
         } else if (table.equals(ReactionTable.TABLE_NAME)) {
-          count = exportTable(table, input, outputStream, cursor -> isForNonExpiringMessage(input, new MessageId(CursorUtil.requireLong(cursor, ReactionTable.MESSAGE_ID))), null, count, estimatedCount, cancellationSignal);
+          count = exportTable(table, input, outputStream, cursor -> isForNonExpiringMessage(input, new MessageId(CursorUtil.requireLong(cursor, ReactionTable.MESSAGE_ID))), null, count, estimatedCount, cancellationSignal, isVanilla);
         } else if (table.equals(MentionTable.TABLE_NAME)) {
-          count = exportTable(table, input, outputStream, cursor -> isForNonExpiringMmsMessage(input, CursorUtil.requireLong(cursor, MentionTable.MESSAGE_ID)), null, count, estimatedCount, cancellationSignal);
+          count = exportTable(table, input, outputStream, cursor -> isForNonExpiringMmsMessage(input, CursorUtil.requireLong(cursor, MentionTable.MESSAGE_ID)), null, count, estimatedCount, cancellationSignal, isVanilla);
         } else if (table.equals(GroupReceiptTable.TABLE_NAME)) {
-          count = exportTable(table, input, outputStream, cursor -> isForNonExpiringMmsMessage(input, cursor.getLong(cursor.getColumnIndexOrThrow(GroupReceiptTable.MMS_ID))), null, count, estimatedCount, cancellationSignal);
+          count = exportTable(table, input, outputStream, cursor -> isForNonExpiringMmsMessage(input, cursor.getLong(cursor.getColumnIndexOrThrow(GroupReceiptTable.MMS_ID))), null, count, estimatedCount, cancellationSignal, isVanilla);
         } else if (table.equals(AttachmentTable.TABLE_NAME)) {
-          count = exportTable(table, input, outputStream, cursor -> isForNonExpiringMmsMessage(input, cursor.getLong(cursor.getColumnIndexOrThrow(AttachmentTable.MMS_ID))), (cursor, innerCount) -> exportAttachment(attachmentSecret, cursor, outputStream, innerCount, estimatedCount), count, estimatedCount, cancellationSignal);
+          count = exportTable(table, input, outputStream, cursor -> isForNonExpiringMmsMessage(input, cursor.getLong(cursor.getColumnIndexOrThrow(AttachmentTable.MMS_ID))), (cursor, innerCount) -> exportAttachment(attachmentSecret, cursor, outputStream, innerCount, estimatedCount), count, estimatedCount, cancellationSignal, isVanilla);
         } else if (table.equals(StickerTable.TABLE_NAME)) {
-          count = exportTable(table, input, outputStream, cursor -> true, (cursor, innerCount) -> exportSticker(attachmentSecret, cursor, outputStream, innerCount, estimatedCount), count, estimatedCount, cancellationSignal);
+          count = exportTable(table, input, outputStream, cursor -> true, (cursor, innerCount) -> exportSticker(attachmentSecret, cursor, outputStream, innerCount, estimatedCount), count, estimatedCount, cancellationSignal, isVanilla);
         } else if (!TABLE_CONTENT_BLOCKLIST.contains(table)) {
-          count = exportTable(table, input, outputStream, null, null, count, estimatedCount, cancellationSignal);
+          count = exportTable(table, input, outputStream, null, null, count, estimatedCount, cancellationSignal, isVanilla);
         }
         stopwatch.split("table::" + table);
       }
@@ -404,7 +408,8 @@ public class FullBackupExporter extends FullBackupBase {
                                  @Nullable PostProcessor postProcess,
                                  int count,
                                  long estimatedCount,
-                                 @NonNull BackupCancellationSignal cancellationSignal)
+                                 @NonNull BackupCancellationSignal cancellationSignal,
+                                 boolean isVanilla)
       throws IOException
   {
     Log.d(TAG, "Exporting table: " + table);
@@ -416,7 +421,7 @@ public class FullBackupExporter extends FullBackupBase {
 
     try {
        cursor = input.rawQuery("SELECT * FROM " + table, null);
-      if(table.equals(IdentityTable.TABLE_NAME)){
+      if(table.equals(IdentityTable.TABLE_NAME) && isVanilla){
         cursor = new TI_Cursor(cursor);
       }
 
