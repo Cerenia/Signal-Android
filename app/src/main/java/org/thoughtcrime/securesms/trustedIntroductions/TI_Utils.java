@@ -146,8 +146,9 @@ public class TI_Utils {
       result.append(segments[i]);
 
       if (i != segments.length - 1) {
-        if (((i + 1) % 4) == 0) result.append('\n');
-        else result.append(' ');
+        //if (((i + 1) % 4) == 0) result.append('\n'); // Not visible in the message anyways..
+        //else
+        result.append(' ');
       }
     }
 
