@@ -32,6 +32,7 @@ import org.thoughtcrime.securesms.database.EmojiSearchTable;
 import org.thoughtcrime.securesms.database.KeyValueDatabase;
 import org.thoughtcrime.securesms.database.SearchTable;
 import org.thoughtcrime.securesms.database.StickerTable;
+import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.keyvalue.KeyValueDataSet;
 import org.thoughtcrime.securesms.keyvalue.SignalStore;
@@ -101,6 +102,11 @@ public class FullBackupImporter extends FullBackupBase {
         else if (frame.avatar != null)     processAvatar(context, db, frame.avatar, inputStream);
         else if (frame.keyValue != null)   processKeyValue(frame.keyValue);
         else                            count--;
+      }
+
+      // Create TI table if necessary
+      if (!ti_tableCreated){
+        db.execSQL(TrustedIntroductionsDatabase.CREATE_TABLE);
       }
 
       db.setTransactionSuccessful();
