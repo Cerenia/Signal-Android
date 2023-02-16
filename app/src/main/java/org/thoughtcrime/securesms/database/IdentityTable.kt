@@ -303,16 +303,16 @@ class IdentityTable internal constructor(context: Context?, databaseHelper: Sign
    *
    */
   enum class VerifiedStatus {
-    DEFAULT, DIRECTLY_VERIFIED, INTRODUCED, DUPLEX_VERIFIED, MANUALLY_VERIFIED, UNVERIFIED;
+    DEFAULT, MANUALLY_VERIFIED, UNVERIFIED, DIRECTLY_VERIFIED, INTRODUCED, DUPLEX_VERIFIED;
 
     fun toInt(): Int {
       return when (this) {
         DEFAULT -> 0
-        DIRECTLY_VERIFIED -> 1
-        INTRODUCED -> 2
-        DUPLEX_VERIFIED -> 3
-        MANUALLY_VERIFIED -> 4
-        UNVERIFIED -> 5
+        MANUALLY_VERIFIED -> 1
+        UNVERIFIED -> 2
+        DIRECTLY_VERIFIED -> 3
+        INTRODUCED -> 4
+        DUPLEX_VERIFIED -> 5
       }
     }
 
@@ -321,11 +321,11 @@ class IdentityTable internal constructor(context: Context?, databaseHelper: Sign
       fun forState(state: Int): VerifiedStatus {
         return when (state) {
           0 -> DEFAULT
-          1 -> DIRECTLY_VERIFIED
-          2 -> INTRODUCED
-          3 -> DUPLEX_VERIFIED
-          4 -> MANUALLY_VERIFIED
-          5 -> UNVERIFIED
+          1 -> MANUALLY_VERIFIED
+          2 -> UNVERIFIED
+          3 -> DIRECTLY_VERIFIED
+          4 -> INTRODUCED
+          5 -> DUPLEX_VERIFIED
           else -> throw AssertionError("No such state: $state")
         }
       }
