@@ -476,7 +476,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     // Recipient not yet in database, must insert it first and update the introducee ID
     if (introduction.getIntroduceeId().equals(RecipientId.UNKNOWN)){
       RecipientTable db = SignalDatabase.recipients();
-      RecipientId newId = db.getAndPossiblyMerge(ServiceId.fromByteStringOrNull(ByteString.copyFromUtf8(introduction.getIntroduceeServiceId())), introduction.getIntroduceeNumber());
+      RecipientId newId = db.getAndPossiblyMerge(ServiceId.parseOrThrow(introduction.getIntroduceeServiceId()), introduction.getIntroduceeNumber());
       introduction = TI_Utils.changeIntroduceeId(introduction, newId);
     }
 
