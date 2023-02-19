@@ -433,9 +433,11 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
 
   // Callback for profile retreive Identity job
   // TODO: annoying that this needs to be public. Should be private and just passed as function pointer..
+  // PRE: fully populated jobResult
   // But java is annoying when it comes to function serialization so I won't do that for now
   public long insertIntroductionCallback(TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult result){
-    Preconditions.checkArgument(result.aci.equals(result.TIData.getIntroduceeServiceId()));
+    Preconditions.checkArgument(result.aci != null && result.TIData != null &&
+        result.aci.equals(result.TIData.getIntroduceeServiceId()));
     ContentValues values = new ContentValues(9);
     // This is a recipient we do not have yet.
     values.put(INTRODUCEE_RECIPIENT_ID, UNKNOWN_INTRODUCEE_RECIPIENT_ID);

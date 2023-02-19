@@ -144,6 +144,7 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
         jobResult.TIData = data.TIData;
         SignalServiceProfile profile  =  sr.getResult().get().getProfile();
         jobResult.key = profile.getIdentityKey();
+        jobResult.aci = profile.getServiceId().toString();
       } else {
         Log.e(TAG, "ServiceResponse.getResult() was empty for service ID: " + data.TIData.getIntroduceeServiceId() + ". Ignoring introduction.");
         return;
