@@ -29,7 +29,7 @@ data class TI_Data (val id: Long?, val state: TrustedIntroductionsDatabase.State
     return builder.toString()
   }
 
-  companion object Deserializer{
+  companion object Deserializer {
     // factory from serialized String
     fun deserialize(serialized: String): TI_Data {
       val d = JSONObject(serialized)
