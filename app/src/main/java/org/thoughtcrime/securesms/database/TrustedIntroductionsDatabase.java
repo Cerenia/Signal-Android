@@ -11,6 +11,8 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.annotation.WorkerThread;
 
+import com.google.protobuf.ByteString;
+
 import org.signal.core.util.SqlUtil;
 import org.signal.core.util.logging.Log;
 import org.signal.libsignal.protocol.IdentityKey;
@@ -22,6 +24,7 @@ import org.thoughtcrime.securesms.jobs.TrustedIntroductionsRetreiveIdentityJob;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
+import org.whispersystems.signalservice.api.push.ServiceId;
 import org.whispersystems.signalservice.api.util.Preconditions;
 
 import java.io.Closeable;
@@ -469,10 +472,19 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     Preconditions.checkArgument(newState != State.PENDING && newState != State.CONFLICTING);
     Preconditions.checkArgument(introduction.getIntroduceeId() != null);
     Preconditions.checkArgument(introduction.getId() != null);
-    Cursor rdc = fetchRecipientDBCursor(introduction.getIntroduceeId());
-    if(rdc.getCount() <= 0){
-      // Investigate if errors occur
-      throw new AssertionError("Unexpected missing recipient " + introduction.getIntroduceeName() + " in database while trying to change introduction state...");
+
+    // Recipient not yet in database, must insert it first and update the introducee ID
+    if (introduction.getIntroduceeId().equals(RecipientId.UNKNOWN)){
+      RecipientTable db = SignalDatabase.recipients();
+      RecipientId newId = db.getAndPossiblyMerge(ServiceId.fromByteStringOrNull(ByteString.copyFromUtf8(introduction.getIntroduceeServiceId())), introduction.getIntroduceeNumber());
+      introduction = TI_Utils.changeIntroduceeId(introduction, newId);
+    }
+
+    try (Cursor rdc = fetchRecipientDBCursor(introduction.getIntroduceeId())) {
+      if (rdc.getCount() <= 0) {
+        // This should not happen, would mean insert failed.
+        throw new AssertionError("Unexpected missing recipient " + introduction.getIntroduceeName() + " in database while trying to change introduction state...");
+      }
     }
 
     RecipientId introduceeID = introduction.getIntroduceeId();
