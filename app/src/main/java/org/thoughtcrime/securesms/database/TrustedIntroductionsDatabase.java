@@ -466,6 +466,10 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
    * @param introduction the introduction to be modified.
    * @param newState the new state for the introduction.
    * @param log_message what should be written on the logcat for the modification.
+   * @return  if the insertion succeeded or failed
+   * TODO: currently can't distinguish between total failure or having to wait for a profilefetch.
+   * => would only be necessary if we bubble this state up to the user... We could have a Toast stating that the verification state may take a while to update
+   * if recipient was not yet in the database.
    */
   private boolean setState(@NonNull TI_Data introduction, @NonNull State newState, @NonNull String log_message) {
     // We are setting conflicting and pending states directly when the introduction comes in. Should not change afterwards.
@@ -478,11 +482,17 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
       RecipientTable db = SignalDatabase.recipients();
       RecipientId newId = db.getAndPossiblyMerge(ServiceId.parseOrThrow(introduction.getIntroduceeServiceId()), introduction.getIntroduceeNumber());
       introduction = TI_Utils.changeIntroduceeId(introduction, newId);
+      // TODO: Schedule the job that waits for the Identity to be saved after RetreiveProfileJob
+      
+      return false; // TODO: simply postponed, do we need ternary state here?
     }
+    return setStateCallback(introduction, newState, log_message);
+  }
 
+  public boolean setStateCallback(@NonNull TI_Data introduction, @NonNull State newState, @NonNull String log_message){
     try (Cursor rdc = fetchRecipientDBCursor(introduction.getIntroduceeId())) {
       if (rdc.getCount() <= 0) {
-        // This should not happen, would mean insert failed.
+        // Programming error in setState codepath if this occurs.
         throw new AssertionError("Unexpected missing recipient " + introduction.getIntroduceeName() + " in database while trying to change introduction state...");
       }
     }
