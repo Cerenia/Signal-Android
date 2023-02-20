@@ -1,5 +1,7 @@
 package org.thoughtcrime.securesms.jobs;
 
+import android.content.ContentValues;
+
 import androidx.annotation.NonNull;
 
 import org.json.JSONException;
@@ -53,7 +55,7 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
     public String key;
     public String aci;
 
-    public TI_RetrieveIDJobResult(TI_Data data, String key, String aci){
+    private TI_RetrieveIDJobResult(TI_Data data, String key, String aci){
       this.TIData = data;
       this.key = key;
       this.aci = aci;
@@ -67,10 +69,10 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
   /**
    * @param data introduceeId and IntroduceeNumber must be present
    */
-  public TrustedIntroductionsRetreiveIdentityJob(@NonNull TI_RetrieveIDJobResult data){
+  public TrustedIntroductionsRetreiveIdentityJob(@NonNull TI_Data data){
     // TODO: Currently bogus introduceeId and IntroduceeNumber lead to an application crash
-    this(data, new Parameters.Builder()
-                               .setQueue(data.TIData.getIntroducerId().toQueueKey() + data.TIData.getIntroduceeNumber() + TAG)
+    this(new TI_RetrieveIDJobResult(data, null, null), new Parameters.Builder()
+                               .setQueue(data.getIntroducerId().toQueueKey() + data.getIntroduceeNumber() + TAG)
                                .setLifespan(TI_Utils.TI_JOB_LIFESPAN)
                                .setMaxAttempts(TI_Utils.TI_JOB_MAX_ATTEMPTS)
                                .addConstraint(NetworkConstraint.KEY)
@@ -154,7 +156,7 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
       return;
     }
     TrustedIntroductionsDatabase db = SignalDatabase.trustedIntroductions();
-    db.insertIntroductionCallback(jobResult);
+    db.insertIntroductionCallback(new ContentValues(9), jobResult.TIData, jobResult.key, jobResult.aci);
   }
 
   @Override protected boolean onShouldRetry(@NonNull Exception e) {
