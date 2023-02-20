@@ -21,7 +21,9 @@ import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.jobs.TrustedIntroductionSendJob;
 import org.thoughtcrime.securesms.jobs.TrustedIntroductionsReceiveJob;
 import org.thoughtcrime.securesms.jobs.TrustedIntroductionsRetreiveIdentityJob;
+import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
+import org.thoughtcrime.securesms.recipients.RecipientUtil;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
 import org.whispersystems.signalservice.api.push.ServiceId;
@@ -408,19 +410,47 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     RecipientId introduceeId = data.getIntroduceeId();
     if(introduceeId == null){
       values.put(STATE, State.PENDING.toInt()); // if recipient does not exist, we have nothing to compare against.
-      ApplicationDependencies.getJobManager().add(new TrustedIntroductionsRetreiveIdentityJob(new TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult(data, null, null)));
+      ApplicationDependencies.getJobManager().add(new TrustedIntroductionsRetreiveIdentityJob(data));
       Log.i(TAG, "Unknown recipient, deferred insertion of Introduction into database for: " + data.getIntroduceeName());
       // This is expected and not an error.
       return 0;
     } else {
-      values.put(INTRODUCEE_RECIPIENT_ID, introduceeId.serialize());
-      if (TI_Utils.encodedIdentityKeysEqual(introduceeId, data.getIntroduceeIdentityKey())){
-        values.put(STATE, State.PENDING.toInt());
-      } else {
-        values.put(STATE, State.CONFLICTING.toInt());
+      // The recipient already exists and must not be fetched
+      ServiceId introduceeServiceId;
+      try {
+        introduceeServiceId = RecipientUtil.getOrFetchServiceId(context, Recipient.resolved(introduceeId));
+      } catch (IOException e) {
+        Log.e(TAG, "Failed to fetch service ID for: " + data.getIntroduceeName() + ", with RecipientId: " + introduceeId);
+        return -1;
       }
+      return insertIntroductionCallback(values, data, TI_Utils.getEncodedIdentityKey(introduceeId), introduceeServiceId.toString());
     }
+  }
 
+  // Callback for profile retreive Identity job
+  // TODO: annoying that this needs to be public. Should be private and just passed as function pointer..
+  // PRE: fully populated jobResult
+  // But java is annoying when it comes to function serialization so I won't do that for now
+  // Only meant to be called by Job & @incomingIntroduction
+
+  /**
+   *
+   * @param values == new ContentValues(9);
+   * @param data the introduction to be inserted.
+   * @param base64KeyResult the public key fetched from the server for the introducee
+   * @param aciResult the aci fetched from the server for the introducee
+   * @return id of introduction or -1 if fail.
+   */
+  public long insertIntroductionCallback(ContentValues values, TI_Data data, String base64KeyResult, String aciResult){
+    Preconditions.checkArgument(aciResult != null && data != null &&
+                                aciResult.equals(data.getIntroduceeServiceId()));
+    // This is a recipient we do not have yet.
+    values.put(INTRODUCEE_RECIPIENT_ID, UNKNOWN_INTRODUCEE_RECIPIENT_ID);
+    if(base64KeyResult.equals(data.getIntroduceeIdentityKey())){
+      values.put(STATE, State.PENDING.toInt());
+    } else {
+      values.put(STATE, State.CONFLICTING.toInt());
+    }
     values.put(INTRODUCER_RECIPIENT_ID, data.getIntroducerId().serialize());
     values.put(INTRODUCEE_SERVICE_ID, data.getIntroduceeServiceId());
     values.put(INTRODUCEE_PUBLIC_IDENTITY_KEY, data.getIntroduceeIdentityKey());
@@ -428,37 +458,9 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     values.put(INTRODUCEE_NUMBER, data.getIntroduceeNumber());
     values.put(PREDICTED_FINGERPRINT, data.getPredictedSecurityNumber());
     values.put(TIMESTAMP, data.getTimestamp());
-
-    long id = writeableDatabase.insert(TABLE_NAME, null, values);
-    Log.i(TAG, "Inserted new introduction for: " + data.getIntroduceeName() + ", with id: " + id);
-    return id;
-  }
-
-  // Callback for profile retreive Identity job
-  // TODO: annoying that this needs to be public. Should be private and just passed as function pointer..
-  // PRE: fully populated jobResult
-  // But java is annoying when it comes to function serialization so I won't do that for now
-  public long insertIntroductionCallback(TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult result){
-    Preconditions.checkArgument(result.aci != null && result.TIData != null &&
-        result.aci.equals(result.TIData.getIntroduceeServiceId()));
-    ContentValues values = new ContentValues(9);
-    // This is a recipient we do not have yet.
-    values.put(INTRODUCEE_RECIPIENT_ID, UNKNOWN_INTRODUCEE_RECIPIENT_ID);
-    if(result.key.equals(result.TIData.getIntroduceeIdentityKey())){
-      values.put(STATE, State.PENDING.toInt());
-    } else {
-      values.put(STATE, State.CONFLICTING.toInt());
-    }
-    values.put(INTRODUCER_RECIPIENT_ID, result.TIData.getIntroducerId().serialize());
-    values.put(INTRODUCEE_SERVICE_ID, result.TIData.getIntroduceeServiceId());
-    values.put(INTRODUCEE_PUBLIC_IDENTITY_KEY, result.TIData.getIntroduceeIdentityKey());
-    values.put(INTRODUCEE_NAME, result.TIData.getIntroduceeName());
-    values.put(INTRODUCEE_NUMBER, result.TIData.getIntroduceeNumber());
-    values.put(PREDICTED_FINGERPRINT, result.TIData.getPredictedSecurityNumber());
-    values.put(TIMESTAMP, result.TIData.getTimestamp());
     SQLiteDatabase writeableDatabase = databaseHelper.getSignalWritableDatabase();
     long id = writeableDatabase.insert(TABLE_NAME, null, values);
-    Log.i(TAG, "Inserted new introduction for: " + result.TIData.getIntroduceeName() + ", with id: " + id);
+    Log.i(TAG, "Inserted new introduction for: " + data.getIntroduceeName() + ", with id: " + id);
     return id;
   }
 
@@ -483,7 +485,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
       RecipientId newId = db.getAndPossiblyMerge(ServiceId.parseOrThrow(introduction.getIntroduceeServiceId()), introduction.getIntroduceeNumber());
       introduction = TI_Utils.changeIntroduceeId(introduction, newId);
       // TODO: Schedule the job that waits for the Identity to be saved after RetreiveProfileJob
-      
+
       return false; // TODO: simply postponed, do we need ternary state here?
     }
     return setStateCallback(introduction, newState, log_message);

@@ -245,6 +245,10 @@ public class TI_Utils {
     return Base64.encodeBytes(key.serialize());
   }
 
+  public static String getEncodedIdentityKey(RecipientId id){
+    return encodeIdentityKey(getIdentityKey(id));
+  }
+
   // Compare fetched Identity key from introduceeId (must have an identitiy record present) to the provided string
   public static boolean encodedIdentityKeysEqual(RecipientId presentIntroduceeId, String toCompare){
     return encodeIdentityKey(getIdentityKey(presentIntroduceeId)).compareTo(toCompare) == 0;
