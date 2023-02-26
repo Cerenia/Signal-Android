@@ -118,7 +118,8 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
   @Override public void onFailure() {
     // TODO: Would we like some kind of note to the user that this happened?
     // Not urgent but may be nice to have in the user-specific screen
-    Log.e(TAG, "Could not find a registered user with service id:" + data.TIData.getIntroduceeServiceId() + " and phone nr: " + data.TIData.getIntroduceeNumber()  +". This introduction failed and will not be retried.");
+    // I think probably not since this could have been a tampered introduction, silent drop seems sensible
+    Log.e(TAG, "Could not find a registered user with service id:" + data.TIData.getIntroduceeServiceId() + " and phone nr: " + data.TIData.getIntroduceeNumber()  + ". This introduction failed and will not be retried.");
   }
 
   @Override protected void onRun() throws Exception {

@@ -3993,11 +3993,17 @@
     <string name="ManageIntroductionsListItemHeader__Introducee">Introducee</string>
     <string name="ManageIntroductionsListItemHeader__Introducer">Introducer</string>
 
+    <!-- Trusted Introductions -->
     <!-- ForgetIntroucerDialog -->
     <string name="ForgetIntroucerDialog__Title">Erase Introducer:</string>
     <string name="ForgetIntroucerDialog__Forget_Introducer_RECIPIENT_SPECIFIC">Are you sure that you want to forget that %1$s introduced you to %2$s on the %3$s? This action is not reversible! The introduction will disappear from this screen but will still be listed as an introduction.</string>
     <string name="ForgetIntroucerDialog__Forget_Introducer_ALL">Are you sure that you want to forget that %1$s introduced you to %2$s on the %3$s? This action is not reversible!</string>
     <string name="ForgetIntroucerDialog__forget">Erase</string>
+
+    <!-- Trusted Introductions -->
+    <!-- TrustedIntroductionsWaitForIdentityJob -->
+    <string name="TrustedIntroductionsWaitForIdentityJob_OnFailureNotificationTitle">Error %1$s introduction!</string>
+    <string name="TrustedIntroductionsWaitForIdentityJob_OnFailureNotificationText">For %1$s introducing %2$s.</string>
 
     <!-- GroupsInCommonMessageRequest -->
     <string name="GroupsInCommonMessageRequest__you_have_no_groups_in_common_with_this_person">You have no groups in common with this person. Review requests carefully before accepting to avoid unwanted messages.</string>
