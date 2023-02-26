@@ -21,6 +21,7 @@ import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.jobs.TrustedIntroductionSendJob;
 import org.thoughtcrime.securesms.jobs.TrustedIntroductionsReceiveJob;
 import org.thoughtcrime.securesms.jobs.TrustedIntroductionsRetreiveIdentityJob;
+import org.thoughtcrime.securesms.jobs.TrustedIntroductionsWaitForIdentityJob;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.recipients.RecipientUtil;
@@ -487,13 +488,13 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
   /**
    * @param introduction the introduction to be modified.
    * @param newState the new state for the introduction.
-   * @param log_message what should be written on the logcat for the modification.
+   * @param logMessage what should be written on the logcat for the modification.
    * @return  if the insertion succeeded or failed
    * TODO: currently can't distinguish between total failure or having to wait for a profilefetch.
    * => would only be necessary if we bubble this state up to the user... We could have a Toast stating that the verification state may take a while to update
    * if recipient was not yet in the database.
    */
-  private boolean setState(@NonNull TI_Data introduction, @NonNull State newState, @NonNull String log_message) {
+  private boolean setState(@NonNull TI_Data introduction, @NonNull State newState, @NonNull String logMessage) {
     // We are setting conflicting and pending states directly when the introduction comes in. Should not change afterwards.
     Preconditions.checkArgument(newState != State.PENDING && newState != State.CONFLICTING);
     Preconditions.checkArgument(introduction.getIntroduceeId() != null);
@@ -504,24 +505,23 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
       RecipientTable db = SignalDatabase.recipients();
       RecipientId newId = db.getAndPossiblyMerge(ServiceId.parseOrThrow(introduction.getIntroduceeServiceId()), introduction.getIntroduceeNumber());
       introduction = TI_Utils.changeIntroduceeId(introduction, newId);
-      // TODO: Schedule the job that waits for the Identity to be saved after RetreiveProfileJob
-
+      ApplicationDependencies.getJobManager().add(new TrustedIntroductionsWaitForIdentityJob(introduction, newState, logMessage));
       return false; // TODO: simply postponed, do we need ternary state here?
     }
-    return setStateCallback(introduction, newState, log_message);
+    return setStateCallback(introduction, newState, logMessage);
   }
 
   /**
    * Callback for modifying introductions state, assumes that recipient equivalent to introducee exists in the recipient table as well as their identity in the identity table.
    * @param introduction the introduction to be modified.
    * @param newState the new state for the introduction.
-   * @param log_message what should be written on the logcat for the modification.
+   * @param logMessage what should be written on the logcat for the modification.
    * @return  if the insertion succeeded or failed
    * TODO: currently can't distinguish between total failure or having to wait for a profilefetch. (Important?)
    * => would only be necessary if we bubble this state up to the user... We could have a Toast stating that the verification state may take a while to update
    * if recipient was not yet in the database.
    */
-  public boolean setStateCallback(@NonNull TI_Data introduction, @NonNull State newState, @NonNull String log_message){
+  public boolean setStateCallback(@NonNull TI_Data introduction, @NonNull State newState, @NonNull String logMessage){
     try (Cursor rdc = fetchRecipientDBCursor(introduction.getIntroduceeId())) {
       if (rdc.getCount() <= 0) {
         // Programming error in setState codepath if this occurs.
@@ -548,7 +548,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
 
     if ( result > 0 ){
       // Log message on success
-      Log.i(TAG, log_message);
+      Log.i(TAG, logMessage);
       return true;
     }
     Log.e(TAG, "State modification of introduction: " + introduction.getId() + " failed!");

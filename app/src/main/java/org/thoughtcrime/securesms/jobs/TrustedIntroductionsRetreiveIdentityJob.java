@@ -40,7 +40,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
 
-  private static final String KEY = "TrustedIntroductionsRetreiveIdentityJob";
+  public static final String KEY = "TrustedIntroductionsRetreiveIdentityJob";
 
   private static final String TAG = String.format(TI_Utils.TI_LOG_TAG, Log.tag(TrustedIntroductionsRetreiveIdentityJob.class));
 
