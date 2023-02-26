@@ -1,14 +1,30 @@
 package org.thoughtcrime.securesms.jobs;
 
-import androidx.annotation.NonNull;
+import android.app.PendingIntent;
+import android.content.Intent;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
+
+import com.google.android.gms.common.util.Strings;
+import com.google.android.material.snackbar.Snackbar;
+
+import org.signal.core.util.PendingIntentFlags;
 import org.signal.core.util.logging.Log;
+import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.jobmanager.Data;
 import org.thoughtcrime.securesms.jobmanager.Job;
 import org.thoughtcrime.securesms.jobmanager.impl.NetworkConstraint;
+import org.thoughtcrime.securesms.logsubmit.SubmitDebugLogActivity;
+import org.thoughtcrime.securesms.notifications.NotificationChannels;
+import org.thoughtcrime.securesms.notifications.NotificationIds;
+import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
 import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase.State;
+import org.thoughtcrime.securesms.trustedIntroductions.receive.ManageActivity;
 
 public class TrustedIntroductionsWaitForIdentityJob extends BaseJob {
 
@@ -60,7 +76,18 @@ public class TrustedIntroductionsWaitForIdentityJob extends BaseJob {
   }
 
   @Override public void onFailure() {
-
+    Recipient introducer = Recipient.resolved(introduction.getIntroducerId());
+    NotificationManagerCompat.from(context).notify(NotificationIds.INTERNAL_ERROR,
+                                                   new NotificationCompat.Builder(context, NotificationChannels.getInstance().FAILURES)
+                                                       .setSmallIcon(R.drawable.ic_notification)
+                                                       .setContentTitle(String.format(context.getString(R.string.TrustedIntroductionsWaitForIdentityJob_OnFailureNotificationTitle), newState.toVerbIng()))
+                                                       .setContentText(String.format(context.getString(R.string.TrustedIntroductionsWaitForIdentityJob_OnFailureNotificationText), introducer.getDisplayName(context), introduction.getIntroduceeName()))
+                                                       .setContentIntent(PendingIntent.getActivity(context, 0, ManageActivity.createIntent(context, introducer.getId()), PendingIntentFlags.immutable()))
+                                                       .setAutoCancel(true)
+                                                       .addAc
+                                                       .build());
+    // NotificationCompat.Builder builder = new NotificationCompat.Builder(this, )
+    //Snackbar snackbar = Snackbar.make(context, String.format(R.string.TrustedIntroductionsWaitForIdentityJob_OnFailureSnackbar, newState.toVerbIng(), introduction.getIntroduceeName(), introducer.getShortDisplayName(context)), Snackbar.LENGTH_LONG);
   }
 
   @Override protected void onRun() throws Exception {

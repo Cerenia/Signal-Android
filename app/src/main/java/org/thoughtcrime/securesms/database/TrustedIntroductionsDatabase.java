@@ -175,6 +175,26 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
           throw new AssertionError("No such state: " + this);
       }
     }
+
+    // Convenience, would obv. not fly in prod.
+    public String toVerbIng(){
+      switch(this){
+        case PENDING:
+          throw new AssertionError("Starting state cannot be reached: " + this);
+        case ACCEPTED:
+          return "accepting";
+        case REJECTED:
+          return "rejecting";
+        case CONFLICTING:
+        case STALE_PENDING:
+        case STALE_ACCEPTED:
+        case STALE_REJECTED:
+        case STALE_CONFLICTING:
+          throw new AssertionError("No user action can reach " + this);
+        default:
+          throw new AssertionError("No such state: " + this);
+      }
+    }
   }
 
   public TrustedIntroductionsDatabase(Context context, SignalDatabase databaseHelper) {
