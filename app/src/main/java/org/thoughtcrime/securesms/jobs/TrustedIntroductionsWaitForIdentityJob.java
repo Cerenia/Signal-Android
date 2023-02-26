@@ -14,7 +14,7 @@ public class TrustedIntroductionsWaitForIdentityJob extends BaseJob {
 
   public static final String TAG = String.format(TI_Utils.TI_LOG_TAG, Log.tag(TrustedIntroductionsWaitForIdentityJob.class));
 
-  public static final String KEY = "TIWaitIdentityJob";
+  private static final String KEY = "TIWaitIdentityJob";
 
   // Preserve arguments from setState
   private final TI_Data introduction;
@@ -47,11 +47,16 @@ public class TrustedIntroductionsWaitForIdentityJob extends BaseJob {
 
 
   @NonNull @Override public Data serialize() {
-    return null;
+    return new Data.Builder()
+        .putString(KEY_INTRODUCTION, introduction.serialize())
+        .putInt(KEY_NEW_STATE, newState.toInt())
+        .putString(KEY_LOG_MESSAGE, logMessage)
+        .build();
+
   }
 
   @NonNull @Override public String getFactoryKey() {
-    return null;
+    return KEY;
   }
 
   @Override public void onFailure() {
