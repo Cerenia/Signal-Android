@@ -32,7 +32,7 @@ public class TrustedIntroductionsReceiveJob extends BaseJob  {
   private static final String TAG =  String.format(TI_Utils.TI_LOG_TAG, Log.tag(TrustedIntroductionsReceiveJob.class));
 
   // Factory Key
-  private static final String KEY = "TIReceiveJob";
+  public static final String KEY = "TIReceiveJob";
 
   private final RecipientId introducerId;
   private final long timestamp;

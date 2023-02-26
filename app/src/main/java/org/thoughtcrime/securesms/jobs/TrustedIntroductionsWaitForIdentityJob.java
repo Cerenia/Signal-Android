@@ -1,23 +1,20 @@
 package org.thoughtcrime.securesms.jobs;
 
 import android.app.PendingIntent;
-import android.content.Intent;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
-import com.google.android.gms.common.util.Strings;
-import com.google.android.material.snackbar.Snackbar;
 
 import org.signal.core.util.PendingIntentFlags;
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.R;
+import org.thoughtcrime.securesms.database.SignalDatabase;
+import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
 import org.thoughtcrime.securesms.jobmanager.Data;
 import org.thoughtcrime.securesms.jobmanager.Job;
 import org.thoughtcrime.securesms.jobmanager.impl.NetworkConstraint;
-import org.thoughtcrime.securesms.logsubmit.SubmitDebugLogActivity;
 import org.thoughtcrime.securesms.notifications.NotificationChannels;
 import org.thoughtcrime.securesms.notifications.NotificationIds;
 import org.thoughtcrime.securesms.recipients.Recipient;
@@ -30,7 +27,7 @@ public class TrustedIntroductionsWaitForIdentityJob extends BaseJob {
 
   public static final String TAG = String.format(TI_Utils.TI_LOG_TAG, Log.tag(TrustedIntroductionsWaitForIdentityJob.class));
 
-  private static final String KEY = "TIWaitIdentityJob";
+  public static final String KEY = "TIWaitIdentityJob";
 
   // Preserve arguments from setState
   private final TI_Data introduction;
@@ -77,6 +74,7 @@ public class TrustedIntroductionsWaitForIdentityJob extends BaseJob {
 
   @Override public void onFailure() {
     Recipient introducer = Recipient.resolved(introduction.getIntroducerId());
+    // TODO: it would also be nice to add an action that can retry (accept/reject introduction) as a service at some point => .addAction(PendingIntent..)
     NotificationManagerCompat.from(context).notify(NotificationIds.INTERNAL_ERROR,
                                                    new NotificationCompat.Builder(context, NotificationChannels.getInstance().FAILURES)
                                                        .setSmallIcon(R.drawable.ic_notification)
@@ -84,17 +82,28 @@ public class TrustedIntroductionsWaitForIdentityJob extends BaseJob {
                                                        .setContentText(String.format(context.getString(R.string.TrustedIntroductionsWaitForIdentityJob_OnFailureNotificationText), introducer.getDisplayName(context), introduction.getIntroduceeName()))
                                                        .setContentIntent(PendingIntent.getActivity(context, 0, ManageActivity.createIntent(context, introducer.getId()), PendingIntentFlags.immutable()))
                                                        .setAutoCancel(true)
-                                                       .addAc
                                                        .build());
-    // NotificationCompat.Builder builder = new NotificationCompat.Builder(this, )
-    //Snackbar snackbar = Snackbar.make(context, String.format(R.string.TrustedIntroductionsWaitForIdentityJob_OnFailureSnackbar, newState.toVerbIng(), introduction.getIntroduceeName(), introducer.getShortDisplayName(context)), Snackbar.LENGTH_LONG);
-  }
+   }
 
   @Override protected void onRun() throws Exception {
-
+      TI_Utils.getIdentityKey(introduction.getIntroduceeId());
+      // if this does not error out, callback to database
+      TrustedIntroductionsDatabase db = SignalDatabase.trustedIntroductions();
+      db.setStateCallback(introduction, newState, logMessage);
   }
 
   @Override protected boolean onShouldRetry(@NonNull Exception e) {
-    return false;
+    return true;
   }
+
+  public static final class Factory implements Job.Factory<TrustedIntroductionsWaitForIdentityJob> {
+
+    @NonNull @Override public TrustedIntroductionsWaitForIdentityJob create(@NonNull Parameters parameters, @NonNull Data data) {
+      return new TrustedIntroductionsWaitForIdentityJob(TI_Data.Deserializer.deserialize(data.getString(KEY_INTRODUCTION)),
+                                                        State.forState(data.getInt(KEY_NEW_STATE)),
+                                                        data.getString(KEY_LOG_MESSAGE),
+                                                        parameters);
+    }
+  }
+
 }
