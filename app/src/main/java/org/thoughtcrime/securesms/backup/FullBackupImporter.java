@@ -105,9 +105,13 @@ public class FullBackupImporter extends FullBackupBase {
       }
 
       // Create TI table if necessary
-      if (!ti_tableCreated){
+      try {
         db.execSQL(TrustedIntroductionsDatabase.CREATE_TABLE);
+      } catch (net.zetetic.database.sqlcipher.SQLiteException e) {
+        Log.i(TAG, "Trusted Introductions Table already exists!");
       }
+
+
 
       db.setTransactionSuccessful();
       keyValueDatabase.setTransactionSuccessful();
