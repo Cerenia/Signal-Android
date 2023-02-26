@@ -1359,7 +1359,6 @@ public class ConversationParentFragment extends Fragment
     });
   }
 
-  @TargetApi(Build.VERSION_CODES.KITKAT)
   private void handleMakeDefaultSms() {
     startActivityForResult(SmsUtil.getSmsRoleIntent(requireContext()), SMS_DEFAULT);
   }
