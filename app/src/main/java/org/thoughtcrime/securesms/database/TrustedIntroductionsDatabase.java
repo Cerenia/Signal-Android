@@ -491,6 +491,16 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     return setStateCallback(introduction, newState, log_message);
   }
 
+  /**
+   * Callback for modifying introductions state, assumes that recipient equivalent to introducee exists in the recipient table as well as their identity in the identity table.
+   * @param introduction the introduction to be modified.
+   * @param newState the new state for the introduction.
+   * @param log_message what should be written on the logcat for the modification.
+   * @return  if the insertion succeeded or failed
+   * TODO: currently can't distinguish between total failure or having to wait for a profilefetch. (Important?)
+   * => would only be necessary if we bubble this state up to the user... We could have a Toast stating that the verification state may take a while to update
+   * if recipient was not yet in the database.
+   */
   public boolean setStateCallback(@NonNull TI_Data introduction, @NonNull State newState, @NonNull String log_message){
     try (Cursor rdc = fetchRecipientDBCursor(introduction.getIntroduceeId())) {
       if (rdc.getCount() <= 0) {
