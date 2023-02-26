@@ -35,7 +35,7 @@ import static java.util.Collections.emptySet;
 
 public class TrustedIntroductionSendJob extends BaseJob {
 
-  private static final String TAG = Log.tag(TrustedIntroductionSendJob.class);
+  private static final String TAG =  String.format(TI_Utils.TI_LOG_TAG, Log.tag(TrustedIntroductionSendJob.class));
 
   // Factory Key
   public static final String KEY = "TISendJob";

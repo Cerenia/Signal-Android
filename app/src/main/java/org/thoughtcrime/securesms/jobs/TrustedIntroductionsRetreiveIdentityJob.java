@@ -16,6 +16,7 @@ import org.thoughtcrime.securesms.jobmanager.impl.NetworkConstraint;
 import org.thoughtcrime.securesms.keyvalue.SignalStore;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
+import org.thoughtcrime.securesms.trustedIntroductions.send.ContactsSelectionActivity;
 import org.thoughtcrime.securesms.util.Base64;
 import org.whispersystems.signalservice.api.profiles.ProfileAndCredential;
 import org.whispersystems.signalservice.api.profiles.SignalServiceProfile;
@@ -41,7 +42,7 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
 
   public static final String KEY = "TrustedIntroductionsRetreiveIdentityJob";
 
-  private static final String TAG = Log.tag(TrustedIntroductionsRetreiveIdentityJob.class);
+  private static final String TAG = String.format(TI_Utils.TI_LOG_TAG, Log.tag(TrustedIntroductionsRetreiveIdentityJob.class));
 
   private static final String KEY_JSON_DATA = "data";
   private static final String KEY_JSON_TI_DATA = "tiData";
