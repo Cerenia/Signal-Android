@@ -29,7 +29,7 @@ import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.parseTIMe
 
 public class TrustedIntroductionsReceiveJob extends BaseJob  {
 
-  private static final String TAG = Log.tag(TrustedIntroductionsReceiveJob.class);
+  private static final String TAG =  String.format(TI_Utils.TI_LOG_TAG, Log.tag(TrustedIntroductionsReceiveJob.class));
 
   // Factory Key
   public static final String KEY = "TIReceiveJob";
