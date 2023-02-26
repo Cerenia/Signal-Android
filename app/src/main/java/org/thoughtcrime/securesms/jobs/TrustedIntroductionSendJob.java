@@ -62,6 +62,16 @@ public class TrustedIntroductionSendJob extends BaseJob {
                        .build());
   }
 
+  private TrustedIntroductionSendJob(@NonNull RecipientId introductionRecipientId, @NonNull Set<RecipientId> introduceeIds, @NonNull Parameters parameters) {
+    super(parameters);
+    if (introduceeIds.isEmpty()){
+      // TODO: What do I do in this case? should not happen.
+      throw new AssertionError();
+    }
+    this.introductionRecipientId = introductionRecipientId;
+    this.introduceeIds = introduceeIds;
+  }
+
   /**
    * Makes sure this parameter of the job is serializable for queue key creation.
    * TODO: Is this reused? should that be somewhere else?
@@ -74,16 +84,6 @@ public class TrustedIntroductionSendJob extends BaseJob {
       result.add(id.toLong());
     }
     return result;
-  }
-
-  private TrustedIntroductionSendJob(@NonNull RecipientId introductionRecipientId, @NonNull Set<RecipientId> introduceeIds, @NonNull Parameters parameters) {
-    super(parameters);
-    if (introduceeIds.isEmpty()){
-      // TODO: What do I do in this case? should not happen.
-      throw new AssertionError();
-    }
-    this.introductionRecipientId = introductionRecipientId;
-    this.introduceeIds = introduceeIds;
   }
 
   /**
