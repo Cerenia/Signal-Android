@@ -84,6 +84,7 @@ public class TI_Utils {
   // Json keys
   //static final String INTRODUCER_SERVICE_ID_J = "introducer_uuid"; // TODO: Don't really need this in the message I think... can be inferred when receiving the message
   // Sending the INTRODUCER_SERVICE_ID_J would probably lead to problems if someone spoofs it. Would be preferential to query it when the message is received.
+  static final String INTRODUCER_SERVICE_ID_J = "introducer_uuid";
   static final String INTRODUCEE_SERVICE_ID_J = "introducee_uuid";
   static final String NAME_J = "name";
   static final String NUMBER_J = "number";
