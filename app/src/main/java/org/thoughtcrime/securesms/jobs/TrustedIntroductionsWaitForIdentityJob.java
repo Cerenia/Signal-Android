@@ -86,10 +86,14 @@ public class TrustedIntroductionsWaitForIdentityJob extends BaseJob {
    }
 
   @Override protected void onRun() throws Exception {
+      // TODO: test notification codepath
+      throw new NullPointerException("Testing Notification Codepath");
+      /*
       TI_Utils.getIdentityKey(introduction.getIntroduceeId());
       // if this does not error out, callback to database
       TrustedIntroductionsDatabase db = SignalDatabase.trustedIntroductions();
       db.setStateCallback(introduction, newState, logMessage);
+      */
   }
 
   @Override protected boolean onShouldRetry(@NonNull Exception e) {
