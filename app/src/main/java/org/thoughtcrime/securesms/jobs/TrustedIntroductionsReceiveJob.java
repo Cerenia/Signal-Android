@@ -111,6 +111,9 @@ public class TrustedIntroductionsReceiveJob extends BaseJob  {
 
 
   @Override protected void onRun() throws Exception {
+    // TODO: testing notification
+    throw new AssertionError("Testing notification codepath");
+    /*
     if(!bodyParsed){
       List<TI_Data> tiData = parseTIMessage(messageBody, timestamp, introducerId);
       introductions.addAll(tiData);
@@ -126,6 +129,7 @@ public class TrustedIntroductionsReceiveJob extends BaseJob  {
       inserts_succeeded++;
     }
     Log.e(TAG, "TrustedIntroductionsReceiveJob completed!");
+    */
   }
 
   // TODO
