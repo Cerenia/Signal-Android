@@ -141,7 +141,7 @@ public class TI_Utils {
 
  // copy utils for Introduction Data
   public static TI_Data changeIntroduceeId(TI_Data d, RecipientId newId){
-    return new TI_Data(d.getId(), d.getState(), d.getIntroducerId(), newId, d.getIntroduceeServiceId(), d.getIntroduceeName(), d.getIntroduceeNumber(), d.getIntroduceeIdentityKey(), d.getPredictedSecurityNumber(), d.getTimestamp());
+    return new TI_Data(d.getId(), d.getState(), d.getIntroducerServiceId(), newId, d.getIntroduceeServiceId(), d.getIntroduceeName(), d.getIntroduceeNumber(), d.getIntroduceeIdentityKey(), d.getPredictedSecurityNumber(), d.getTimestamp());
   }
 
 

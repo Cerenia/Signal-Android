@@ -45,10 +45,10 @@ public class ManageManager {
       ArrayList<Pair<TI_Data, ManageViewModel.IntroducerInformation>> result = new ArrayList<>();
       for (TI_Data d: introductions) {
         ManageViewModel.IntroducerInformation i;
-        if(d.getIntroducerId().equals(RecipientId.UNKNOWN)){
+        if(d.getIntroducerServiceId().equals(RecipientId.UNKNOWN)){
           i = new ManageViewModel.IntroducerInformation(forgottenPlaceholder, forgottenPlaceholder);
         } else {
-          Recipient r = Recipient.live(d.getIntroducerId()).resolve();
+          Recipient r = Recipient.live(d.getIntroducerServiceId()).resolve();
           String number = r.getE164().orElse("");
           // TODO: using getApplication context because the context doesn't matter... (22-10-06)
           // It just circularly gets passed around between methods in the Recipient but is never used for anything.

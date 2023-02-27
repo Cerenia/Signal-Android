@@ -16,8 +16,6 @@ import org.thoughtcrime.securesms.jobmanager.impl.NetworkConstraint;
 import org.thoughtcrime.securesms.keyvalue.SignalStore;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
-import org.thoughtcrime.securesms.trustedIntroductions.send.ContactsSelectionActivity;
-import org.thoughtcrime.securesms.util.Base64;
 import org.whispersystems.signalservice.api.profiles.ProfileAndCredential;
 import org.whispersystems.signalservice.api.profiles.SignalServiceProfile;
 import org.whispersystems.signalservice.api.push.ServiceId;
@@ -26,12 +24,6 @@ import org.whispersystems.signalservice.api.services.ProfileService;
 import org.whispersystems.signalservice.internal.ServiceResponse;
 
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.util.Locale;
 import java.util.Optional;
 
@@ -73,7 +65,7 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
   public TrustedIntroductionsRetreiveIdentityJob(@NonNull TI_Data data){
     // TODO: Currently bogus introduceeId and IntroduceeNumber lead to an application crash
     this(new TI_RetrieveIDJobResult(data, null, null), new Parameters.Builder()
-                               .setQueue(data.getIntroducerId().toQueueKey() + data.getIntroduceeNumber() + TAG)
+                               .setQueue(data.getIntroducerServiceId().toQueueKey() + data.getIntroduceeNumber() + TAG)
                                .setLifespan(TI_Utils.TI_JOB_LIFESPAN)
                                .setMaxAttempts(TI_Utils.TI_JOB_MAX_ATTEMPTS)
                                .addConstraint(NetworkConstraint.KEY)
