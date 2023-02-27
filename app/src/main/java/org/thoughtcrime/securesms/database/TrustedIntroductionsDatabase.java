@@ -405,13 +405,13 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     StringBuilder selectionBuilder = new StringBuilder();
     selectionBuilder.append(String.format("%s=?", INTRODUCER_RECIPIENT_ID)); // if ID was purged, duplicate detection no longer possible // TODO: issue for, e.g., count if pure distance-1 case (future problem)
     String andAppend = " AND %s=?";
-    selectionBuilder.append(String.format(andAppend, INTRODUCEE_RECIPIENT_ID));
+    // does not work iff the recipient to be introduced does not yet have an ID and then gets added.
+    //selectionBuilder.append(String.format(andAppend, INTRODUCEE_RECIPIENT_ID));
     selectionBuilder.append(String.format(andAppend, INTRODUCEE_SERVICE_ID));
     selectionBuilder.append(String.format(andAppend, INTRODUCEE_PUBLIC_IDENTITY_KEY));
 
     // TODO: if this works well, use in other dbs where you build queries
     String[] args = SqlUtil.buildArgs(data.getIntroducerId().serialize(),
-                                      data.getIntroduceeId() == null ? "NULL" : data.getIntroduceeId().serialize(),
                                       data.getIntroduceeServiceId(),
                                       data.getIntroduceeIdentityKey());
 
