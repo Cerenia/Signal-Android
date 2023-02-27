@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.view.View;
-import android.view.ViewParent;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -128,11 +127,11 @@ public class ManageListItem extends ConstraintLayout {
   }
 
   @Nullable String getIntroducerName(Context c){
-    if(data.getIntroducerId().equals(RecipientId.UNKNOWN)){
+    if(data.getIntroducerServiceId().equals(RecipientId.UNKNOWN)){
       return c.getString(R.string.ManageIntroductionsListItem__Forgotten_Introducer);
     }
     // TODO: problematic in terms of work on UI thread?
-    Recipient r = Recipient.live(data.getIntroducerId()).resolve();
+    Recipient r = Recipient.live(data.getIntroducerServiceId()).resolve();
     return r.getDisplayNameOrUsername(c);
   }
 
@@ -175,7 +174,7 @@ public class ManageListItem extends ConstraintLayout {
   }
 
   private TI_Data changeState(TI_Data d, TrustedIntroductionsDatabase.State s){
-    return new TI_Data(d.getId(), s, d.getIntroducerId(), d.getIntroduceeId(), d.getIntroduceeServiceId(), d.getIntroduceeName(), d.getIntroduceeNumber(), d.getIntroduceeIdentityKey(), d.getPredictedSecurityNumber(), d.getTimestamp());
+    return new TI_Data(d.getId(), s, d.getIntroducerServiceId(), d.getIntroduceeId(), d.getIntroduceeServiceId(), d.getIntroduceeName(), d.getIntroduceeNumber(), d.getIntroduceeIdentityKey(), d.getPredictedSecurityNumber(), d.getTimestamp());
   }
 
   /**

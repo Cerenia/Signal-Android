@@ -6,7 +6,7 @@ import org.thoughtcrime.securesms.recipients.RecipientId
 
 // TODO: predictedSecurityNumber only needs to be nullable because I parse the TI_Message somewhat awkardly... maybe change at some point? Not super critical...
 // introduceeIdentityKey is encoded in Base64 (this is how it is currently stored in the Identity Database) @see TI_Utils.encodeIdentityKey
-data class TI_Data (val id: Long?, val state: TrustedIntroductionsDatabase.State?, val introducerId: RecipientId, val introduceeId: RecipientId?, val introduceeServiceId: String, val introduceeName: String, val introduceeNumber: String, val introduceeIdentityKey: String, var predictedSecurityNumber: String?, val timestamp: Long){
+data class TI_Data (val id: Long?, val state: TrustedIntroductionsDatabase.State?, val introducerServiceId: String, val introduceeServiceId: String, val introduceeName: String, val introduceeNumber: String, val introduceeIdentityKey: String, var predictedSecurityNumber: String?, val timestamp: Long){
 
   fun serialize() : String {
     // Absence of key signifies null
@@ -16,10 +16,7 @@ data class TI_Data (val id: Long?, val state: TrustedIntroductionsDatabase.State
     if (state != null){
       builder.putOpt("state", state.toInt())
     }
-    builder.put("introducerId", introducerId.toLong())
-    if (introduceeId != null){
-      builder.put("introduceeId", introduceeId.toLong())
-    }
+    builder.put("introducerServiceId", introducerServiceId)
     builder.put("introduceeServiceId", introduceeServiceId)
     builder.put("introduceeName", introduceeName)
     builder.put("introduceeNumber", introduceeNumber)
@@ -46,13 +43,7 @@ data class TI_Data (val id: Long?, val state: TrustedIntroductionsDatabase.State
       } else{
         state = null
       }
-      val introducerId = RecipientId.from(d.getLong("introducerId"))
-      val introduceeId : RecipientId?
-      if (d.has("introduceeId")){
-        introduceeId = RecipientId.from(d.getLong("introduceeId"))
-      } else {
-        introduceeId = null
-      }
+      val introducerServiceId = d.getString("introducerServiceId")
       val introduceeServiceId = d.getString("introduceeServiceId")
       val introduceeName = d.getString("introduceeName")
       val introduceeNumber = d.getString("introduceeNumber")
@@ -64,7 +55,7 @@ data class TI_Data (val id: Long?, val state: TrustedIntroductionsDatabase.State
         predictedSecurityNumber = null
       }
       val timestamp = d.getLong("timestamp")
-      return TI_Data(id, state, introducerId, introduceeId, introduceeServiceId, introduceeName, introduceeNumber, introduceeIdentityKey, predictedSecurityNumber, timestamp)
+      return TI_Data(id, state, introducerServiceId, introduceeServiceId, introduceeName, introduceeNumber, introduceeIdentityKey, predictedSecurityNumber, timestamp)
     }
   }
 }

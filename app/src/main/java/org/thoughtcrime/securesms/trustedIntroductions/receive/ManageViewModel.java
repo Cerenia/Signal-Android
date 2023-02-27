@@ -99,7 +99,7 @@ public class ManageViewModel extends ViewModel {
         @Nullable @Override public Pair<TI_Data, IntroducerInformation> modifiedIntroductionItem(Pair<TI_Data, IntroducerInformation> introductionItem) {
           TI_Data oldIntroduction = introductionItem.first;
           //(val id: Long?, val state: TrustedIntroductionsDatabase.State?, val introducerId: RecipientId, val introduceeId: RecipientId?, val introduceeServiceId: String, val introduceeName: String, val introduceeNumber: String, val introduceeIdentityKey: String, var predictedSecurityNumber: String?, val timestamp: Long)
-          TI_Data newIntroduction = new TI_Data(oldIntroduction.getId(), TrustedIntroductionsDatabase.State.ACCEPTED, oldIntroduction.getIntroducerId(), oldIntroduction.getIntroduceeId(), oldIntroduction.getIntroduceeServiceId(), oldIntroduction
+          TI_Data newIntroduction = new TI_Data(oldIntroduction.getId(), TrustedIntroductionsDatabase.State.ACCEPTED, oldIntroduction.getIntroducerServiceId(), oldIntroduction.getIntroduceeId(), oldIntroduction.getIntroduceeServiceId(), oldIntroduction
               .getIntroduceeName(), oldIntroduction.getIntroduceeNumber(), oldIntroduction.getIntroduceeIdentityKey(), oldIntroduction.getPredictedSecurityNumber(), oldIntroduction.getTimestamp());
           return new Pair<>(newIntroduction, introductionItem.second);
         }
@@ -119,7 +119,7 @@ public class ManageViewModel extends ViewModel {
       @Nullable @Override public Pair<TI_Data, IntroducerInformation> modifiedIntroductionItem(Pair<TI_Data, IntroducerInformation> introductionItem) {
         TI_Data oldIntroduction = introductionItem.first;
         //(val id: Long?, val state: TrustedIntroductionsDatabase.State?, val introducerId: RecipientId, val introduceeId: RecipientId?, val introduceeServiceId: String, val introduceeName: String, val introduceeNumber: String, val introduceeIdentityKey: String, var predictedSecurityNumber: String?, val timestamp: Long)
-        TI_Data newIntroduction = new TI_Data(oldIntroduction.getId(), TrustedIntroductionsDatabase.State.REJECTED, oldIntroduction.getIntroducerId(), oldIntroduction.getIntroduceeId(), oldIntroduction.getIntroduceeServiceId(), oldIntroduction
+        TI_Data newIntroduction = new TI_Data(oldIntroduction.getId(), TrustedIntroductionsDatabase.State.REJECTED, oldIntroduction.getIntroducerServiceId(), oldIntroduction.getIntroduceeId(), oldIntroduction.getIntroduceeServiceId(), oldIntroduction
             .getIntroduceeName(), oldIntroduction.getIntroduceeNumber(), oldIntroduction.getIntroduceeIdentityKey(), oldIntroduction.getPredictedSecurityNumber(), oldIntroduction.getTimestamp());
         return new Pair<>(newIntroduction, introductionItem.second);
       }
@@ -157,7 +157,7 @@ public class ManageViewModel extends ViewModel {
     if(current != null){
       // only reassign if current was not deleted
       modifiedIntroduction = current.first;
-      if (!(type == ManageActivity.IntroductionScreenType.RECIPIENT_SPECIFIC && modifiedIntroduction.getIntroducerId() == RecipientId.UNKNOWN)){ // recipient specific forgot introducer
+      if (!(type == ManageActivity.IntroductionScreenType.RECIPIENT_SPECIFIC && modifiedIntroduction.getIntroducerServiceId() == RecipientId.UNKNOWN)){ // recipient specific forgot introducer
         all.add(i, current);
       }
     } // else don't add back to list

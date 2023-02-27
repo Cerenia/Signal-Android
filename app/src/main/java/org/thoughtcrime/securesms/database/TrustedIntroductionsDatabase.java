@@ -4,22 +4,15 @@ import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.media.MediaDrm;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.annotation.WorkerThread;
 
-import com.google.protobuf.ByteString;
-
 import org.signal.core.util.SqlUtil;
 import org.signal.core.util.logging.Log;
-import org.signal.libsignal.protocol.IdentityKey;
-import org.thoughtcrime.securesms.database.model.IdentityRecord;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
-import org.thoughtcrime.securesms.jobs.TrustedIntroductionSendJob;
-import org.thoughtcrime.securesms.jobs.TrustedIntroductionsReceiveJob;
 import org.thoughtcrime.securesms.jobs.TrustedIntroductionsRetreiveIdentityJob;
 import org.thoughtcrime.securesms.jobs.TrustedIntroductionsWaitForIdentityJob;
 import org.thoughtcrime.securesms.recipients.Recipient;
@@ -32,9 +25,7 @@ import org.whispersystems.signalservice.api.util.Preconditions;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -337,11 +328,11 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     Preconditions.checkNotNull(introduction.getId());
     Preconditions.checkNotNull(introduction.getState());
     Preconditions.checkNotNull(introduction.getIntroduceeId());
-    Preconditions.checkNotNull(introduction.getIntroducerId());
+    Preconditions.checkNotNull(introduction.getIntroducerServiceId());
     Preconditions.checkNotNull(introduction.getPredictedSecurityNumber());
     return buildContentValuesForUpdate(introduction.getId(),
                                        introduction.getState(),
-                                       introduction.getIntroducerId().serialize(),
+                                       introduction.getIntroducerServiceId().serialize(),
                                        introduction.getIntroduceeId().serialize(),
                                        introduction.getIntroduceeServiceId(),
                                        introduction.getIntroduceeName(),
@@ -360,7 +351,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     Preconditions.checkNotNull(introduction.getId());
     Preconditions.checkNotNull(introduction.getState());
     Preconditions.checkNotNull(introduction.getIntroduceeId());
-    Preconditions.checkNotNull(introduction.getIntroducerId());
+    Preconditions.checkNotNull(introduction.getIntroducerServiceId());
     Preconditions.checkNotNull(introduction.getPredictedSecurityNumber());
     Preconditions.checkArgument(!introduction.getState().isStale());
     State newState;
@@ -383,7 +374,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
 
     return buildContentValuesForUpdate(introduction.getId(),
                                        newState,
-                                       introduction.getIntroducerId().serialize(),
+                                       introduction.getIntroducerServiceId().serialize(),
                                        introduction.getIntroduceeId().serialize(),
                                        introduction.getIntroduceeServiceId(),
                                        introduction.getIntroduceeName(),
@@ -411,7 +402,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     selectionBuilder.append(String.format(andAppend, INTRODUCEE_PUBLIC_IDENTITY_KEY));
 
     // TODO: if this works well, use in other dbs where you build queries
-    String[] args = SqlUtil.buildArgs(data.getIntroducerId().serialize(),
+    String[] args = SqlUtil.buildArgs(data.getIntroducerServiceId().serialize(),
                                       data.getIntroduceeServiceId(),
                                       data.getIntroduceeIdentityKey());
 
@@ -424,7 +415,8 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
       c.close();
       return result;
     }
-    if(c.getCount() != 0) throw new AssertionError(TAG + " Either there is one entry or none, nothing else valid.");
+    if(c.getCount() != 0)
+      throw new AssertionError(TAG + " Either there is one entry or none, nothing else valid.");
     c.close();
 
     ContentValues values = new ContentValues(9);
@@ -472,7 +464,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     } else {
       values.put(STATE, State.CONFLICTING.toInt());
     }
-    values.put(INTRODUCER_RECIPIENT_ID, data.getIntroducerId().serialize());
+    values.put(INTRODUCER_RECIPIENT_ID, data.getIntroducerServiceId().serialize());
     values.put(INTRODUCEE_SERVICE_ID, data.getIntroduceeServiceId());
     values.put(INTRODUCEE_PUBLIC_IDENTITY_KEY, data.getIntroduceeIdentityKey());
     values.put(INTRODUCEE_NAME, data.getIntroduceeName());
@@ -683,7 +675,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
   * @return true if success, false otherwise
   */
  public boolean clearIntroducer(TI_Data introduction){
-   Preconditions.checkArgument(introduction.getIntroducerId().equals(RecipientId.UNKNOWN));
+   Preconditions.checkArgument(introduction.getIntroducerServiceId().equals(RecipientId.UNKNOWN));
    Preconditions.checkArgument(introduction.getId() != null);
    SQLiteDatabase database = databaseHelper.getSignalWritableDatabase();
    String query = ID + " = ?";
