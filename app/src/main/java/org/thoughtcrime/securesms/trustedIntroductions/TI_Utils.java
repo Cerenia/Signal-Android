@@ -18,6 +18,7 @@ import org.thoughtcrime.securesms.crypto.ReentrantSessionLock;
 import org.thoughtcrime.securesms.database.IdentityTable;
 import org.thoughtcrime.securesms.database.RecipientTable;
 import org.thoughtcrime.securesms.database.SignalDatabase;
+import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
 import org.thoughtcrime.securesms.database.model.IdentityRecord;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.jobmanager.Job;
@@ -61,6 +62,9 @@ public class TI_Utils {
   public static final String TI_LOG_TAG = "_TI:%s";
   static final String TAG = String.format(TI_LOG_TAG, Log.tag(TI_Utils.class));
 
+  // Version, change if you change data/message format for compatibility
+  public static final int TI_VERSION = 1;
+
   // Random String to mark a message as a trustedIntroduction, since I'm tunneling through normal messages
   static final String TI_IDENTIFYER = "QOikEX9PPGIuXfiejT9nC2SsDB8d9AG0dUPQ9gERBQ8qHF30Xj --- This message is part of an experimental feature and not meant to be read by humans --- Introduction Data:\n";
   static final String TI_SEPARATOR = "\n"; // marks start of JsonArray, human friendly
@@ -75,14 +79,16 @@ public class TI_Utils {
   // Constants to pull values out of the cursors
   // Might be worth it to consider using live recipient for all of them... but I only need a few values, not sure
   // what is less overhead and if caching is really relevant here.
-  // @see RecipientDatabase
+  // @see RecipientTable
   static final String LOCAL_RECIPIENT_ID = "_id";
   static final String SERVICE_ID = "uuid";
   static final String SORT_NAME = "sort_name"; // From search projection, keeps me from doing name shenanigans
   static final String PHONE = "phone";
 
   // Json keys
-  //static final String INTRODUCER_SERVICE_ID_J = "introducer_uuid"; // TODO: Don't really need this in the message I think... can be inferred when receiving the message
+  // TODO: May want to add that to be part of the introduction at some point. This way we can avoid crashed on importing old backups with version missmatches
+  static final String TI_VERSION_J = "ti_version";
+  // static final String INTRODUCER_SERVICE_ID_J = "introducer_uuid"; // TODO: Don't really need this in the message I think... can be inferred when receiving the message
   // Sending the INTRODUCER_SERVICE_ID_J would probably lead to problems if someone spoofs it. Would be preferential to query it when the message is received.
   static final String INTRODUCER_SERVICE_ID_J = "introducer_uuid";
   static final String INTRODUCEE_SERVICE_ID_J = "introducee_uuid";
@@ -140,13 +146,7 @@ public class TI_Utils {
     }
   }
 
- // copy utils for Introduction Data
-  public static TI_Data changeIntroduceeId(TI_Data d, RecipientId newId){
-    return new TI_Data(d.getId(), d.getState(), d.getIntroducerServiceId(), newId, d.getIntroduceeServiceId(), d.getIntroduceeName(), d.getIntroduceeNumber(), d.getIntroduceeIdentityKey(), d.getPredictedSecurityNumber(), d.getTimestamp());
-  }
-
-
-  //copied from @see VerifyDisplayFragment
+  //@see VerifyDisplayFragment
   private static @NonNull String getFormattedSafetyNumbers(@NonNull Fingerprint fingerprint, int segmentCount) {
     String[]      segments = getSegments(fingerprint, segmentCount);
     StringBuilder result   = new StringBuilder();
@@ -155,8 +155,6 @@ public class TI_Utils {
       result.append(segments[i]);
 
       if (i != segments.length - 1) {
-        //if (((i + 1) % 4) == 0) result.append('\n'); // Not visible in the message anyways..
-        //else
         result.append(' ');
       }
     }
@@ -164,7 +162,7 @@ public class TI_Utils {
     return result.toString();
   }
 
-  //copied from @see VerifyDisplayFragment
+  //@see VerifyDisplayFragment
   private static String[] getSegments(Fingerprint fingerprint, int segmentCount) {
     String[] segments = new String[segmentCount];
     String   digits   = fingerprint.getDisplayableFingerprint().getDisplayText();
@@ -260,7 +258,7 @@ public class TI_Utils {
   }
 
   @SuppressLint("Range") @WorkerThread
-  public static String buildMessageBody(@NonNull RecipientId introductionRecipientId, @NonNull Set<RecipientId> introducees) throws JSONException, IOException, InvalidKeyException {
+  public static String buildMessageBody(@NonNull RecipientId introductionRecipientId, @NonNull Set<RecipientId> introducees) throws JSONException {
     assert introducees.size() > 0: TAG + " buildMessageBody called with no Recipient Ids!";
 
     // TODO: Should I just use the LiveRecipient Stuff instead?  :/ caching etc..
@@ -298,11 +296,19 @@ public class TI_Utils {
     ApplicationDependencies.getJobManager().add(new TrustedIntroductionsReceiveJob(introducer, message, timestamp));
   }
 
+  /**
+   * Parses an incoming TI message to create introduction data
+   * @param body of the incoming message
+   * @param timestamp when message was received
+   * @param introducerId whom the message came from
+   * @return populated List<TI_Data> if successfull, null otherwise
+   */
   @SuppressLint("Range") // keywords exists
-  public static @NonNull List<TI_Data> parseTIMessage(String body, long timestamp, RecipientId introducerId){
+  public static List<TI_Data> parseTIMessage(String body, long timestamp, RecipientId introducerId){
     if (!body.contains(TI_IDENTIFYER)){
       throw new AssertionError("Non TI message passed into parse TI!");
     }
+    String introducerServiceId = Recipient.live(introducerId).resolve().getServiceId().toString();
     ArrayList<TI_Data> result = new ArrayList<>();
     String jsonDataS = body.replace(TI_IDENTIFYER, "");
     try {
@@ -316,26 +322,25 @@ public class TI_Utils {
         idKeyPairs.add(new IdKeyPair(introduceeServiceId, o.getString(IDENTITY_J)));
         recipientServiceIds.add(introduceeServiceId);
       }
+      // Get any known recipients & add to result
       Cursor cursor = SignalDatabase.recipients().getCursorForReceivingTI(recipientServiceIds);
-      // Construct TI Data & rebuild serviceId List to only contain the ones present in the database, freeing some memory
-      // TODO could this be simplified with ServiceId.known?
       ArrayList<String> knownIds = new ArrayList<>();
       if(cursor.getCount() > 0) {
         cursor.moveToFirst();
         while(!cursor.isAfterLast()){
-          RecipientId introduceeId = RecipientId.from(cursor.getLong(cursor.getColumnIndex(LOCAL_RECIPIENT_ID)));
-          String serviceId = cursor.getString(cursor.getColumnIndex(SERVICE_ID));
-          knownIds.add(serviceId);
+          // Guaranteed to be the same as in introduction
+          String introduceeServiceId = cursor.getString(cursor.getColumnIndex(SERVICE_ID));
+          knownIds.add(introduceeServiceId);
           String name = cursor.getString(cursor.getColumnIndex(SORT_NAME));
           String phone = cursor.getString(cursor.getColumnIndex(PHONE));
-          String identityKey = IdKeyPair.findCorrespondingKeyInList(serviceId, idKeyPairs);
-          TI_Data d = new TI_Data(null, null, introducerId, introduceeId, serviceId, name, phone, identityKey, null, timestamp);
+          String identityKey = IdKeyPair.findCorrespondingKeyInList(introduceeServiceId, idKeyPairs);
+          TI_Data d = new TI_Data(null, TrustedIntroductionsDatabase.State.PENDING, introducerServiceId, introduceeServiceId, name, phone, identityKey, null, timestamp);
           result.add(d);
           cursor.moveToNext();
         }
         cursor.close();
       }
-      // Iterate through JSONData again and create incomplete introductions for the still unknown recipients & set the predictedSecurityNumbers
+      // Iterate through JSONData again, create the introductions for the still unknown recipients & set the predictedSecurityNumbers for all
       for(int i = 0; i < data.length(); i++){
         JSONObject o = data.getJSONObject(i);
         // If data was fetched from local database, simply add the Security number information
@@ -343,22 +348,25 @@ public class TI_Utils {
         if (knownIds.contains(introduceeServiceId)){
           int j = 0;
           while(!result.get(j).getIntroduceeServiceId().equals(introduceeServiceId)) j++;
-          assert j < knownIds.size(): "Programming error in parseTIMessage (size of service IDs vs. JSONArray)";
+          if (j < knownIds.size()){
+            throw new AssertionError("Something went wrong fetching recipients in parseTIMessage (size of service IDs > JSONArray)");
+          }
           result.get(j).setPredictedSecurityNumber(o.getString(PREDICTED_FINGERPRINT_J));
         } else {
-          TI_Data d = new TI_Data(null, null, introducerId, null, o.getString(INTRODUCEE_SERVICE_ID_J), o.getString(NAME_J), o.getString(NUMBER_J), o.getString(IDENTITY_J), o.getString(PREDICTED_FINGERPRINT_J), timestamp);
+          TI_Data d = new TI_Data(null, TrustedIntroductionsDatabase.State.PENDING, introducerServiceId, o.getString(INTRODUCEE_SERVICE_ID_J), o.getString(NAME_J), o.getString(NUMBER_J),  o.getString(IDENTITY_J), o.getString(PREDICTED_FINGERPRINT_J), timestamp);
           result.add(d);
         }
       }
     } catch(JSONException e){
       Log.e(TAG, String.format("A JSON exception occured while trying to parse the TI message: %s", jsonDataS));
       Log.e(TAG, e.toString());
-      return null;
+      return null; // unsuccessful parse
     }
     return result;
   }
 
   /**
+   * //TODO: What are generally sensible queue strings? Does it matter if there are multiple vs. one queue for our purposes (e.g., multiple incoming)?
    * @param o Object, must be serializable.
    * @return A string that can be used for the Job queue key.
    */
@@ -443,7 +451,4 @@ public class TI_Utils {
       }
     });
   }
-
-
-
 }
