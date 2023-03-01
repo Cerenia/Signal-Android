@@ -44,8 +44,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
   public static final String TABLE_NAME = "trusted_introductions";
 
   private static final String ID                      = "_id";
-  private static final String INTRODUCER_RECIPIENT_ID = "introducer_id";
-  private static final String INTRODUCEE_RECIPIENT_ID = "introducee_id"; // TODO: Is this really as immutable as I think?...
+  private static final String INTRODUCER_SERVICE_ID   = "introducer_service_id";
   private static final String INTRODUCEE_SERVICE_ID          = "introducee_service_id";
   private static final String INTRODUCEE_PUBLIC_IDENTITY_KEY = "introducee_identity_key"; // The one contained in the Introduction
   private static final String INTRODUCEE_NAME                = "introducee_name"; // TODO: snapshot when introduction happened. Necessary? Or wrong approach?
@@ -53,14 +52,11 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
   private static final String PREDICTED_FINGERPRINT = "predicted_fingerprint";
   private static final String TIMESTAMP             = "timestamp";
   private static final String STATE                          = "state";
-
-  public static final long CLEARED_INTRODUCER_RECIPIENT_ID = -1; // See RecipientId.UNKNOWN
   public static final long UNKNOWN_INTRODUCEE_RECIPIENT_ID = -1; //TODO: need to search through database for serviceID when new recipient is added in order to initialize.
 
   public static final String CREATE_TABLE =
       "CREATE TABLE " + TABLE_NAME + " (" + ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-      INTRODUCER_RECIPIENT_ID + " INTEGER NOT NULL, " +
-      INTRODUCEE_RECIPIENT_ID + " INTEGER DEFAULT " + UNKNOWN_INTRODUCEE_RECIPIENT_ID + ", " +
+      INTRODUCER_SERVICE_ID + " INTEGER NOT NULL, " +
       INTRODUCEE_SERVICE_ID + " TEXT NOT NULL, " +
       INTRODUCEE_PUBLIC_IDENTITY_KEY + " TEXT NOT NULL, " +
       INTRODUCEE_NAME + " TEXT NOT NULL, " +
@@ -73,16 +69,16 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
 
   @VisibleForTesting
   public void clearTable(){
-    // TODO: remove call once debugging done
-    //SQLiteDatabase db = databaseHelper.getSignalWritableDatabase();
-    //int res = db.delete(TABLE_NAME, "", new String[]{});
+    // Debugging
+    SQLiteDatabase db = databaseHelper.getSignalWritableDatabase();
+    int res = db.delete(TABLE_NAME, "", new String[]{});
   }
 
   // TODO: (optional) eventually, make a few different projections to save some ressources
   // for now just having one universal one is fine.
   private static final String[] TI_ALL_PROJECTION = new String[]{
       ID,
-      INTRODUCER_RECIPIENT_ID,
+      INTRODUCER_SERVICE_ID,
       INTRODUCEE_RECIPIENT_ID,
       INTRODUCEE_SERVICE_ID,
       INTRODUCEE_PUBLIC_IDENTITY_KEY,
@@ -221,7 +217,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     ContentValues cv = new ContentValues();
     cv.put(ID, introductionId);
     cv.put(STATE, state.toInt());
-    cv.put(INTRODUCER_RECIPIENT_ID, introducerId);
+    cv.put(INTRODUCER_SERVICE_ID, introducerId);
     cv.put(INTRODUCEE_RECIPIENT_ID, introduceeId);
     cv.put(INTRODUCEE_SERVICE_ID, serviceId);
     cv.put(INTRODUCEE_NAME, name);
@@ -239,7 +235,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
   @SuppressLint("Range") private @NonNull ContentValues buildContentValuesForTimestampUpdate(Cursor c, long timestamp){
     return buildContentValuesForUpdate(c.getString(c.getColumnIndex(ID)),
                                        c.getString(c.getColumnIndex(STATE)),
-                                       c.getString(c.getColumnIndex(INTRODUCER_RECIPIENT_ID)),
+                                       c.getString(c.getColumnIndex(INTRODUCER_SERVICE_ID)),
                                        c.getString(c.getColumnIndex(INTRODUCEE_RECIPIENT_ID)),
                                        c.getString(c.getColumnIndex(INTRODUCEE_SERVICE_ID)),
                                        c.getString(c.getColumnIndex(INTRODUCEE_NAME)),
@@ -394,7 +390,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
 
     // Fetch Data out of database where everything is identical but timestamp & maybe state.
     StringBuilder selectionBuilder = new StringBuilder();
-    selectionBuilder.append(String.format("%s=?", INTRODUCER_RECIPIENT_ID)); // if ID was purged, duplicate detection no longer possible // TODO: issue for, e.g., count if pure distance-1 case (future problem)
+    selectionBuilder.append(String.format("%s=?", INTRODUCER_SERVICE_ID)); // if ID was purged, duplicate detection no longer possible // TODO: issue for, e.g., count if pure distance-1 case (future problem)
     String andAppend = " AND %s=?";
     // does not work iff the recipient to be introduced does not yet have an ID and then gets added.
     //selectionBuilder.append(String.format(andAppend, INTRODUCEE_RECIPIENT_ID));
@@ -464,7 +460,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     } else {
       values.put(STATE, State.CONFLICTING.toInt());
     }
-    values.put(INTRODUCER_RECIPIENT_ID, data.getIntroducerServiceId().serialize());
+    values.put(INTRODUCER_SERVICE_ID, data.getIntroducerServiceId().serialize());
     values.put(INTRODUCEE_SERVICE_ID, data.getIntroduceeServiceId());
     values.put(INTRODUCEE_PUBLIC_IDENTITY_KEY, data.getIntroduceeIdentityKey());
     values.put(INTRODUCEE_NAME, data.getIntroduceeName());
@@ -659,7 +655,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
       return new IntroductionReader(db.rawQuery(query, null));
     } else {
       // query only the Introductions made by introducerId
-      query = INTRODUCER_RECIPIENT_ID + " = ?";
+      query = INTRODUCER_SERVICE_ID + " = ?";
       String[] arg = SqlUtil.buildArgs(introducerId.serialize());
       return new IntroductionReader(db.query(TABLE_NAME, TI_ALL_PROJECTION, query, arg, null, null, null));
     }
@@ -793,7 +789,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
       Long introductionId = cursor.getLong(cursor.getColumnIndex(ID));
       int s = cursor.getInt(cursor.getColumnIndex(STATE));
       State       state = State.forState(s);
-      RecipientId   introducerId = RecipientId.from(cursor.getLong(cursor.getColumnIndex(INTRODUCER_RECIPIENT_ID)));
+      RecipientId   introducerId = RecipientId.from(cursor.getLong(cursor.getColumnIndex(INTRODUCER_SERVICE_ID)));
       RecipientId introduceeId = RecipientId.from(cursor.getLong(cursor.getColumnIndex(INTRODUCEE_RECIPIENT_ID)));
       String serviceId = cursor.getString(cursor.getColumnIndex(INTRODUCEE_SERVICE_ID));
       // Do I need to hit the Recipient Database to check the name?

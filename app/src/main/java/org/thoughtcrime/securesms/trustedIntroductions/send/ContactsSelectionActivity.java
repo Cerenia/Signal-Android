@@ -63,9 +63,6 @@ public final class ContactsSelectionActivity extends PassphraseRequiredActivity 
   @Override protected void onCreate(Bundle savedInstanceState, boolean ready) {
     super.onCreate(savedInstanceState, ready);
 
-    // TODO: DEBUGGING
-    SignalDatabase.getInstance().getTrustedIntroductionsDatabase().clearTable();
-
     dynamicTheme.onCreate(this);
 
     setContentView(R.layout.ti_contacts_selection_activity);
