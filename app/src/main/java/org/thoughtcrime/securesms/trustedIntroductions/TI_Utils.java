@@ -298,6 +298,18 @@ public class TI_Utils {
     ApplicationDependencies.getJobManager().add(new TrustedIntroductionsReceiveJob(introducer, message, timestamp));
   }
 
+  /**
+   *
+   * @param id recipient Id for which the cache should be queried.
+   * @return ACI as string if present, null otherwise
+   */
+  public static String getServiceIdFromRecipientId(RecipientId id){
+    if (Recipient.live(id).resolve().getServiceId().isPresent()){
+      return Recipient.live(id).resolve().getServiceId().get().toString();
+    } else {
+      return null;
+    }
+  }
 
   /**
    * Parses an incoming TI message to create introduction data
@@ -313,7 +325,7 @@ public class TI_Utils {
       throw new AssertionError("Non TI message passed into parse TI!");
     }
     // TODO: Check version and ignore/convert depending on change
-    String introducerServiceId = Recipient.live(introducerId).resolve().getServiceId().toString();
+    String introducerServiceId = getServiceIdFromRecipientId(introducerId);
     ArrayList<TI_Data> result = new ArrayList<>();
     String jsonDataS = body.replace(TI_IDENTIFYER, "");
     try {
