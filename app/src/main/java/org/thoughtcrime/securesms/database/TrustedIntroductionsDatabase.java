@@ -693,14 +693,14 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
   @WorkerThread
   /**
    * Turns all introductions for the introducee named by id stale.
-   * @param id the introducee whose security nr. changed. != UNKNOWN or NULL
+   * @param serviceId the introducee whose security nr. changed.
    * @return true if all updates succeeded, false otherwise
    */
-  public boolean turnAllIntroductionsStale(RecipientId id){
+  public boolean turnAllIntroductionsStale(String serviceId){
      boolean updateSucceeded = true;
-     Preconditions.checkArgument(id != null && id != RecipientId.UNKNOWN);
-     String query = INTRODUCEE_RECIPIENT_ID + " = ?";
-     String[] args = SqlUtil.buildArgs(id.serialize());
+     Preconditions.checkArgument(!TI_Utils.getRecipientIdOrUnknown(serviceId).equals(RecipientId.UNKNOWN));
+     String query = INTRODUCEE_SERVICE_ID + " = ?";
+     String[] args = SqlUtil.buildArgs(serviceId);
 
      SQLiteDatabase writeableDatabase = databaseHelper.getSignalWritableDatabase();
      Cursor c = writeableDatabase.query(TABLE_NAME, TI_ALL_PROJECTION, query, args, null, null, null);
@@ -770,8 +770,6 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
 
   // TODO: all state transition methods can be public => FSM Logic adhered to this way.
 
-  // TODO: Method which returns all non-stale introductions for a given recipient ID
-
   public static class IntroductionReader implements Closeable{
     private final Cursor cursor;
 
@@ -791,9 +789,8 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
       Long introductionId = cursor.getLong(cursor.getColumnIndex(ID));
       int s = cursor.getInt(cursor.getColumnIndex(STATE));
       State       state = State.forState(s);
-      RecipientId   introducerId = RecipientId.from(cursor.getLong(cursor.getColumnIndex(INTRODUCER_SERVICE_ID)));
-      RecipientId introduceeId = RecipientId.from(cursor.getLong(cursor.getColumnIndex(INTRODUCEE_RECIPIENT_ID)));
-      String serviceId = cursor.getString(cursor.getColumnIndex(INTRODUCEE_SERVICE_ID));
+      String   introducerServiceId = (cursor.getString(cursor.getColumnIndex(INTRODUCER_SERVICE_ID)));
+      String introduceeServiceId = (cursor.getString(cursor.getColumnIndex(INTRODUCEE_SERVICE_ID)));
       // Do I need to hit the Recipient Database to check the name?
       // TODO: Name changes in introducees should get reflected in database (needs to happen when the name changes, not on query)
       String introduceeName = cursor.getString(cursor.getColumnIndex(INTRODUCEE_NAME));
@@ -801,7 +798,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
       String introduceeIdentityKey = cursor.getString(cursor.getColumnIndex(INTRODUCEE_PUBLIC_IDENTITY_KEY));
       String           securityNr = cursor.getString(cursor.getColumnIndex(PREDICTED_FINGERPRINT));
       long timestamp = cursor.getLong(cursor.getColumnIndex(TIMESTAMP));
-      return new TI_Data(introductionId, state, introducerId, introduceeId, serviceId, introduceeName, introduceeNumber, introduceeIdentityKey, securityNr, timestamp);
+      return new TI_Data(introductionId, state, introducerServiceId, introduceeServiceId, introduceeName, introduceeNumber, introduceeIdentityKey, securityNr, timestamp);
     }
 
     /**
