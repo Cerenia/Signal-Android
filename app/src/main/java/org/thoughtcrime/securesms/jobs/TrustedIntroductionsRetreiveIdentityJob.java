@@ -65,7 +65,7 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
   public TrustedIntroductionsRetreiveIdentityJob(@NonNull TI_Data data){
     // TODO: Currently bogus introduceeId and IntroduceeNumber lead to an application crash
     this(new TI_RetrieveIDJobResult(data, null, null), new Parameters.Builder()
-                               .setQueue(data.getIntroducerServiceId().toQueueKey() + data.getIntroduceeNumber() + TAG)
+                               .setQueue(data.getIntroducerServiceId() + TAG)
                                .setLifespan(TI_Utils.TI_JOB_LIFESPAN)
                                .setMaxAttempts(TI_Utils.TI_JOB_MAX_ATTEMPTS)
                                .addConstraint(NetworkConstraint.KEY)

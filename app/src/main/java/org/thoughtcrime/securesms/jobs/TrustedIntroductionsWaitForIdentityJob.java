@@ -71,7 +71,7 @@ public class TrustedIntroductionsWaitForIdentityJob extends BaseJob {
   }
 
   @Override public void onFailure() {
-    Recipient introducer = Recipient.resolved(introduction.getIntroducerServiceId());
+    Recipient introducer = Recipient.live(TI_Utils.getRecipientIdOrUnknown(introduction.getIntroducerServiceId())).resolve();
     // TODO: it would also be nice to add an action that can retry (accept/reject introduction) as a service at some point => .addAction(PendingIntent..)
     NotificationManagerCompat.from(context).notify(NotificationIds.INTERNAL_ERROR,
                                                    new NotificationCompat.Builder(context, NotificationChannels.getInstance().FAILURES)
