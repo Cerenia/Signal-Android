@@ -150,7 +150,7 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
       return;
     }
     TrustedIntroductionsDatabase db = SignalDatabase.trustedIntroductions();
-    db.insertIntroductionCallback(new ContentValues(9), jobResult.TIData, jobResult.key, jobResult.aci);
+    db.insertIntroductionCallback(jobResult.TIData, jobResult.key, jobResult.aci);
   }
 
   @Override protected boolean onShouldRetry(@NonNull Exception e) {

@@ -92,7 +92,8 @@ public class SignalBaseIdentityKeyStore {
           verifiedStatus = VerifiedStatus.UNVERIFIED;
           // Security nr. changed, change all introductions for this introducee to stale
           SignalExecutors.BOUNDED.execute(() -> {
-            boolean res = SignalDatabase.trustedIntroductions().turnAllIntroductionsStale(recipientId);
+            Recipient recipient = Recipient.resolved(recipientId);
+            boolean res = SignalDatabase.trustedIntroductions().turnAllIntroductionsStale(recipient.requireServiceId().toString());
             if(!res){
               Log.e(TAG, "Error occured while turning all introductions stale for recipient: " + recipientId);
             }

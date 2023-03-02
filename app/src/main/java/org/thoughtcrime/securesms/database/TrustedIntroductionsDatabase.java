@@ -393,7 +393,8 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
    *
    * @return -1 -> conflict occured on insert, 0 -> Profile Fetch Job started, else id of introduction.
    */
-  @SuppressLint("Range") @WorkerThread
+  @SuppressLint("Range")
+  @WorkerThread
   public long incomingIntroduction(@NonNull TI_Data data){
 
     // Fetch Data out of database where everything is identical but timestamp & maybe state.
