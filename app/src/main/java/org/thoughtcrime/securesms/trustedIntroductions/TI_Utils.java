@@ -417,8 +417,8 @@ public class TI_Utils {
 
   /**
    * Spawns it's own thread.
-   *
-   * Used both by verifyDisplayFragment and Introduction database
+   * Used both by verifyDisplayFragment and Introduction database.
+   * TODO: Should this be a job for persistence?
    *
    * @param status The new verification status
    */

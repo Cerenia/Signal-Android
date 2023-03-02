@@ -14,7 +14,7 @@ import java.util.UUID
 // TODO: predictedSecurityNumber only needs to be nullable because I parse the TI_Message somewhat awkardly... maybe change at some point? Not super critical...
 // IntroduceeRecipientId and Introducer
 // introduceeIdentityKey is encoded in Base64 (this is how it is currently stored in the Identity Database) @see TI_Utils.encodeIdentityKey
-data class TI_Data (val id: Long?, val state: TrustedIntroductionsDatabase.State,  val introducerServiceId: String, val introduceeServiceId: String, val introduceeName: String, val introduceeNumber: String, val introduceeIdentityKey: String, var predictedSecurityNumber: String?, val timestamp: Long){
+data class TI_Data (val id: Long?, val state: TrustedIntroductionsDatabase.State,  val introducerServiceId: String?, val introduceeServiceId: String, val introduceeName: String, val introduceeNumber: String, val introduceeIdentityKey: String, var predictedSecurityNumber: String?, val timestamp: Long){
 
   fun serialize() : String {
     // Absence of key signifies null
@@ -22,7 +22,7 @@ data class TI_Data (val id: Long?, val state: TrustedIntroductionsDatabase.State
     // does nothing iff id == null see: https://developer.android.com/reference/kotlin/org/json/JSONObject
     builder.putOpt("id", id)
     builder.put("state", state.toInt())
-    builder.put("introducerServiceId", introducerServiceId)
+    builder.putOpt("introducerServiceId", introducerServiceId)
     builder.put("introduceeServiceId", introduceeServiceId)
     builder.put("introduceeName", introduceeName)
     builder.put("introduceeNumber", introduceeNumber)
@@ -44,7 +44,12 @@ data class TI_Data (val id: Long?, val state: TrustedIntroductionsDatabase.State
         id = null
       }
       val  state = TrustedIntroductionsDatabase.State.forState(d.getInt("state"))
-      val introducerServiceId = d.getString("introducerServiceId")
+      val introducerServiceId: String?
+      if (d.has("introducerServiceId")){
+        introducerServiceId = d.getString("introducerServiceId")
+      } else {
+        introducerServiceId = null
+      }
       val introduceeServiceId = d.getString("introduceeServiceId")
       val introduceeName = d.getString("introduceeName")
       val introduceeNumber = d.getString("introduceeNumber")
