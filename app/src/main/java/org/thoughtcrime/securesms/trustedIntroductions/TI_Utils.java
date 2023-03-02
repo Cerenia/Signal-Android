@@ -372,7 +372,7 @@ public class TI_Utils {
         if (knownIds.contains(introduceeServiceId)){
           int j = 0;
           while(!result.get(j).getIntroduceeServiceId().equals(introduceeServiceId)) j++;
-          if (j < knownIds.size()){
+          if (j < knownIds.size() - 1){
             throw new AssertionError("Something went wrong fetching recipients in parseTIMessage (size of service IDs > JSONArray)");
           }
           result.get(j).setPredictedSecurityNumber(o.getString(PREDICTED_FINGERPRINT_J));
