@@ -9,6 +9,7 @@ import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
+import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,8 +35,9 @@ public class ManageManager {
 
   void getIntroductions(@NonNull Consumer<List<Pair<TI_Data, ManageViewModel.IntroducerInformation>>> listConsumer){
     SignalExecutors.BOUNDED.execute(() -> {
+      String introducerServiceId = Recipient.live(recipientId).resolve().requireServiceId().toString();
       // Pull introductions out of the database
-      TrustedIntroductionsDatabase.IntroductionReader reader = tdb.getIntroductions(recipientId);
+      TrustedIntroductionsDatabase.IntroductionReader reader = tdb.getIntroductions(introducerServiceId);
       ArrayList<TI_Data> introductions = new ArrayList<>();
       while(reader.hasNext()){
         introductions.add(reader.getNext());
@@ -45,10 +47,10 @@ public class ManageManager {
       ArrayList<Pair<TI_Data, ManageViewModel.IntroducerInformation>> result = new ArrayList<>();
       for (TI_Data d: introductions) {
         ManageViewModel.IntroducerInformation i;
-        if(d.getIntroducerServiceId().equals(RecipientId.UNKNOWN)){
+        if(d.getIntroducerServiceId() == null){
           i = new ManageViewModel.IntroducerInformation(forgottenPlaceholder, forgottenPlaceholder);
         } else {
-          Recipient r = Recipient.live(d.getIntroducerServiceId()).resolve();
+          Recipient r = Recipient.live(TI_Utils.getRecipientIdOrUnknown(d.getIntroducerServiceId())).resolve();
           String number = r.getE164().orElse("");
           // TODO: using getApplication context because the context doesn't matter... (22-10-06)
           // It just circularly gets passed around between methods in the Recipient but is never used for anything.
