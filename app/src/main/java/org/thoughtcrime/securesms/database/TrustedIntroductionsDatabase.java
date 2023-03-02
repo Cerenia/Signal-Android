@@ -452,6 +452,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
    * @param aciResult the aci fetched from the server for the introducee
    * @return id of introduction or -1 if fail.
    */
+  @WorkerThread
   public long insertIntroductionCallback(TI_Data data, String base64KeyResult, String aciResult){
     Preconditions.checkArgument(aciResult != null && data != null &&
                                 aciResult.equals(data.getIntroduceeServiceId()));
@@ -483,7 +484,6 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
   private boolean setState(@NonNull TI_Data introduction, @NonNull State newState, @NonNull String logMessage) {
     // We are setting conflicting and pending states directly when the introduction comes in. Should not change afterwards.
     Preconditions.checkArgument(newState != State.PENDING && newState != State.CONFLICTING);
-    Preconditions.checkArgument(introduction.getIntroduceeId() != null);
     Preconditions.checkArgument(introduction.getId() != null);
 
     // Recipient not yet in database, must insert it first and update the introducee ID
@@ -507,6 +507,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
    * => would only be necessary if we bubble this state up to the user... We could have a Toast stating that the verification state may take a while to update
    * if recipient was not yet in the database.
    */
+  @WorkerThread
   public boolean setStateCallback(@NonNull TI_Data introduction, @NonNull State newState, @NonNull String logMessage){
     try (Cursor rdc = fetchRecipientDBCursor(introduction.getIntroduceeId())) {
       if (rdc.getCount() <= 0) {
