@@ -1,24 +1,20 @@
 package org.thoughtcrime.securesms.trustedIntroductions
 
+import androidx.annotation.AnyThread
+import androidx.annotation.WorkerThread
 import org.json.JSONObject
 import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase
 import org.thoughtcrime.securesms.recipients.RecipientId
 import org.whispersystems.signalservice.api.push.ServiceId
+import org.whispersystems.signalservice.api.util.OptionalUtil.asOptional
 import org.whispersystems.signalservice.api.util.UuidUtil
 import java.util.Optional
 import java.util.UUID
 
 // TODO: predictedSecurityNumber only needs to be nullable because I parse the TI_Message somewhat awkardly... maybe change at some point? Not super critical...
+// IntroduceeRecipientId and Introducer
 // introduceeIdentityKey is encoded in Base64 (this is how it is currently stored in the Identity Database) @see TI_Utils.encodeIdentityKey
-data class TI_Data (val id: Long?, val state: TrustedIntroductionsDatabase.State, val introducerServiceId: String, val introduceeServiceId: String, val introduceeName: String, val introduceeNumber: String, val introduceeIdentityKey: String, var predictedSecurityNumber: String?, val timestamp: Long){
-
-  public fun getIntroducerRecipientId(): RecipientId? {
-    val validIntroducerId = UuidUtil.parse(introducerServiceId)
-    var recipientId: RecipientId? = null
-    if (validIntroducerId.isPresent)
-      recipientId = RecipientId.from(ServiceId.from(validIntroducerId.get()));
-    return recipientId
-  }
+data class TI_Data (val id: Long?, val state: TrustedIntroductionsDatabase.State,  val introducerServiceId: String, val introduceeServiceId: String, val introduceeName: String, val introduceeNumber: String, val introduceeIdentityKey: String, var predictedSecurityNumber: String?, val timestamp: Long){
 
   fun serialize() : String {
     // Absence of key signifies null

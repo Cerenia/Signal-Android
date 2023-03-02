@@ -293,6 +293,7 @@ public class TI_Utils {
     ApplicationDependencies.getJobManager().add(new TrustedIntroductionsReceiveJob(introducer, message, timestamp));
   }
 
+
   /**
    * Parses an incoming TI message to create introduction data
    * @param body of the incoming message
@@ -300,6 +301,7 @@ public class TI_Utils {
    * @param introducerId whom the message came from
    * @return populated List<TI_Data> if successfull, null otherwise
    */
+  @WorkerThread
   @SuppressLint("Range") // keywords exists
   public static List<TI_Data> parseTIMessage(String body, long timestamp, RecipientId introducerId){
     if (!body.contains(TI_IDENTIFYER)){
@@ -448,5 +450,18 @@ public class TI_Utils {
         IdentityUtil.markIdentityVerified(getApplicationContext(), recipient, verified, false);
       }
     });
+  }
+
+  /**
+   * //TODO: May need some cashing in TA_Data here
+   * Query db and check if recipient is present. If not return Unknown.
+   * PRE: serviceId represents valid ACI
+   */
+  @WorkerThread
+  public static RecipientId getRecipientIdOrUnknown(String serviceId){
+    ServiceId sId = ServiceId.parseOrThrow(serviceId);
+    RecipientTable recipients = SignalDatabase.recipients();
+    Optional<RecipientId> rId = recipients.getByServiceId(sId);
+    return rId.orElse(RecipientId.UNKNOWN);
   }
 }
