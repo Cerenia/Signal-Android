@@ -463,9 +463,9 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     ContentValues values = buildContentValuesForInsert(base64KeyResult.equals(data.getIntroduceeIdentityKey()) ? State.PENDING : State.CONFLICTING,
                                                        data.getIntroducerServiceId(),
                                                        data.getIntroduceeServiceId(),
-                                                       data.getIntroduceeIdentityKey(),
                                                        data.getIntroduceeName(),
                                                        data.getIntroduceeNumber(),
+                                                       data.getIntroduceeIdentityKey(),
                                                        data.getPredictedSecurityNumber(),
                                                        data.getTimestamp());
     SQLiteDatabase writeableDatabase = databaseHelper.getSignalWritableDatabase();
