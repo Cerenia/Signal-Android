@@ -5,6 +5,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 
+import androidx.annotation.AnyThread;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
@@ -477,20 +478,21 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
    * @param newState the new state for the introduction.
    * @param logMessage what should be written on the logcat for the modification.
    * @return  if the insertion succeeded or failed
+   * PRE: State is not Pending or Conflicting, introductionId != null
    * TODO: currently can't distinguish between total failure or having to wait for a profilefetch.
    * => would only be necessary if we bubble this state up to the user... We could have a Toast stating that the verification state may take a while to update
    * if recipient was not yet in the database.
    */
+  @WorkerThread
   private boolean setState(@NonNull TI_Data introduction, @NonNull State newState, @NonNull String logMessage) {
     // We are setting conflicting and pending states directly when the introduction comes in. Should not change afterwards.
     Preconditions.checkArgument(newState != State.PENDING && newState != State.CONFLICTING);
     Preconditions.checkArgument(introduction.getId() != null);
 
     // Recipient not yet in database, must insert it first and update the introducee ID
-    if (introduction.getIntroduceeId().equals(RecipientId.UNKNOWN)){
+    if (TI_Utils.getRecipientIdOrUnknown(introduction.getIntroduceeServiceId()).equals(RecipientId.UNKNOWN)){
       RecipientTable db = SignalDatabase.recipients();
-      RecipientId newId = db.getAndPossiblyMerge(ServiceId.parseOrThrow(introduction.getIntroduceeServiceId()), introduction.getIntroduceeNumber());
-      introduction = TI_Utils.changeIntroduceeId(introduction, newId);
+      db.getAndPossiblyMerge(ServiceId.parseOrThrow(introduction.getIntroduceeServiceId()), introduction.getIntroduceeNumber());
       ApplicationDependencies.getJobManager().add(new TrustedIntroductionsWaitForIdentityJob(introduction, newState, logMessage));
       return false; // TODO: simply postponed, do we need ternary state here?
     }
@@ -506,26 +508,30 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
    * TODO: currently can't distinguish between total failure or having to wait for a profilefetch. (Important?)
    * => would only be necessary if we bubble this state up to the user... We could have a Toast stating that the verification state may take a while to update
    * if recipient was not yet in the database.
+   * PRE: Introducee must be present in the RecipientTable & have a verificationStatus in the IdentityTable
    */
   @WorkerThread
   public boolean setStateCallback(@NonNull TI_Data introduction, @NonNull State newState, @NonNull String logMessage){
-    try (Cursor rdc = fetchRecipientDBCursor(introduction.getIntroduceeId())) {
+    RecipientId introduceeID = TI_Utils.getRecipientIdOrUnknown(introduction.getIntroduceeServiceId());
+    try (Cursor rdc = fetchRecipientDBCursor(introduceeID)) {
       if (rdc.getCount() <= 0) {
         // Programming error in setState codepath if this occurs.
         throw new AssertionError("Unexpected missing recipient " + introduction.getIntroduceeName() + " in database while trying to change introduction state...");
       }
     }
 
-    RecipientId introduceeID = introduction.getIntroduceeId();
     IdentityTable.VerifiedStatus previousIntroduceeVerification = SignalDatabase.identities().getVerifiedStatus(introduceeID);
+    if (previousIntroduceeVerification == null){
+      throw new AssertionError("Unexpected missing verification status for " + introduction.getIntroduceeName());
+    }
 
     // If the state turned stale we only change the introduction, not the verification status. Changing security nr. already has a hook for that.
-    // TODO: Potential Race condition
+    // TODO: Potential Race condition, mutex?
     if(!newState.isStale()){
-      modifyIntroduceeVerification(introduceeID,
+      modifyIntroduceeVerification(introduction.getIntroduceeServiceId(),
                                    previousIntroduceeVerification,
                                    newState,
-                                   String.format("Updated %s's verification state to: %s", introduction.getIntroduceeName(), newState.toString()));
+                                   String.format("Updated %s's verification state to: %s", introduction.getIntroduceeName(), newState));
     }
 
     // Modify introduction
@@ -544,12 +550,13 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
 
   /**
    * FSMs for verification status implemented here.
-   * @param introduceeID The recipient whose verification status may change
+   * @param introduceeServiceId The service ID of the recipient whose verification status may change
    * @param previousIntroduceeVerification the previous verification status of the introducee
    * @param newState PRE: !STALE (security number changes are handled in a seperate codepath)
    * @param logmessage what to print to logcat iff status was modified
    */
-  private void modifyIntroduceeVerification(@NonNull RecipientId introduceeID, @NonNull IdentityTable.VerifiedStatus previousIntroduceeVerification, @NonNull State newState, @NonNull String logmessage){
+  @WorkerThread
+  private void modifyIntroduceeVerification(@NonNull String introduceeServiceId, @NonNull IdentityTable.VerifiedStatus previousIntroduceeVerification, @NonNull State newState, @NonNull String logmessage){
     Preconditions.checkArgument(!newState.isStale());
     // Initialize with what it was
     IdentityTable.VerifiedStatus newIntroduceeVerification = previousIntroduceeVerification;
@@ -564,7 +571,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
       case DUPLEX_VERIFIED:
         if (newState == State.REJECTED){
           // Stay "duplex verified" iff only more than 1 accepted introduction for this contact exist else "directly verified"
-          newIntroduceeVerification = multipleAcceptedIntroductions(introduceeID) ? IdentityTable.VerifiedStatus.DUPLEX_VERIFIED :
+          newIntroduceeVerification = multipleAcceptedIntroductions(introduceeServiceId) ? IdentityTable.VerifiedStatus.DUPLEX_VERIFIED :
                                       IdentityTable.VerifiedStatus.DIRECTLY_VERIFIED;
         }
         break;
@@ -576,7 +583,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
       case INTRODUCED:
         if (newState == State.REJECTED){
           // Stay "introduced" iff more than 1 accepted introduction for this contact exist else "unverified"
-          newIntroduceeVerification = multipleAcceptedIntroductions(introduceeID) ? IdentityTable.VerifiedStatus.INTRODUCED :
+          newIntroduceeVerification = multipleAcceptedIntroductions(introduceeServiceId) ? IdentityTable.VerifiedStatus.INTRODUCED :
                                       IdentityTable.VerifiedStatus.UNVERIFIED;
         }
         break;
@@ -585,20 +592,22 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     }
     if (newIntroduceeVerification != previousIntroduceeVerification) {
       // Something changed
-      TI_Utils.updateContactsVerifiedStatus(introduceeID, TI_Utils.getIdentityKey(introduceeID), newIntroduceeVerification);
+      RecipientId rId = TI_Utils.getRecipientIdOrUnknown(introduceeServiceId);
+      TI_Utils.updateContactsVerifiedStatus(rId, TI_Utils.getIdentityKey(rId), newIntroduceeVerification);
       Log.i(TAG, logmessage);
     }
   }
 
   /**
    * PRE: at least one accepted introduction for introduceeID
-   * @param introduceeID The recipient whose verification status may change
+   * @param introduceeServiceId The serviceID of the recipient whose verification status may change
    */
-  private boolean multipleAcceptedIntroductions(RecipientId introduceeID){
-    final String selection = String.format("%s=?", INTRODUCEE_RECIPIENT_ID)
+  @WorkerThread
+  private boolean multipleAcceptedIntroductions(String introduceeServiceId){
+    final String selection = String.format("%s=?", INTRODUCEE_SERVICE_ID)
                                     + String.format(" AND %s=?", STATE);
 
-    String[] args = SqlUtil.buildArgs(introduceeID.serialize(),
+    String[] args = SqlUtil.buildArgs(introduceeServiceId,
                                       State.ACCEPTED.toInt());
 
     SQLiteDatabase writeableDatabase = databaseHelper.getSignalWritableDatabase();
@@ -615,12 +624,11 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
   /**
    * Expects the introducee to have been fetched.
    * Expects introduction to already be present in database
-   * @param introduction PRE: introduction.introduceeId && introduction.id cannot be null
+   * @param introduction PRE: introduction.id cannot be null
    * @return true if success, false otherwise
    */
   @WorkerThread
   public boolean acceptIntroduction(TI_Data introduction){
-    Preconditions.checkArgument(introduction.getIntroduceeId() != null);
     Preconditions.checkArgument(introduction.getId() != null);
     return setState(introduction, State.ACCEPTED,"Accepted introduction for: " + introduction.getIntroduceeName());
   }
@@ -628,49 +636,44 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
   /**
    * Expects the introducee to have been fetched.
    * Expects introduction to already be present in database.
-   * @param introduction PRE: introduction.introduceeId && introduction.id cannot be null
+   * @param introduction PRE: introduction.id cannot be null
    * @return true if success, false otherwise
    */
   @WorkerThread
   public boolean rejectIntroduction(TI_Data introduction){
-    Preconditions.checkArgument(introduction.getIntroduceeId() != null);
     Preconditions.checkArgument(introduction.getId() != null);
     return setState(introduction, State.REJECTED,"Rejected introduction for: " + introduction.getIntroduceeName());
   }
 
   @WorkerThread
   /**
-   *
-   * Fetches Introduction data by Introducer. Pass null or unknown to get all the data.
-   *
-   * @introducerId If an Id != UNKNOWN is specified, selects only introductions made by this contact. Fetches all Introductions otherwise.
+   * Fetches Introduction data by Introducer. Pass null to get all the data.
    * @return IntroductionReader which can be used to iterate through the rows.
    */
-  public IntroductionReader getIntroductions(@Nullable RecipientId introducerId){
+  public IntroductionReader getIntroductions(@Nullable String introducerServiceId){
     String query;
     SQLiteDatabase db = databaseHelper.getSignalReadableDatabase();
-    if(introducerId == null || introducerId.isUnknown()){
+    if(introducerServiceId == null){
       query = "SELECT  * FROM " + TABLE_NAME;
       return new IntroductionReader(db.rawQuery(query, null));
     } else {
-      // query only the Introductions made by introducerId
+      // query only the Introductions made by introducerServiceId
       query = INTRODUCER_SERVICE_ID + " = ?";
-      String[] arg = SqlUtil.buildArgs(introducerId.serialize());
+      String[] arg = SqlUtil.buildArgs(introducerServiceId);
       return new IntroductionReader(db.query(TABLE_NAME, TI_ALL_PROJECTION, query, arg, null, null, null));
     }
   }
 
  @WorkerThread
  /**
-  *
-  * PRE: introductionId may not be null, introducerId must be UNKNOWN
+  * PRE: introductionId may not be null, IntroducerServiceId must be null
   * Updates the entry in the database accordingly.
   * Effectively "forget" who did this introduction.
   *
   * @return true if success, false otherwise
   */
  public boolean clearIntroducer(TI_Data introduction){
-   Preconditions.checkArgument(introduction.getIntroducerServiceId().equals(RecipientId.UNKNOWN));
+   Preconditions.checkArgument(introduction.getIntroducerServiceId() == null);
    Preconditions.checkArgument(introduction.getId() != null);
    SQLiteDatabase database = databaseHelper.getSignalWritableDatabase();
    String query = ID + " = ?";
