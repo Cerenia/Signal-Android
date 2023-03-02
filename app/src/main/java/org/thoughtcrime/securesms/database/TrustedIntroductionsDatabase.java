@@ -26,6 +26,7 @@ import org.whispersystems.signalservice.api.util.Preconditions;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -74,12 +75,9 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     int res = db.delete(TABLE_NAME, "", new String[]{});
   }
 
-  // TODO: (optional) eventually, make a few different projections to save some ressources
-  // for now just having one universal one is fine.
   private static final String[] TI_ALL_PROJECTION = new String[]{
       ID,
       INTRODUCER_SERVICE_ID,
-      INTRODUCEE_RECIPIENT_ID,
       INTRODUCEE_SERVICE_ID,
       INTRODUCEE_PUBLIC_IDENTITY_KEY,
       INTRODUCEE_NAME,
@@ -94,7 +92,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
    * An Introduction can either be waiting for a decision from the user (PENDING),
    * been accepted or rejected by the user, or conflict with the Identity Key that the
    * Signal server provided for this recipient. If the identity key of the introducee
-   * changes, the entries become stale. // TODO: Should stale state eve be a thing? Or just remove the entry?
+   * changes, the entries become stale.
    * => For now, leaving STALE. In fact, I need 4 Stale states if I want to be able to go back to a non-stale state from there,
    * see comment between @see clearIntroducer and @see setState, or FSM drawn on the 09.08.2022.
    */
@@ -164,7 +162,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
       }
     }
 
-    // Convenience, would obv. not fly in prod.
+    // Convenience for prototype, would obv. not fly in prod.
     public String toVerbIng(){
       switch(this){
         case PENDING:
@@ -189,25 +187,46 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     super(context, databaseHelper);
   }
 
-
   /**
-   *
-   * @param introductionId
+   * id not yet known, state either pending or conflicting
    * @param state
-   * @param introducerId serialized
-   * @param introduceeId serialized
+   * @param introducerServiceId
    * @param serviceId
    * @param name
    * @param number
    * @param identityKey
    * @param predictedFingerprint
    * @param timestamp
-   * @return
+   * @return populated content values ready for insertion
+   */
+  private @NonNull ContentValues buildContentValuesForInsert(@NonNull State state,
+                                                             @NonNull String introducerServiceId,
+                                                             @NonNull String serviceId,
+                                                             @NonNull String name,
+                                                             @NonNull String number,
+                                                             @NonNull String identityKey,
+                                                             @NonNull String predictedFingerprint,
+                                                             @NonNull Long timestamp){
+    Preconditions.checkArgument(state == State.PENDING || state == State.CONFLICTING);
+    ContentValues cv = new ContentValues();
+    cv.put(STATE, state.toInt());
+    cv.put(INTRODUCER_SERVICE_ID, introducerServiceId);
+    cv.put(INTRODUCEE_SERVICE_ID, serviceId);
+    cv.put(INTRODUCEE_NAME, name);
+    cv.put(INTRODUCEE_NUMBER, number);
+    cv.put(INTRODUCEE_PUBLIC_IDENTITY_KEY, identityKey);
+    cv.put(PREDICTED_FINGERPRINT, predictedFingerprint);
+    cv.put(TIMESTAMP, timestamp);
+    return cv;
+  }
+
+  /**
+   * Used to update a database entry. Pass all the data that should stay the same and change what needs to be updated.
+   * @return Content Values for the updated entry
    */
   private @NonNull ContentValues buildContentValuesForUpdate(@NonNull Long introductionId,
                                                     @NonNull State state,
-                                                    @NonNull String introducerId,
-                                                    @NonNull String introduceeId,
+                                                    @NonNull String introducerServiceId,
                                                     @NonNull String serviceId,
                                                     @NonNull String name,
                                                     @NonNull String number,
@@ -217,8 +236,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     ContentValues cv = new ContentValues();
     cv.put(ID, introductionId);
     cv.put(STATE, state.toInt());
-    cv.put(INTRODUCER_SERVICE_ID, introducerId);
-    cv.put(INTRODUCEE_RECIPIENT_ID, introduceeId);
+    cv.put(INTRODUCER_SERVICE_ID, introducerServiceId);
     cv.put(INTRODUCEE_SERVICE_ID, serviceId);
     cv.put(INTRODUCEE_NAME, name);
     cv.put(INTRODUCEE_NUMBER, number);
@@ -236,7 +254,6 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     return buildContentValuesForUpdate(c.getString(c.getColumnIndex(ID)),
                                        c.getString(c.getColumnIndex(STATE)),
                                        c.getString(c.getColumnIndex(INTRODUCER_SERVICE_ID)),
-                                       c.getString(c.getColumnIndex(INTRODUCEE_RECIPIENT_ID)),
                                        c.getString(c.getColumnIndex(INTRODUCEE_SERVICE_ID)),
                                        c.getString(c.getColumnIndex(INTRODUCEE_NAME)),
                                        c.getString(c.getColumnIndex(INTRODUCEE_NUMBER)),
@@ -265,9 +282,8 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
    *
    * @param introductionId Expected to represent a Long > 0.
    * @param state Expected to represent an Int between 0 and 7 (inclusive).
-   * @param introducerId Expected to represent a Long > 0.
-   * @param introduceeId Expected to represent a Long > 0.
-   * @param serviceId
+   * @param introducerServiceId
+   * @param introduceeServiceId
    * @param name
    * @param number
    * @param identityKey
@@ -277,9 +293,8 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
    */
   private @NonNull ContentValues buildContentValuesForUpdate(@NonNull String introductionId,
                                                              @NonNull String state,
-                                                             @NonNull String introducerId,
-                                                             @NonNull String introduceeId,
-                                                             @NonNull String serviceId,
+                                                             @NonNull String introducerServiceId,
+                                                             @NonNull String introduceeServiceId,
                                                              @NonNull String name,
                                                              @NonNull String number,
                                                              @NonNull String identityKey,
@@ -287,9 +302,8 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
                                                              @NonNull String timestamp) throws NumberFormatException{
     Preconditions.checkArgument(!introductionId.isEmpty() &&
                                 !state.isEmpty() &&
-                                !introducerId.isEmpty() &&
-                                !introduceeId.isEmpty() &&
-                                !serviceId.isEmpty() &&
+                                !introducerServiceId.isEmpty() &&
+                                !introduceeServiceId.isEmpty() &&
                                 !name.isEmpty() &&
                                 !number.isEmpty() &&
                                 !identityKey.isEmpty() &&
@@ -299,15 +313,12 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     Preconditions.checkArgument(introId > 0);
     int s = Integer.parseInt(state);
     Preconditions.checkArgument(s >= 0 && s <= 7);
-    Preconditions.checkArgument(Long.parseLong(introducerId) > 0);
-    Preconditions.checkArgument(Long.parseLong(introduceeId) > 0);
     long timestampLong = Long.parseLong(timestamp);
     Preconditions.checkArgument(timestampLong > 0);
     return buildContentValuesForUpdate(introId,
                                        State.forState(s),
-                                       introducerId,
-                                       introduceeId,
-                                       serviceId,
+                                       introducerServiceId,
+                                       introduceeServiceId,
                                        name,
                                        number,
                                        identityKey,
@@ -323,13 +334,11 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
   private @NonNull ContentValues buildContentValuesForUpdate(@NonNull TI_Data introduction){
     Preconditions.checkNotNull(introduction.getId());
     Preconditions.checkNotNull(introduction.getState());
-    Preconditions.checkNotNull(introduction.getIntroduceeId());
     Preconditions.checkNotNull(introduction.getIntroducerServiceId());
     Preconditions.checkNotNull(introduction.getPredictedSecurityNumber());
     return buildContentValuesForUpdate(introduction.getId(),
                                        introduction.getState(),
-                                       introduction.getIntroducerServiceId().serialize(),
-                                       introduction.getIntroduceeId().serialize(),
+                                       introduction.getIntroducerServiceId(),
                                        introduction.getIntroduceeServiceId(),
                                        introduction.getIntroduceeName(),
                                        introduction.getIntroduceeNumber(),
@@ -346,7 +355,6 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
   private @NonNull ContentValues buildContentValuesForStale(@NonNull TI_Data introduction){
     Preconditions.checkNotNull(introduction.getId());
     Preconditions.checkNotNull(introduction.getState());
-    Preconditions.checkNotNull(introduction.getIntroduceeId());
     Preconditions.checkNotNull(introduction.getIntroducerServiceId());
     Preconditions.checkNotNull(introduction.getPredictedSecurityNumber());
     Preconditions.checkArgument(!introduction.getState().isStale());
@@ -370,8 +378,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
 
     return buildContentValuesForUpdate(introduction.getId(),
                                        newState,
-                                       introduction.getIntroducerServiceId().serialize(),
-                                       introduction.getIntroduceeId().serialize(),
+                                       introduction.getIntroducerServiceId(),
                                        introduction.getIntroduceeServiceId(),
                                        introduction.getIntroduceeName(),
                                        introduction.getIntroduceeNumber(),
@@ -398,7 +405,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     selectionBuilder.append(String.format(andAppend, INTRODUCEE_PUBLIC_IDENTITY_KEY));
 
     // TODO: if this works well, use in other dbs where you build queries
-    String[] args = SqlUtil.buildArgs(data.getIntroducerServiceId().serialize(),
+    String[] args = SqlUtil.buildArgs(data.getIntroducerServiceId(),
                                       data.getIntroduceeServiceId(),
                                       data.getIntroduceeIdentityKey());
 
@@ -415,10 +422,9 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
       throw new AssertionError(TAG + " Either there is one entry or none, nothing else valid.");
     c.close();
 
-    ContentValues values = new ContentValues(9);
-    RecipientId introduceeId = data.getIntroduceeId();
+    Optional<RecipientId> introduceeOpt =  SignalDatabase.recipients().getByServiceId(ServiceId.parseOrThrow(data.getIntroduceeServiceId()));
+    RecipientId introduceeId = introduceeOpt.orElse(null);
     if(introduceeId == null){
-      values.put(STATE, State.PENDING.toInt()); // if recipient does not exist, we have nothing to compare against.
       ApplicationDependencies.getJobManager().add(new TrustedIntroductionsRetreiveIdentityJob(data));
       Log.i(TAG, "Unknown recipient, deferred insertion of Introduction into database for: " + data.getIntroduceeName());
       // This is expected and not an error.
@@ -432,41 +438,33 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
         Log.e(TAG, "Failed to fetch service ID for: " + data.getIntroduceeName() + ", with RecipientId: " + introduceeId);
         return -1;
       }
-      return insertIntroductionCallback(values, data, TI_Utils.getEncodedIdentityKey(introduceeId), introduceeServiceId.toString());
+      return insertIntroductionCallback(data, TI_Utils.getEncodedIdentityKey(introduceeId), introduceeServiceId.toString());
     }
   }
 
   // Callback for profile retreive Identity job
   // TODO: annoying that this needs to be public. Should be private and just passed as function pointer..
-  // PRE: fully populated jobResult
   // But java is annoying when it comes to function serialization so I won't do that for now
   // Only meant to be called by Job & @incomingIntroduction
-
   /**
-   *
-   * @param values == new ContentValues(9);
-   * @param data the introduction to be inserted.
+   * @param data the introduction to be inserted, predicted security nr. may not be null
    * @param base64KeyResult the public key fetched from the server for the introducee
    * @param aciResult the aci fetched from the server for the introducee
    * @return id of introduction or -1 if fail.
    */
-  public long insertIntroductionCallback(ContentValues values, TI_Data data, String base64KeyResult, String aciResult){
+  public long insertIntroductionCallback(TI_Data data, String base64KeyResult, String aciResult){
     Preconditions.checkArgument(aciResult != null && data != null &&
                                 aciResult.equals(data.getIntroduceeServiceId()));
-    // This is a recipient we do not have yet.
-    values.put(INTRODUCEE_RECIPIENT_ID, UNKNOWN_INTRODUCEE_RECIPIENT_ID);
-    if(base64KeyResult.equals(data.getIntroduceeIdentityKey())){
-      values.put(STATE, State.PENDING.toInt());
-    } else {
-      values.put(STATE, State.CONFLICTING.toInt());
-    }
-    values.put(INTRODUCER_SERVICE_ID, data.getIntroducerServiceId().serialize());
-    values.put(INTRODUCEE_SERVICE_ID, data.getIntroduceeServiceId());
-    values.put(INTRODUCEE_PUBLIC_IDENTITY_KEY, data.getIntroduceeIdentityKey());
-    values.put(INTRODUCEE_NAME, data.getIntroduceeName());
-    values.put(INTRODUCEE_NUMBER, data.getIntroduceeNumber());
-    values.put(PREDICTED_FINGERPRINT, data.getPredictedSecurityNumber());
-    values.put(TIMESTAMP, data.getTimestamp());
+    Preconditions.checkArgument(data.getPredictedSecurityNumber() != null);
+
+    ContentValues values = buildContentValuesForInsert(base64KeyResult.equals(data.getIntroduceeIdentityKey()) ? State.PENDING : State.CONFLICTING,
+                                                       data.getIntroducerServiceId(),
+                                                       data.getIntroduceeServiceId(),
+                                                       data.getIntroduceeIdentityKey(),
+                                                       data.getIntroduceeName(),
+                                                       data.getIntroduceeNumber(),
+                                                       data.getPredictedSecurityNumber(),
+                                                       data.getTimestamp());
     SQLiteDatabase writeableDatabase = databaseHelper.getSignalWritableDatabase();
     long id = writeableDatabase.insert(TABLE_NAME, null, values);
     Log.i(TAG, "Inserted new introduction for: " + data.getIntroduceeName() + ", with id: " + id);

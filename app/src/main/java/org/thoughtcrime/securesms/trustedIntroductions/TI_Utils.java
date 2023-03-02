@@ -63,7 +63,7 @@ public class TI_Utils {
   static final String TAG = String.format(TI_LOG_TAG, Log.tag(TI_Utils.class));
 
   // Version, change if you change data/message format for compatibility
-  public static final int TI_VERSION = 1;
+  public static final String TI_VERSION = "1.0";
 
   // Random String to mark a message as a trustedIntroduction, since I'm tunneling through normal messages
   static final String TI_IDENTIFYER = "QOikEX9PPGIuXfiejT9nC2SsDB8d9AG0dUPQ9gERBQ8qHF30Xj --- This message is part of an experimental feature and not meant to be read by humans --- Introduction Data:\n";
@@ -79,8 +79,6 @@ public class TI_Utils {
   // Constants to pull values out of the cursors
   // Might be worth it to consider using live recipient for all of them... but I only need a few values, not sure
   // what is less overhead and if caching is really relevant here.
-  // @see RecipientTable
-  static final String LOCAL_RECIPIENT_ID = "_id";
   static final String SERVICE_ID = "uuid";
   static final String SORT_NAME = "sort_name"; // From search projection, keeps me from doing name shenanigans
   static final String PHONE = "phone";
@@ -88,9 +86,6 @@ public class TI_Utils {
   // Json keys
   // TODO: May want to add that to be part of the introduction at some point. This way we can avoid crashed on importing old backups with version missmatches
   static final String TI_VERSION_J = "ti_version";
-  // static final String INTRODUCER_SERVICE_ID_J = "introducer_uuid"; // TODO: Don't really need this in the message I think... can be inferred when receiving the message
-  // Sending the INTRODUCER_SERVICE_ID_J would probably lead to problems if someone spoofs it. Would be preferential to query it when the message is received.
-  static final String INTRODUCER_SERVICE_ID_J = "introducer_uuid";
   static final String INTRODUCEE_SERVICE_ID_J = "introducee_uuid";
   static final String NAME_J = "name";
   static final String NUMBER_J = "number";
@@ -261,10 +256,12 @@ public class TI_Utils {
   public static String buildMessageBody(@NonNull RecipientId introductionRecipientId, @NonNull Set<RecipientId> introducees) throws JSONException {
     assert introducees.size() > 0: TAG + " buildMessageBody called with no Recipient Ids!";
 
-    // TODO: Should I just use the LiveRecipient Stuff instead?  :/ caching etc..
+    // TODO: LiveRecipient?
     RecipientTable rdb = SignalDatabase.recipients();
     Cursor recipientCursor = rdb.getCursorForSendingTI(introducees);
     JSONArray data = new JSONArray();
+
+    // TODO: Add version at the end of this exercise
 
     // Loop over all the contacts you want to introduce
     recipientCursor.moveToFirst();
@@ -308,6 +305,7 @@ public class TI_Utils {
     if (!body.contains(TI_IDENTIFYER)){
       throw new AssertionError("Non TI message passed into parse TI!");
     }
+    // TODO: Check version and ignore/convert depending on change
     String introducerServiceId = Recipient.live(introducerId).resolve().getServiceId().toString();
     ArrayList<TI_Data> result = new ArrayList<>();
     String jsonDataS = body.replace(TI_IDENTIFYER, "");
