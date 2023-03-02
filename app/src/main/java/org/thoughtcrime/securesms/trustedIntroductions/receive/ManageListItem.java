@@ -20,6 +20,7 @@ import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.R;
+import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
 import org.whispersystems.signalservice.api.util.Preconditions;
 
 import java.util.Date;
@@ -131,7 +132,7 @@ public class ManageListItem extends ConstraintLayout {
       return c.getString(R.string.ManageIntroductionsListItem__Forgotten_Introducer);
     }
     // TODO: problematic in terms of work on UI thread?
-    Recipient r = Recipient.live(data.getIntroducerServiceId()).resolve();
+    Recipient r = Recipient.live(TI_Utils.getRecipientIdOrUnknown(data.getIntroducerServiceId())).resolve();
     return r.getDisplayNameOrUsername(c);
   }
 
@@ -174,7 +175,7 @@ public class ManageListItem extends ConstraintLayout {
   }
 
   private TI_Data changeState(TI_Data d, TrustedIntroductionsDatabase.State s){
-    return new TI_Data(d.getId(), s, d.getIntroducerServiceId(), d.getIntroduceeId(), d.getIntroduceeServiceId(), d.getIntroduceeName(), d.getIntroduceeNumber(), d.getIntroduceeIdentityKey(), d.getPredictedSecurityNumber(), d.getTimestamp());
+    return new TI_Data(d.getId(), s, d.getIntroducerServiceId(), d.getIntroduceeServiceId(), d.getIntroduceeName(), d.getIntroduceeNumber(), d.getIntroduceeIdentityKey(), d.getPredictedSecurityNumber(), d.getTimestamp());
   }
 
   /**

@@ -37,7 +37,6 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
         // Ignoring Identity key, since this is already covered by public Key
         return oldItem.getId().equals(newItem.getId()) &&
                (oldItem.getIntroducerServiceId() == null || newItem.getIntroducerServiceId() == null || oldItem.getIntroducerServiceId().equals(newItem.getIntroducerServiceId())) &&
-               (oldItem.getIntroduceeId() == null || newItem.getIntroduceeId() == null || oldItem.getIntroduceeId().equals(newItem.getIntroduceeId())) &&
                oldItem.getIntroduceeServiceId().equals(newItem.getIntroduceeServiceId()) &&
                oldItem.getIntroduceeName().equals(newItem.getIntroduceeName()) &&
                oldItem.getIntroduceeNumber().equals(newItem.getIntroduceeNumber()) &&
