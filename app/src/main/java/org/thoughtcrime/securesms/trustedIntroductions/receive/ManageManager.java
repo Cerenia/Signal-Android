@@ -24,7 +24,7 @@ public class ManageManager {
 
   private static final String TAG =  String.format(TI_Utils.TI_LOG_TAG, Log.tag(ManageManager.class));
 
-  // Introducer ID, or special iff all.
+  // Introducer ID, or unknown iff all.
   private final RecipientId recipientId;
 
   @NonNull private final String forgottenPlaceholder;
@@ -39,15 +39,21 @@ public class ManageManager {
 
   void getIntroductions(@NonNull Consumer<List<Pair<TI_Data, ManageViewModel.IntroducerInformation>>> listConsumer){
     SignalExecutors.BOUNDED.execute(() -> {
+      
       String introducerServiceId;
-      try {
-        introducerServiceId = Recipient.live(recipientId).resolve().requireServiceId().toString();
-      } catch (Error e){
-        // Iff the introducer does not have a serviceId, the introduction should most likely not have happened (no secure channel)
-        // We simply return in this case without posting anything
-        Log.e(TAG, "Service Id for recipient " + recipientId.toString() + " did not resolve. Returning without results.");
-        return;
+      if(recipientId.equals(RecipientId.UNKNOWN)){
+        introducerServiceId = null;
+      } else {
+        try {
+          introducerServiceId = Recipient.live(recipientId).resolve().requireServiceId().toString();
+        } catch (Error e){
+          // Iff the specific introducer does not have a serviceId, the introduction should most likely not have happened (no secure channel)
+          // We simply return in this case without posting anything
+          Log.e(TAG, "Service Id for recipient " + recipientId.toString() + " did not resolve. Returning without results.");
+          return;
+        }
       }
+
       // Pull introductions out of the database
       TrustedIntroductionsDatabase.IntroductionReader reader = tdb.getIntroductions(introducerServiceId);
       ArrayList<TI_Data> introductions = new ArrayList<>();
