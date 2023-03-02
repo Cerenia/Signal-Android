@@ -5,7 +5,9 @@ import androidx.core.util.Consumer;
 import androidx.core.util.Pair;
 
 import org.signal.core.util.concurrent.SignalExecutors;
+import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
+import org.thoughtcrime.securesms.jobs.TrustedIntroductionsReceiveJob;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
@@ -19,6 +21,8 @@ import java.util.List;
 import static org.webrtc.ContextUtils.getApplicationContext;
 
 public class ManageManager {
+
+  private static final String TAG =  String.format(TI_Utils.TI_LOG_TAG, Log.tag(ManageManager.class));
 
   // Introducer ID, or special iff all.
   private final RecipientId recipientId;
@@ -35,7 +39,15 @@ public class ManageManager {
 
   void getIntroductions(@NonNull Consumer<List<Pair<TI_Data, ManageViewModel.IntroducerInformation>>> listConsumer){
     SignalExecutors.BOUNDED.execute(() -> {
-      String introducerServiceId = Recipient.live(recipientId).resolve().requireServiceId().toString();
+      String introducerServiceId;
+      try {
+        introducerServiceId = Recipient.live(recipientId).resolve().requireServiceId().toString();
+      } catch (Error e){
+        // Iff the introducer does not have a serviceId, the introduction should most likely not have happened (no secure channel)
+        // We simply return in this case without posting anything
+        Log.e(TAG, "Service Id for recipient " + recipientId.toString() + " did not resolve. Returning without results.");
+        return;
+      }
       // Pull introductions out of the database
       TrustedIntroductionsDatabase.IntroductionReader reader = tdb.getIntroductions(introducerServiceId);
       ArrayList<TI_Data> introductions = new ArrayList<>();
