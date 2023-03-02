@@ -53,7 +53,7 @@ import org.whispersystems.signalservice.api.push.ServiceId;
 
 import static org.webrtc.ContextUtils.getApplicationContext;
 
-//TODO: May be able to simplify further by using JsonUtil.java in codebase...
+// TODO: May be able to simplify further by using JsonUtil.java in codebase...
 // Serialization for each object that I am sending is already present..
 
 public class TI_Utils {
@@ -63,6 +63,8 @@ public class TI_Utils {
   static final String TAG = String.format(TI_LOG_TAG, Log.tag(TI_Utils.class));
 
   // Version, change if you change data/message format for compatibility
+  // TODO: this is currently only reflected in message format, would need to add this to Database to make
+  // Backup/Restore work accross revisions
   public static final String TI_VERSION = "1.0";
 
   // Random String to mark a message as a trustedIntroduction, since I'm tunneling through normal messages
@@ -86,6 +88,7 @@ public class TI_Utils {
   // Json keys
   // TODO: May want to add that to be part of the introduction at some point. This way we can avoid crashed on importing old backups with version missmatches
   static final String TI_VERSION_J = "ti_version";
+  static final String INTRODUCEE_DATA_J = "introducees";
   static final String INTRODUCEE_SERVICE_ID_J = "introducee_uuid";
   static final String NAME_J = "name";
   static final String NUMBER_J = "number";
@@ -256,13 +259,14 @@ public class TI_Utils {
   public static String buildMessageBody(@NonNull RecipientId introductionRecipientId, @NonNull Set<RecipientId> introducees) throws JSONException {
     assert introducees.size() > 0: TAG + " buildMessageBody called with no Recipient Ids!";
 
+    JSONObject data = new JSONObject();
+
     // TODO: LiveRecipient?
     RecipientTable rdb = SignalDatabase.recipients();
     Cursor recipientCursor = rdb.getCursorForSendingTI(introducees);
-    JSONArray data = new JSONArray();
+    JSONArray introduceeData = new JSONArray();
 
-    // TODO: Add version at the end of this exercise
-
+    data.put(TI_VERSION_J, TI_VERSION);
     // Loop over all the contacts you want to introduce
     recipientCursor.moveToFirst();
     ArrayList<RecipientId> introduceesList = new ArrayList<>(introducees);
@@ -277,11 +281,12 @@ public class TI_Utils {
       introducee.put(IDENTITY_J, encodeIdentityKey(introduceeIdentityKey));
       String formatedSafetyNr = predictFingerprint(introductionRecipientId, introduceesList.get(i), introduceeServiceId, introduceeE164, introduceeIdentityKey);
       introducee.put(PREDICTED_FINGERPRINT_J, formatedSafetyNr);
-      data.put(introducee);
+      introduceeData.put(introducee);
       recipientCursor.moveToNext();
     }
 
     recipientCursor.close();
+    data.put(INTRODUCEE_DATA_J, introduceeData);
 
     return TI_IDENTIFYER + TI_SEPARATOR + data.toString(INDENT_SPACES);
   }
@@ -303,7 +308,7 @@ public class TI_Utils {
    */
   @WorkerThread
   @SuppressLint("Range") // keywords exists
-  public static List<TI_Data> parseTIMessage(String body, long timestamp, RecipientId introducerId){
+  public static @Nullable List<TI_Data> parseTIMessage(String body, long timestamp, RecipientId introducerId){
     if (!body.contains(TI_IDENTIFYER)){
       throw new AssertionError("Non TI message passed into parse TI!");
     }
@@ -312,12 +317,19 @@ public class TI_Utils {
     ArrayList<TI_Data> result = new ArrayList<>();
     String jsonDataS = body.replace(TI_IDENTIFYER, "");
     try {
-      JSONArray data = new JSONArray(jsonDataS);
+      JSONObject data = new JSONObject(jsonDataS);
+      String version = data.getString(TI_VERSION_J);
+      if (!version.equals(TI_VERSION)){
+        // TODO: For now we just ignore introductions with missmatched versions
+        // would add any migration code here
+        return null;
+      }
+      JSONArray introducees = data.getJSONArray(INTRODUCEE_DATA_J);
       ArrayList<IdKeyPair> idKeyPairs = new ArrayList<>();
       List<String> recipientServiceIds = new ArrayList<>();
       // Get all SerciveIds of introducees first to minimize database Queries
-      for(int i = 0; i < data.length(); i++){
-        JSONObject o = data.getJSONObject(i);
+      for (int i = 0; i < introducees.length(); i++){
+        JSONObject o = introducees.getJSONObject(i);
         String introduceeServiceId = o.getString(INTRODUCEE_SERVICE_ID_J);
         idKeyPairs.add(new IdKeyPair(introduceeServiceId, o.getString(IDENTITY_J)));
         recipientServiceIds.add(introduceeServiceId);
@@ -325,9 +337,9 @@ public class TI_Utils {
       // Get any known recipients & add to result
       Cursor cursor = SignalDatabase.recipients().getCursorForReceivingTI(recipientServiceIds);
       ArrayList<String> knownIds = new ArrayList<>();
-      if(cursor.getCount() > 0) {
+      if (cursor.getCount() > 0) {
         cursor.moveToFirst();
-        while(!cursor.isAfterLast()){
+        while (!cursor.isAfterLast()){
           // Guaranteed to be the same as in introduction
           String introduceeServiceId = cursor.getString(cursor.getColumnIndex(SERVICE_ID));
           knownIds.add(introduceeServiceId);
@@ -341,8 +353,8 @@ public class TI_Utils {
         cursor.close();
       }
       // Iterate through JSONData again, create the introductions for the still unknown recipients & set the predictedSecurityNumbers for all
-      for(int i = 0; i < data.length(); i++){
-        JSONObject o = data.getJSONObject(i);
+      for(int i = 0; i < introducees.length(); i++){
+        JSONObject o = introducees.getJSONObject(i);
         // If data was fetched from local database, simply add the Security number information
         String introduceeServiceId = o.getString(INTRODUCEE_SERVICE_ID_J);
         if (knownIds.contains(introduceeServiceId)){
