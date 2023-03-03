@@ -12,6 +12,7 @@ import androidx.annotation.WorkerThread;
 
 import org.signal.core.util.SqlUtil;
 import org.signal.core.util.logging.Log;
+import org.thoughtcrime.securesms.crypto.storage.SignalIdentityKeyStore;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.jobs.TrustedIntroductionsRetreiveIdentityJob;
 import org.thoughtcrime.securesms.jobs.TrustedIntroductionsWaitForIdentityJob;
@@ -426,7 +427,8 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     Optional<RecipientId> introduceeOpt =  SignalDatabase.recipients().getByServiceId(ServiceId.parseOrThrow(data.getIntroduceeServiceId()));
     RecipientId introduceeId = introduceeOpt.orElse(null);
     if(introduceeId == null){
-      ApplicationDependencies.getJobManager().add(new TrustedIntroductionsRetreiveIdentityJob(data));
+      // Do not save identity when you are simply checking for conflict. We do not want persistent data that the user did not consciously decide to add.
+      ApplicationDependencies.getJobManager().add(new TrustedIntroductionsRetreiveIdentityJob(data, false, true));
       Log.i(TAG, "Unknown recipient, deferred insertion of Introduction into database for: " + data.getIntroduceeName());
       // This is expected and not an error.
       return 0;
@@ -443,11 +445,11 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
         return insertIntroductionCallback(data, TI_Utils.getEncodedIdentityKey(introduceeId), introduceeServiceId.toString());
       } catch (TI_Utils.TI_MissingIdentityException e){
         e.printStackTrace();
+        ApplicationDependencies.getJobManager().add(new TrustedIntroductionsRetreiveIdentityJob(data, false, true));
+        Log.i(TAG, "Unknown identity, deferred insertion of Introduction into database for: " + data.getIntroduceeName());
+        // This is expected and not an error.
+        return 0;
       }
-      // if it still didn't work, this is a recipient without an identity record (no messages exchanged yet)
-      // schedule retreive identity job as above
-      ApplicationDependencies.getJobManager().add(new TrustedIntroductionsRetreiveIdentityJob(data));
-      return 0;
     }
   }
 
@@ -503,6 +505,9 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
         !ApplicationDependencies.getProtocolStore().aci().identities().getIdentityRecord(recipientId).isPresent()){
       RecipientTable db = SignalDatabase.recipients();
       db.getAndPossiblyMerge(ServiceId.parseOrThrow(introduction.getIntroduceeServiceId()), introduction.getIntroduceeNumber());
+      // Save identity, the user specifically decided to interfere with the introduction (accept/reject) so saving this state is ok.
+      Log.d(TAG, "Saving identity for: " + recipientId);
+      ApplicationDependencies.getJobManager().add(new TrustedIntroductionsRetreiveIdentityJob(introduction, true, false));
       ApplicationDependencies.getJobManager().add(new TrustedIntroductionsWaitForIdentityJob(introduction, newState, logMessage));
       return false; // TODO: simply postponed, do we need ternary state here?
     }

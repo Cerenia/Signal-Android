@@ -101,7 +101,7 @@ public class TI_Utils {
   //public static final int TI_JOB_MAX_ATTEMPTS = 1; // TODO: here to avoid infinite crashes for now..
   // TODO: Testing
   //public static final int TI_JOB_IDENTITY_WAIT_MAX_ATTEMPTS = 1;
-  public static final int TI_JOB_IDENTITY_WAIT_MAX_ATTEMPTS = 10;
+  public static final int TI_JOB_IDENTITY_WAIT_MAX_ATTEMPTS = 5;
 
   // How to format dates in introductions:
   @SuppressLint("SimpleDateFormat") public static final SimpleDateFormat INTRODUCTION_DATE_PATTERN = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss");
