@@ -513,16 +513,24 @@ public class VerifyDisplayFragment extends Fragment implements ViewTreeObserver.
       @Override
       public void onAnimationEnd(Animation animation) {
         qrVerified.postDelayed(() -> {
-          ScaleAnimation scaleAnimation1 = new ScaleAnimation(1, 0, 1, 0,
-                                                              ScaleAnimation.RELATIVE_TO_SELF, 0.5f,
-                                                              ScaleAnimation.RELATIVE_TO_SELF, 0.5f);
+          try{
+            ScaleAnimation scaleAnimation1 = new ScaleAnimation(1, 0, 1, 0,
+                                                                ScaleAnimation.RELATIVE_TO_SELF, 0.5f,
+                                                                ScaleAnimation.RELATIVE_TO_SELF, 0.5f);
 
-          scaleAnimation1.setInterpolator(new AnticipateInterpolator());
-          scaleAnimation1.setDuration(500);
-          ViewUtil.animateOut(qrVerified, scaleAnimation1, View.GONE);
-          ViewUtil.fadeIn(qrCode, 800);
-          qrCodeContainer.setEnabled(true);
-          tapLabel.setText(getString(R.string.verify_display_fragment__tap_to_scan));
+            scaleAnimation1.setInterpolator(new AnticipateInterpolator());
+            scaleAnimation1.setDuration(500);
+            ViewUtil.animateOut(qrVerified, scaleAnimation1, View.GONE);
+            ViewUtil.fadeIn(qrCode, 800);
+            qrCodeContainer.setEnabled(true);
+            tapLabel.setText(getString(R.string.verify_display_fragment__tap_to_scan));
+          } catch (IllegalStateException e){
+            // TODO: Maybe create PR for that at some point? Not really problem in normal operation, I encounter that because I am
+            // verifying lots of contacts fast by hand
+            Log.e(TAG, "Illegal state! Possibly the user navigated back before the feedback was posted.");
+            e.printStackTrace();
+            // simply do nothing in this case
+          }
         }, 2000);
       }
 
