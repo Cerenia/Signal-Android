@@ -5,7 +5,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 
-import androidx.annotation.AnyThread;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
@@ -442,7 +441,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
       }
       try {
         return insertIntroductionCallback(data, TI_Utils.getEncodedIdentityKey(introduceeId), introduceeServiceId.toString());
-      } catch (Exception e){
+      } catch (TI_Utils.TI_MissingIdentityException e){
         e.printStackTrace();
       }
       // if it still didn't work, this is a recipient without an identity record (no messages exchanged yet)
