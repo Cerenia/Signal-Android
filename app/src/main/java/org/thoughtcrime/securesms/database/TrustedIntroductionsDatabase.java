@@ -440,7 +440,15 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
         Log.e(TAG, "Failed to fetch service ID for: " + data.getIntroduceeName() + ", with RecipientId: " + introduceeId);
         return -1;
       }
-      return insertIntroductionCallback(data, TI_Utils.getEncodedIdentityKey(introduceeId), introduceeServiceId.toString());
+      try {
+        return insertIntroductionCallback(data, TI_Utils.getEncodedIdentityKey(introduceeId), introduceeServiceId.toString());
+      } catch (Exception e){
+        e.printStackTrace();
+      }
+      // if it still didn't work, this is a recipient without an identity record (no messages exchanged yet)
+      // schedule retreive identity job as above
+      ApplicationDependencies.getJobManager().add(new TrustedIntroductionsRetreiveIdentityJob(data));
+      return 0;
     }
   }
 
