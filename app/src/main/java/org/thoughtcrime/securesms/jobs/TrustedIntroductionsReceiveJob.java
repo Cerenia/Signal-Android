@@ -125,7 +125,7 @@ public class TrustedIntroductionsReceiveJob extends BaseJob  {
       }
       inserts_succeeded++;
     }
-    Log.e(TAG, "TrustedIntroductionsReceiveJob completed!");
+    Log.i(TAG, "TrustedIntroductionsReceiveJob completed!");
   }
 
   // TODO
@@ -139,7 +139,7 @@ public class TrustedIntroductionsReceiveJob extends BaseJob  {
       // Deserialize introduction_data if present
       String serializedIntroductions = data.getString(KEY_INTRODUCTIONS);
       ArrayList<TI_Data> tiData = new ArrayList<>();
-      Log.e(TAG, serializedIntroductions);
+      Log.i(TAG, serializedIntroductions);
       if (!serializedIntroductions.isEmpty()) {
         try{
           JSONArray arr = new JSONArray(serializedIntroductions);
