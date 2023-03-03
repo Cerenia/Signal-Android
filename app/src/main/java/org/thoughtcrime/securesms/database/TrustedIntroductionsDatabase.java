@@ -498,7 +498,9 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     Preconditions.checkArgument(introduction.getId() != null);
 
     // Recipient not yet in database, must insert it first and update the introducee ID
-    if (TI_Utils.getRecipientIdOrUnknown(introduction.getIntroduceeServiceId()).equals(RecipientId.UNKNOWN)){
+    RecipientId recipientId = TI_Utils.getRecipientIdOrUnknown(introduction.getIntroduceeServiceId());
+    if (recipientId.equals(RecipientId.UNKNOWN) ||
+        !ApplicationDependencies.getProtocolStore().aci().identities().getIdentityRecord(recipientId).isPresent()){
       RecipientTable db = SignalDatabase.recipients();
       db.getAndPossiblyMerge(ServiceId.parseOrThrow(introduction.getIntroduceeServiceId()), introduction.getIntroduceeNumber());
       ApplicationDependencies.getJobManager().add(new TrustedIntroductionsWaitForIdentityJob(introduction, newState, logMessage));
@@ -607,7 +609,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
         TI_Utils.updateContactsVerifiedStatus(rId, TI_Utils.getIdentityKey(rId), newIntroduceeVerification);
       } catch (TI_Utils.TI_MissingIdentityException e){
         e.printStackTrace();
-        throw new AssertionError(TAG + " Precondidion violated, recipient " + rId + "'s verification status cannot be updated!");
+        throw new AssertionError(TAG + " Precondition violated, recipient " + rId + "'s verification status cannot be updated!");
       }
       Log.i(TAG, logmessage);
     }
