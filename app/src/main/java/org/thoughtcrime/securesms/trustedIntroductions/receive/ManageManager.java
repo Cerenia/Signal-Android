@@ -39,7 +39,7 @@ public class ManageManager {
 
   void getIntroductions(@NonNull Consumer<List<Pair<TI_Data, ManageViewModel.IntroducerInformation>>> listConsumer){
     SignalExecutors.BOUNDED.execute(() -> {
-      
+
       String introducerServiceId;
       if(recipientId.equals(RecipientId.UNKNOWN)){
         introducerServiceId = null;
@@ -49,7 +49,7 @@ public class ManageManager {
         } catch (Error e){
           // Iff the specific introducer does not have a serviceId, the introduction should most likely not have happened (no secure channel)
           // We simply return in this case without posting anything
-          Log.e(TAG, "Service Id for recipient " + recipientId.toString() + " did not resolve. Returning without results.");
+          Log.e(TAG, "Service Id for recipient " + recipientId + " did not resolve. Returning without results.");
           return;
         }
       }
