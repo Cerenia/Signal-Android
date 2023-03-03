@@ -8,6 +8,7 @@ import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
@@ -200,7 +201,7 @@ import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.handleTIM
  * data to our data stores.
  */
 @SuppressWarnings({ "OptionalGetWithoutIsPresent", "OptionalIsPresent" })
-public final class MessageContentProcessor {
+public class MessageContentProcessor {
 
   private static final String TAG = Log.tag(MessageContentProcessor.class);
 
@@ -210,7 +211,8 @@ public final class MessageContentProcessor {
     return new MessageContentProcessor(context);
   }
 
-  private MessageContentProcessor(@NonNull Context context) {
+  @VisibleForTesting
+  MessageContentProcessor(@NonNull Context context) {
     this.context = context;
   }
 
