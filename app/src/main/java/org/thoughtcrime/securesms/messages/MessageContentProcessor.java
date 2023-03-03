@@ -588,6 +588,11 @@ public final class MessageContentProcessor {
     }
 
     switch (messageState) {
+      case DECRYPTION_ERROR:
+        warn(String.valueOf(timestamp), "Handling encryption error.");
+        SignalDatabase.messages().insertBadDecryptMessage(sender.getId(), e.senderDevice, timestamp, System.currentTimeMillis(), getThreadIdForException(e));
+        break;
+
       case INVALID_VERSION:
         warn(String.valueOf(timestamp), "Handling invalid version.");
         handleInvalidVersionMessage(e.sender, e.senderDevice, timestamp, smsMessageId);
@@ -615,6 +620,15 @@ public final class MessageContentProcessor {
 
       default:
         throw new AssertionError("Not handled " + messageState + ". (" + timestamp + ")");
+    }
+  }
+
+  private long getThreadIdForException(ExceptionMetadata metadata) {
+    if (metadata.groupId != null) {
+      Recipient groupRecipient = Recipient.externalPossiblyMigratedGroup(metadata.groupId);
+      return SignalDatabase.threads().getOrCreateThreadIdFor(groupRecipient);
+    } else {
+      return SignalDatabase.threads().getOrCreateThreadIdFor(Recipient.external(context, metadata.sender));
     }
   }
 
@@ -3410,7 +3424,8 @@ public final class MessageContentProcessor {
     LEGACY_MESSAGE,
     DUPLICATE_MESSAGE,
     UNSUPPORTED_DATA_MESSAGE,
-    NOOP
+    NOOP,
+    DECRYPTION_ERROR
   }
 
   public static final class ExceptionMetadata {
