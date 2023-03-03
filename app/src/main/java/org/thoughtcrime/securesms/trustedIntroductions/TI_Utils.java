@@ -64,7 +64,10 @@ public class TI_Utils {
   // Version, change if you change data/message format for compatibility
   // TODO: this is currently only reflected in message format, would need to add this to Database to make
   // Backup/Restore work accross revisions
-  public static final String TI_VERSION = "1.0";
+  public static final String TI_MESSAGE_VERSION = "1.0";
+  // Since the Signal version is still important and will not be overwritten I define my own
+  // TODO: should this be part of a title somewhere? (may be added to "about" screen in app)
+  public static final String TI_APK_VERSION = "0.0";
 
   // Random String to mark a message as a trustedIntroduction, since I'm tunneling through normal messages
   static final String TI_IDENTIFYER = "QOikEX9PPGIuXfiejT9nC2SsDB8d9AG0dUPQ9gERBQ8qHF30Xj --- This message is part of an experimental feature and not meant to be read by humans --- Introduction Data:\n";
@@ -236,7 +239,7 @@ public class TI_Utils {
     Optional<IdentityRecord> identityRecord = ApplicationDependencies.getProtocolStore().aci().identities().getIdentityRecord(id);
     // If this doesn't work we have a programming error further up the stack, no introduction can be made if we don't have the identity.
     if(!identityRecord.isPresent()){
-      throw new TI_MissingIdentityException(TAG + " No identity found for the introduction recipient!");
+      throw new TI_MissingIdentityException(TAG + " No identity found for the recipient with id: " + id);
     }
     return identityRecord.get().getIdentityKey();
   }
@@ -267,7 +270,7 @@ public class TI_Utils {
     Cursor recipientCursor = rdb.getCursorForSendingTI(introducees);
     JSONArray introduceeData = new JSONArray();
 
-    data.put(TI_VERSION_J, TI_VERSION);
+    data.put(TI_VERSION_J, TI_MESSAGE_VERSION);
     // Loop over all the contacts you want to introduce
     recipientCursor.moveToFirst();
     ArrayList<RecipientId> introduceesList = new ArrayList<>(introducees);
@@ -338,7 +341,7 @@ public class TI_Utils {
     try {
       JSONObject data = new JSONObject(jsonDataS);
       String version = data.getString(TI_VERSION_J);
-      if (!version.equals(TI_VERSION)){
+      if (!version.equals(TI_MESSAGE_VERSION)){
         // TODO: For now we just ignore introductions with missmatched versions
         // would add any migration code here
         return null;
