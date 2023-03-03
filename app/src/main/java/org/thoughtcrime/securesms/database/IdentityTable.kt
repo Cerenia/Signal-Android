@@ -232,11 +232,16 @@ class IdentityTable internal constructor(context: Context?, databaseHelper: Sign
   /**
    * Publicly exposes verified status by recipient id.
    * @param id: id of the recipient
-   * @return The VerifiedStatus of the recipient or Unverified if the recipient is not in the database.
+   * @return The VerifiedStatus of the recipient or default if the recipient is not in the database.
    */
   fun getVerifiedStatus(id: RecipientId?): VerifiedStatus? {
-    val ir = getIdentityRecord(Recipient.resolved(id!!).requireServiceId().toString())
-    return ir.map(IdentityRecord::verifiedStatus).orElse(VerifiedStatus.UNVERIFIED) // fail closed
+    val recipient = Recipient.resolved(id!!)
+    if(recipient.hasServiceId()){
+      val ir = getIdentityRecord(recipient.requireServiceId().toString())
+      return ir.map(IdentityRecord::verifiedStatus).orElse(VerifiedStatus.UNVERIFIED) // fail closed
+    } else {
+      return VerifiedStatus.DEFAULT
+    }
   }
 
   private fun getIdentityRecord(addressName: String): Optional<IdentityRecord> {
