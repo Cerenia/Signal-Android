@@ -122,7 +122,7 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
     }
 
     //TODO test
-    Log.e(TAG, "RetreiveIdentityJob started.");
+    Log.i(TAG, "RetreiveIdentityJob started.");
     ServiceId sid = ServiceId.parseOrThrow(data.TIData.getIntroduceeServiceId());
     SignalServiceAddress serviceAddress = new SignalServiceAddress(sid);
     ProfileService                                    profileService = ApplicationDependencies.getProfileService();

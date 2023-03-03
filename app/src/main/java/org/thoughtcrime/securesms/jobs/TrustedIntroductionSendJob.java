@@ -30,8 +30,6 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static java.util.Collections.emptyList;
-import static java.util.Collections.emptySet;
 
 public class TrustedIntroductionSendJob extends BaseJob {
 
