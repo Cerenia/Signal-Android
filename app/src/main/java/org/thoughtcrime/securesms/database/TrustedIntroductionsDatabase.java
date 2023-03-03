@@ -508,7 +508,8 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
   }
 
   /**
-   * Callback for modifying introductions state, assumes that recipient equivalent to introducee exists in the recipient table as well as their identity in the identity table.
+   * Callback for modifying introductions state,
+   * PRE: assumes that recipient equivalent to introducee exists in the recipient table as well as their identity in the identity table.
    * @param introduction the introduction to be modified.
    * @param newState the new state for the introduction.
    * @param logMessage what should be written on the logcat for the modification.
@@ -558,6 +559,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
 
   /**
    * FSMs for verification status implemented here.
+   * PRE: introducee exists in recipient and identity table
    * @param introduceeServiceId The service ID of the recipient whose verification status may change
    * @param previousIntroduceeVerification the previous verification status of the introducee
    * @param newState PRE: !STALE (security number changes are handled in a seperate codepath)
@@ -601,7 +603,12 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     if (newIntroduceeVerification != previousIntroduceeVerification) {
       // Something changed
       RecipientId rId = TI_Utils.getRecipientIdOrUnknown(introduceeServiceId);
-      TI_Utils.updateContactsVerifiedStatus(rId, TI_Utils.getIdentityKey(rId), newIntroduceeVerification);
+      try {
+        TI_Utils.updateContactsVerifiedStatus(rId, TI_Utils.getIdentityKey(rId), newIntroduceeVerification);
+      } catch (TI_Utils.TI_MissingIdentityException e){
+        e.printStackTrace();
+        throw new AssertionError(TAG + " Precondidion violated, recipient " + rId + "'s verification status cannot be updated!");
+      }
       Log.i(TAG, logmessage);
     }
   }
