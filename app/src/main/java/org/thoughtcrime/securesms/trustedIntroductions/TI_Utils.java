@@ -66,8 +66,8 @@ public class TI_Utils {
   // Backup/Restore work accross revisions
   public static final String TI_MESSAGE_VERSION = "1.0";
   // Since the Signal version is still important and will not be overwritten I define my own
-  // 1: majour changes, 2: sync. changes, 3. feature changes, 4. bug/stability fixes
-  public static final String TI_APK_VERSION = "1.0.0.0";
+  // 1: majour changes, 2: feature changes, 3. bug/stability fixes
+  public static final String TI_APK_VERSION = "1.0.0";
 
   // Random String to mark a message as a trustedIntroduction, since I'm tunneling through normal messages
   static final String TI_IDENTIFYER = "QOikEX9PPGIuXfiejT9nC2SsDB8d9AG0dUPQ9gERBQ8qHF30Xj --- This message is part of an experimental feature and not meant to be read by humans --- Introduction Data:\n";
