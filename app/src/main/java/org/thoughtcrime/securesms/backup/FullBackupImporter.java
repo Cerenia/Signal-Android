@@ -132,12 +132,9 @@ public class FullBackupImporter extends FullBackupBase {
   }
 
   private static void processVersion(@NonNull SQLiteDatabase db, DatabaseVersion version) throws IOException {
-    if (version.version == null || version.version > db.getVersion()) {
-      throw new DatabaseDowngradeException(db.getVersion(), version.version != null ? version.version : -1);
+    if (version.getVersion() > db.getVersion()) {
+      throw new DatabaseDowngradeException(db.getVersion(), version.getVersion());
     }
-
-    db.setVersion(version.version);
-  }
 
   private static void tryProcessStatement(@NonNull SQLiteDatabase db, SqlStatement statement) {
     try {
