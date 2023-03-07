@@ -11,8 +11,10 @@ import java.util.List;
 
 public final class PhoneNumberPrivacyValues extends SignalStoreValues {
 
-  public static final String SHARING_MODE = "phoneNumberPrivacy.sharingMode";
-  public static final String LISTING_MODE = "phoneNumberPrivacy.listingMode";
+  public static final String SHARING_MODE         = "phoneNumberPrivacy.sharingMode";
+  public static final String LISTING_MODE         = "phoneNumberPrivacy.listingMode";
+  public static final String LISTING_TIMESTAMP    = "phoneNumberPrivacy.listingMode.timestamp";
+  public static final String USERNAME_OUT_OF_SYNC = "phoneNumberPrivacy.usernameOutOfSync";
 
   private static final Collection<CertificateType> REGULAR_CERTIFICATE = Collections.singletonList(CertificateType.UUID_AND_E164);
   private static final Collection<CertificateType> PRIVACY_CERTIFICATE = Collections.singletonList(CertificateType.UUID_ONLY);
@@ -32,7 +34,7 @@ public final class PhoneNumberPrivacyValues extends SignalStoreValues {
 
   @Override
   @NonNull List<String> getKeysToIncludeInBackup() {
-    return Arrays.asList(SHARING_MODE, LISTING_MODE);
+    return Arrays.asList(SHARING_MODE, LISTING_MODE, LISTING_TIMESTAMP);
   }
 
   public @NonNull PhoneNumberSharingMode getPhoneNumberSharingMode() {
@@ -56,7 +58,27 @@ public final class PhoneNumberPrivacyValues extends SignalStoreValues {
   }
 
   public void setPhoneNumberListingMode(@NonNull PhoneNumberListingMode phoneNumberListingMode) {
-    putInteger(LISTING_MODE, phoneNumberListingMode.serialize());
+    getStore()
+        .beginWrite()
+        .putInteger(LISTING_MODE, phoneNumberListingMode.serialize())
+        .putLong(LISTING_TIMESTAMP, System.currentTimeMillis())
+        .apply();
+  }
+
+  public long getPhoneNumberListingModeTimestamp() {
+    return getLong(LISTING_TIMESTAMP, 0);
+  }
+
+  public void markUsernameOutOfSync() {
+    putBoolean(USERNAME_OUT_OF_SYNC, true);
+  }
+
+  public void clearUsernameOutOfSync() {
+    putBoolean(USERNAME_OUT_OF_SYNC, false);
+  }
+
+  public boolean isUsernameOutOfSync() {
+    return getBoolean(USERNAME_OUT_OF_SYNC, false);
   }
 
   /**

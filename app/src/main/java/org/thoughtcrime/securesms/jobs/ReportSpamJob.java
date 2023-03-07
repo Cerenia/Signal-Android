@@ -11,14 +11,19 @@ import org.thoughtcrime.securesms.jobmanager.Job;
 import org.thoughtcrime.securesms.jobmanager.impl.NetworkConstraint;
 import org.thoughtcrime.securesms.keyvalue.SignalStore;
 import org.thoughtcrime.securesms.recipients.Recipient;
+import org.thoughtcrime.securesms.recipients.RecipientId;
+import org.thoughtcrime.securesms.util.Base64;
 import org.whispersystems.signalservice.api.SignalServiceAccountManager;
 import org.whispersystems.signalservice.api.push.ServiceId;
 import org.whispersystems.signalservice.api.push.exceptions.NonSuccessfulResponseCodeException;
 import org.whispersystems.signalservice.api.push.exceptions.ServerRejectedException;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Report 1 to {@link #MAX_MESSAGE_COUNT} message guids received prior to {@link #timestamp} in {@link #threadId} to the server as spam.
@@ -37,7 +42,7 @@ public class ReportSpamJob extends BaseJob {
 
   public ReportSpamJob(long threadId, long timestamp) {
     this(new Parameters.Builder().addConstraint(NetworkConstraint.KEY)
-                                 .setMaxAttempts(5)
+                                 .setLifespan(TimeUnit.DAYS.toMillis(1))
                                  .setQueue("ReportSpamJob")
                                  .build(),
          threadId,
@@ -68,17 +73,27 @@ public class ReportSpamJob extends BaseJob {
       return;
     }
 
-    int                         count                       = 0;
-    List<ReportSpamData>        reportSpamData              = SignalDatabase.messages().getReportSpamMessageServerData(threadId, timestamp, MAX_MESSAGE_COUNT);
-    SignalServiceAccountManager signalServiceAccountManager = ApplicationDependencies.getSignalServiceAccountManager();
+    int                         count                          = 0;
+    List<ReportSpamData>        reportSpamData                 = SignalDatabase.messages().getReportSpamMessageServerData(threadId, timestamp, MAX_MESSAGE_COUNT);
+    SignalServiceAccountManager signalServiceAccountManager    = ApplicationDependencies.getSignalServiceAccountManager();
+
     for (ReportSpamData data : reportSpamData) {
-      Optional<ServiceId> serviceId = Recipient.resolved(data.getRecipientId()).getServiceId();
+      RecipientId         recipientId = data.getRecipientId();
+      Recipient           recipient   = Recipient.resolved(recipientId);
+      Optional<ServiceId> serviceId   = recipient.getServiceId();
 
       if (serviceId.isPresent() && !serviceId.get().isUnknown()) {
-        signalServiceAccountManager.reportSpam(serviceId.get(), data.getServerGuid());
+        String reportingTokenEncoded = null;
+
+        byte[] reportingTokenBytes = SignalDatabase.recipients().getReportingToken(recipientId);
+        if (reportingTokenBytes != null) {
+          reportingTokenEncoded = Base64.encodeBytes(reportingTokenBytes);
+        }
+        
+        signalServiceAccountManager.reportSpam(serviceId.get(), data.getServerGuid(), reportingTokenEncoded);
         count++;
       } else {
-        Log.w(TAG, "Unable to report spam without an ACI for " + data.getRecipientId());
+        Log.w(TAG, "Unable to report spam without an ACI for " + recipientId);
       }
     }
     Log.i(TAG, "Reported " + count + " out of " + reportSpamData.size() + " messages in thread " + threadId + " as spam");

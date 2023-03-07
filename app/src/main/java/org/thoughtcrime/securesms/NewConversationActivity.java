@@ -20,6 +20,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -39,26 +40,22 @@ import org.signal.core.util.concurrent.SimpleTask;
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.components.menu.ActionItem;
 import org.thoughtcrime.securesms.components.menu.SignalContextMenu;
-import org.thoughtcrime.securesms.contacts.ContactSelectionListItem;
 import org.thoughtcrime.securesms.contacts.management.ContactsManagementRepository;
 import org.thoughtcrime.securesms.contacts.management.ContactsManagementViewModel;
+import org.thoughtcrime.securesms.contacts.paged.ContactSearchKey;
 import org.thoughtcrime.securesms.contacts.sync.ContactDiscovery;
 import org.thoughtcrime.securesms.conversation.ConversationIntents;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.groups.ui.creategroup.CreateGroupActivity;
-import org.thoughtcrime.securesms.jobmanager.impl.NetworkConstraint;
 import org.thoughtcrime.securesms.keyvalue.SignalStore;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.util.CommunicationActions;
 import org.thoughtcrime.securesms.util.FeatureFlags;
 import org.thoughtcrime.securesms.util.LifecycleDisposable;
-import org.thoughtcrime.securesms.util.Util;
 import org.thoughtcrime.securesms.util.views.SimpleProgressDialog;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -233,18 +230,14 @@ public class NewConversationActivity extends ContactSelectionActivity
   }
 
   @Override
-  public boolean onLongClick(ContactSelectionListItem contactSelectionListItem, RecyclerView recyclerView) {
-    RecipientId recipientId = contactSelectionListItem.getRecipientId().orElse(null);
-    if (recipientId == null) {
-      return false;
-    }
-
+  public boolean onLongClick(View anchorView, ContactSearchKey contactSearchKey, RecyclerView recyclerView) {
+    RecipientId recipientId = contactSearchKey.requireRecipientSearchKey().getRecipientId();
     List<ActionItem> actions = generateContextualActionsForRecipient(recipientId);
     if (actions.isEmpty()) {
       return false;
     }
 
-    new SignalContextMenu.Builder(contactSelectionListItem, (ViewGroup) contactSelectionListItem.getRootView())
+    new SignalContextMenu.Builder(anchorView, (ViewGroup) anchorView.getRootView())
         .preferredVerticalPosition(SignalContextMenu.VerticalPosition.BELOW)
         .preferredHorizontalPosition(SignalContextMenu.HorizontalPosition.START)
         .offsetX((int) DimensionUnit.DP.toPixels(12))

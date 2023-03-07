@@ -214,7 +214,6 @@ class AddMessageDialogFragment : KeyboardEntryDialogFragment(R.layout.v2_media_a
         if (!recipient.isPushV2Group) {
           annotations
         } else {
-
           val validRecipientIds: Set<String> = recipient.participantIds
             .map { id -> MentionAnnotation.idToMentionAnnotationValue(id) }
             .toSet()
@@ -253,11 +252,7 @@ class AddMessageDialogFragment : KeyboardEntryDialogFragment(R.layout.v2_media_a
       binding.hud.showSoftkey(binding.content.addAMessageInput)
     } else {
       requestedEmojiDrawer = true
-      binding.hud.hideSoftkey(binding.content.addAMessageInput) {
-        binding.hud.post {
-          binding.hud.show(binding.content.addAMessageInput, emojiDrawerStub.get())
-        }
-      }
+      binding.hud.show(binding.content.addAMessageInput, emojiDrawerStub.get())
     }
   }
 

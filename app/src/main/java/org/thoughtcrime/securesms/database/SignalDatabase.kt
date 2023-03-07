@@ -34,7 +34,8 @@ open class SignalDatabase(private val context: Application, databaseSecret: Data
     SignalDatabaseMigrations.DATABASE_VERSION,
     0,
     SqlCipherErrorHandler(DATABASE_NAME),
-    SqlCipherDatabaseHook()
+    SqlCipherDatabaseHook(),
+    true
   ),
   SignalDatabaseOpenHelper {
 
@@ -86,7 +87,7 @@ open class SignalDatabase(private val context: Application, databaseSecret: Data
     db.execSQL(IdentityTable.CREATE_TABLE)
     db.execSQL(DraftTable.CREATE_TABLE)
     db.execSQL(PushTable.CREATE_TABLE)
-    db.execSQL(GroupTable.CREATE_TABLE)
+    executeStatements(db, GroupTable.CREATE_TABLES)
     db.execSQL(RecipientTable.CREATE_TABLE)
     db.execSQL(GroupReceiptTable.CREATE_TABLE)
     db.execSQL(OneTimePreKeyTable.CREATE_TABLE)
@@ -138,7 +139,6 @@ open class SignalDatabase(private val context: Application, databaseSecret: Data
 
     executeStatements(db, SearchTable.CREATE_TRIGGERS)
     executeStatements(db, MessageSendLogTables.CREATE_TRIGGERS)
-    executeStatements(db, ReactionTable.CREATE_TRIGGERS)
 
     DistributionListTables.insertInitialDistributionListAtCreationTime(db)
 
@@ -228,7 +228,6 @@ open class SignalDatabase(private val context: Application, databaseSecret: Data
         synchronized(SignalDatabase::class.java) {
           if (instance == null) {
             instance = SignalDatabase(application, databaseSecret, attachmentSecret)
-            instance!!.setWriteAheadLoggingEnabled(true)
           }
         }
       }

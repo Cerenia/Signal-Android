@@ -19,6 +19,7 @@ package org.thoughtcrime.securesms.database;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.text.SpannableString;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
@@ -47,6 +48,7 @@ import org.thoughtcrime.securesms.attachments.AttachmentId;
 import org.thoughtcrime.securesms.attachments.DatabaseAttachment;
 import org.thoughtcrime.securesms.attachments.MmsNotificationAttachment;
 import org.thoughtcrime.securesms.contactshare.Contact;
+import org.thoughtcrime.securesms.conversation.MessageStyler;
 import org.thoughtcrime.securesms.database.documents.Document;
 import org.thoughtcrime.securesms.database.documents.IdentityKeyMismatch;
 import org.thoughtcrime.securesms.database.documents.IdentityKeyMismatchSet;
@@ -73,9 +75,11 @@ import org.thoughtcrime.securesms.database.model.databaseprotos.GroupCallUpdateD
 import org.thoughtcrime.securesms.database.model.databaseprotos.MessageExportState;
 import org.thoughtcrime.securesms.database.model.databaseprotos.ProfileChangeDetails;
 import org.thoughtcrime.securesms.database.model.databaseprotos.ThreadMergeEvent;
+import org.thoughtcrime.securesms.database.model.databaseprotos.SessionSwitchoverEvent;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.groups.GroupMigrationMembershipChange;
 import org.thoughtcrime.securesms.insights.InsightsConstants;
+import org.thoughtcrime.securesms.jobs.OptimizeMessageSearchIndexJob;
 import org.thoughtcrime.securesms.jobs.TrimThreadJob;
 import org.thoughtcrime.securesms.keyvalue.SignalStore;
 import org.thoughtcrime.securesms.linkpreview.LinkPreview;
@@ -94,6 +98,7 @@ import org.thoughtcrime.securesms.sms.IncomingGroupUpdateMessage;
 import org.thoughtcrime.securesms.sms.IncomingTextMessage;
 import org.thoughtcrime.securesms.stories.Stories;
 import org.thoughtcrime.securesms.util.Base64;
+import org.thoughtcrime.securesms.util.FeatureFlags;
 import org.thoughtcrime.securesms.util.JsonUtils;
 import org.thoughtcrime.securesms.util.MediaUtil;
 import org.thoughtcrime.securesms.util.TextSecurePreferences;
@@ -122,13 +127,15 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 
+import kotlin.Unit;
+
 import static org.thoughtcrime.securesms.contactshare.Contact.Avatar;
 
 public class MessageTable extends DatabaseTable implements MessageTypes, RecipientIdDatabaseReference, ThreadIdDatabaseReference  {
 
   private static final String TAG = Log.tag(MessageTable.class);
 
-  public static final String TABLE_NAME             = "mms";
+  public static final String TABLE_NAME             = "message";
   public static final String ID                     = "_id";
   public static final String DATE_SENT              = "date_sent";
   public static final String DATE_RECEIVED          = "date_received";
@@ -167,7 +174,7 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
   public static final String QUOTE_AUTHOR           = "quote_author";
   public static final String QUOTE_BODY             = "quote_body";
   public static final String QUOTE_MISSING          = "quote_missing";
-  public static final String QUOTE_MENTIONS         = "quote_mentions";
+  public static final String QUOTE_BODY_RANGES      = "quote_mentions";
   public static final String QUOTE_TYPE             = "quote_type";
   public static final String SHARED_CONTACTS        = "shared_contacts";
   public static final String LINK_PREVIEWS          = "link_previews";
@@ -176,6 +183,7 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
   public static final String VIEW_ONCE              = "view_once";
   public static final String STORY_TYPE             = "story_type";
   public static final String PARENT_STORY_ID        = "parent_story_id";
+  public static final String SCHEDULED_DATE         = "scheduled_date";
 
   public static class Status {
     public static final int STATUS_NONE      = -1;
@@ -214,7 +222,7 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
                                                                                   QUOTE_AUTHOR           + " INTEGER DEFAULT 0, " +
                                                                                   QUOTE_BODY             + " TEXT DEFAULT NULL, " +
                                                                                   QUOTE_MISSING          + " INTEGER DEFAULT 0, " +
-                                                                                  QUOTE_MENTIONS         + " BLOB DEFAULT NULL," +
+                                                                                  QUOTE_BODY_RANGES      + " BLOB DEFAULT NULL," +
                                                                                   QUOTE_TYPE             + " INTEGER DEFAULT 0," +
                                                                                   SHARED_CONTACTS        + " TEXT DEFAULT NULL, " +
                                                                                   UNIDENTIFIED           + " INTEGER DEFAULT 0, " +
@@ -230,9 +238,11 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
                                                                                   STORY_TYPE             + " INTEGER DEFAULT 0, " +
                                                                                   PARENT_STORY_ID        + " INTEGER DEFAULT 0, " +
                                                                                   EXPORT_STATE           + " BLOB DEFAULT NULL, " +
-                                                                                  EXPORTED               + " INTEGER DEFAULT 0);";
+                                                                                  EXPORTED               + " INTEGER DEFAULT 0, " +
+                                                                                  SCHEDULED_DATE         + " INTEGER DEFAULT -1);";
 
-  private static final String INDEX_THREAD_DATE = "mms_thread_date_index";
+  private static final String INDEX_THREAD_DATE                 = "mms_thread_date_index";
+  private static final String INDEX_THREAD_STORY_SCHEDULED_DATE = "mms_thread_story_parent_story_scheduled_date_index";
 
   public static final String[] CREATE_INDEXS = {
     "CREATE INDEX IF NOT EXISTS mms_read_and_notified_and_thread_id_index ON " + TABLE_NAME + "(" + READ + "," + NOTIFIED + "," + THREAD_ID + ");",
@@ -243,8 +253,8 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
     "CREATE INDEX IF NOT EXISTS mms_reactions_unread_index ON " + TABLE_NAME + " (" + REACTIONS_UNREAD + ");",
     "CREATE INDEX IF NOT EXISTS mms_story_type_index ON " + TABLE_NAME + " (" + STORY_TYPE + ");",
     "CREATE INDEX IF NOT EXISTS mms_parent_story_id_index ON " + TABLE_NAME + " (" + PARENT_STORY_ID + ");",
-    "CREATE INDEX IF NOT EXISTS mms_thread_story_parent_story_index ON " + TABLE_NAME + " (" + THREAD_ID + ", " + DATE_RECEIVED + "," + STORY_TYPE + "," + PARENT_STORY_ID + ");",
-    "CREATE INDEX IF NOT EXISTS mms_quote_id_quote_author_index ON " + TABLE_NAME + "(" + QUOTE_ID + ", " + QUOTE_AUTHOR + ");",
+    "CREATE INDEX IF NOT EXISTS " + INDEX_THREAD_STORY_SCHEDULED_DATE + " ON " + TABLE_NAME + " (" + THREAD_ID + ", " + DATE_RECEIVED + "," + STORY_TYPE + "," + PARENT_STORY_ID + "," + SCHEDULED_DATE + ");",
+    "CREATE INDEX IF NOT EXISTS message_quote_id_quote_author_scheduled_date_index ON " + TABLE_NAME + " (" + QUOTE_ID + ", " + QUOTE_AUTHOR + ", " + SCHEDULED_DATE + ");",
     "CREATE INDEX IF NOT EXISTS mms_exported_index ON " + TABLE_NAME + " (" + EXPORTED + ");",
     "CREATE INDEX IF NOT EXISTS mms_id_type_payment_transactions_index ON " + TABLE_NAME + " (" + ID + "," + TYPE + ") WHERE " + TYPE + " & " + MessageTypes.SPECIAL_TYPE_PAYMENTS_NOTIFICATION + " != 0;"
   };
@@ -279,7 +289,7 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
       QUOTE_BODY,
       QUOTE_TYPE,
       QUOTE_MISSING,
-      QUOTE_MENTIONS,
+      QUOTE_BODY_RANGES,
       SHARED_CONTACTS,
       LINK_PREVIEWS,
       UNIDENTIFIED,
@@ -294,6 +304,7 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
       MESSAGE_RANGES,
       STORY_TYPE,
       PARENT_STORY_ID,
+      SCHEDULED_DATE,
   };
 
   private static final String[] MMS_PROJECTION = SqlUtil.appendArg(MMS_PROJECTION_BASE, "NULL AS " + AttachmentTable.ATTACHMENT_JSON_ALIAS);
@@ -339,6 +350,7 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
                                                 MessageTable.TYPE + " & " + MessageTypes.GROUP_V2_LEAVE_BITS + " != " + MessageTypes.GROUP_V2_LEAVE_BITS + " AND " +
                                                 MessageTable.STORY_TYPE + " = 0 AND " +
                                                 MessageTable.PARENT_STORY_ID + " <= 0 AND " +
+                                                MessageTable.SCHEDULED_DATE + " = -1 AND " +
                                                 MessageTable.TYPE + " NOT IN (" + MessageTypes.PROFILE_CHANGE_TYPE + ", " + MessageTypes.GV1_MIGRATION_TYPE + ", " + MessageTypes.CHANGE_NUMBER_TYPE + ", " + MessageTypes.BOOST_REQUEST_TYPE + ", " + MessageTypes.SMS_EXPORT_TYPE + ") " +
                                               "ORDER BY " + MessageTable.DATE_RECEIVED + " DESC " +
                                               "LIMIT 1";
@@ -627,14 +639,13 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
     values.put(TYPE, type);
     values.put(THREAD_ID, threadId);
 
-    long    messageId          = getWritableDatabase().insert(TABLE_NAME, null, values);
-    boolean keepThreadArchived = SignalStore.settings().shouldKeepMutedChatsArchived() && Recipient.resolved(recipientId).isMuted();
+    long messageId = getWritableDatabase().insert(TABLE_NAME, null, values);
 
     if (unread) {
       SignalDatabase.threads().incrementUnread(threadId, 1, 0);
     }
 
-    SignalDatabase.threads().update(threadId, !keepThreadArchived);
+    SignalDatabase.threads().update(threadId, true);
 
     notifyConversationListeners(threadId);
     TrimThreadJob.enqueueAsync(threadId);
@@ -649,15 +660,14 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
     values.put(READ, unread ? 0 : 1);
     getWritableDatabase().update(TABLE_NAME, values, ID_WHERE, SqlUtil.buildArgs(messageId));
 
-    long      threadId           = getThreadIdForMessage(messageId);
-    Recipient recipient          = SignalDatabase.threads().getRecipientForThreadId(threadId);
-    boolean   keepThreadArchived = SignalStore.settings().shouldKeepMutedChatsArchived() && recipient != null && recipient.isMuted();
+    long      threadId  = getThreadIdForMessage(messageId);
+    Recipient recipient = SignalDatabase.threads().getRecipientForThreadId(threadId);
 
     if (unread) {
       SignalDatabase.threads().incrementUnread(threadId, 1, 0);
     }
 
-    SignalDatabase.threads().update(threadId, !keepThreadArchived);
+    SignalDatabase.threads().update(threadId, true);
 
     notifyConversationListeners(threadId);
     ApplicationDependencies.getDatabaseObserver().notifyMessageUpdateObservers(new MessageId(messageId));
@@ -707,8 +717,8 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
 
         SignalDatabase.threads().incrementUnread(threadId, 1, 0);
       }
-      boolean keepThreadArchived = SignalStore.settings().shouldKeepMutedChatsArchived() && recipient.isMuted();
-      SignalDatabase.threads().update(threadId, !keepThreadArchived);
+
+      SignalDatabase.threads().update(threadId, true);
 
       db.setTransactionSuccessful();
     } finally {
@@ -784,8 +794,7 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
         SignalDatabase.threads().incrementUnread(threadId, 1, 0);
       }
 
-      final boolean keepThreadArchived = SignalStore.settings().shouldKeepMutedChatsArchived() && recipient.isMuted();
-      SignalDatabase.threads().update(threadId, !keepThreadArchived);
+      SignalDatabase.threads().update(threadId, true);
 
       db.setTransactionSuccessful();
     } finally {
@@ -936,8 +945,7 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
       }
 
       if (!silent) {
-        final boolean keepThreadArchived = SignalStore.settings().shouldKeepMutedChatsArchived() && (recipient.isMuted() || (groupRecipient != null && groupRecipient.isMuted()));
-        SignalDatabase.threads().update(threadId, !keepThreadArchived);
+        SignalDatabase.threads().update(threadId, true);
       }
 
       if (message.getSubscriptionId() != -1) {
@@ -1117,6 +1125,26 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
     values.put(DATE_SENT, System.currentTimeMillis());
     values.put(READ, 1);
     values.put(TYPE, MessageTypes.THREAD_MERGE_TYPE);
+    values.put(THREAD_ID, threadId);
+    values.put(BODY, Base64.encodeBytes(event.toByteArray()));
+
+    getWritableDatabase().insert(TABLE_NAME, null, values);
+
+    ApplicationDependencies.getDatabaseObserver().notifyConversationListeners(threadId);
+  }
+
+  public void insertSessionSwitchoverEvent(@NonNull RecipientId recipientId, long threadId, @NonNull SessionSwitchoverEvent event) {
+    if (!FeatureFlags.phoneNumberPrivacy()) {
+      throw new IllegalStateException("Should not occur in a non-PNP world!");
+    }
+
+    ContentValues values = new ContentValues();
+    values.put(RECIPIENT_ID, recipientId.serialize());
+    values.put(RECIPIENT_DEVICE_ID, 1);
+    values.put(DATE_RECEIVED, System.currentTimeMillis());
+    values.put(DATE_SENT, System.currentTimeMillis());
+    values.put(READ, 1);
+    values.put(TYPE, MessageTypes.SESSION_SWITCHOVER_TYPE);
     values.put(THREAD_ID, threadId);
     values.put(BODY, Base64.encodeBytes(event.toByteArray()));
 
@@ -1501,6 +1529,7 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
     return releaseChannelThreadId;
   }
 
+  @VisibleForTesting
   public void deleteGroupStoryReplies(long parentStoryId) {
     SQLiteDatabase db   = databaseHelper.getSignalWritableDatabase();
     String[]       args = SqlUtil.buildArgs(parentStoryId);
@@ -1548,6 +1577,10 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
           long id = cursor.getLong(cursor.getColumnIndexOrThrow(ID));
           deleteMessage(id);
         }
+      }
+
+      if (deletedStoryCount > 0) {
+        OptimizeMessageSearchIndexJob.enqueue();
       }
 
       db.setTransactionSuccessful();
@@ -1604,13 +1637,28 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
     return -1;
   }
 
+  public int getScheduledMessageCountForThread(long threadId) {
+    SQLiteDatabase db = databaseHelper.getSignalReadableDatabase();
+
+    String   query = THREAD_ID + " = ? AND " + STORY_TYPE + " = ? AND " + PARENT_STORY_ID + " <= ? AND " + SCHEDULED_DATE + " != ?";
+    String[] args  = SqlUtil.buildArgs(threadId, 0, 0, -1);
+
+    try (Cursor cursor = db.query(TABLE_NAME + " INDEXED BY " + INDEX_THREAD_STORY_SCHEDULED_DATE, COUNT, query, args, null, null, null)) {
+      if (cursor.moveToFirst()) {
+        return cursor.getInt(0);
+      }
+    }
+
+    return 0;
+  }
+
   public int getMessageCountForThread(long threadId) {
     SQLiteDatabase db = databaseHelper.getSignalReadableDatabase();
 
-    String   query = THREAD_ID + " = ? AND " + STORY_TYPE + " = ? AND " + PARENT_STORY_ID + " <= ?";
-    String[] args  = SqlUtil.buildArgs(threadId, 0, 0);
+    String   query = THREAD_ID + " = ? AND " + STORY_TYPE + " = ? AND " + PARENT_STORY_ID + " <= ? AND " + SCHEDULED_DATE + " = ?";
+    String[] args  = SqlUtil.buildArgs(threadId, 0, 0, -1);
 
-    try (Cursor cursor = db.query(TABLE_NAME, COUNT, query, args, null, null, null)) {
+    try (Cursor cursor = db.query(TABLE_NAME + " INDEXED BY " + INDEX_THREAD_STORY_SCHEDULED_DATE, COUNT, query, args, null, null, null)) {
       if (cursor != null && cursor.moveToFirst()) {
         return cursor.getInt(0);
       }
@@ -1622,8 +1670,8 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
   public int getMessageCountForThread(long threadId, long beforeTime) {
     SQLiteDatabase db = databaseHelper.getSignalReadableDatabase();
 
-    String   query = THREAD_ID + " = ? AND " + DATE_RECEIVED + " < ? AND " + STORY_TYPE + " = ? AND " + PARENT_STORY_ID + " <= ?";
-    String[] args  = SqlUtil.buildArgs(threadId, beforeTime, 0, 0);
+    String   query = THREAD_ID + " = ? AND " + DATE_RECEIVED + " < ? AND " + STORY_TYPE + " = ? AND " + PARENT_STORY_ID + " <= ? AND " + SCHEDULED_DATE + " = ?";
+    String[] args  = SqlUtil.buildArgs(threadId, beforeTime, 0, 0, -1);
 
     try (Cursor cursor = db.query(TABLE_NAME, COUNT, query, args, null, null, null)) {
       if (cursor != null && cursor.moveToFirst()) {
@@ -1651,7 +1699,7 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
     SQLiteDatabase db                      = databaseHelper.getSignalReadableDatabase();
     String[]       projection              = SqlUtil.COUNT;
     SqlUtil.Query  meaningfulMessagesQuery = buildMeaningfulMessagesQuery(threadId);
-    String         where                   = meaningfulMessagesQuery.getWhere() + " AND " + DATE_RECEIVED + " >= ?";
+    String         where                   = meaningfulMessagesQuery.getWhere() + " AND " + DATE_RECEIVED + " >= ? AND NOT (" + getOutgoingTypeClause() + ")";
     String[]       whereArgs               = SqlUtil.appendArg(meaningfulMessagesQuery.getWhereArgs(), String.valueOf(afterTime));
 
     try (Cursor cursor = db.query(TABLE_NAME, projection, where, whereArgs, null, null, null, "1")) {
@@ -1664,7 +1712,7 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
   }
 
   private @NonNull SqlUtil.Query buildMeaningfulMessagesQuery(long threadId) {
-    String query = THREAD_ID + " = ? AND " + STORY_TYPE + " = ? AND " + PARENT_STORY_ID + " <= ? AND (NOT " + TYPE + " & ? AND " + TYPE + " != ? AND " + TYPE + " != ? AND " + TYPE + " != ? AND " + TYPE + " != ? AND " + TYPE + " & " + MessageTypes.GROUP_V2_LEAVE_BITS + " != " + MessageTypes.GROUP_V2_LEAVE_BITS + ")";
+    String query = THREAD_ID + " = ? AND " + STORY_TYPE + " = ? AND " + PARENT_STORY_ID + " <= ? AND " + "(NOT " + TYPE + " & ? AND " + TYPE + " != ? AND " + TYPE + " != ? AND " + TYPE + " != ? AND " + TYPE + " != ? AND " + TYPE + " & " + MessageTypes.GROUP_V2_LEAVE_BITS + " != " + MessageTypes.GROUP_V2_LEAVE_BITS + ")";
     return SqlUtil.buildQuery(query, threadId, 0, 0, MessageTypes.IGNORABLE_TYPESMASK_WHEN_COUNTING, MessageTypes.PROFILE_CHANGE_TYPE, MessageTypes.CHANGE_NUMBER_TYPE, MessageTypes.SMS_EXPORT_TYPE, MessageTypes.BOOST_REQUEST_TYPE);
   }
 
@@ -1875,7 +1923,7 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
 
       deletedAttachments = SignalDatabase.attachments().deleteAttachmentsForMessage(messageId);
       SignalDatabase.mentions().deleteMentionsForMessage(messageId);
-      SignalDatabase.messageLog().deleteAllRelatedToMessage(messageId, true);
+      SignalDatabase.messageLog().deleteAllRelatedToMessage(messageId);
       SignalDatabase.reactions().deleteReactions(new MessageId(messageId));
       deleteGroupStoryReplies(messageId);
       disassociateStoryQuotes(messageId);
@@ -1887,6 +1935,8 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
     } finally {
       db.endTransaction();
     }
+
+    OptimizeMessageSearchIndexJob.enqueue();
 
     ApplicationDependencies.getDatabaseObserver().notifyMessageUpdateObservers(new MessageId(messageId));
     ApplicationDependencies.getDatabaseObserver().notifyConversationListListeners();
@@ -1903,6 +1953,34 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
 
     database.update(TABLE_NAME, contentValues, ID_WHERE, new String[] {messageId + ""});
     ApplicationDependencies.getDatabaseObserver().notifyMessageUpdateObservers(new MessageId(messageId));
+  }
+
+  public boolean clearScheduledStatus(long threadId, long messageId, long expiresIn) {
+    SQLiteDatabase database     = databaseHelper.getSignalWritableDatabase();
+    ContentValues contentValues = new ContentValues();
+    contentValues.put(SCHEDULED_DATE, -1);
+    contentValues.put(DATE_SENT, System.currentTimeMillis());
+    contentValues.put(DATE_RECEIVED, System.currentTimeMillis());
+    contentValues.put(EXPIRES_IN, expiresIn);
+
+    int rowsUpdated = database.update(TABLE_NAME, contentValues, ID_WHERE + " AND " + SCHEDULED_DATE + "!= ?", SqlUtil.buildArgs(messageId, -1));
+    ApplicationDependencies.getDatabaseObserver().notifyMessageInsertObservers(threadId, new MessageId(messageId));
+    ApplicationDependencies.getDatabaseObserver().notifyScheduledMessageObservers(threadId);
+
+    return rowsUpdated > 0;
+  }
+
+  public void rescheduleMessage(long threadId, long messageId, long time) {
+    SQLiteDatabase database      = databaseHelper.getSignalWritableDatabase();
+    ContentValues  contentValues = new ContentValues();
+    contentValues.put(SCHEDULED_DATE, time);
+
+    int rowsUpdated = database.update(TABLE_NAME, contentValues, ID_WHERE + " AND " + SCHEDULED_DATE + "!= ?", SqlUtil.buildArgs(messageId, -1));
+    ApplicationDependencies.getDatabaseObserver().notifyScheduledMessageObservers(threadId);
+    ApplicationDependencies.getScheduledMessageManager().scheduleIfNecessary();
+    if (rowsUpdated == 0) {
+      Log.w(TAG, "Failed to reschedule messageId=" + messageId + " to new time " + time + ". may have been sent already");
+    }
   }
 
   public void markAsInsecure(long messageId) {
@@ -2166,6 +2244,8 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
         String           networkDocument    = cursor.getString(cursor.getColumnIndexOrThrow(MessageTable.NETWORK_FAILURES));
         StoryType        storyType          = StoryType.fromCode(CursorUtil.requireInt(cursor, STORY_TYPE));
         ParentStoryId    parentStoryId      = ParentStoryId.deserialize(CursorUtil.requireLong(cursor, PARENT_STORY_ID));
+        byte[]           messageRangesData  = CursorUtil.requireBlob(cursor, MESSAGE_RANGES);
+        long             scheduledDate      = cursor.getLong(cursor.getColumnIndexOrThrow(SCHEDULED_DATE));
 
         long              quoteId            = cursor.getLong(cursor.getColumnIndexOrThrow(QUOTE_ID));
         long              quoteAuthor        = cursor.getLong(cursor.getColumnIndexOrThrow(QUOTE_AUTHOR));
@@ -2173,7 +2253,8 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
         int               quoteType          = cursor.getInt(cursor.getColumnIndexOrThrow(QUOTE_TYPE));
         boolean           quoteMissing       = cursor.getInt(cursor.getColumnIndexOrThrow(QUOTE_MISSING)) == 1;
         List<Attachment>  quoteAttachments   = Stream.of(associatedAttachments).filter(Attachment::isQuote).map(a -> (Attachment)a).toList();
-        List<Mention>     quoteMentions      = parseQuoteMentions(context, cursor);
+        List<Mention>     quoteMentions      = parseQuoteMentions(cursor);
+        BodyRangeList     quoteBodyRanges    = parseQuoteBodyRanges(cursor);
         List<Contact>     contacts           = getSharedContacts(cursor, associatedAttachments);
         Set<Attachment>   contactAttachments = new HashSet<>(Stream.of(contacts).map(Contact::getAvatarAttachment).filter(a -> a != null).toList());
         List<LinkPreview> previews           = getLinkPreviews(cursor, associatedAttachments);
@@ -2190,7 +2271,7 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
         QuoteModel               quote           = null;
 
         if (quoteId > 0 && quoteAuthor > 0 && (!TextUtils.isEmpty(quoteText) || !quoteAttachments.isEmpty())) {
-          quote = new QuoteModel(quoteId, RecipientId.from(quoteAuthor), quoteText, quoteMissing, quoteAttachments, quoteMentions, QuoteModel.Type.fromCode(quoteType));
+          quote = new QuoteModel(quoteId, RecipientId.from(quoteAuthor), quoteText, quoteMissing, quoteAttachments, quoteMentions, QuoteModel.Type.fromCode(quoteType), quoteBodyRanges);
         }
 
         if (!TextUtils.isEmpty(mismatchDocument)) {
@@ -2226,6 +2307,15 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
           giftBadge = GiftBadge.parseFrom(Base64.decode(body));
         }
 
+        BodyRangeList messageRanges = null;
+        if (messageRangesData != null) {
+          try {
+            messageRanges = BodyRangeList.parseFrom(messageRangesData);
+          } catch (InvalidProtocolBufferException e) {
+            Log.w(TAG, "Error parsing message ranges", e);
+          }
+        }
+
         OutgoingMessage message = new OutgoingMessage(recipient,
                                                       body,
                                                       attachments,
@@ -2244,7 +2334,9 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
                                                       networkFailures,
                                                       mismatches,
                                                       giftBadge,
-                                                      MessageTypes.isSecureType(outboxType));
+                                                      MessageTypes.isSecureType(outboxType),
+                                                      messageRanges,
+                                                      scheduledDate);
 
         return message;
       }
@@ -2376,14 +2468,21 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
 
     if (retrieved.getQuote() != null) {
       contentValues.put(QUOTE_ID, retrieved.getQuote().getId());
-      contentValues.put(QUOTE_BODY, retrieved.getQuote().getText().toString());
+      contentValues.put(QUOTE_BODY, retrieved.getQuote().getText());
       contentValues.put(QUOTE_AUTHOR, retrieved.getQuote().getAuthor().serialize());
       contentValues.put(QUOTE_TYPE, retrieved.getQuote().getType().getCode());
       contentValues.put(QUOTE_MISSING, retrieved.getQuote().isOriginalMissing() ? 1 : 0);
 
+      BodyRangeList.Builder quoteBodyRanges = retrieved.getQuote().getBodyRanges() != null ? retrieved.getQuote().getBodyRanges().toBuilder()
+                                                                                           : BodyRangeList.newBuilder();
+
       BodyRangeList mentionsList = MentionUtil.mentionsToBodyRangeList(retrieved.getQuote().getMentions());
       if (mentionsList != null) {
-        contentValues.put(QUOTE_MENTIONS, mentionsList.toByteArray());
+        quoteBodyRanges.addAllRanges(mentionsList.getRangesList());
+      }
+
+      if (quoteBodyRanges.getRangesCount() > 0) {
+        contentValues.put(QUOTE_BODY_RANGES, quoteBodyRanges.build().toByteArray());
       }
 
       quoteAttachments = retrieved.getQuote().getAttachments();
@@ -2394,26 +2493,31 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
       return Optional.empty();
     }
 
-    boolean updateThread       = retrieved.getStoryType() == StoryType.NONE;
-    boolean keepThreadArchived = SignalStore.settings().shouldKeepMutedChatsArchived() && Recipient.resolved(retrieved.getFrom()).isMuted();
-    long    messageId          = insertMediaMessage(threadId,
-                                                    retrieved.getBody(),
-                                                    retrieved.getAttachments(),
-                                                    quoteAttachments,
-                                                    retrieved.getSharedContacts(),
-                                                    retrieved.getLinkPreviews(),
-                                                    retrieved.getMentions(),
-                                                    retrieved.getMessageRanges(),
-                                                    contentValues,
-                                                    null,
-                                                    updateThread,
-                                                    !keepThreadArchived);
+    boolean updateThread = retrieved.getStoryType() == StoryType.NONE;
+
+    RecipientId threadRecipientId = SignalDatabase.threads().getRecipientIdForThreadId(threadId);
+    if (threadRecipientId == null) {
+      threadRecipientId = retrieved.getFrom();
+    }
+    long messageId = insertMediaMessage(threadId,
+                                        retrieved.getBody(),
+                                        retrieved.getAttachments(),
+                                        quoteAttachments,
+                                        retrieved.getSharedContacts(),
+                                        retrieved.getLinkPreviews(),
+                                        retrieved.getMentions(),
+                                        retrieved.getMessageRanges(),
+                                        contentValues,
+                                        null,
+                                        updateThread,
+                                        true);
 
     boolean isNotStoryGroupReply = retrieved.getParentStoryId() == null || !retrieved.getParentStoryId().isGroupReply();
+
     if (!MessageTypes.isPaymentsActivated(mailbox) && !MessageTypes.isPaymentsRequestToActivate(mailbox) && !MessageTypes.isExpirationTimerUpdate(mailbox) && !retrieved.getStoryType().isStory() && isNotStoryGroupReply) {
       boolean incrementUnreadMentions = !retrieved.getMentions().isEmpty() && retrieved.getMentions().stream().anyMatch(m -> m.getRecipientId().equals(Recipient.self().getId()));
       SignalDatabase.threads().incrementUnread(threadId, 1, incrementUnreadMentions ? 1 : 0);
-      SignalDatabase.threads().update(threadId, !keepThreadArchived);
+      SignalDatabase.threads().update(threadId, true);
     }
 
     notifyConversationListeners(threadId);
@@ -2562,8 +2666,7 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
     long messageId = db.insert(TABLE_NAME, null, values);
 
     SignalDatabase.threads().incrementUnread(threadId, 1, 0);
-    boolean keepThreadArchived = SignalStore.settings().shouldKeepMutedChatsArchived() && Recipient.resolved(recipientId).isMuted();
-    SignalDatabase.threads().update(threadId, !keepThreadArchived);
+    SignalDatabase.threads().update(threadId, true);
 
     notifyConversationListeners(threadId);
 
@@ -2586,8 +2689,7 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
     databaseHelper.getSignalWritableDatabase().insert(TABLE_NAME, null, values);
 
     SignalDatabase.threads().incrementUnread(threadId, 1, 0);
-    boolean keepThreadArchived = SignalStore.settings().shouldKeepMutedChatsArchived() && Recipient.resolved(recipientId).isMuted();
-    SignalDatabase.threads().update(threadId, !keepThreadArchived);
+    SignalDatabase.threads().update(threadId, true);
 
     notifyConversationListeners(threadId);
 
@@ -2751,6 +2853,7 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
     contentValues.put(RECEIPT_TIMESTAMP, Stream.of(earlyDeliveryReceipts.values()).mapToLong(EarlyReceiptCache.Receipt::getTimestamp).max().orElse(-1));
     contentValues.put(STORY_TYPE, message.getStoryType().getCode());
     contentValues.put(PARENT_STORY_ID, message.getParentStoryId() != null ? message.getParentStoryId().serialize() : 0);
+    contentValues.put(SCHEDULED_DATE, message.getScheduledDate());
 
     if (message.getRecipient().isSelf() && hasAudioAttachment(message.getAttachments())) {
       contentValues.put(VIEWED_RECEIPT_COUNT, 1L);
@@ -2767,17 +2870,30 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
       contentValues.put(QUOTE_TYPE, message.getOutgoingQuote().getType().getCode());
       contentValues.put(QUOTE_MISSING, message.getOutgoingQuote().isOriginalMissing() ? 1 : 0);
 
+      BodyRangeList adjustedQuoteBodyRanges = BodyRangeUtil.adjustBodyRanges(message.getOutgoingQuote().getBodyRanges(), updated.getBodyAdjustments());
+      BodyRangeList.Builder quoteBodyRanges;
+      if (adjustedQuoteBodyRanges != null) {
+        quoteBodyRanges = adjustedQuoteBodyRanges.toBuilder();
+      } else {
+        quoteBodyRanges = BodyRangeList.newBuilder();
+      }
+
       BodyRangeList mentionsList = MentionUtil.mentionsToBodyRangeList(updated.getMentions());
       if (mentionsList != null) {
-        contentValues.put(QUOTE_MENTIONS, mentionsList.toByteArray());
+        quoteBodyRanges.addAllRanges(mentionsList.getRangesList());
+      }
+
+      if (quoteBodyRanges.getRangesCount() > 0) {
+        contentValues.put(QUOTE_BODY_RANGES, quoteBodyRanges.build().toByteArray());
       }
 
       quoteAttachments.addAll(message.getOutgoingQuote().getAttachments());
     }
 
     MentionUtil.UpdatedBodyAndMentions updatedBodyAndMentions = MentionUtil.updateBodyAndMentionsWithPlaceholders(message.getBody(), message.getMentions());
+    BodyRangeList bodyRanges = BodyRangeUtil.adjustBodyRanges(message.getBodyRanges(), updatedBodyAndMentions.getBodyAdjustments());
 
-    long messageId = insertMediaMessage(threadId, updatedBodyAndMentions.getBodyAsString(), message.getAttachments(), quoteAttachments, message.getSharedContacts(), message.getLinkPreviews(), updatedBodyAndMentions.getMentions(), null, contentValues, insertListener, false, false);
+    long messageId = insertMediaMessage(threadId, updatedBodyAndMentions.getBodyAsString(), message.getAttachments(), quoteAttachments, message.getSharedContacts(), message.getLinkPreviews(), updatedBodyAndMentions.getMentions(), bodyRanges, contentValues, insertListener, false, false);
 
     if (message.getRecipient().isGroup()) {
       GroupReceiptTable receiptDatabase = SignalDatabase.groupReceipts();
@@ -2817,6 +2933,9 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
         ApplicationDependencies.getDatabaseObserver().notifyMessageInsertObservers(threadId, new MessageId(messageId));
       } else {
         ApplicationDependencies.getDatabaseObserver().notifyConversationListeners(threadId);
+      }
+      if (message.getScheduledDate() != -1) {
+        ApplicationDependencies.getDatabaseObserver().notifyScheduledMessageObservers(threadId);
       }
     } else {
       ApplicationDependencies.getDatabaseObserver().notifyStoryObservers(message.getRecipient().getId());
@@ -2929,9 +3048,22 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
   }
 
   public boolean deleteMessage(long messageId) {
+    long threadId = getThreadIdForMessage(messageId);
+    return deleteMessage(messageId, threadId);
+  }
+
+  public boolean deleteMessage(long messageId, boolean notify) {
+    long threadId = getThreadIdForMessage(messageId);
+    return deleteMessage(messageId, threadId, notify);
+  }
+
+  public boolean deleteMessage(long messageId, long threadId) {
+    return deleteMessage(messageId, threadId, true);
+  }
+
+  private boolean deleteMessage(long messageId, long threadId, boolean notify) {
     Log.d(TAG, "deleteMessage(" + messageId + ")");
 
-    long            threadId           = getThreadIdForMessage(messageId);
     AttachmentTable attachmentDatabase = SignalDatabase.attachments();
     attachmentDatabase.deleteAttachmentsForMessage(messageId);
 
@@ -2946,10 +3078,56 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
 
     SignalDatabase.threads().setLastScrolled(threadId, 0);
     boolean threadDeleted = SignalDatabase.threads().update(threadId, false);
-    notifyConversationListeners(threadId);
-    notifyStickerListeners();
-    notifyStickerPackListeners();
+
+    if (notify) {
+      notifyConversationListeners(threadId);
+      notifyStickerListeners();
+      notifyStickerPackListeners();
+      OptimizeMessageSearchIndexJob.enqueue();
+    }
+
     return threadDeleted;
+  }
+
+  public void deleteScheduledMessage(long messageId) {
+    Log.d(TAG, "deleteScheduledMessage(" + messageId + ")");
+    SQLiteDatabase db = databaseHelper.getSignalWritableDatabase();
+    long threadId = getThreadIdForMessage(messageId);
+    db.beginTransaction();
+    try {
+      ContentValues contentValues = new ContentValues();
+      contentValues.put(SCHEDULED_DATE, -1);
+      contentValues.put(DATE_SENT, System.currentTimeMillis());
+      contentValues.put(DATE_RECEIVED, System.currentTimeMillis());
+
+      int rowsUpdated = db.update(TABLE_NAME, contentValues, ID_WHERE + " AND " + SCHEDULED_DATE + "!= ?", SqlUtil.buildArgs(messageId, -1));
+      if (rowsUpdated > 0) {
+        deleteMessage(messageId, threadId);
+        db.setTransactionSuccessful();
+      } else {
+        Log.w(TAG, "tried to delete scheduled message but it may have already been sent");
+      }
+    } finally {
+      db.endTransaction();
+    }
+    ApplicationDependencies.getScheduledMessageManager().scheduleIfNecessary();
+    ApplicationDependencies.getDatabaseObserver().notifyScheduledMessageObservers(threadId);
+  }
+
+  public void deleteScheduledMessages(@NonNull RecipientId recipientId) {
+    Log.d(TAG, "deleteScheduledMessages(" + recipientId + ")");
+    Long threadId = SignalDatabase.threads().getThreadIdFor(recipientId);
+    if (threadId != null) {
+      SQLiteDatabaseExtensionsKt.withinTransaction(getWritableDatabase(), d -> {
+        List<MessageRecord> scheduledMessages = getScheduledMessagesInThread(threadId);
+        for (MessageRecord record : scheduledMessages) {
+          deleteScheduledMessage(record.getId());
+        }
+        return Unit.INSTANCE;
+      });
+    } else {
+      Log.i(TAG, "No thread exists for " + recipientId);
+    }
   }
 
   public void deleteThread(long threadId) {
@@ -3132,6 +3310,7 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
       setTransactionSuccessful();
     } finally {
       endTransaction();
+      OptimizeMessageSearchIndexJob.enqueue();
     }
   }
 
@@ -3149,9 +3328,14 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
 
     try (Cursor cursor = db.query(TABLE_NAME, new String[] {ID}, where, null, null, null, null)) {
       while (cursor != null && cursor.moveToNext()) {
-        deleteMessage(cursor.getLong(0));
+        deleteMessage(cursor.getLong(0), false);
       }
     }
+
+    notifyConversationListeners(threadIds);
+    notifyStickerListeners();
+    notifyStickerPackListeners();
+    OptimizeMessageSearchIndexJob.enqueue();
   }
 
   int deleteMessagesInThreadBeforeDate(long threadId, long date) {
@@ -3161,7 +3345,7 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
     return db.delete(TABLE_NAME, where, SqlUtil.buildArgs(threadId));
   }
 
-  void deleteAbandonedMessages() {
+  int deleteAbandonedMessages() {
     SQLiteDatabase db    = databaseHelper.getSignalWritableDatabase();
     String         where = THREAD_ID + " NOT IN (SELECT _id FROM " + ThreadTable.TABLE_NAME + ")";
 
@@ -3169,6 +3353,7 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
     if (deletes > 0) {
       Log.i(TAG, "Deleted " + deletes + " abandoned messages");
     }
+    return deletes;
   }
 
   public void deleteRemotelyDeletedStory(long messageId) {
@@ -3183,7 +3368,8 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
 
   public List<MessageRecord> getMessagesInThreadAfterInclusive(long threadId, long timestamp, long limit) {
     String   where = TABLE_NAME + "." + THREAD_ID + " = ? AND " +
-                     TABLE_NAME + "." + DATE_RECEIVED + " >= ?";
+                     TABLE_NAME + "." + DATE_RECEIVED + " >= ? AND " +
+                     TABLE_NAME + "." + SCHEDULED_DATE + " = -1";
     String[] args  = SqlUtil.buildArgs(threadId, timestamp);
 
     try (MmsReader reader = mmsReaderFor(rawQuery(where, args, false, limit))) {
@@ -3205,6 +3391,7 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
 
     SQLiteDatabase database = databaseHelper.getSignalWritableDatabase();
     database.delete(TABLE_NAME, null, null);
+    OptimizeMessageSearchIndexJob.enqueue();
   }
 
   public @Nullable ViewOnceExpirationInfo getNearestExpiringViewOnceMessage() {
@@ -3259,10 +3446,37 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
     }
   }
 
-  private static @NonNull List<Mention> parseQuoteMentions(@NonNull Context context, Cursor cursor) {
-    byte[] raw = cursor.getBlob(cursor.getColumnIndexOrThrow(QUOTE_MENTIONS));
+  private static @NonNull List<Mention> parseQuoteMentions(@NonNull Cursor cursor) {
+    byte[]        raw        = cursor.getBlob(cursor.getColumnIndexOrThrow(QUOTE_BODY_RANGES));
+    BodyRangeList bodyRanges = null;
 
-    return MentionUtil.bodyRangeListToMentions(context, raw);
+    if (raw != null) {
+      try {
+        bodyRanges = BodyRangeList.parseFrom(raw);
+      } catch (InvalidProtocolBufferException e) {
+        Log.w(TAG, "Unable to parse quote body ranges", e);
+      }
+    }
+
+    return MentionUtil.bodyRangeListToMentions(bodyRanges);
+  }
+
+  private static @Nullable BodyRangeList parseQuoteBodyRanges(@NonNull Cursor cursor) {
+    byte[] data = cursor.getBlob(cursor.getColumnIndexOrThrow(QUOTE_BODY_RANGES));
+
+    if (data != null) {
+      try {
+        final List<BodyRangeList.BodyRange> bodyRanges = Stream.of(BodyRangeList.parseFrom(data).getRangesList())
+                                                               .filter(bodyRange -> bodyRange.getAssociatedValueCase() != BodyRangeList.BodyRange.AssociatedValueCase.MENTIONUUID)
+                                                               .toList();
+
+        return BodyRangeList.newBuilder().addAllRanges(bodyRanges).build();
+      } catch (InvalidProtocolBufferException e) {
+        // Intentionally left blank
+      }
+    }
+
+    return null;
   }
 
   public SQLiteDatabase beginTransaction() {
@@ -3577,9 +3791,10 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
     List<ReportSpamData> data = new ArrayList<>();
     try (Cursor cursor = db.query(TABLE_NAME, new String[] { RECIPIENT_ID, SERVER_GUID, DATE_RECEIVED }, query, args, null, null, DATE_RECEIVED + " DESC", "3")) {
       while (cursor.moveToNext()) {
-        RecipientId id         = RecipientId.from(CursorUtil.requireLong(cursor, RECIPIENT_ID));
-        String      serverGuid = CursorUtil.requireString(cursor, SERVER_GUID);
+        RecipientId id           = RecipientId.from(CursorUtil.requireLong(cursor, RECIPIENT_ID));
+        String      serverGuid   = CursorUtil.requireString(cursor, SERVER_GUID);
         long        dateReceived = CursorUtil.requireLong(cursor, DATE_RECEIVED);
+
         if (!Util.isEmpty(serverGuid)) {
           data.add(new ReportSpamData(id, serverGuid, dateReceived));
         }
@@ -3645,8 +3860,8 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
     RecipientId author    = messageRecord.isOutgoing() ? Recipient.self().getId() : messageRecord.getRecipient().getId();
     long        timestamp = messageRecord.getDateSent();
 
-    String   where      = MessageTable.QUOTE_ID + " = ?  AND " + MessageTable.QUOTE_AUTHOR + " = ?";
-    String[] whereArgs  = SqlUtil.buildArgs(timestamp, author);
+    String   where      = MessageTable.QUOTE_ID + " = ?  AND " + MessageTable.QUOTE_AUTHOR + " = ? AND " + SCHEDULED_DATE + " = ?";
+    String[] whereArgs  = SqlUtil.buildArgs(timestamp, author, -1);
 
     try (Cursor cursor = getReadableDatabase().query(MessageTable.TABLE_NAME, new String[]{ "1" }, where, whereArgs, null, null, null, "1")) {
       return cursor.moveToFirst();
@@ -3663,19 +3878,19 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
     }
 
     Map<QuoteDescriptor, MessageRecord> byQuoteDescriptor = new HashMap<>(records.size());
-    List<String[]>                                  args              = new ArrayList<>(records.size());
+    List<String[]>                      args              = new ArrayList<>(records.size());
 
     for (MessageRecord record : records) {
       long        timestamp = record.getDateSent();
       RecipientId author    = record.isOutgoing() ? Recipient.self().getId() : record.getRecipient().getId();
 
       byQuoteDescriptor.put(new QuoteDescriptor(timestamp, author), record);
-      args.add(SqlUtil.buildArgs(timestamp, author));
+      args.add(SqlUtil.buildArgs(timestamp, author, -1));
     }
 
 
     String[]            projection = new String[] { QUOTE_ID, QUOTE_AUTHOR };
-    List<SqlUtil.Query> queries    = SqlUtil.buildCustomCollectionQuery(QUOTE_ID + " = ?  AND " + QUOTE_AUTHOR + " = ?", args);
+    List<SqlUtil.Query> queries    = SqlUtil.buildCustomCollectionQuery(QUOTE_ID + " = ?  AND " + QUOTE_AUTHOR + " = ? AND " + SCHEDULED_DATE + " = ?", args);
     Set<Long>           quotedIds  = new HashSet<>();
 
     for (SqlUtil.Query query : queries) {
@@ -3731,7 +3946,7 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
     }
 
     RecipientId author = targetMessage.isOutgoing() ? Recipient.self().getId() : targetMessage.getRecipient().getId();
-    String      query  = QUOTE_ID + " = " + targetMessage.getDateSent() + " AND " + QUOTE_AUTHOR + " = " + author.serialize();
+    String      query  = QUOTE_ID + " = " + targetMessage.getDateSent() + " AND " + QUOTE_AUTHOR + " = " + author.serialize() + " AND " + SCHEDULED_DATE + " = -1";
     String      order  = DATE_RECEIVED + " DESC";
 
     List<MessageRecord> records = new ArrayList<>();
@@ -3760,7 +3975,7 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
   public int getQuotedMessagePosition(long threadId, long quoteId, @NonNull RecipientId recipientId) {
     String[] projection = new String[]{ DATE_SENT, RECIPIENT_ID, REMOTE_DELETED};
     String   order      = DATE_RECEIVED + " DESC";
-    String   selection  = THREAD_ID + " = " + threadId + " AND " + STORY_TYPE + " = 0" + " AND " + PARENT_STORY_ID + " <= 0";
+    String   selection  = THREAD_ID + " = " + threadId + " AND " + STORY_TYPE + " = 0" + " AND " + PARENT_STORY_ID + " <= 0 AND " + SCHEDULED_DATE + " = -1";
 
     try (Cursor cursor = getReadableDatabase().query(TABLE_NAME, projection, selection, null, null, null, order)) {
       boolean isOwnNumber = Recipient.resolved(recipientId).isSelf();
@@ -3784,7 +3999,7 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
   public int getMessagePositionInConversation(long threadId, long receivedTimestamp, @NonNull RecipientId recipientId) {
     String[] projection = new String[]{ DATE_RECEIVED, RECIPIENT_ID, REMOTE_DELETED};
     String   order      = DATE_RECEIVED + " DESC";
-    String   selection  = THREAD_ID + " = " + threadId + " AND " + STORY_TYPE + " = 0" + " AND " + PARENT_STORY_ID + " <= 0";
+    String   selection  = THREAD_ID + " = " + threadId + " AND " + STORY_TYPE + " = 0" + " AND " + PARENT_STORY_ID + " <= 0 AND " + SCHEDULED_DATE + " = -1";
 
     try (Cursor cursor = getReadableDatabase().query(TABLE_NAME, projection, selection, null, null, null, order)) {
       boolean isOwnNumber = Recipient.resolved(recipientId).isSelf();
@@ -3827,12 +4042,14 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
       order     = MessageTable.DATE_RECEIVED + " ASC";
       selection = MessageTable.THREAD_ID + " = " + threadId + " AND " +
                   MessageTable.DATE_RECEIVED + " < " + receivedTimestamp + " AND " +
-                  MessageTable.STORY_TYPE + " = 0 AND " + MessageTable.PARENT_STORY_ID + " = " + groupStoryId;
+                  MessageTable.STORY_TYPE + " = 0 AND " + MessageTable.PARENT_STORY_ID + " = " + groupStoryId + " AND " +
+                  MessageTable.SCHEDULED_DATE + " = -1";
     } else {
       order     = MessageTable.DATE_RECEIVED + " DESC";
       selection = MessageTable.THREAD_ID + " = " + threadId + " AND " +
                   MessageTable.DATE_RECEIVED + " > " + receivedTimestamp + " AND " +
-                  MessageTable.STORY_TYPE + " = 0 AND " + MessageTable.PARENT_STORY_ID + " <= 0";
+                  MessageTable.STORY_TYPE + " = 0 AND " + MessageTable.PARENT_STORY_ID + " <= 0 AND " +
+                  MessageTable.SCHEDULED_DATE + " = -1";
     }
 
     try (Cursor cursor = getReadableDatabase().query(TABLE_NAME, new String[] { "COUNT(*)" }, selection, null, null, null, order)) {
@@ -3846,7 +4063,7 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
   public long getTimestampForFirstMessageAfterDate(long date) {
     String[] projection = new String[] { MessageTable.DATE_RECEIVED };
     String   order      = MessageTable.DATE_RECEIVED + " ASC";
-    String   selection  = MessageTable.DATE_RECEIVED + " > " + date;
+    String   selection  = MessageTable.DATE_RECEIVED + " > " + date + " AND " + MessageTable.SCHEDULED_DATE + " = -1";
 
     try (Cursor cursor = getReadableDatabase().query(TABLE_NAME, projection, selection, null, null, null, order, "1")) {
       if (cursor != null && cursor.moveToFirst()) {
@@ -3858,7 +4075,7 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
   }
 
   public int getMessageCountBeforeDate(long date) {
-    String selection = MessageTable.DATE_RECEIVED + " < " + date;
+    String selection = MessageTable.DATE_RECEIVED + " < " + date + " AND " + MessageTable.SCHEDULED_DATE + " = -1";
 
     try (Cursor cursor = getReadableDatabase().query(TABLE_NAME, COUNT, selection, null, null, null, null)) {
       if (cursor != null && cursor.moveToFirst()) {
@@ -3882,7 +4099,8 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
     String[] projection = new String[] { "COUNT(*)" };
     String   selection  = MessageTable.THREAD_ID + " = " + threadId + " AND " +
                           MessageTable.DATE_RECEIVED + " >= " + timestamp + " AND " +
-                          MessageTable.STORY_TYPE + " = 0 AND " + MessageTable.PARENT_STORY_ID + " <= 0";
+                          MessageTable.STORY_TYPE + " = 0 AND " + MessageTable.PARENT_STORY_ID + " <= 0 AND " +
+                          MessageTable.SCHEDULED_DATE + " = -1";
 
     try (Cursor cursor = getReadableDatabase().query(TABLE_NAME, projection, selection, null, null, null, null)) {
       if (cursor != null && cursor.moveToNext()) {
@@ -3940,9 +4158,7 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
   }
 
   public @NonNull List<MessageTable.ReportSpamData> getReportSpamMessageServerData(long threadId, long timestamp, int limit) {
-    return SignalDatabase
-        .messages()
-        .getReportSpamMessageServerGuids(threadId, timestamp)
+    return getReportSpamMessageServerGuids(threadId, timestamp)
         .stream()
         .sorted((l, r) -> -Long.compare(l.getDateReceived(), r.getDateReceived()))
         .limit(limit)
@@ -4382,12 +4598,64 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
    * This does *not* have attachments in it.
    */
   public Cursor getConversation(long threadId, long offset, long limit) {
-    String   selection = THREAD_ID + " = ? AND " + STORY_TYPE + " = ? AND " + PARENT_STORY_ID + " <= ?";
-    String[] args      = SqlUtil.buildArgs(threadId, 0, 0);
+    String   selection = THREAD_ID + " = ? AND " + STORY_TYPE + " = ? AND " + PARENT_STORY_ID + " <= ? AND " + SCHEDULED_DATE + " = ?";
+    String[] args      = SqlUtil.buildArgs(threadId, 0, 0, -1);
     String   order     = DATE_RECEIVED + " DESC";
     String   limitStr  = limit > 0 || offset > 0 ? offset + ", " + limit : null;
 
     return getReadableDatabase().query(TABLE_NAME, MMS_PROJECTION, selection, args, null, null, order, limitStr);
+  }
+
+  /**
+   * Returns messages ordered for display in a reverse list (newest first).
+   */
+  public List<MessageRecord> getScheduledMessagesInThread(long threadId) {
+    String   selection = THREAD_ID + " = ? AND " + STORY_TYPE + " = ? AND " + PARENT_STORY_ID + " <= ? AND " + SCHEDULED_DATE + " != ?";
+    String[] args      = SqlUtil.buildArgs(threadId, 0, 0, -1);
+    String   order     = SCHEDULED_DATE + " DESC, " + ID + " DESC";
+
+    try (MmsReader reader = mmsReaderFor(getReadableDatabase().query(TABLE_NAME + " INDEXED BY " + INDEX_THREAD_STORY_SCHEDULED_DATE, MMS_PROJECTION, selection, args, null, null, order))) {
+      List<MessageRecord> results = new ArrayList<>(reader.getCount());
+      while (reader.getNext() != null) {
+        results.add(reader.getCurrent());
+      }
+
+      return results;
+    }
+  }
+
+  /**
+   * Returns messages order for sending (oldest first).
+   */
+  public List<MessageRecord> getScheduledMessagesBefore(long time) {
+    String   selection = STORY_TYPE + " = ? AND " + PARENT_STORY_ID + " <= ? AND " + SCHEDULED_DATE + " != ? AND " + SCHEDULED_DATE + " <= ?";
+    String[] args      = SqlUtil.buildArgs(0, 0, -1, time);
+    String   order     = SCHEDULED_DATE + " ASC, " + ID + " ASC";
+
+    try (MmsReader reader = mmsReaderFor(getReadableDatabase().query(TABLE_NAME, MMS_PROJECTION, selection, args, null, null, order))) {
+      List<MessageRecord> results = new ArrayList<>(reader.getCount());
+      while (reader.getNext() != null) {
+        results.add(reader.getCurrent());
+      }
+
+      return results;
+    }
+  }
+
+  public @Nullable MessageRecord getOldestScheduledSendTimestamp() {
+    String[] columns   = new String[] { SCHEDULED_DATE };
+    String   selection = STORY_TYPE + " = ? AND " + PARENT_STORY_ID + " <= ? AND " + SCHEDULED_DATE + " != ?";
+    String[] args      = SqlUtil.buildArgs(0, 0, -1);
+    String   order     = SCHEDULED_DATE + " ASC, " + ID + " ASC";
+    String   limit     = "1";
+
+    try (MmsReader reader = mmsReaderFor(getReadableDatabase().query(TABLE_NAME, MMS_PROJECTION, selection, args, null, null, order, limit))) {
+      if (reader.getNext() != null) {
+        return reader.getCurrent();
+      }
+    }
+
+    return null;
   }
 
   public Cursor getMessagesForNotificationState(Collection<DefaultMessageNotifier.StickyThread> stickyThreads) {
@@ -4550,6 +4818,32 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
       }
 
     }
+  }
+
+  public @NonNull Map<Long, BodyRangeList> getBodyRangesForMessages(@NonNull List<Long> messageIds) {
+    List<SqlUtil.Query>      queries    = SqlUtil.buildCollectionQuery(ID, messageIds);
+    Map<Long, BodyRangeList> bodyRanges = new HashMap<>();
+
+    for (SqlUtil.Query query : queries) {
+      try (Cursor cursor = SQLiteDatabaseExtensionsKt.select(getReadableDatabase(), ID, MESSAGE_RANGES)
+                                                     .from(TABLE_NAME)
+                                                     .where(query.getWhere(), query.getWhereArgs())
+                                                     .run())
+      {
+        while (cursor.moveToNext()) {
+          byte[] data = CursorUtil.requireBlob(cursor, MESSAGE_RANGES);
+          if (data != null) {
+            try {
+              bodyRanges.put(CursorUtil.requireLong(cursor, ID), BodyRangeList.parseFrom(data));
+            } catch (InvalidProtocolBufferException e) {
+              Log.w(TAG, "Unable to parse body ranges for search", e);
+            }
+          }
+        }
+      }
+    }
+
+    return bodyRanges;
   }
 
   protected enum ReceiptType {
@@ -4900,13 +5194,17 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
     public MessageRecord getCurrent() {
       SlideDeck slideDeck = new SlideDeck(context, message.getAttachments());
 
-      CharSequence  quoteText     = message.getOutgoingQuote() != null ? message.getOutgoingQuote().getText() : null;
-      List<Mention> quoteMentions = message.getOutgoingQuote() != null ? message.getOutgoingQuote().getMentions() : Collections.emptyList();
+      CharSequence  quoteText       = message.getOutgoingQuote() != null ? message.getOutgoingQuote().getText() : null;
+      List<Mention> quoteMentions   = message.getOutgoingQuote() != null ? message.getOutgoingQuote().getMentions() : Collections.emptyList();
+      BodyRangeList quoteBodyRanges = message.getOutgoingQuote() != null ? message.getOutgoingQuote().getBodyRanges() : null;
 
-      if (quoteText != null && !quoteMentions.isEmpty()) {
+      if (quoteText != null && (Util.hasItems(quoteMentions) || quoteBodyRanges != null)) {
         MentionUtil.UpdatedBodyAndMentions updated = MentionUtil.updateBodyAndMentionsWithDisplayNames(context, quoteText, quoteMentions);
 
-        quoteText     = updated.getBody();
+        SpannableString styledText = new SpannableString(updated.getBody());
+        MessageStyler.style(BodyRangeUtil.adjustBodyRanges(quoteBodyRanges, updated.getBodyAdjustments()), styledText);
+
+        quoteText     = styledText;
         quoteMentions = updated.getMentions();
       }
 
@@ -4951,7 +5249,8 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
                                        message.getParentStoryId(),
                                        message.getGiftBadge(),
                                        null,
-                                       null);
+                                       null,
+                                       -1);
     }
   }
 
@@ -4991,6 +5290,10 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
       } else {
         return getMediaMmsMessageRecord(cursor);
       }
+    }
+
+    public MessageId getCurrentId() {
+      return new MessageId(CursorUtil.requireLong(cursor, ID));
     }
 
     @Override
@@ -5095,6 +5398,7 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
       byte[]               messageRangesData    = CursorUtil.requireBlob(cursor, MESSAGE_RANGES);
       StoryType            storyType            = StoryType.fromCode(CursorUtil.requireInt(cursor, STORY_TYPE));
       ParentStoryId        parentStoryId        = ParentStoryId.deserialize(CursorUtil.requireLong(cursor, PARENT_STORY_ID));
+      long                 scheduledDate        = CursorUtil.requireLong(cursor, SCHEDULED_DATE);
 
       if (!TextSecurePreferences.isReadReceiptsEnabled(context)) {
         readReceiptCount = 0;
@@ -5139,7 +5443,7 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
                                        networkFailures, subscriptionId, expiresIn, expireStarted,
                                        isViewOnce, readReceiptCount, quote, contacts, previews, unidentified, Collections.emptyList(),
                                        remoteDelete, mentionsSelf, notifiedTimestamp, viewedReceiptCount, receiptTimestamp, messageRanges,
-                                       storyType, parentStoryId, giftBadge, null, null);
+                                       storyType, parentStoryId, giftBadge, null, null, scheduledDate);
     }
 
     private Set<IdentityKeyMismatch> getMismatchedIdentities(String document) {
@@ -5180,16 +5484,20 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
       CharSequence               quoteText        = cursor.getString(cursor.getColumnIndexOrThrow(MessageTable.QUOTE_BODY));
       int                        quoteType        = cursor.getInt(cursor.getColumnIndexOrThrow(MessageTable.QUOTE_TYPE));
       boolean                    quoteMissing     = cursor.getInt(cursor.getColumnIndexOrThrow(MessageTable.QUOTE_MISSING)) == 1;
-      List<Mention>              quoteMentions    = parseQuoteMentions(context, cursor);
+      List<Mention>              quoteMentions    = parseQuoteMentions(cursor);
+      BodyRangeList              bodyRanges       = parseQuoteBodyRanges(cursor);
       List<DatabaseAttachment>   attachments      = SignalDatabase.attachments().getAttachments(cursor);
       List<? extends Attachment> quoteAttachments = Stream.of(attachments).filter(Attachment::isQuote).toList();
       SlideDeck                  quoteDeck        = new SlideDeck(context, quoteAttachments);
 
       if (quoteId > 0 && quoteAuthor > 0) {
-        if (quoteText != null && !quoteMentions.isEmpty()) {
+        if (quoteText != null && (Util.hasItems(quoteMentions) || bodyRanges != null)) {
           MentionUtil.UpdatedBodyAndMentions updated = MentionUtil.updateBodyAndMentionsWithDisplayNames(context, quoteText, quoteMentions);
 
-          quoteText     = updated.getBody();
+          SpannableString styledText = new SpannableString(updated.getBody());
+          MessageStyler.style(BodyRangeUtil.adjustBodyRanges(bodyRanges, updated.getBodyAdjustments()), styledText);
+
+          quoteText     = styledText;
           quoteMentions = updated.getMentions();
         }
 

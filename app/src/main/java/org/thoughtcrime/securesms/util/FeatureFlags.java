@@ -85,8 +85,8 @@ public final class FeatureFlags {
   private static final String SOFTWARE_AEC_BLOCKLIST_MODELS     = "android.calling.softwareAecBlockList";
   private static final String USE_HARDWARE_AEC_IF_OLD           = "android.calling.useHardwareAecIfOlderThanApi29";
   private static final String USE_AEC3                          = "android.calling.useAec3";
-  private static final String PAYMENTS_COUNTRY_BLOCKLIST        = "android.payments.blocklist";
-  private static final String PHONE_NUMBER_PRIVACY              = "android.pnp";
+  private static final String PAYMENTS_COUNTRY_BLOCKLIST        = "global.payments.disabledRegions";
+  public  static final String PHONE_NUMBER_PRIVACY              = "android.pnp";
   private static final String USE_FCM_FOREGROUND_SERVICE        = "android.useFcmForegroundService.3";
   private static final String STORIES_AUTO_DOWNLOAD_MAXIMUM     = "android.stories.autoDownloadMaximum";
   private static final String TELECOM_MANUFACTURER_ALLOWLIST    = "android.calling.telecomAllowList";
@@ -103,7 +103,9 @@ public final class FeatureFlags {
   private static final String CDS_HARD_LIMIT                    = "android.cds.hardLimit";
   private static final String CHAT_FILTERS                      = "android.chat.filters.3";
   private static final String PAYPAL_ONE_TIME_DONATIONS         = "android.oneTimePayPalDonations.2";
-  private static final String PAYPAL_RECURRING_DONATIONS        = "android.recurringPayPalDonations.2";
+  private static final String PAYPAL_RECURRING_DONATIONS        = "android.recurringPayPalDonations.3";
+  private static final String TEXT_FORMATTING                   = "android.textFormatting";
+  private static final String ANY_ADDRESS_PORTS_KILL_SWITCH     = "android.calling.fieldTrial.anyAddressPortsKillSwitch";
 
   /**
    * We will only store remote values for flags in this set. If you want a flag to be controllable
@@ -158,7 +160,9 @@ public final class FeatureFlags {
       CDS_HARD_LIMIT,
       CHAT_FILTERS,
       PAYPAL_ONE_TIME_DONATIONS,
-      PAYPAL_RECURRING_DONATIONS
+      PAYPAL_RECURRING_DONATIONS,
+      TEXT_FORMATTING,
+      ANY_ADDRESS_PORTS_KILL_SWITCH
   );
 
   @VisibleForTesting
@@ -220,7 +224,8 @@ public final class FeatureFlags {
       RECIPIENT_MERGE_V2,
       CREDIT_CARD_PAYMENTS,
       PAYMENTS_REQUEST_ACTIVATE_FLOW,
-      CDS_HARD_LIMIT
+      CDS_HARD_LIMIT,
+      TEXT_FORMATTING
   );
 
   /**
@@ -318,7 +323,7 @@ public final class FeatureFlags {
 
   /** Internal testing extensions. */
   public static boolean internalUser() {
-    return getBoolean(INTERNAL_USER, false);
+    return getBoolean(INTERNAL_USER, false) || Environment.IS_PNP;
   }
 
   /** Whether or not to use the UUID in verification codes. */
@@ -341,7 +346,7 @@ public final class FeatureFlags {
    * IMPORTANT: This is under active development. Enabling this *will* break your contacts in terrible, irreversible ways.
    */
   public static boolean phoneNumberPrivacy() {
-    return getBoolean(PHONE_NUMBER_PRIVACY, false);
+    return getBoolean(PHONE_NUMBER_PRIVACY, false) || Environment.IS_PNP;
   }
 
   /** Whether to use the custom streaming muxer or built in android muxer. */
@@ -562,6 +567,20 @@ public final class FeatureFlags {
    */
   public static boolean paypalRecurringDonations() {
     return getBoolean(PAYPAL_RECURRING_DONATIONS, Environment.IS_STAGING);
+  }
+
+  /**
+   * Whether or not we should show text formatting options.
+   */
+  public static boolean textFormatting() {
+    return getBoolean(TEXT_FORMATTING, false);
+  }
+
+  /**
+   * Enable/disable RingRTC field trial for "AnyAddressPortsKillSwitch"
+   */
+  public static boolean callingFieldTrialAnyAddressPortsKillSwitch() {
+    return getBoolean(ANY_ADDRESS_PORTS_KILL_SWITCH, false);
   }
 
   /** Only for rendering debug info. */

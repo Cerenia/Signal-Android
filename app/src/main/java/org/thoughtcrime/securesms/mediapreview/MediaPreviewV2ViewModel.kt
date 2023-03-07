@@ -2,6 +2,7 @@ package org.thoughtcrime.securesms.mediapreview
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Completable
@@ -27,9 +28,17 @@ class MediaPreviewV2ViewModel : ViewModel() {
   val currentPosition: Int
     get() = store.state.position
 
-  fun fetchAttachments(startingAttachmentId: AttachmentId, threadId: Long, sorting: MediaTable.Sorting, forceRefresh: Boolean = false) {
+  fun setIsInSharedAnimation(isInSharedAnimation: Boolean) {
+    store.update { it.copy(isInSharedAnimation = isInSharedAnimation) }
+  }
+
+  fun shouldFinishAfterTransition(initialMediaUri: Uri): Boolean {
+    return currentPosition in store.state.mediaRecords.indices && store.state.mediaRecords[currentPosition].toMedia()?.uri == initialMediaUri
+  }
+
+  fun fetchAttachments(context: Context, startingAttachmentId: AttachmentId, threadId: Long, sorting: MediaTable.Sorting, forceRefresh: Boolean = false) {
     if (store.state.loadState == MediaPreviewV2State.LoadState.INIT || forceRefresh) {
-      disposables += store.update(repository.getAttachments(startingAttachmentId, threadId, sorting)) { result: MediaPreviewRepository.Result, oldState: MediaPreviewV2State ->
+      disposables += store.update(repository.getAttachments(context, startingAttachmentId, threadId, sorting)) { result: MediaPreviewRepository.Result, oldState: MediaPreviewV2State ->
         val albums = result.records.fold(mutableMapOf()) { acc: MutableMap<Long, MutableList<Media>>, mediaRecord: MediaTable.MediaRecord ->
           val attachment = mediaRecord.attachment
           if (attachment != null) {
@@ -42,15 +51,17 @@ class MediaPreviewV2ViewModel : ViewModel() {
           oldState.copy(
             position = result.initialPosition,
             mediaRecords = result.records,
+            messageBodies = result.messageBodies,
             albums = albums,
-            loadState = MediaPreviewV2State.LoadState.DATA_LOADED,
+            loadState = MediaPreviewV2State.LoadState.DATA_LOADED
           )
         } else {
           oldState.copy(
             position = result.records.size - result.initialPosition - 1,
             mediaRecords = result.records.reversed(),
+            messageBodies = result.messageBodies,
             albums = albums.mapValues { it.value.reversed() },
-            loadState = MediaPreviewV2State.LoadState.DATA_LOADED,
+            loadState = MediaPreviewV2State.LoadState.DATA_LOADED
           )
         }
       }

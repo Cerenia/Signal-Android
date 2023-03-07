@@ -19,9 +19,9 @@ class ContactSearchRepository {
     return Single.fromCallable {
       contactSearchKeys.map {
         val isSelectable = when (it) {
-          is ContactSearchKey.Expand -> false
-          is ContactSearchKey.Header -> false
           is ContactSearchKey.RecipientSearchKey -> canSelectRecipient(it.recipientId)
+          is ContactSearchKey.UnknownRecipientKey -> it.sectionKey == ContactSearchConfiguration.SectionKey.PHONE_NUMBER
+          else -> false
         }
         ContactSearchSelectionResult(it, isSelectable)
       }.toSet()

@@ -465,13 +465,6 @@
         <item name="android:insetBottom">0dp</item>
     </style>
 
-    <style name="Widget.TimeDurationPicker.Dialog">
-        <item name="durationDisplayBackground">?colorControlActivated</item>
-        <item name="textAppearanceDisplay">@style/TextAppearance.TimeDurationPicker.Display.Large.Dark</item>
-        <item name="textAppearanceUnit">@style/TextAppearance.TimeDurationPicker.Unit.Large.Dark</item>
-        <item name="android:layoutDirection">ltr</item>
-    </style>
-
     <style name="ThemeOverlay.Signal.TextInputEditText.FilledBox" parent="ThemeOverlay.MaterialComponents.TextInputEditText.FilledBox">
         <item name="colorControlActivated">@color/signal_colorPrimary</item>
     </style>
@@ -498,6 +491,19 @@
         <item name="boxStrokeColor">@color/signal_colorOutline</item>
         <item name="boxStrokeErrorColor">@color/signal_colorError</item>
         <item name="hintTextAppearance">@style/Signal.Text.LabelMedium</item>
+    </style>
+
+    <style name="Widget.Signal.TextInputLayout.Registration" parent="Widget.MaterialComponents.TextInputLayout.FilledBox">
+        <item name="boxCornerRadiusTopEnd">4dp</item>
+        <item name="boxCornerRadiusTopStart">4dp</item>
+        <item name="hintTextAppearance">@style/Signal.Text.LabelMedium</item>
+    </style>
+
+    <style name="Widget.Signal.TextInputLayout.Registration.Dropdown" parent="Widget.MaterialComponents.TextInputLayout.FilledBox.ExposedDropdownMenu">
+        <item name="android:paddingStart">12dp</item>
+        <item name="android:paddingEnd">6dp</item>
+        <item name="boxCornerRadiusTopEnd">2dp</item>
+        <item name="boxCornerRadiusTopStart">2dp</item>
     </style>
 
     <style name="Widget.MaterialComponents.Button.TextButton.Dialog">

@@ -27,6 +27,15 @@ import org.thoughtcrime.securesms.database.helpers.migration.V168_SingleMessageT
 import org.thoughtcrime.securesms.database.helpers.migration.V169_EmojiSearchIndexRank
 import org.thoughtcrime.securesms.database.helpers.migration.V170_CallTableMigration
 import org.thoughtcrime.securesms.database.helpers.migration.V171_ThreadForeignKeyFix
+import org.thoughtcrime.securesms.database.helpers.migration.V172_GroupMembershipMigration
+import org.thoughtcrime.securesms.database.helpers.migration.V173_ScheduledMessagesMigration
+import org.thoughtcrime.securesms.database.helpers.migration.V174_ReactionForeignKeyMigration
+import org.thoughtcrime.securesms.database.helpers.migration.V175_FixFullTextSearchLink
+import org.thoughtcrime.securesms.database.helpers.migration.V176_AddScheduledDateToQuoteIndex
+import org.thoughtcrime.securesms.database.helpers.migration.V177_MessageSendLogTableCleanupMigration
+import org.thoughtcrime.securesms.database.helpers.migration.V178_ReportingTokenColumnMigration
+import org.thoughtcrime.securesms.database.helpers.migration.V179_CleanupDanglingMessageSendLogMigration
+import org.thoughtcrime.securesms.database.helpers.migration.V180_RecipientNicknameMigration
 
 /**
  * Contains all of the database migrations for [SignalDatabase]. Broken into a separate file for cleanliness.
@@ -35,7 +44,7 @@ object SignalDatabaseMigrations {
 
   val TAG: String = Log.tag(SignalDatabaseMigrations.javaClass)
 
-  const val DATABASE_VERSION = 171
+  const val DATABASE_VERSION = 180
 
   @JvmStatic
   fun migrate(context: Application, db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
@@ -129,6 +138,42 @@ object SignalDatabaseMigrations {
 
     if (oldVersion < 171) {
       V171_ThreadForeignKeyFix.migrate(context, db, oldVersion, newVersion)
+    }
+
+    if (oldVersion < 172) {
+      V172_GroupMembershipMigration.migrate(context, db, oldVersion, newVersion)
+    }
+
+    if (oldVersion < 173) {
+      V173_ScheduledMessagesMigration.migrate(context, db, oldVersion, newVersion)
+    }
+
+    if (oldVersion < 174) {
+      V174_ReactionForeignKeyMigration.migrate(context, db, oldVersion, newVersion)
+    }
+
+    if (oldVersion < 175) {
+      V175_FixFullTextSearchLink.migrate(context, db, oldVersion, newVersion)
+    }
+
+    if (oldVersion < 176) {
+      V176_AddScheduledDateToQuoteIndex.migrate(context, db, oldVersion, newVersion)
+    }
+
+    if (oldVersion < 177) {
+      V177_MessageSendLogTableCleanupMigration.migrate(context, db, oldVersion, newVersion)
+    }
+
+    if (oldVersion < 178) {
+      V178_ReportingTokenColumnMigration.migrate(context, db, oldVersion, newVersion)
+    }
+
+    if (oldVersion < 179) {
+      V179_CleanupDanglingMessageSendLogMigration.migrate(context, db, oldVersion, newVersion)
+    }
+
+    if (oldVersion < 180) {
+      V180_RecipientNicknameMigration.migrate(context, db, oldVersion, newVersion)
     }
   }
 

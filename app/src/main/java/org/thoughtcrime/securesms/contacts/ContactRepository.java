@@ -37,7 +37,7 @@ public class ContactRepository {
   private final Context           context;
 
   public static final String ID_COLUMN           = "id";
-         static final String NAME_COLUMN         = "name";
+  public static final String NAME_COLUMN         = "name";
          static final String NUMBER_COLUMN       = "number";
          static final String NUMBER_TYPE_COLUMN  = "number_type";
          static final String LABEL_COLUMN        = "label";
@@ -127,6 +127,14 @@ public class ContactRepository {
                                              : recipientTable.queryNonGroupContacts(query, includeSelf);
 
     cursor = handleNoteToSelfQuery(query, includeSelf, cursor);
+
+    return new SearchCursorWrapper(cursor, SEARCH_CURSOR_MAPPERS);
+  }
+
+  @WorkerThread
+  public @NonNull Cursor queryGroupMemberContacts(@NonNull String query) {
+    Cursor cursor = TextUtils.isEmpty(query) ? recipientTable.getGroupMemberContacts()
+                                             : recipientTable.queryGroupMemberContacts(query);
 
     return new SearchCursorWrapper(cursor, SEARCH_CURSOR_MAPPERS);
   }

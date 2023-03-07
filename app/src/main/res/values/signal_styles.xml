@@ -178,6 +178,11 @@
         <item name="cornerSize">8dp</item>
     </style>
 
+    <style name="Signal.ShapeOverlay.Rounded.Fab" parent="ShapeAppearance.MaterialComponents.MediumComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">18dp</item>
+    </style>
+
     <style name="ShapeAppearance.Signal.MaterialAlertDialog" parent="ShapeAppearance.Material3.MediumComponent">
         <item name="cornerFamily">rounded</item>
         <item name="cornerRadius">28dp</item>
@@ -234,6 +239,11 @@
         <item name="alertDialogStyle">@style/Signal.MaterialAlertDialog.Wide</item>
     </style>
 
+    <style name="ThemeOverlay.Signal.MaterialAlertDialog.List">
+        <item name="materialAlertDialogBodyTextStyle">@style/Signal.Text.BodyLarge</item>
+        <item name="listPreferredItemHeightSmall">56dp</item>
+    </style>
+
     <style name="Widget.Signal.CheckedTextView" parent="Widget.Material3.CheckedTextView">
         <item name="android:textAppearance">@style/Signal.Text.BodyLarge</item>
         <item name="android:textColor">@color/signal_colorOnSurfaceVariant</item>
@@ -251,6 +261,31 @@
 
     <style name="Widget.Signal.Dialog.Body" parent="Signal.Text.BodyMedium">
         <item name="android:textColor">@color/signal_colorOnSurfaceVariant</item>
+    </style>
+
+    <style name="Signal.Widget.Calendar" parent="Widget.Material3.MaterialCalendar">
+        <item name="shapeAppearance">@style/Signal.ShapeOverlay.Rounded</item>
+    </style>
+
+    <style name="Signal.ThemeOverlay.Calendar" parent="@style/ThemeOverlay.Material3.MaterialCalendar">
+        <item name="colorSurface">@color/signal_background_dialog</item>
+        <item name="borderlessButtonStyle">@style/Signal.Widget.Button.Dialog</item>
+        <item name="colorPrimary">@color/signal_colorPrimary</item>
+        <item name="colorOnPrimary">@color/signal_colorOnPrimary</item>
+        <item name="colorAccent">@color/signal_accent_primary</item>
+        <item name="materialCalendarHeaderTitle">@style/MaterialCalendar.Signal.HeaderTitle</item>
+        <item name="materialCalendarHeaderSelection">@style/MaterialCalendar.Signal.HeaderSelection</item>
+
+        <item name="buttonBarPositiveButtonStyle">@style/Signal.Widget.Button.Dialog</item>
+        <item name="buttonBarNegativeButtonStyle">@style/Signal.Widget.Button.Dialog</item>
+    </style>
+
+    <style name="MaterialCalendar.Signal.HeaderTitle" parent="Widget.Material3.MaterialCalendar.HeaderTitle">
+        <item name="android:textAppearance">@style/Signal.Text.LabelMedium</item>
+    </style>
+
+    <style name="MaterialCalendar.Signal.HeaderSelection" parent="Widget.Material3.MaterialCalendar.HeaderSelection">
+        <item name="android:textAppearance">@style/Signal.Text.HeadlineLarge</item>
     </style>
 
     <style name="Signal.Widget.TimePicker" parent="Widget.MaterialComponents.TimePicker">
@@ -274,6 +309,8 @@
     </style>
 
     <style name="ThemeOverlay.Signal.CircularProgressIndicator.Tonal" parent="ThemeOverlay.Material3">
+        <item name="colorPrimary">@color/signal_colorPrimary</item>
+        <item name="colorSurfaceVariant">@color/signal_colorSurfaceVariant</item>
         <item name="circularProgressMaterialButtonStyle">@style/Signal.Widget.Button.Large.Tonal</item>
         <item name="circularProgressIndicatorStyle">@style/Widget.Signal.CircularProgressIndicator.Medium.Indeterminate</item>
     </style>
@@ -284,5 +321,14 @@
 
     <style name="Widget.Signal.CircularProgressIndicator.Medium.Indeterminate.Tonal">
         <item name="indicatorColor">@color/signal_colorPrimaryContainer</item>
+    </style>
+
+    <style name="Signal.ThemeOverlay.TextInputLayout" parent="ThemeOverlay.Material3">
+        <item name="colorSurfaceVariant">@color/signal_colorSurfaceVariant</item>
+        <item name="colorOnSurfaceVariant">@color/signal_colorOnSurfaceVariant</item>
+        <item name="colorPrimary">@color/signal_colorPrimary</item>
+        <item name="colorOnPrimary">@color/signal_colorOnPrimary</item>
+        <item name="colorOnSurface">@color/signal_colorOnSurface</item>
+        <item name="colorError">@color/signal_colorError</item>
     </style>
 </resources>
