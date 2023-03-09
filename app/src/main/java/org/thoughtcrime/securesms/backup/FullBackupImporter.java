@@ -32,7 +32,6 @@ import org.thoughtcrime.securesms.database.EmojiSearchTable;
 import org.thoughtcrime.securesms.database.KeyValueDatabase;
 import org.thoughtcrime.securesms.database.SearchTable;
 import org.thoughtcrime.securesms.database.StickerTable;
-import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.keyvalue.KeyValueDataSet;
 import org.thoughtcrime.securesms.keyvalue.SignalStore;
@@ -135,6 +134,7 @@ public class FullBackupImporter extends FullBackupBase {
     if (version.getVersion() > db.getVersion()) {
       throw new DatabaseDowngradeException(db.getVersion(), version.getVersion());
     }
+  }
 
   private static void tryProcessStatement(@NonNull SQLiteDatabase db, SqlStatement statement) {
     try {
@@ -306,16 +306,17 @@ public class FullBackupImporter extends FullBackupBase {
     }
   }
 
-  private static void dropAllTables(@NonNull SQLiteDatabase db) {
-    for (String trigger : SqlUtil.getAllTriggers(db)) {
-      Log.i(TAG, "Dropping trigger: " + trigger);
-      db.execSQL("DROP TRIGGER IF EXISTS " + trigger);
+
+    private static void dropAllTables(@NonNull SQLiteDatabase db) {
+      for (String trigger : SqlUtil.getAllTriggers(db)) {
+        Log.i(TAG, "Dropping trigger: " + trigger);
+        db.execSQL("DROP TRIGGER IF EXISTS " + trigger);
+      }
+      for (String table : getTablesToDropInOrder(db)) {
+        Log.i(TAG, "Dropping table: " + table);
+        db.execSQL("DROP TABLE IF EXISTS " + table);
+      }
     }
-    for (String table : getTablesToDropInOrder(db)) {
-      Log.i(TAG, "Dropping table: " + table);
-      db.execSQL("DROP TABLE IF EXISTS " + table);
-    }
-  }
 
   /**
    * Returns the list of tables we should drop, in the order they should be dropped in.

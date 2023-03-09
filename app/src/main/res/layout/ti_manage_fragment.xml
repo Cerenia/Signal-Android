@@ -49,7 +49,7 @@
         app:layout_constraintHorizontal_chainStyle="spread_inside"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:bsiv_icon="@drawable/ic_arrow_right"
+        app:bsiv_icon="@drawable/ic_arrow_end_24"
         app:bsiv_label="@string/ManageIntroductionsFragment__navigate_text"
         tools:ignore="NotSibling" />
 
