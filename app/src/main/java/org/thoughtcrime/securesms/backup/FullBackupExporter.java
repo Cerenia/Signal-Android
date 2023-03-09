@@ -318,7 +318,7 @@ public class FullBackupExporter extends FullBackupBase {
         String name = cursor.getString(1);
 
         if (f.isTableAllowed(name)) {
-          outputStream.write(BackupProtos.SqlStatement.newBuilder().setStatement(sql).build());
+          outputStream.write(new SqlStatement.Builder().statement(sql).build());
         }
       }
     }
@@ -400,12 +400,6 @@ public class FullBackupExporter extends FullBackupBase {
     boolean isReservedTable       = table.startsWith("sqlite_");
     boolean isMmsFtsSecretTable   = !table.equals(SearchTable.FTS_TABLE_NAME) && table.startsWith(SearchTable.FTS_TABLE_NAME);
     boolean isEmojiFtsSecretTable = !table.equals(EmojiSearchTable.TABLE_NAME) && table.startsWith(EmojiSearchTable.TABLE_NAME);
-
-
-
-      boolean isReservedTable       = table.startsWith("sqlite_");
-      boolean isMmsFtsSecretTable   = !table.equals(SearchTable.MMS_FTS_TABLE_NAME) && table.startsWith(SearchTable.MMS_FTS_TABLE_NAME);
-      boolean isEmojiFtsSecretTable = !table.equals(EmojiSearchTable.TABLE_NAME) && table.startsWith(EmojiSearchTable.TABLE_NAME);
 
       return !isReservedTable &&
              !isMmsFtsSecretTable &&
