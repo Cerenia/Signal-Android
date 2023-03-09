@@ -113,7 +113,7 @@ public class TrustedIntroductionSendJob extends BaseJob {
     String body = TI_Utils.buildMessageBody(introductionRecipientId, introduceeIds);
     LiveRecipient liveIntroductionRecipient = Recipient.live(introductionRecipientId);
     Recipient introductionRecipient = liveIntroductionRecipient.resolve();
-    OutgoingMessage message =  OutgoingMessage.text(introductionRecipient, body, 0, System.currentTimeMillis());
+    OutgoingMessage message =  OutgoingMessage.text(introductionRecipient, body, 0, System.currentTimeMillis(), null);
     // TODO: do we need a listener?
     // TODO: -1 for thread ID indeed ok?
     MessageSender.send(context, message, -1, MessageSender.SendType.SIGNAL, null, null);
