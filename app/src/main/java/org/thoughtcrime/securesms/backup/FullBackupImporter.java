@@ -32,6 +32,7 @@ import org.thoughtcrime.securesms.database.EmojiSearchTable;
 import org.thoughtcrime.securesms.database.KeyValueDatabase;
 import org.thoughtcrime.securesms.database.SearchTable;
 import org.thoughtcrime.securesms.database.StickerTable;
+import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.keyvalue.KeyValueDataSet;
 import org.thoughtcrime.securesms.keyvalue.SignalStore;
@@ -131,9 +132,11 @@ public class FullBackupImporter extends FullBackupBase {
   }
 
   private static void processVersion(@NonNull SQLiteDatabase db, DatabaseVersion version) throws IOException {
-    if (version.getVersion() > db.getVersion()) {
-      throw new DatabaseDowngradeException(db.getVersion(), version.getVersion());
+    if (version.version == null || version.version > db.getVersion()) {
+      throw new DatabaseDowngradeException(db.getVersion(), version.version != null ? version.version : -1);
     }
+
+    db.setVersion(version.version);
   }
 
   private static void tryProcessStatement(@NonNull SQLiteDatabase db, SqlStatement statement) {
