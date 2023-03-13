@@ -400,9 +400,10 @@ class IdentityTable internal constructor(context: Context?, databaseHelper: Sign
         return when (verifiedStatus){
           DIRECTLY_VERIFIED -> true
           DUPLEX_VERIFIED -> true
-          //INTRODUCED: (if someone is being MiTmed, an introduction could be sensitive data. So you should be sure who you are talking to before you forward)
+          //INTRODUCED: false (if someone is being MiTmed, an introduction could be sensitive data. So you should be sure who you are talking to before you forward)
           //TODO: Both versions of this have their own pros and cons... Which one should it be?
-          INTRODUCED -> false
+          // for now, opting to unlock also on introduced in order to give more room to play for the study
+          INTRODUCED -> true
           MANUALLY_VERIFIED -> false
           DEFAULT -> false
           UNVERIFIED -> false
