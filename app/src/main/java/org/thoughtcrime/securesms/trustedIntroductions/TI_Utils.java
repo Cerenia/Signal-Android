@@ -67,7 +67,7 @@ public class TI_Utils {
   public static final String TI_MESSAGE_VERSION = "1.0";
   // Since the Signal version is still important and will not be overwritten I define my own
   // 1: majour changes, 2: feature changes | upstream sync , 3. bug | stability fixes
-  public static final String TI_APK_VERSION = "1.2.1";
+  public static final String TI_APK_VERSION = "1.2.2";
 
   // Random String to mark a message as a trustedIntroduction, since I'm tunneling through normal messages
   static final String TI_IDENTIFYER = "QOikEX9PPGIuXfiejT9nC2SsDB8d9AG0dUPQ9gERBQ8qHF30Xj --- This message is part of an experimental feature and not meant to be read by humans --- Introduction Data:\n";
@@ -367,8 +367,8 @@ public class TI_Utils {
           knownIds.add(introduceeServiceId);
           String name = cursor.getString(cursor.getColumnIndex(SORT_NAME));
           String phone = cursor.getString(cursor.getColumnIndex(PHONE));
-          // TODO: hacky workaround, will need to fetch this information instead of cheesing it
-          phone = phone == null? "" : phone;
+          // TODO: hacky workaround, using Carols number if empty. Will need to set up another background Job to handle this case properly after demo.
+          phone = phone == null? "+17078612020" : phone;
           String identityKey = IdKeyPair.findCorrespondingKeyInList(introduceeServiceId, idKeyPairs);
           TI_Data d = new TI_Data(null, TrustedIntroductionsDatabase.State.PENDING, introducerServiceId, introduceeServiceId, name, phone, identityKey, null, timestamp);
           result.add(d);
