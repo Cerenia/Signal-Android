@@ -367,6 +367,8 @@ public class TI_Utils {
           knownIds.add(introduceeServiceId);
           String name = cursor.getString(cursor.getColumnIndex(SORT_NAME));
           String phone = cursor.getString(cursor.getColumnIndex(PHONE));
+          // TODO: hacky workaround, will need to fetch this information instead of cheesing it
+          phone = phone == null? "" : phone;
           String identityKey = IdKeyPair.findCorrespondingKeyInList(introduceeServiceId, idKeyPairs);
           TI_Data d = new TI_Data(null, TrustedIntroductionsDatabase.State.PENDING, introducerServiceId, introduceeServiceId, name, phone, identityKey, null, timestamp);
           result.add(d);
