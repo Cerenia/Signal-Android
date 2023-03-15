@@ -130,6 +130,7 @@ class ConversationSettingsFragment : DSLSettingsFragment(
       ConversationSettingsViewModel.Factory(
         recipientId = args.recipientId,
         groupId = ParcelableGroupId.get(groupId),
+        isCallInfo = args.isCallInfo,
         repository = ConversationSettingsRepository(requireContext())
       )
     }
@@ -182,6 +183,7 @@ class ConversationSettingsFragment : DSLSettingsFragment(
           progress.dismiss()
         }
       }
+
       REQUEST_CODE_RETURN_FROM_MEDIA -> viewModel.refreshSharedMedia()
       REQUEST_CODE_ADD_CONTACT -> viewModel.refreshRecipient()
       REQUEST_CODE_VIEW_CONTACT -> viewModel.refreshRecipient()
@@ -378,6 +380,13 @@ class ConversationSettingsFragment : DSLSettingsFragment(
       customPref(
         ButtonStripPreference.Model(
           state = state.buttonStripState,
+          onMessageClick = {
+            val intent = ConversationIntents
+              .createBuilder(requireContext(), state.recipient.id, state.threadId)
+              .build()
+
+            startActivity(intent)
+          },
           onAddToStoryClick = {
             if (state.recipient.isPushV2Group && state.requireGroupSettingsState().isAnnouncementGroup && !state.requireGroupSettingsState().isSelfAdmin) {
               MaterialAlertDialogBuilder(requireContext())
@@ -504,6 +513,7 @@ class ConversationSettingsFragment : DSLSettingsFragment(
               }
             )
           }
+
           ContactLinkState.ADD -> {
             @Suppress("DEPRECATION")
             clickPref(
@@ -518,6 +528,7 @@ class ConversationSettingsFragment : DSLSettingsFragment(
               }
             )
           }
+
           ContactLinkState.NONE -> {
           }
         }
