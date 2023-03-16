@@ -227,7 +227,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
    */
   private @NonNull ContentValues buildContentValuesForUpdate(@NonNull Long introductionId,
                                                     @NonNull State state,
-                                                    @NonNull String introducerServiceId,
+                                                    @Nullable String introducerServiceId,
                                                     @NonNull String serviceId,
                                                     @NonNull String name,
                                                     @NonNull String number,
@@ -329,13 +329,12 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
 
   /**
    *
-   * @param introduction PRE: none of it's fields may be null.
+   * @param introduction PRE: none of it's fields may be null, except introducerServiceId (forgotten introducer)
    * @return A populated contentValues object, to use for updates.
    */
   private @NonNull ContentValues buildContentValuesForUpdate(@NonNull TI_Data introduction){
     Preconditions.checkNotNull(introduction.getId());
     Preconditions.checkNotNull(introduction.getState());
-    Preconditions.checkNotNull(introduction.getIntroducerServiceId());
     Preconditions.checkNotNull(introduction.getPredictedSecurityNumber());
     return buildContentValuesForUpdate(introduction.getId(),
                                        introduction.getState(),
