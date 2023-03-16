@@ -59,6 +59,9 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase.CREATE_TABLE;
+import static org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase.PREVIOUS_PARTIAL_CREATE_TABLE;
+
 public class FullBackupImporter extends FullBackupBase {
 
   @SuppressWarnings("unused")
@@ -110,8 +113,6 @@ public class FullBackupImporter extends FullBackupBase {
       } catch (net.zetetic.database.sqlcipher.SQLiteException e) {
         Log.i(TAG, "Trusted Introductions Table already exists!");
       }
-
-
 
       db.setTransactionSuccessful();
       keyValueDatabase.setTransactionSuccessful();
@@ -167,6 +168,14 @@ public class FullBackupImporter extends FullBackupBase {
   private static void processStatement(@NonNull SQLiteDatabase db, SqlStatement statement) {
     if (statement.statement == null) {
       Log.w(TAG, "Null statement!");
+      return;
+    }
+
+    if (statement.statement.contains(PREVIOUS_PARTIAL_CREATE_TABLE)){
+      // This is a safe change since a nullconstraint was removed and the int type is changed to a more general text type (I hope? let's check that ^^)
+      Log.i(TAG, "Outdated faulty TI create table: " + statement.statement);
+      Log.i(TAG, "Executing updated create table statement: " + CREATE_TABLE);
+      db.execSQL(CREATE_TABLE);
       return;
     }
 
