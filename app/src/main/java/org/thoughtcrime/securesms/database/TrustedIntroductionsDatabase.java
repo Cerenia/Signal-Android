@@ -732,16 +732,20 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
      IntroductionReader reader = new IntroductionReader(c);
      TI_Data introduction;
      while((introduction = reader.getNext()) != null){
-       ContentValues cv = buildContentValuesForStale(introduction);
-       int res = writeableDatabase.update(TABLE_NAME, cv, ID + " = ?", SqlUtil.buildArgs(introduction.getId()));
-       if (res < 0){
-         Log.e(TAG, "Introduction " + introduction.getId() + " for " + introduction.getIntroduceeName() + " with state " + introduction.getState().toString() + " could not be turned stale!");
-         updateSucceeded = false;
-       } else {
-         Log.i(TAG, "Introduction " + introduction.getId() + " for " + introduction.getIntroduceeName() + " with state " + introduction.getState().toString() + " was turned stale!");
-         // TODO: For multidevice, syncing would be handled here
+       // If the intro is already stale, we don't need to do anything.
+       if(!introduction.getState().isStale()){
+         ContentValues cv = buildContentValuesForStale(introduction);
+         int res = writeableDatabase.update(TABLE_NAME, cv, ID + " = ?", SqlUtil.buildArgs(introduction.getId()));
+         if (res < 0){
+           Log.e(TAG, "Introduction " + introduction.getId() + " for " + introduction.getIntroduceeName() + " with state " + introduction.getState() + " could not be turned stale!");
+           updateSucceeded = false;
+         } else {
+           Log.i(TAG, "Introduction " + introduction.getId() + " for " + introduction.getIntroduceeName() + " with state " + introduction.getState() + " was turned stale!");
+           // TODO: For multidevice, syncing would be handled here
+         }
        }
      }
+     // TODO: This does not really make sense here when there are multiple introductions...
      return updateSucceeded;
   }
 
