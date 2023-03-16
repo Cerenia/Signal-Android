@@ -58,7 +58,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
 
   public static final String CREATE_TABLE =
       "CREATE TABLE " + TABLE_NAME + " (" + ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-      INTRODUCER_SERVICE_ID + " INTEGER NOT NULL, " +
+      INTRODUCER_SERVICE_ID + " TEXT, " +
       INTRODUCEE_SERVICE_ID + " TEXT NOT NULL, " +
       INTRODUCEE_PUBLIC_IDENTITY_KEY + " TEXT NOT NULL, " +
       INTRODUCEE_NAME + " TEXT NOT NULL, " +
