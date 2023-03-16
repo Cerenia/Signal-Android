@@ -305,6 +305,7 @@ public class ConversationListFragment extends MainFragment implements ActionMode
                                                           false,
                                                           ContactSearchAdapter.DisplaySmsTag.DEFAULT,
                                                           ContactSearchAdapter.DisplaySecondaryInformation.NEVER,
+                                                          false,
                                                           false
                                                       ),
                                                       this::mapSearchStateToConfiguration,
