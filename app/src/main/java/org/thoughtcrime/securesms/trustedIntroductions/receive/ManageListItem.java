@@ -91,7 +91,7 @@ public class ManageListItem extends ConstraintLayout {
       int visible = View.VISIBLE;
       this.timestampTime.setVisibility(visible);
       this.introduceeNumber.setVisibility(visible);
-      this.introduceeNumber.setVisibility(visible);
+      this.introduceeName.setVisibility(visible);
       this.switchLabel.setVisibility(visible);
       this.toggleSwitch.setVisibility(visible);
     }
@@ -114,7 +114,7 @@ public class ManageListItem extends ConstraintLayout {
     } else {
       introducerName.setVisibility(View.GONE);
       introducerNumber.setVisibility(View.GONE);
-      guideline.setGuidelinePercent(0.75f);
+      guideline.setGuidelinePercent(0.25f);
     }
     toggleSwitch.setOnClickListener(v -> toggleSwitch());
     changeByState(data.getState());
