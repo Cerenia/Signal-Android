@@ -132,8 +132,6 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
     });
     from_title_view = view.findViewById(R.id.introduction_title_view);
     if (viewModel.getScreenType() == ALL){
-      // TODO: does this work?
-      introductionList.addItemDecoration(new ManageAdapter.ManageAllListHeader(introductionList));
       from_title_view.setVisibility(View.GONE);
     } else {
       from_title_view.setText(String.format(getString(R.string.ManageIntroductionsFragment__Title_Introductions_from), viewModel.getIntroducerName()));
