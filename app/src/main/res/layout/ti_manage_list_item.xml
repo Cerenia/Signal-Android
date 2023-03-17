@@ -49,54 +49,6 @@
 
 
     <org.thoughtcrime.securesms.components.FromTextView
-        android:id="@+id/introduceeName"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:drawablePadding="4dp"
-        android:ellipsize="marquee"
-        android:singleLine="true"
-        android:textAppearance="@style/Signal.Text.BodyLarge"
-        android:textColor="@color/signal_text_primary"
-        android:gravity="start|top"
-        app:layout_constraintHorizontal_bias="0"
-        app:layout_constraintBottom_toTopOf="@id/introduceeNumber"
-        app:layout_constraintStart_toEndOf="@id/timestamp_date"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_chainStyle="packed"
-        app:layout_constraintEnd_toStartOf="@id/half_guide"
-        tools:text="@sample/contacts.json/data/name" />
-
-    <org.thoughtcrime.securesms.components.FromTextView
-        android:id="@+id/introduceeNumber"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:drawablePadding="4dp"
-        android:ellipsize="marquee"
-        android:singleLine="true"
-        android:textAppearance="@style/Signal.Text.BodyMedium"
-        android:textColor="@color/signal_text_secondary"
-        android:textDirection="ltr"
-        android:gravity="start|bottom"
-        app:layout_constraintTop_toBottomOf="@id/introduceeName"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@id/timestamp_date"
-        app:layout_constraintEnd_toStartOf="@id/half_guide"
-        app:layout_constraintVertical_chainStyle="packed"
-        app:layout_constraintHorizontal_bias="0"
-        tools:text="@sample/contacts.json/data/number" />
-
-        <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/half_guide"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            app:layout_constraintGuide_percent="0.5" />
-
-    <org.thoughtcrime.securesms.components.FromTextView
         android:id="@+id/introducerName"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -108,13 +60,12 @@
         android:textAppearance="@style/Signal.Text.BodyLarge"
         android:textColor="@color/signal_text_primary"
         android:gravity="start|top"
-        android:visibility="gone"
+        app:layout_constraintHorizontal_bias="0"
         app:layout_constraintBottom_toTopOf="@id/introducerNumber"
-        app:layout_constraintEnd_toStartOf="@id/switch_label"
+        app:layout_constraintStart_toEndOf="@id/timestamp_date"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_chainStyle="packed"
-        app:layout_constraintStart_toStartOf="@id/half_guide"
-        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintEnd_toStartOf="@id/half_guide"
         tools:text="@sample/contacts.json/data/name" />
 
     <org.thoughtcrime.securesms.components.FromTextView
@@ -130,9 +81,58 @@
         android:textColor="@color/signal_text_secondary"
         android:textDirection="ltr"
         android:gravity="start|bottom"
+        app:layout_constraintTop_toBottomOf="@id/introducerName"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@id/timestamp_date"
+        app:layout_constraintEnd_toStartOf="@id/half_guide"
+        app:layout_constraintVertical_chainStyle="packed"
+        app:layout_constraintHorizontal_bias="0"
+        tools:text="@sample/contacts.json/data/number" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/half_guide"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.5" />
+
+    <org.thoughtcrime.securesms.components.FromTextView
+        android:id="@+id/introduceeName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:drawablePadding="4dp"
+        android:ellipsize="marquee"
+        android:singleLine="true"
+        android:textAppearance="@style/Signal.Text.BodyLarge"
+        android:textColor="@color/signal_text_primary"
+        android:gravity="start|top"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/introduceeNumber"
+        app:layout_constraintEnd_toStartOf="@id/switch_label"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="packed"
+        app:layout_constraintStart_toStartOf="@id/half_guide"
+        app:layout_constraintHorizontal_bias="0"
+        tools:text="@sample/contacts.json/data/name" />
+
+    <org.thoughtcrime.securesms.components.FromTextView
+        android:id="@+id/introduceeNumber"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:drawablePadding="4dp"
+        android:ellipsize="marquee"
+        android:singleLine="true"
+        android:textAppearance="@style/Signal.Text.BodyMedium"
+        android:textColor="@color/signal_text_secondary"
+        android:textDirection="ltr"
+        android:gravity="start|bottom"
         android:visibility="gone"
         app:layout_constrainedWidth="true"
-        app:layout_constraintTop_toBottomOf="@id/introducerName"
+        app:layout_constraintTop_toBottomOf="@id/introduceeName"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/switch_label"
         app:layout_constraintStart_toEndOf="@id/half_guide"
