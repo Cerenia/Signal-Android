@@ -25,7 +25,7 @@ import static org.thoughtcrime.securesms.trustedIntroductions.receive.ManageList
 
 /**
  * Opens an Activity for Managing Trusted Introductions.
- * Will either open just the Introductions made by a specific contact (//TODO: add tab/button for navigating to all?)
+ * Will either open just the Introductions made by a specific contact
  * or all Introductions depending on how you navigated to that screen.
  */
 public class ManageActivity extends PassphraseRequiredActivity implements ManageListFragment.onAllNavigationClicked {
