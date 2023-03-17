@@ -117,9 +117,6 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
       return getView().getRootView();
     }
 
-    public void draw(ManageAllListHeader.CustomCanvas customCanvas) {
-      getView().draw(customCanvas);
-    }
   }
 
   public interface ItemClickListener {
@@ -129,64 +126,6 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
     void onItemLongClick(ManageListItem item);
   }
 
-
-  static class ManageAllListHeader extends RecyclerView.ItemDecoration{
-
-    public IntroductionViewHolder headerView;
-    // TODO. where do I inflate?
-
-    public ManageAllListHeader(View root){
-      // TODO: Problems here cause of null root?
-      this.headerView = new IntroductionViewHolder(root, null);
-    }
-
-    @Override
-    public void onDrawOver(Canvas canvas, RecyclerView parent, RecyclerView.State state){
-      super.onDrawOver(canvas, parent, state);
-      @Nullable View first = parent.getChildAt(0);
-      @Nullable View second = parent.getChildAt(1);
-
-      if(first != null){
-        // only draw header if there is an introduction
-        int pos = parent.getChildAdapterPosition(first);
-        // TODO: How do I pass a custom canvas to ListItems?
-        if(canvas instanceof CustomCanvas){
-         headerView.measure(
-             View.MeasureSpec.makeMeasureSpec(first.getWidth(), View.MeasureSpec.EXACTLY),
-             View.MeasureSpec.makeMeasureSpec(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED)
-         );
-         headerView.layout(first.getLeft(), 0, first.getRight(), headerView.getMeasuredHeight());
-          ((CustomCanvas) canvas).drawHeaderView(first, second);
-        }
-
-      }
-    }
-
-    public float calculateHeaderTop(@Nullable View top, @Nullable View second){
-      if(second != null){
-        float threshold = headerView.getBottom();
-        int i = 8; // TODO: other value?
-        Context c = headerView.getRootView().getContext();
-        threshold += (int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, i, c.getResources().getDisplayMetrics());
-        // TODO: was this simplification correct=
-        if(second.getTop() <= threshold){
-          return second.getTop() - threshold;
-        }
-      }
-      return Math.max(top!=null ? top.getTop() : 0, 0);
-    }
-    // Utils for sticky header
-    // TODO: Not sure how to link this into the adapter...
-    class CustomCanvas extends Canvas{
-      void drawHeaderView(View top, @Nullable View second){
-        save();
-        translate(0f, calculateHeaderTop(top, second));
-        // TODO, not passing this??
-        headerView.draw(this);
-        restore();
-      }
-    }
-  }
 }
 
 
