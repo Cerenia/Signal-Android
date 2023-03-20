@@ -18,7 +18,6 @@ package org.thoughtcrime.securesms.conversation;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.ActivityNotFoundException;
@@ -292,6 +291,7 @@ import org.thoughtcrime.securesms.util.CommunicationActions;
 import org.thoughtcrime.securesms.util.ContextUtil;
 import org.thoughtcrime.securesms.util.ConversationUtil;
 import org.thoughtcrime.securesms.util.Debouncer;
+import org.thoughtcrime.securesms.util.Dialogs;
 import org.thoughtcrime.securesms.util.DrawableUtil;
 import org.thoughtcrime.securesms.util.FullscreenHelper;
 import org.thoughtcrime.securesms.util.IdentityUtil;
@@ -3071,6 +3071,11 @@ public class ConversationParentFragment extends Fragment
       return;
     }
 
+    if (SignalStore.uiHints().hasNotSeenTextFormattingAlert() && result.getBodyRanges() != null && result.getBodyRanges().getRangesCount() > 0) {
+      Dialogs.showFormattedTextDialog(requireContext(), () -> sendMediaMessage(result));
+      return;
+    }
+
     long            thread    = this.threadId;
     long            expiresIn = TimeUnit.SECONDS.toMillis(recipient.get().getExpiresInSeconds());
     QuoteModel      quote     = result.isViewOnce() ? null : inputPanel.getQuote().orElse(null);
@@ -3180,6 +3185,12 @@ public class ConversationParentFragment extends Fragment
 
     if (!viewModel.isDefaultSmsApplication() && sendType.usesSmsTransport() && recipient.get().hasSmsAddress()) {
       showDefaultSmsPrompt();
+      return new SettableFuture<>(null);
+    }
+
+    if (SignalStore.uiHints().hasNotSeenTextFormattingAlert() && styling != null && styling.getRangesCount() > 0) {
+      final String finalBody = body;
+      Dialogs.showFormattedTextDialog(requireContext(), () -> sendMediaMessage(recipientId, sendType, finalBody, slideDeck, quote, contacts, previews, mentions, styling, expiresIn, viewOnce, initiating, clearComposeBox, metricId, scheduledDate));
       return new SettableFuture<>(null);
     }
 
