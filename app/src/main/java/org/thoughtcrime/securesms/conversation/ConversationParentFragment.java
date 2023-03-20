@@ -1134,16 +1134,7 @@ public class ConversationParentFragment extends Fragment
 
   @Override
   public void handleMuteNotifications() {
-    MuteDialog.show(requireActivity(), until -> {
-      new AsyncTask<Void, Void, Void>() {
-        @Override
-        protected Void doInBackground(Void... params) {
-         SignalDatabase.recipients().setMuted(recipient.getId(), until);
-
-          return null;
-        }
-      }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-    });
+    MuteDialog.show(requireActivity(), viewModel::muteConversation);
   }
 
   private void handleStoryRingClick() {
