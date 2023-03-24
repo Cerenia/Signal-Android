@@ -289,6 +289,8 @@ public class FullBackupExporter extends FullBackupBase {
   {
     List<String> tablesInOrder = getTablesToExportInOrder(input, isVanilla);
 
+    Log.i(TAG, "Exporting tables in the following order: " + tablesInOrder);
+
     Map<String, String> createStatementsByTable = new HashMap<>();
 
     try (Cursor cursor = input.rawQuery("SELECT sql, name, type FROM sqlite_master WHERE type = 'table' AND sql NOT NULL", null)) {
@@ -337,12 +339,16 @@ public class FullBackupExporter extends FullBackupBase {
                                  .sorted()
                                  .collect(Collectors.toList());
 
-    
     Map<String, Set<String>> dependsOn = new LinkedHashMap<>();
     for (String table : tables) {
       dependsOn.put(table, SqlUtil.getForeignKeyDependencies(input, table));
     }
-    
+
+    for (String table : tables) {
+      Set<String> dependsOnTable = dependsOn.keySet().stream().filter(t -> dependsOn.get(t).contains(table)).collect(Collectors.toSet());
+      Log.i(TAG, "Tables that depend on " + table + ": " + dependsOnTable);
+    }
+
     return computeTableOrder(dependsOn);
   }
 
@@ -419,6 +425,8 @@ public class FullBackupExporter extends FullBackupBase {
                                  boolean isVanilla)
       throws IOException
   {
+    Log.d(TAG, "Exporting table: " + table);
+
     String template = "INSERT INTO " + table + " VALUES ";
     // Cursor had to be moved out of try(...) in order to be reassignable
     // closing it explicitly in finally block now
