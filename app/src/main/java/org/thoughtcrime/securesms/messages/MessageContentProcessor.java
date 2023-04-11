@@ -203,7 +203,7 @@ import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.handleTIM
 @SuppressWarnings({ "OptionalGetWithoutIsPresent", "OptionalIsPresent" })
 public class MessageContentProcessor {
 
-  private static final String TAG = Log.tag(MessageContentProcessor.class);
+  public static final String TAG = Log.tag(MessageContentProcessor.class);
 
   private final Context context;
 
