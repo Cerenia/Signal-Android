@@ -92,6 +92,10 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
       viewModel.loadIntroductions();
     }
     ManageActivity.IntroductionScreenType t = viewModel.getScreenType();
+    if(t.equals(ALL)){
+      view.findViewById(R.id.manage_fragment_header).setVisibility(View.VISIBLE);
+      view.findViewById(R.id.introduction_title_view).setVisibility(View.GONE);
+    }
     adapter = new ManageAdapter(requireContext(), new IntroductionClickListener(this, this), t, this);
     introductionList = view.findViewById(R.id.recycler_view);
     introductionList.setClipToPadding(true);

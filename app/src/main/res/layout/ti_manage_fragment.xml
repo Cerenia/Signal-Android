@@ -73,12 +73,25 @@
         app:titleTextAppearance="@style/TextSecure.TitleTextStyle"
         app:layout_constraintTop_toBottomOf="@id/barrier_title" />
 
+    <org.thoughtcrime.securesms.trustedIntroductions.receive.ManageAllListHeader
+        android:id="@+id/manage_fragment_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:visibility="gone"
+        app:layout_constraintVertical_bias="1"
+        app:titleTextAppearance="@style/TextSecure.TitleTextStyle"
+        app:layout_constraintTop_toBottomOf="@id/barrier_title"/>
+
+
     <androidx.constraintlayout.widget.Barrier
         android:id="@+id/barrier_recycle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:barrierDirection="bottom"
-        app:constraint_referenced_ids="introduction_title_view,navigate_all_button,no_introductions_found,navigation_explanation"/>
+        app:constraint_referenced_ids="manage_fragment_header,introduction_title_view,navigate_all_button,no_introductions_found,navigation_explanation"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view"
