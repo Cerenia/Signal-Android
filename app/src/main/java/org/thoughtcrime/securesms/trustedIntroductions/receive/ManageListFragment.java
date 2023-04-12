@@ -12,9 +12,8 @@ import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelStoreOwner;
-import androidx.recyclerview.widget.ConcatAdapter;
 import androidx.recyclerview.widget.RecyclerView;
-
+import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.INTRODUCTION_DATE_PATTERN;
 import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.splitIntroductionDate;
 import static org.thoughtcrime.securesms.trustedIntroductions.receive.ManageActivity.IntroductionScreenType.ALL;
 import static org.thoughtcrime.securesms.trustedIntroductions.receive.ManageActivity.IntroductionScreenType.RECIPIENT_SPECIFIC;
@@ -44,9 +43,9 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
 
   // TODO: Will probably need that for all screen
   private ProgressWheel showIntroductionsProgress;
-  private ManageViewModel           viewModel;
-  private ManageIntroductionAdapter adapter;
-  private RecyclerView              introductionList;
+  private ManageViewModel viewModel;
+  private ManageAdapter adapter;
+  private RecyclerView introductionList;
   private TextView no_introductions;
   private TextView navigationExplanation;
   private TextView from_title_view;
@@ -93,12 +92,10 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
       viewModel.loadIntroductions();
     }
     ManageActivity.IntroductionScreenType t = viewModel.getScreenType();
-
-    ManageHeaderAdapter headerAdapter = new ManageHeaderAdapter(requireContext());
-    adapter = new ManageIntroductionAdapter(requireContext(), new IntroductionClickListener(this, this), t, this, headerAdapter);
+    adapter = new ManageAdapter(requireContext(), new IntroductionClickListener(this, this), t, this);
     introductionList = view.findViewById(R.id.recycler_view);
     introductionList.setClipToPadding(true);
-    introductionList.setAdapter(new ConcatAdapter(headerAdapter, adapter));
+    introductionList.setAdapter(adapter);
     this.viewModel.getIntroductions().observe(getViewLifecycleOwner(), users -> {
       String filter = null;
       if (!viewModel.getFilter().getValue().isEmpty()){
@@ -222,7 +219,7 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
     viewModel.rejectIntroduction(introductionId);
   }
 
-  private class IntroductionClickListener implements ManageIntroductionAdapter.ItemClickListener {
+  private class IntroductionClickListener implements ManageAdapter.ItemClickListener {
 
     DeleteIntroductionDialog.DeleteIntroduction deleteHandler;
     ForgetIntroducerDialog.ForgetIntroducer     forgetHandler;

@@ -120,16 +120,6 @@ public class ManageListItem extends ConstraintLayout {
     changeByState(data.getState());
   }
 
-  // Sets the lower field of the listItem with the 3 provided values and bolds text to serve as a header.
-  public void setHeader(String date, String introducer, String introducee){
-    this.timestampTime.setText(date);
-    this.timestampTime.setTypeface(timestampTime.getTypeface(), Typeface.BOLD);
-    this.introduceeNumber.setText(introducee);
-    this.introduceeNumber.setTypeface(introduceeNumber.getTypeface(), Typeface.BOLD);
-    this.introducerNumber.setText(introducer);
-    this.introducerNumber.setTypeface(introducerNumber.getTypeface(), Typeface.BOLD);
-  }
-
   /**
    * PRE: data.id may not be null (should never happen once it was written to the database.)
    */
