@@ -2,6 +2,8 @@ package org.thoughtcrime.securesms.trustedIntroductions.receive;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Canvas;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,18 +18,14 @@ import androidx.recyclerview.widget.RecyclerView;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 
-import java.util.List;
+public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.IntroducerInformation>, ManageAdapter.IntroductionViewHolder> {
 
-public class ManageIntroductionAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.IntroducerInformation>, ManageIntroductionAdapter.IntroductionViewHolder> {
+  private final LayoutInflater layoutInflater;
+  private final ManageAdapter.ItemClickListener clickListener;
+  private final ManageListItem.SwitchClickListener switchListener;
+  private final ManageActivity.IntroductionScreenType type;
 
-  private final LayoutInflater                              layoutInflater;
-  private final ManageIntroductionAdapter.ItemClickListener clickListener;
-  private final ManageListItem.SwitchClickListener          switchListener;
-  private final ManageActivity.IntroductionScreenType       type;
-
-  private final ManageHeaderAdapter headerAdapter;
-
-  ManageIntroductionAdapter(@NonNull Context context, @NonNull ManageIntroductionAdapter.ItemClickListener clickListener, @NonNull ManageActivity.IntroductionScreenType t, @NonNull ManageListItem.SwitchClickListener switchListener, ManageHeaderAdapter headerAdapter){
+  ManageAdapter(@NonNull Context context, @NonNull ManageAdapter.ItemClickListener clickListener, @NonNull ManageActivity.IntroductionScreenType t, @NonNull ManageListItem.SwitchClickListener switchListener){
     super(new DiffUtil.ItemCallback<Pair<TI_Data, ManageViewModel.IntroducerInformation>>() {
       @Override public boolean areItemsTheSame(@NonNull Pair<TI_Data, ManageViewModel.IntroducerInformation> oldItem, @NonNull Pair<TI_Data, ManageViewModel.IntroducerInformation> newItem) {
         return oldItem.first.getId().compareTo(newItem.first.getId()) == 0;
@@ -51,17 +49,9 @@ public class ManageIntroductionAdapter extends ListAdapter<Pair<TI_Data, ManageV
     this.clickListener = clickListener;
     this.switchListener = switchListener;
     this.type = t;
-    this.headerAdapter = headerAdapter;
   }
 
-  @Override public void submitList(@Nullable List<Pair<TI_Data, ManageViewModel.IntroducerInformation>> list) {
-    super.submitList(list);
-    if (type == ManageActivity.IntroductionScreenType.ALL)
-      headerAdapter.setIntroductionListLength(list.size());
-    else
-      headerAdapter.setIntroductionListLength(0); // no header for recipient specific.
-  }
-
+  // TODO: in case you want to fancify this by adding header list items, add int viewType here
   @NonNull @Override public IntroductionViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
     return new IntroductionViewHolder(layoutInflater.inflate(R.layout.ti_manage_list_item, parent, false), clickListener);
   }
@@ -73,7 +63,7 @@ public class ManageIntroductionAdapter extends ListAdapter<Pair<TI_Data, ManageV
 
   static class IntroductionViewHolder extends RecyclerView.ViewHolder {
 
-    public IntroductionViewHolder(@NonNull View itemView, @NonNull final ManageIntroductionAdapter.ItemClickListener clickListener) {
+    public IntroductionViewHolder(@NonNull View itemView, @NonNull final ManageAdapter.ItemClickListener clickListener) {
       super(itemView);
       itemView.setOnClickListener(v -> {
         clickListener.onItemClick(getView());
@@ -90,7 +80,15 @@ public class ManageIntroductionAdapter extends ListAdapter<Pair<TI_Data, ManageV
       return (ManageListItem) itemView;
     }
 
+    /**
+     *
+     * @param d introduction information, iff null, a header will be drawn.
+     * @param i introducer information, iff null, a header will be drawn.
+     * @param t screen type @See ManageActivity.IntroductionScreenType
+     */
     @SuppressLint("RestrictedApi") public void bind(@Nullable TI_Data d, @Nullable ManageViewModel.IntroducerInformation i, @NonNull ManageActivity.IntroductionScreenType t, @NonNull ManageListItem.SwitchClickListener switchListener){
+      //Preconditions.checkArgument((d == null && i == null && t.equals(ALL))
+        //                          | (d != null && i != null && t.equals(ManageActivity.IntroductionScreenType.RECIPIENT_SPECIFIC)));
       getView().set(d, i, t, switchListener);
     }
 
