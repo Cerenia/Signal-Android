@@ -3,6 +3,7 @@ package org.thoughtcrime.securesms.jobs;
 import android.app.PendingIntent;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
@@ -12,7 +13,7 @@ import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
-import org.thoughtcrime.securesms.jobmanager.Data;
+import org.thoughtcrime.securesms.jobmanager.JsonJobData;
 import org.thoughtcrime.securesms.jobmanager.Job;
 import org.thoughtcrime.securesms.jobmanager.impl.NetworkConstraint;
 import org.thoughtcrime.securesms.notifications.NotificationChannels;
@@ -23,6 +24,8 @@ import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
 import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase.State;
 import org.thoughtcrime.securesms.trustedIntroductions.receive.ManageActivity;
+
+import java.util.Objects;
 
 public class TrustedIntroductionsWaitForIdentityJob extends BaseJob {
 
@@ -60,13 +63,12 @@ public class TrustedIntroductionsWaitForIdentityJob extends BaseJob {
   }
 
 
-  @NonNull @Override public Data serialize() {
-    return new Data.Builder()
-        .putString(KEY_INTRODUCTION, introduction.serialize())
-        .putInt(KEY_NEW_STATE, newState.toInt())
-        .putString(KEY_LOG_MESSAGE, logMessage)
-        .build();
-
+  @NonNull @Override public byte[] serialize() {
+    return Objects.requireNonNull(new JsonJobData.Builder()
+                                      .putString(KEY_INTRODUCTION, introduction.serialize())
+                                      .putInt(KEY_NEW_STATE, newState.toInt())
+                                      .putString(KEY_LOG_MESSAGE, logMessage)
+                                      .build().serialize());
   }
 
   @NonNull @Override public String getFactoryKey() {
@@ -100,7 +102,8 @@ public class TrustedIntroductionsWaitForIdentityJob extends BaseJob {
 
   public static final class Factory implements Job.Factory<TrustedIntroductionsWaitForIdentityJob> {
 
-    @NonNull @Override public TrustedIntroductionsWaitForIdentityJob create(@NonNull Parameters parameters, @NonNull Data data) {
+    @NonNull @Override public TrustedIntroductionsWaitForIdentityJob create(@NonNull Parameters parameters, @Nullable byte[] serializedData) {
+      JsonJobData data = JsonJobData.deserialize(serializedData);
       return new TrustedIntroductionsWaitForIdentityJob(TI_Data.Deserializer.deserialize(data.getString(KEY_INTRODUCTION)),
                                                         State.forState(data.getInt(KEY_NEW_STATE)),
                                                         data.getString(KEY_LOG_MESSAGE),

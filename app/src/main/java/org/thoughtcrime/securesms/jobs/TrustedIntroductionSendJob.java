@@ -4,10 +4,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.signal.core.util.logging.Log;
-import org.thoughtcrime.securesms.database.ThreadTable;
-import org.thoughtcrime.securesms.database.model.StoryType;
-import org.thoughtcrime.securesms.jobmanager.Data;
 import org.thoughtcrime.securesms.jobmanager.Job;
+import org.thoughtcrime.securesms.jobmanager.JsonJobData;
 import org.thoughtcrime.securesms.jobmanager.impl.NetworkConstraint;
 import org.thoughtcrime.securesms.recipients.LiveRecipient;
 import org.thoughtcrime.securesms.recipients.Recipient;
@@ -16,18 +14,10 @@ import org.thoughtcrime.securesms.sms.MessageSender;
 import org.thoughtcrime.securesms.mms.OutgoingMessage;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.math.BigInteger;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 
@@ -87,11 +77,11 @@ public class TrustedIntroductionSendJob extends BaseJob {
   /**
    * Serialize your job state so that it can be recreated in the future.
    */
-  @NonNull @Override public Data serialize() {
-    return new Data.Builder()
-                    .putString(KEY_INTRODUCTION_RECIPIENT_ID, introductionRecipientId.serialize())
-                    .putLongListAsArray(KEY_INTRODUCEE_IDS, introduceeIds.stream().map(RecipientId::toLong).collect(Collectors.toList()))
-                    .build();
+  @NonNull @Override public byte[] serialize() {
+    return Objects.requireNonNull(new JsonJobData.Builder()
+                                      .putString(KEY_INTRODUCTION_RECIPIENT_ID, introductionRecipientId.serialize())
+                                      .putLongListAsArray(KEY_INTRODUCEE_IDS, introduceeIds.stream().map(RecipientId::toLong).collect(Collectors.toList()))
+                                      .build().serialize());
   }
 
   /**
@@ -126,11 +116,11 @@ public class TrustedIntroductionSendJob extends BaseJob {
 
   public static final class Factory implements Job.Factory<TrustedIntroductionSendJob> {
 
-    @Override
-    public @NonNull TrustedIntroductionSendJob create(@NonNull Parameters params, @NonNull Data data){
+    @NonNull @Override public TrustedIntroductionSendJob create(@NonNull Parameters parameters, @Nullable byte[] serializedData) {
+      JsonJobData data = JsonJobData.deserialize(serializedData);
       return new TrustedIntroductionSendJob(RecipientId.from(data.getString(KEY_INTRODUCTION_RECIPIENT_ID)),
                                             data.getLongArrayAsList(KEY_INTRODUCEE_IDS).stream().map(RecipientId::from).collect(Collectors.toSet()),
-                                            params);
+                                            parameters);
     }
   }
 }
