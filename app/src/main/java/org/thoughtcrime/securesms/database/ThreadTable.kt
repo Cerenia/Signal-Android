@@ -8,6 +8,7 @@ import android.database.MergeCursor
 import android.net.Uri
 import androidx.core.content.contentValuesOf
 import com.fasterxml.jackson.annotation.JsonProperty
+import org.json.JSONObject
 import org.jsoup.helper.StringUtil
 import org.signal.core.util.CursorUtil
 import org.signal.core.util.SqlUtil
@@ -30,8 +31,8 @@ import org.signal.libsignal.zkgroup.groups.GroupMasterKey
 import org.thoughtcrime.securesms.conversationlist.model.ConversationFilter
 import org.thoughtcrime.securesms.database.MessageTable.MarkedMessageInfo
 import org.thoughtcrime.securesms.database.SignalDatabase.Companion.attachments
+import org.thoughtcrime.securesms.database.SignalDatabase.Companion.calls
 import org.thoughtcrime.securesms.database.SignalDatabase.Companion.drafts
-import org.thoughtcrime.securesms.database.SignalDatabase.Companion.groupCallRings
 import org.thoughtcrime.securesms.database.SignalDatabase.Companion.groupReceipts
 import org.thoughtcrime.securesms.database.SignalDatabase.Companion.mentions
 import org.thoughtcrime.securesms.database.SignalDatabase.Companion.messageLog
@@ -59,6 +60,7 @@ import org.thoughtcrime.securesms.recipients.RecipientUtil
 import org.thoughtcrime.securesms.storage.StorageSyncHelper
 import org.thoughtcrime.securesms.util.ConversationUtil
 import org.thoughtcrime.securesms.util.JsonUtils
+import org.thoughtcrime.securesms.util.JsonUtils.SaneJSONObject
 import org.thoughtcrime.securesms.util.TextSecurePreferences
 import org.thoughtcrime.securesms.util.isScheduled
 import org.whispersystems.signalservice.api.push.ServiceId
@@ -378,6 +380,7 @@ class ThreadTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTa
         setLastScrolled(threadId, 0)
         update(threadId, false)
         notifyConversationListeners(threadId)
+        SignalDatabase.calls.updateCallEventDeletionTimestamps()
       } else {
         Log.i(TAG, "Trimming deleted no messages thread: $threadId")
       }
@@ -632,6 +635,13 @@ class ThreadTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTa
           DistributionTypes.DEFAULT
         }
       }
+  }
+
+  fun containsId(threadId: Long): Boolean {
+    return readableDatabase
+      .exists(TABLE_NAME)
+      .where("$ID = ?", threadId)
+      .run()
   }
 
   fun getFilteredConversationList(filter: List<RecipientId>, unreadOnly: Boolean): Cursor? {
@@ -1057,29 +1067,36 @@ class ThreadTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTa
   }
 
   fun deleteConversations(selectedConversations: Set<Long>) {
-    val recipientIdsForThreadIds = getRecipientIdsForThreadIds(selectedConversations)
+    val recipientIds = getRecipientIdsForThreadIds(selectedConversations)
 
+    val queries: List<SqlUtil.Query> = SqlUtil.buildCollectionQuery(ID, selectedConversations)
     writableDatabase.withinTransaction { db ->
-      messages.deleteThreads(selectedConversations)
-      drafts.clearDrafts(selectedConversations)
+      for (query in queries) {
+        db.delete(TABLE_NAME, query.where, query.whereArgs)
+      }
 
-      SqlUtil.buildCollectionQuery(ID, selectedConversations)
-        .forEach { db.delete(TABLE_NAME, it.where, it.whereArgs) }
+      messages.deleteAbandonedMessages()
+      attachments.trimAllAbandonedAttachments()
+      groupReceipts.deleteAbandonedRows()
+      mentions.deleteAbandonedMentions()
+      drafts.clearDrafts(selectedConversations)
+      attachments.deleteAbandonedAttachmentFiles()
     }
 
     notifyConversationListListeners()
     notifyConversationListeners(selectedConversations)
     ApplicationDependencies.getDatabaseObserver().notifyConversationDeleteListeners(selectedConversations)
-    ConversationUtil.clearShortcuts(context, recipientIdsForThreadIds)
+    ConversationUtil.clearShortcuts(context, recipientIds)
   }
 
+  @SuppressLint("DiscouragedApi")
   fun deleteAllConversations() {
     writableDatabase.withinTransaction { db ->
       messageLog.deleteAll()
       messages.deleteAllThreads()
       drafts.clearAllDrafts()
-      groupCallRings.deleteAll()
       db.delete(TABLE_NAME, null, null)
+      calls.deleteAllCalls()
     }
 
     notifyConversationListListeners()
@@ -1566,6 +1583,7 @@ class ThreadTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTa
   private fun getExtrasFor(record: MessageRecord, body: ThreadBody): Extra? {
     val threadRecipient = if (record.isOutgoing) record.recipient else getRecipientForThreadId(record.threadId)
     val messageRequestAccepted = RecipientUtil.isMessageRequestAccepted(record.threadId, threadRecipient)
+    val isHidden = threadRecipient?.isHidden ?: false
     val individualRecipientId = record.individualRecipient.id
 
     if (!messageRequestAccepted && threadRecipient != null) {
@@ -1592,7 +1610,7 @@ class ThreadTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTa
           }
         }
       } else {
-        return Extra.forMessageRequest(individualRecipientId)
+        return Extra.forMessageRequest(individualRecipientId, isHidden)
       }
     }
 
@@ -1743,9 +1761,22 @@ class ThreadTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTa
       val extraString = cursor.getString(cursor.getColumnIndexOrThrow(SNIPPET_EXTRAS))
       val extra: Extra? = if (extraString != null) {
         try {
-          JsonUtils.fromJson(extraString, Extra::class.java)
-        } catch (e: IOException) {
-          Log.w(TAG, "Failed to decode extras!")
+          val jsonObject = SaneJSONObject(JSONObject(extraString))
+          Extra(
+            isViewOnce = jsonObject.getBoolean("isRevealable"),
+            isSticker = jsonObject.getBoolean("isSticker"),
+            stickerEmoji = jsonObject.getString("stickerEmoji"),
+            isAlbum = jsonObject.getBoolean("isAlbum"),
+            isRemoteDelete = jsonObject.getBoolean("isRemoteDelete"),
+            isMessageRequestAccepted = jsonObject.getBoolean("isMessageRequestAccepted"),
+            isGv2Invite = jsonObject.getBoolean("isGv2Invite"),
+            groupAddedBy = jsonObject.getString("groupAddedBy"),
+            individualRecipientId = jsonObject.getString("individualRecipientId")!!,
+            bodyRanges = jsonObject.getString("bodyRanges"),
+            isScheduled = jsonObject.getBoolean("isScheduled"),
+            isRecipientHidden = jsonObject.getBoolean("isRecipientHidden")
+          )
+        } catch (exception: Exception) {
           null
         }
       } else {
@@ -1826,7 +1857,10 @@ class ThreadTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTa
     val bodyRanges: String? = null,
     @field:JsonProperty
     @param:JsonProperty("isScheduled")
-    val isScheduled: Boolean = false
+    val isScheduled: Boolean = false,
+    @field:JsonProperty
+    @param:JsonProperty("isRecipientHidden")
+    val isRecipientHidden: Boolean = false
   ) {
 
     fun getIndividualRecipientId(): String {
@@ -1850,8 +1884,8 @@ class ThreadTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTa
         return Extra(isRemoteDelete = true, individualRecipientId = individualRecipient.serialize())
       }
 
-      fun forMessageRequest(individualRecipient: RecipientId): Extra {
-        return Extra(isMessageRequestAccepted = false, individualRecipientId = individualRecipient.serialize())
+      fun forMessageRequest(individualRecipient: RecipientId, isHidden: Boolean = false): Extra {
+        return Extra(isMessageRequestAccepted = false, individualRecipientId = individualRecipient.serialize(), isRecipientHidden = isHidden)
       }
 
       fun forGroupMessageRequest(recipientId: RecipientId, individualRecipient: RecipientId): Extra {

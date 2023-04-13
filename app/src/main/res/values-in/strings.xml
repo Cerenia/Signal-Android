@@ -15,6 +15,7 @@
   <!-- Removed by excludeNonTranslatables <string name="signal_me_username_url" translatable="false">https://signal.me/#u/%1$s</string> -->
   <!-- Removed by excludeNonTranslatables <string name="signal_me_username_url_no_scheme" translatable="false">signal.me/#u/%1$s</string> -->
   <!-- Removed by excludeNonTranslatables <string name="username_support_url" translatable="false">https://support.signal.org/hc/articles/5389476324250</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="export_account_data_url" translatable="false">https://support.signal.org/hc/articles/5538911756954</string> -->
 
     <string name="yes">Ya</string>
     <string name="no">Tidak</string>
@@ -384,6 +385,15 @@
     <!-- Snackbar message shown after dismissing the full screen sms export megaphone indicating we\'ll do it again soon -->
     <string name="ConversationActivity__you_will_be_reminded_again_soon">Anda akan segera diingatkan lagi.</string>
 
+    <!-- Title for dialog shown when first sending formatted text -->
+    <string name="SendingFormattingTextDialog_title">Mengirim teks berformat</string>
+    <!-- Message for dialog shown when first sending formatted text -->
+    <string name="SendingFormattingTextDialog_message">Beberapa pengguna mungkin menggunakan versi Signal yang tidak mendukung teks berformat. Mereka tidak akan dapat melihat perubahan format yang Anda buat pada pesan.</string>
+    <!-- Button text for confirming they\'d like to send the message with formatting after seeing warning. -->
+    <string name="SendingFormattingTextDialog_send_anyway_button">Tetap kirim</string>
+    <!-- Button text for canceling sending the message with formatting after seeing warning. -->
+    <string name="SendingFormattingTextDialog_cancel_send_button">Batal</string>
+
     <!-- ConversationAdapter -->
     <plurals name="ConversationAdapter_n_unread_messages">
         <item quantity="other">%1$d pesan belum dibaca</item>
@@ -471,33 +481,19 @@
         <item quantity="other">Memindahkan %1$d percakapan ke kotak masuk</item>
     </plurals>
     <plurals name="ConversationListFragment_read_plural">
-        <item quantity="other">Tandai Terbaca</item>
+        <item quantity="other">Sudah Dibaca</item>
     </plurals>
     <plurals name="ConversationListFragment_unread_plural">
-        <item quantity="other">Belum dibaca</item>
+        <item quantity="other">Belum Dibaca</item>
     </plurals>
-    <plurals name="ConversationListFragment_pin_plural">
-        <item quantity="other">Sematkan</item>
-    </plurals>
-    <plurals name="ConversationListFragment_unpin_plural">
-        <item quantity="other">Cabut Semat</item>
-    </plurals>
-    <plurals name="ConversationListFragment_mute_plural">
-        <item quantity="other">Bisukan</item>
-    </plurals>
-    <plurals name="ConversationListFragment_unmute_plural">
-        <item quantity="other">Bunyikan</item>
-    </plurals>
+    <string name="ConversationListFragment_pin">Sematkan</string>
+    <string name="ConversationListFragment_unpin">Lepas Sematan</string>
+    <string name="ConversationListFragment_mute">Bisukan</string>
+    <string name="ConversationListFragment_unmute">Bunyikan</string>
     <string name="ConversationListFragment_select">Pilih</string>
-    <plurals name="ConversationListFragment_archive_plural">
-        <item quantity="other">Arispkan</item>
-    </plurals>
-    <plurals name="ConversationListFragment_unarchive_plural">
-        <item quantity="other">Buka Arsip</item>
-    </plurals>
-    <plurals name="ConversationListFragment_delete_plural">
-        <item quantity="other">Hapus</item>
-    </plurals>
+    <string name="ConversationListFragment_archive">Arsip</string>
+    <string name="ConversationListFragment_unarchive">Buka Arsip</string>
+    <string name="ConversationListFragment_delete">Hapus</string>
     <string name="ConversationListFragment_select_all">Pilih semua</string>
     <plurals name="ConversationListFragment_s_selected">
         <item quantity="other">%1$d dipilih</item>
@@ -522,6 +518,15 @@
 
     <!-- ConversationTypingView -->
     <string name="ConversationTypingView__plus_d">+%1$d</string>
+
+    <!-- Title for a reminder bottom sheet to users who have re-registered that they need to go back to re-link their devices. -->
+    <string name="RelinkDevicesReminderFragment__relink_your_devices">Tautkan kembali perangkat Anda</string>
+    <!-- Description for a reminder bottom sheet to users who have re-registered that they need to go back to re-link their devices. -->
+    <string name="RelinkDevicesReminderFragment__the_devices_you_added_were_unlinked">Perangkat yang Anda tambahkan telah diputus penautannya saat perangkat batal didaftarkan. Buka Pengaturan untuk menautkan kembali perangkat.</string>
+    <!-- Button label for the re-link devices bottom sheet reminder to navigate to the Devices page in the settings. -->
+    <string name="RelinkDevicesReminderFragment__open_settings">Buka pengaturan</string>
+    <!-- Button label for the re-link devices bottom sheet reminder to dismiss the pop up. -->
+    <string name="RelinkDevicesReminderFragment__later">Nanti</string>
 
     <!-- CreateGroupActivity -->
     <string name="CreateGroupActivity__select_members">Pilih anggota</string>
@@ -1119,8 +1124,8 @@
     <string name="Megaphones_new_group">Grup baru</string>
     <string name="Megaphones_invite_friends">Undang teman</string>
     <string name="Megaphones_use_sms">Gunakan SMS</string>
-    <string name="Megaphones_appearance">Tampilan</string>
-    <string name="Megaphones_add_photo">Tambahkan foto</string>
+    <string name="Megaphones_chat_colors">Warna obrolan</string>
+    <string name="Megaphones_add_a_profile_photo">Tambahkan foto profil</string>
 
     <!-- Title of a bottom sheet to render messages that all quote a specific message -->
     <string name="MessageQuotesBottomSheet_replies">Balasan</string>
@@ -1423,6 +1428,8 @@
     <string name="MessageRequestBottomView_delete">Hapus</string>
     <string name="MessageRequestBottomView_block">Blokir</string>
     <string name="MessageRequestBottomView_unblock">Buka blokir</string>
+    <!-- Text explaining a message request from someone you\'ve removed before -->
+    <string name="MessageRequestBottomView_do_you_want_to_let_s_message_you_you_removed_them_before">Let %1$s message you and share your name and photo with them? You have removed this person in the past.</string>
     <string name="MessageRequestBottomView_do_you_want_to_let_s_message_you_they_wont_know_youve_seen_their_messages_until_you_accept">Izinkan %1$s mengirim pesan dan berbagi nama dan foto Anda dengannya? Dia tidak akan tahu Anda telah melihat pesannya hingga Anda menerimanya.</string>
     <!-- Shown in message request flow. Describes what will happen if you unblock a Signal user -->
     <string name="MessageRequestBottomView_do_you_want_to_let_s_message_you_wont_receive_any_messages_until_you_unblock_them">Izinkan %1$s mengirimi Anda pesan dan bagikan nama dan foto Anda dengan mereka? Anda tidak akan menerima pesan apa pun sampai Anda membuka blokir mereka.</string>
@@ -1657,20 +1664,31 @@
         <item quantity="other">%1$s, %2$s, %3$d dan lainnya, sedang berada didalam panggilan ini</item>
     </plurals>
 
-    <!-- Toggle label with hyphenation. Translation can use soft hyphen - Unicode U+00AD -->
-    <string name="WebRtcCallView__flip">Balik</string>
-    <!-- Toggle label with hyphenation. Translation can use soft hyphen - Unicode U+00AD -->
-    <string name="WebRtcCallView__speaker">Pengeras Suara</string>
-    <!-- Toggle label with hyphenation. Translation can use soft hyphen - Unicode U+00AD -->
-    <string name="WebRtcCallView__camera">Kamera</string>
-    <!-- Toggle label with hyphenation. Translation can use soft hyphen - Unicode U+00AD -->
-    <string name="WebRtcCallView__unmute">Bunyikan</string>
-    <!-- Toggle label with hyphenation. Translation can use soft hyphen - Unicode U+00AD -->
-    <string name="WebRtcCallView__mute">Bisukan</string>
-    <!-- Toggle label with hyphenation. Translation can use soft hyphen - Unicode U+00AD -->
-    <string name="WebRtcCallView__ring">Dering</string>
-    <!-- Label with hyphenation. Translation can use soft hyphen - Unicode U+00AD -->
+    <!-- Toggle content description for toggling camera direction  -->
+    <string name="WebRtcCallView__toggle_camera_direction">Ubah arah kamera</string>
+    <!-- Toggle content description for toggling audio output  -->
+    <string name="WebRtcCallView__toggle_speaker">Ubah speaker</string>
+    <!-- Toggle content description for toggling camera state  -->
+    <string name="WebRtcCallView__toggle_camera">Ubah status kamera</string>
+    <!-- Toggle content description for toggling mute state  -->
+    <string name="WebRtcCallView__toggle_mute">Ubah status bisukan</string>
+    <!-- Toggle content description for toggling group ring state  -->
+    <string name="WebRtcCallView__toggle_ring">Ubah status dering</string>
+    <!-- Content description for end-call button -->
     <string name="WebRtcCallView__end_call">Akhiri panggilan</string>
+
+    <!-- Error message when the developer added a button in the wrong place. -->
+    <string name="WebRtcAudioOutputToggleButton_fragment_activity_error">Terjadi kesalahan UI. Mohon laporkan kesalahan ini ke pengembang.</string>
+    <!-- Error message when the user is trying to change audio outputs but none are present. -->
+    <string name="WebRtcAudioOutputToggleButton_no_eligible_audio_i_o_detected">Tidak ada I/O audio yang memenuhi syarat yang terdeteksi.</string>
+    <!-- A text description of the bluetooth icon, used for accessibility. -->
+    <string name="WebRtcAudioOutputBottomSheet__bluetooth_icon_content_description">Ikon yang merepresentasikan perangkat Bluetooth.</string>
+    <!-- A text description of the headset icon, used for accessibility. -->
+    <string name="WebRtcAudioOutputBottomSheet__headset_icon_content_description">Ikon yang merepresentasikan headset kabel.</string>
+    <!-- A text description of the speaker icon, used for accessibility. -->
+    <string name="WebRtcAudioOutputBottomSheet__speaker_icon_content_description">Ikon yang merepresentasikan speakerphone.</string>
+    <!-- A text description of the earpiece icon, used for accessibility. -->
+    <string name="WebRtcAudioOutputBottomSheet__earpiece_icon_content_description">Ikon yang merepresentasikan earpiece perangkat.</string>
 
     <!-- CallParticipantsListDialog -->
     <plurals name="CallParticipantsListDialog_in_this_call_d_people">
@@ -1736,6 +1754,8 @@
         <item quantity="other">Kamu memiliki %1$d langkah lagi untuk mengirimkan catatan awakutu.</item>
     </plurals>
     <string name="RegistrationActivity_we_need_to_verify_that_youre_human">Kami perlu memverifikasi bahwa Anda manusia.</string>
+    <!-- An error shown when the request was valid, but due to an issue with a partner vendor, the server is unable to send an SMS code -->
+    <string name="RegistrationActivity_external_service_error">Signal tidak dapat mengirim kode SMS karena kegagalan eksternal.</string>
     <string name="RegistrationActivity_next">Berikutnya</string>
     <string name="RegistrationActivity_continue">Lanjutkan</string>
     <string name="RegistrationActivity_take_privacy_with_you_be_yourself_in_every_message">Jaga privasimu.\nJadilah dirimu sendiri pada setiap pesan.</string>
@@ -1906,6 +1926,8 @@
     <string name="ThreadRecord_message_could_not_be_processed">Pesan tidak dapat diproses</string>
     <string name="ThreadRecord_delivery_issue">Masalah pengiriman</string>
     <string name="ThreadRecord_message_request">Permintaan Pesan</string>
+    <!-- Thread preview for a recipient that has been hidden -->
+    <string name="ThreadRecord_hidden_recipient">You have hidden this person, message them again to add them back to your list.</string>
     <string name="ThreadRecord_photo">Foto</string>
     <string name="ThreadRecord_gif">GIF</string>
     <string name="ThreadRecord_voice_message">Pesan Suara</string>
@@ -1919,9 +1941,9 @@
     <!-- Displayed in the notification when the user has opened a received gift -->
     <string name="ThreadRecord__you_redeemed_a_badge">Anda menebus sebuah lencana</string>
     <!-- Displayed in the conversation list when someone reacted to your story -->
-    <string name="ThreadRecord__reacted_s_to_your_story">Memberi tanggapan %1$s ke cerita Anda</string>
+    <string name="ThreadRecord__reacted_s_to_your_story">Menanggapi %1$s pada cerita Anda</string>
     <!-- Displayed in the conversation list when you reacted to someone\'s story -->
-    <string name="ThreadRecord__reacted_s_to_their_story">Memberi tanggapan %1$s ke cerita mereka</string>
+    <string name="ThreadRecord__reacted_s_to_their_story">Menanggapi %1$s pada cerita mereka</string>
     <!-- Displayed in the conversation list when your most recent message is a payment to or from the person the conversation is with -->
     <string name="ThreadRecord_payment">Pembayaran</string>
     <!-- Displayed in the conversation list when your only message in a conversation is a scheduled send. -->
@@ -2044,6 +2066,10 @@
     <string name="MessageNotifier_most_recent_from_s">Paling baru dari: %1$s</string>
     <string name="MessageNotifier_locked_message">Pesan terkunci</string>
     <string name="MessageNotifier_message_delivery_failed">Pengiriman pesan gagal.</string>
+    <!-- Shown in a notification when a story the user tries to send fails to be sent -->
+    <string name="MessageNotifier_story_delivery_failed">Cerita gagal dikirim</string>
+    <!-- Shown as notification title for when a notification about a story sent to a group story %1$s replaced with the group name -->
+    <string name="MessageNotifier_group_story_title">Anda ke %1$s</string>
     <string name="MessageNotifier_failed_to_deliver_message">Gagal mengirimkan pesan.</string>
     <string name="MessageNotifier_error_delivering_message">Kesalahan dalam mengirimkan pesan.</string>
     <string name="MessageNotifier_message_delivery_paused">Pengiriman pesan ditunda.</string>
@@ -2058,14 +2084,16 @@
     <string name="MessageNotifier_unsecured_sms">SMS tidak terenkripsi</string>
     <string name="MessageNotifier_contact_message">%1$s %2$s</string>
     <string name="MessageNotifier_unknown_contact_message">Kontak</string>
-    <string name="MessageNotifier_reacted_s_to_s">Memberi tanggapan %1$s untuk: \"%2$s\".</string>
-    <string name="MessageNotifier_reacted_s_to_your_video">Memberi tanggapan %1$s untuk video Anda.</string>
-    <string name="MessageNotifier_reacted_s_to_your_image">Memberi tanggapan %1$s untuk gambar Anda.</string>
-    <string name="MessageNotifier_reacted_s_to_your_gif">Memberi tanggapan %1$s untuk GIF Anda.</string>
-    <string name="MessageNotifier_reacted_s_to_your_file">Memberi tanggapan %1$s untuk file Anda.</string>
-    <string name="MessageNotifier_reacted_s_to_your_audio">Memberi tanggapan %1$s untuk audio Anda.</string>
-    <string name="MessageNotifier_reacted_s_to_your_view_once_media">Memberi tanggapan %1$s untuk media sekali-lihat Anda.</string>
-    <string name="MessageNotifier_reacted_s_to_your_sticker">Memberi tanggapan %1$s untuk stiker Anda.</string>
+    <string name="MessageNotifier_reacted_s_to_s">Menanggapi %1$s pada: \"%2$s\".</string>
+    <string name="MessageNotifier_reacted_s_to_your_video">Menanggapi %1$s pada video Anda.</string>
+    <string name="MessageNotifier_reacted_s_to_your_image">Menanggapi %1$s pada gambar Anda.</string>
+    <string name="MessageNotifier_reacted_s_to_your_gif">Menanggapi %1$s pada GIF Anda.</string>
+    <string name="MessageNotifier_reacted_s_to_your_file">Menanggapi %1$s pada file Anda.</string>
+    <string name="MessageNotifier_reacted_s_to_your_audio">Menanggapi %1$s pada audio Anda.</string>
+    <string name="MessageNotifier_reacted_s_to_your_view_once_media">Menanggapi %1$s pada media sekali-lihat Anda.</string>
+    <!-- Body of notification shown to user when someone they sent a payment to reacts to it. Placeholder is the emoji used in the reaction. -->
+    <string name="MessageNotifier_reacted_s_to_your_payment">Menanggapi %1$s pada pembayaran Anda.</string>
+    <string name="MessageNotifier_reacted_s_to_your_sticker">Menanggapi %1$s pada stiker Anda.</string>
     <string name="MessageNotifier_this_message_was_deleted">Pesan ini telah dihapus.</string>
 
     <string name="TurnOffContactJoinedNotificationsActivity__turn_off_contact_joined_signal">Matikan notifikasi kontak bergabung Signal? Anda dapat menyalakannya kembali di Signal &gt; Pengaturan &gt; Notifikasi.</string>
@@ -2164,10 +2192,18 @@
     <string name="WebRtcCallScreen__answer_without_video">Jawab tanpa video</string>
 
     <!-- WebRtcAudioOutputToggle -->
+    <!-- Label for a dialog asking the user to switch the audio output device during a call -->
     <string name="WebRtcAudioOutputToggle__audio_output">Keluaran audio</string>
+    <!-- Audio output option referring to the earpiece built into the phone -->
     <string name="WebRtcAudioOutputToggle__phone_earpiece">Lubang suara ponsel</string>
+    <!-- Audio output option referring to the louder speaker built into the phone -->
     <string name="WebRtcAudioOutputToggle__speaker">Pengeras Suara</string>
+    <!-- Audio output option referring to an external audio device connected via wireless Bluetooth -->
     <string name="WebRtcAudioOutputToggle__bluetooth">Bluetooth</string>
+    <!-- Audio output option referring to an external headset connected via a 3.5mm headphone jack -->
+    <string name="WebRtcAudioOutputToggle__wired_headset">Headset Kabel</string>
+    <!-- Audio output option referring to an external headset connected via a USB-C data cable -->
+    <string name="WebRtcAudioOutputToggle__wired_headset_usb">Headset Kabel (USB)</string>
 
     <string name="WebRtcCallControls_answer_call_description">Terima panggilan</string>
     <string name="WebRtcCallControls_reject_call_description">Tolak panggilan</string>
@@ -2180,6 +2216,12 @@
     <!-- contact_selection_activity -->
     <string name="contact_selection_activity__invite_to_signal">Undang ke Signal</string>
     <string name="contact_selection_activity__new_group">Grup baru</string>
+    <!-- Row item title for refreshing contacts -->
+    <string name="contact_selection_activity__refresh_contacts">Segarkan kontak</string>
+    <!-- Row item description for refreshing contacts -->
+    <string name="contact_selection_activity__missing_someone">Ada yang belum muncul? Coba segarkan</string>
+    <!-- Row header title for more section -->
+    <string name="contact_selection_activity__more">Selanjutnya</string>
 
     <!-- contact_filter_toolbar -->
     <string name="contact_filter_toolbar__clear_entered_text_description">Hapus teks yang dimasukkan</string>
@@ -2276,7 +2318,8 @@
     <string name="ConversationUpdateItem_send_payment">Kirim Pembayaran</string>
     <!-- Update item button text to activate payments -->
     <string name="ConversationUpdateItem_activate_payments">Aktifkan Pembayaran</string>
-
+    <!-- Update item alerting the user they hid this person and that they can message them to unhide them -->
+    <string name="ConversationUpdateItem_hidden_contact_message_to_add_back">You have removed this person, messaging them again will add them back to your list.</string>
 
     <!-- audio_view -->
     <string name="audio_view__play_pause_accessibility_description">Putar … Jeda</string>
@@ -2447,8 +2490,8 @@
 
     <!-- BadDecryptLearnMoreDialog -->
     <string name="BadDecryptLearnMoreDialog_delivery_issue">Masalah Pengiriman</string>
-    <string name="BadDecryptLearnMoreDialog_couldnt_be_delivered_individual">Sebuah pesan, stiker, tanggapan, atau tanda pesan terbaca tidak dapat Anda terima dari %1$s. Mereka mungkin mencoba mengirimkannya secara langsung, atau di dalam grup.</string>
-    <string name="BadDecryptLearnMoreDialog_couldnt_be_delivered_group">Sebuah pesan, stiker, tanggapan, atau tanda pesan terbaca tidak dapat Anda terima dari %1$s.</string>
+    <string name="BadDecryptLearnMoreDialog_couldnt_be_delivered_individual">Sebuah pesan, stiker, tanggapan, atau bukti pesan terbaca tidak dapat Anda terima dari %1$s. Mereka mungkin mencoba mengirimkannya langsung kepada Anda, atau di dalam grup.</string>
+    <string name="BadDecryptLearnMoreDialog_couldnt_be_delivered_group">Sebuah pesan, stiker, tanggapan, atau bukti pesan terbaca tidak dapat Anda terima dari %1$s.</string>
 
     <!-- profile_create_activity -->
     <string name="CreateProfileActivity_first_name_required">Nama depan (diperlukan)</string>
@@ -2974,6 +3017,8 @@
 
     <!-- EditNoteFragment -->
     <string name="EditNoteFragment_note">Catatan</string>
+    <!-- Content descriptor explaining the use of the save note FAB for Android accessibility settings-->
+    <string name="EditNoteFragment__content_description_save_note">Simpan catatan</string>
 
     <!-- ConfirmPaymentFragment -->
     <string name="ConfirmPayment__confirm_payment">Konfirmasi pembayaran</string>
@@ -3014,6 +3059,8 @@
     <!-- **************************************** -->
 
     <!-- contact_selection_list -->
+    <!-- Displayed in a row on the new call screen when searching by phone number. -->
+    <string name="contact_selection_list__new_call">Panggilan baru ke…</string>
     <string name="contact_selection_list__unknown_contact">Pesan baru untuk…</string>
     <string name="contact_selection_list__unknown_contact_block">Blokir pengguna</string>
     <string name="contact_selection_list__unknown_contact_add_to_group">Tambahkan ke grup</string>
@@ -3361,6 +3408,18 @@
     <string name="BackupUtil_unknown">Tidak dikenal</string>
     <string name="preferences_app_protection__see_my_phone_number">Lihat nomor telepon saya</string>
     <string name="preferences_app_protection__find_me_by_phone_number">Temukan saya melalui nomor telepon</string>
+    <!-- Phone number heading displayed as a screen title -->
+    <string name="preferences_app_protection__phone_number">Nomor telepon</string>
+    <!-- Subtext below option to launch into phone number privacy settings screen -->
+    <string name="preferences_app_protection__choose_who_can_see">Pilih siapa yang bisa melihat nomor telepon Anda dan siapa yang bisa menghubungi Anda di Signal dengan nomor tersebut.</string>
+    <!-- Section title above two radio buttons for enabling and disabling phone number display -->
+    <string name="PhoneNumberPrivacySettingsFragment__who_can_see_my_number">Siapa bisa melihat nomor saya</string>
+    <!-- Subtext below radio buttons when who can see my number is set to nobody -->
+    <string name="PhoneNumberPrivacySettingsFragment__nobody_will_see">Tidak akan ada yang melihat nomor Anda di Signal</string>
+    <!-- Section title above two radio buttons for enabling and disabling whether users can find me by my phone number  -->
+    <string name="PhoneNumberPrivacySettingsFragment__who_can_find_me_by_number">Siapa bisa menemukan saya dengan nomor telepon</string>
+    <!-- Subtext below radio buttons when who can see my number is set to everyone -->
+    <string name="PhoneNumberPrivacySettingsFragment__your_phone_number">Nomor telepon Anda akan terlihat oleh orang dan grup yang Anda kirimi pesan. Orang yang menyimpan nomor Anda di kontaknya juga akan dapat melihat nomor telepon Anda di Signal.</string>
     <string name="PhoneNumberPrivacy_everyone">Semua orang</string>
     <string name="PhoneNumberPrivacy_my_contacts">Kontak saya</string>
     <string name="PhoneNumberPrivacy_nobody">Tak seorangpun</string>
@@ -3736,12 +3795,12 @@
     <!-- DeactivateWalletFragment -->
     <string name="DeactivateWalletFragment__deactivate_wallet">Nonaktifkan Wallet</string>
     <string name="DeactivateWalletFragment__your_balance">Saldo Anda</string>
-    <string name="DeactivateWalletFragment__its_recommended_that_you">Anda direkomendasikan untuk mentransfer dana Anda ke alamat wallet lain sebelum menonaktifkan pembayaran. Jika Anda memilih untuk tidak mentransfernya sekarang, dana Anda akan tetap di wallet yang tersambung ke Signal jika Anda mengaktifkan kembali pembayaran.</string>
+    <string name="DeactivateWalletFragment__its_recommended_that_you">Disarankan untuk mentransfer dana Anda ke alamat dompet lain sebelum menonaktifkan pembayaran. Jika Anda memilih untuk tidak mentransfernya sekarang, dana Anda akan tetap ada di dompet yang terhubung dengan Signal jika Anda mengaktifkan kembali pembayaran.</string>
     <string name="DeactivateWalletFragment__transfer_remaining_balance">Transfer saldo yang tersisa</string>
     <string name="DeactivateWalletFragment__deactivate_without_transferring">Nonaktifkan tanpa transfer</string>
     <string name="DeactivateWalletFragment__deactivate">Nonaktifkan</string>
     <string name="DeactivateWalletFragment__deactivate_without_transferring_question">Nonaktifkan tanpa transfer?</string>
-    <string name="DeactivateWalletFragment__your_balance_will_remain">Saldo Anda akan tetap di dalam wallet yang terhubung ke Signal jika Anda memilih untuk mengaktifkan kembali pembayaran.</string>
+    <string name="DeactivateWalletFragment__your_balance_will_remain">Saldo Anda akan tetap ada di dompet yang terhubung dengan Signal jika Anda memilih untuk mengaktifkan kembali pembayaran.</string>
     <string name="DeactivateWalletFragment__error_deactivating_wallet">Gagal menonaktifkan wallet.</string>
   <!-- Removed by excludeNonTranslatables <string name="DeactivateWalletFragment__learn_more__we_recommend_transferring_your_funds" translatable="false">https://support.signal.org/hc/articles/360057625692#payments_deactivate</string> -->
 
@@ -3852,6 +3911,49 @@
     <string name="AccountSettingsFragment__youll_be_asked_less_frequently">Anda akan ditanya lebih jarang seiring waktu</string>
     <string name="AccountSettingsFragment__require_your_signal_pin">Memerlukan PIN Signal untuk mendaftarkan nomor telepon Anda lagi di Signal</string>
     <string name="AccountSettingsFragment__change_phone_number">Ganti nomor telepon</string>
+    <!-- Account setting that allows user to request and export their signal account data -->
+    <string name="AccountSettingsFragment__request_account_data">Data akun Anda</string>
+
+    <!-- ExportAccountDataFragment -->
+    <!-- Part of requesting account data flow, this is the section title for requesting that account data -->
+    <string name="ExportAccountDataFragment__your_account_data">Data akun Anda</string>
+    <!-- Explanation of account data the user can request. %1$s is replaced with Learn more with a link -->
+    <string name="ExportAccountDataFragment__export_explanation">Ekspor laporan data akun Signal Anda. Laporan ini tidak menyertakan pesan atau media apa pun. %1$s</string>
+    <!-- Learn more link to more information about requesting account data -->
+    <string name="ExportAccountDataFragment__learn_more">Selengkapnya</string>
+    <!-- Button action to export the report data to another app (e.g. email) -->
+    <string name="ExportAccountDataFragment__export_report">Ekspor laporan</string>
+
+    <!-- Radio option to export the data as a text file .txt -->
+    <string name="ExportAccountDataFragment__export_as_txt">Ekspor sebagai TXT</string>
+    <!-- Label for the text file option -->
+    <string name="ExportAccountDataFragment__export_as_txt_label">File teks mudah-dibaca</string>
+    <!-- Radio option to export the data as a json (java script object notation) file .json -->
+    <string name="ExportAccountDataFragment__export_as_json">Ekspor sebagai JSON</string>
+    <!-- Label for the json file option, the account data in a machine readable file format -->
+    <string name="ExportAccountDataFragment__export_as_json_label">File dapat-dibaca-mesin</string>
+
+    <!-- Action to cancel (in a dialog) -->
+    <string name="ExportAccountDataFragment__cancel_action">Batal</string>
+
+    <!-- Acknowledgement for download failure -->
+    <string name="ExportAccountDataFragment__ok_action">OKE</string>
+    <!-- Title of dialog shown when report fails to generate -->
+    <string name="ExportAccountDataFragment__report_generation_failed">Tidak dapat membuat laporan</string>
+    <!-- Message of dialog shown when report fails to generate asking user to check network connection -->
+    <string name="ExportAccountDataFragment__check_network">Periksa koneksi Anda dan coba lagi.</string>
+
+    <!-- Title for export confirmation dialog -->
+    <string name="ExportAccountDataFragment__export_report_confirmation">Ekspor data?</string>
+    <!-- Message for export confirmation dialog -->
+    <string name="ExportAccountDataFragment__export_report_confirmation_message">Hanya bagikan data akun Signal Anda dengan orang atau aplikasi yang Anda percayai.</string>
+    <!-- Action to export in for export confirmation dialog -->
+    <string name="ExportAccountDataFragment__export_report_action">Ekspor</string>
+
+    <!-- Shown in a dialog with a spinner while the report is downloading -->
+    <string name="ExportAccountDataFragment__download_progress">Membuat laporan…</string>
+    <!-- Explanation that the report is only generated on export and is not saved on the device -->
+    <string name="ExportAccountDataFragment__report_not_stored_disclaimer">Laporan Anda dibuat hanya pada saat proses ekspor dan tidak disimpan oleh Signal di perangkat Anda.</string>
 
     <!-- ChangeNumberFragment -->
     <string name="ChangeNumberFragment__use_this_to_change_your_current_phone_number_to_a_new_phone_number">Gunakan ini untuk mengubah nomor telepon Anda saat ini ke nomor telepon yang baru. Anda tidak dapat membatalkannya.\n\nSebelum melanjutkan, pastikan nomor baru Anda dapat menerima SMS atau panggilan telepon.</string>
@@ -4292,6 +4394,9 @@
     <string name="ImageEditorHud__toggle_between_marker_and_highlighter">Beralih antara penanda dan penyorot</string>
     <string name="ImageEditorHud__toggle_between_text_styles">Beralih antara gaya teks</string>
 
+    <!-- Header for section of featured stickers (location/time stickers) -->
+    <string name="ScribbleStickersFragment__featured_stickers">Unggulan</string>
+
     <string name="MediaCountIndicatorButton__send">Kirim</string>
 
     <string name="MediaReviewSelectedItem__tap_to_remove">Ketuk untuk menghapus</string>
@@ -4398,7 +4503,7 @@
     <string name="ExpiredBadgeBottomSheetDialogFragment__monthly_donation_cancelled">Donasi Bulanan Dibatalkan</string>
     <!-- Displayed in the bottom sheet when a boost badge expires -->
     <string name="ExpiredBadgeBottomSheetDialogFragment__your_boost_badge_has_expired_and">Lencana Boost Anda telah kedaluwarsa dan tidak terlihat lagi di profil Anda.</string>
-    <string name="ExpiredBadgeBottomSheetDialogFragment__you_can_reactivate">Anda dapat mengaktifkan kembali lencana Boost Anda selama 30 hari lagi dengan kontribusi satu kali.</string>
+    <string name="ExpiredBadgeBottomSheetDialogFragment__you_can_reactivate">Anda dapat mengaktifkan kembali lencana Boost untuk 30 hari lagi dengan kontribusi satu kali.</string>
     <!-- Displayed when we do not think the user is a subscriber when their boost expires -->
     <string name="ExpiredBadgeBottomSheetDialogFragment__you_can_keep">Anda tetap dapat menggunakan Signal, tetapi untuk mendukung teknologi yang dibuat untuk Anda, pertimbangkan untuk menjadi penyokong dengan memberikan donasi bulanan.</string>
     <string name="ExpiredBadgeBottomSheetDialogFragment__become_a_sustainer">Menjadi Penyokong</string>
@@ -4410,7 +4515,7 @@
     <string name="ExpiredBadgeBottomSheetDialogFragment__your_recurring_monthly_donation_was_canceled">Donasi bulanan berulang Anda telah dibatalkan karena kami tidak dapat memproses pembayaran Anda. Lencana Anda tidak terlihat lagi di profil Anda.</string>
     <!-- Copy displayed when badge expires after a payment failure and we have a displayable charge failure reason -->
     <string name="ExpiredBadgeBottomSheetDialogFragment__your_recurring_monthly_donation_was_canceled_s">Donasi bulanan berulang Anda telah dibatalkan. %1$s Lencana %2$s Anda tidak terlihat lagi di profil Anda.</string>
-    <string name="ExpiredBadgeBottomSheetDialogFragment__you_can">Anda tetap dapat menggunakan Signal, tetapi untuk mendukung aplikasi dan mengaktifkan kembali lencana Anda, perpanjang langganan sekarang.</string>
+    <string name="ExpiredBadgeBottomSheetDialogFragment__you_can">Anda tetap dapat menggunakan Signal, tetapi untuk mendukung aplikasi dan mengaktifkan kembali lencana Anda, lakukan perpanjangan sekarang.</string>
     <string name="ExpiredBadgeBottomSheetDialogFragment__renew_subscription">Perpanjang langganan</string>
     <!-- Button label to send user to Google Pay website -->
     <string name="ExpiredBadgeBottomSheetDialogFragment__go_to_google_pay">Pergi ke Google Pay</string>
@@ -4453,7 +4558,7 @@
     <string name="DonationsErrors__your_donation_could_not_be_sent">Donasi Anda tidak bisa dikirim karena kesalahan jaringan. Periksa koneksi dan coba lagi.</string>
 
     <!-- Gift message view title -->
-    <string name="GiftMessageView__donation_to_s">Donasi ke %1$s</string>
+    <string name="GiftMessageView__donation_on_behalf_of_s">Donasi atas nama %1$s</string>
     <!-- Gift message view title for incoming donations -->
     <string name="GiftMessageView__s_donated_to_signal_on">%1$s berdonasi ke Signal atas nama Anda</string>
     <!-- Gift badge redeem action label -->
@@ -4692,6 +4797,8 @@
 
     <!-- Label for Chats tab in home app screen -->
     <string name="ConversationListTabs__chats">Percakapan</string>
+    <!-- Label for Calls tab in home app screen -->
+    <string name="ConversationListTabs__calls">Panggilan</string>
     <!-- Label for Stories tab in home app screen -->
     <string name="ConversationListTabs__stories">Cerita</string>
     <!-- String for counts above 99 in conversation list tabs -->
@@ -5511,12 +5618,20 @@
     <string name="TextFormatting_strikethrough">Dicoret</string>
     <!-- Popup menu label for applying monospace font style -->
     <string name="TextFormatting_monospace">Monospace</string>
+    <!-- Popup menu label for applying spoiler style -->
+    <string name="TextFormatting_spoiler">Bocoran</string>
 
     <!-- UsernameEducationFragment -->
     <!-- Continue button which takes the user to the add a username screen -->
     <string name="UsernameEducationFragment__continue">Lanjutkan</string>
     <!-- Displayed as a title on the username education screen -->
     <string name="UsernameEducationFragment__set_up_your_signal_username">Buat nama pengguna Signal Anda</string>
+    <!-- Displayed as body text in the username education screen -->
+    <string name="UsernameEducationFragment__usernames_are_paired_with_a_set_of_digits">Nama pengguna dipasangkan dengan satu set angka dan tidak dibagikan di profil Anda</string>
+    <!-- Displayed as body text in the username education screen -->
+    <string name="UsernameEducationFragment__each_username_has_a_unique_qr_code">Setiap nama pengguna memiliki kode QR dan tautan unik yang dapat Anda bagikan dengan teman untuk memulai obrolan dengan Anda</string>
+    <!-- Displayed as body text in the username education screen. The string references the names of settings, so they should match our translations for those settings. -->
+    <string name="UsernameEducationFragment__turn_off_phone_number_discovery">Nonaktifkan penemuan nomor telepon di Pengaturan &gt; Privasi &gt; Nomor Telepon &gt; Siapa bisa menemukan nomor saya, untuk menggunakan nama pengguna sebagai cara utama orang lain dapat menghubungi Anda</string>
 
     <!-- Username edit dialog -->
     <!-- Option to open username editor displayed as a list item in a dialog -->
@@ -5533,6 +5648,144 @@
     <string name="TimeDurationPickerDialog_positive_button">Atur</string>
     <!-- Shown in a time duration picker for selecting duration in hours and minutes, helper text indicating minimum allowable duration -->
     <string name="TimeDurationPickerDialog_minimum_duration_warning">Waktu minimum sebelum kunci layar diterapkan adalah 1 menit.</string>
+
+    <!-- Call Log -->
+    <!-- Displayed below the user\'s name in row items on the call log. First placeholder is the call status, second is when it occurred -->
+    <string name="CallLogAdapter__s_dot_s">%1$s . %2$s</string>
+    <!-- Displayed for incoming calls -->
+    <string name="CallLogAdapter__incoming">Panggilan Masuk</string>
+    <!-- Displayed for outgoing calls -->
+    <string name="CallLogAdapter__outgoing">Panggilan Keluar</string>
+    <!-- Displayed for missed calls -->
+    <string name="CallLogAdapter__missed">Panggilan Tidak Terjawab</string>
+    <!-- Displayed on Group Call button if user is not in the call -->
+    <string name="CallLogAdapter__join">Gabung</string>
+    <!-- Displayed on Group Call button if user is in the call -->
+    <string name="CallLogAdapter__return">Kembali</string>
+    <!-- Call state template when there is more than one call collapsed into a single row. D is a number > 1 and S is a call info string (like Missed) -->
+    <string name="CallLogAdapter__d_s">(%1$d) %2$s</string>
+
+    <!-- Call Log context menu -->
+    <!-- Displayed as a context menu item to start a video call -->
+    <string name="CallContextMenu__video_call">Panggilan video</string>
+    <!-- Displayed as a context menu item to join an ongoing group call -->
+    <string name="CallContextMenu__join_call">Gabung ke panggilan</string>
+    <!-- Displayed as a context menu item to return to active call -->
+    <string name="CallContextMenu__return_to_call">Kembali ke panggilan</string>
+    <!-- Displayed as a context menu item to start an audio call -->
+    <string name="CallContextMenu__audio_call">Panggilan audio</string>
+    <!-- Displayed as a context menu item to go to chat -->
+    <string name="CallContextMenu__go_to_chat">Buka obrolan</string>
+    <!-- Displayed as a context menu item to see call info -->
+    <string name="CallContextMenu__info">Info</string>
+    <!-- Displayed as a context menu item to select multiple calls -->
+    <string name="CallContextMenu__select">Pilih</string>
+    <!-- Displayed as a context menu item to delete this call -->
+    <string name="CallContextMenu__delete">Hapus</string>
+
+    <!-- Call Log Fragment -->
+    <!-- Action bar menu item to only display missed calls -->
+    <string name="CallLogFragment__filter_missed_calls">Filter panggilan tidak terjawab</string>
+    <!-- Action bar menu item to clear missed call filter -->
+    <string name="CallLogFragment__clear_filter">Hapus filter</string>
+    <!-- Action bar menu item to open settings -->
+    <string name="CallLogFragment__settings">Pengaturan</string>
+    <!-- Action bar menu item to open notification profile settings -->
+    <string name="CallLogFragment__notification_profile">Profil Notifikasi</string>
+    <!-- Call log new call content description -->
+    <string name="CallLogFragment__start_a_new_call">Mulai panggilan baru</string>
+    <!-- Filter pull text when pulled -->
+    <string name="CallLogFragment__filtered_by_missed">Difilter berdasarkan yang tidak terjawab</string>
+    <!-- Bottom bar option to select all call entries -->
+    <string name="CallLogFragment__select_all">Pilih semua</string>
+    <!-- Bottom bar option to delete all selected call entries -->
+    <string name="CallLogFragment__delete">Hapus</string>
+    <!-- Title on multi-delete protection dialog (TODO - final terminology) -->
+  <!-- Removed by excludeNonTranslatables <plurals name="CallLogFragment__delete_d_calls" translatable="false">
+        <item quantity="one">Delete %1$d call?</item>
+        <item quantity="other">Delete %1$d calls?</item>
+    </plurals> -->
+    <!-- Positive action on multi-delete protection dialog -->
+    <string name="CallLogFragment__delete_for_me">Hapus untuk saya</string>
+    <!-- Snackbar label after deleting call logs -->
+    <plurals name="CallLogFragment__d_calls_deleted">
+        <item quantity="other">%1$d panggilan dihapus</item>
+    </plurals>
+    <!-- Undo action for deletion snackbar -->
+    <string name="CallLogFragment__undo">Urungkan</string>
+    <!-- Shown during empty state -->
+    <string name="CallLogFragment__no_calls">Tidak ada panggilan.</string>
+    <!-- Shown during empty state -->
+    <string name="CallLogFragment__get_started_by_calling_a_friend">Mulai dengan menelepon teman.</string>
+
+    <!-- New call activity -->
+    <!-- Activity title in title bar -->
+    <string name="NewCallActivity__new_call">Panggilan baru</string>
+
+    <!-- Call state update popups -->
+    <!-- Displayed when the user enables group call ringing -->
+    <string name="CallStateUpdatePopupWindow__ringing_on">Berdering aktif</string>
+    <!-- Displayed when the user disables group call ringing -->
+    <string name="CallStateUpdatePopupWindow__ringing_off">Berdering nonaktif</string>
+    <!-- Displayed when the user cannot enable group call ringing -->
+    <string name="CallStateUpdatePopupWindow__group_is_too_large">Grup terlalu besar untuk menderingkan ponsel peserta</string>
+    <!-- Displayed when the user turns on their mic -->
+    <string name="CallStateUpdatePopupWindow__mic_on">Mik nyala</string>
+    <!-- Displayed when the user turns off their mic -->
+    <string name="CallStateUpdatePopupWindow__mic_off">Mik mati</string>
+
+    <!-- Accessibility label describing the capture button on the camera screen -->
+    <string name="CameraControls_capture_button_accessibility_label">Tombol Ambil Gambar</string>
+    <!-- Accessibility label describing the continue button on the camera screen -->
+    <string name="CameraControls_continue_button_accessibility_label">Tombol Lanjutkan</string>
+
+    <!-- CallPreference -->
+    <!-- Generic group call in call info -->
+    <string name="CallPreference__group_call">Group call</string>
+    <!-- Missed group call in call info -->
+    <string name="CallPreference__missed_group_call">Panggilan grup tak terjawab</string>
+    <!-- Incoming group call in call info -->
+    <string name="CallPreference__incoming_group_call">Panggilan grup masuk</string>
+    <!-- Outgoing group call in call info -->
+    <string name="CallPreference__outgoing_group_call">Panggilan grup keluar</string>
+
+    <!-- CreateCallLink -->
+    <!-- Call link creation item title on calls tab -->
+    <string name="CreateCallLink__create_a_call_link">Buat Tautan Panggilan</string>
+    <!-- Call link creation item description on calls tab -->
+    <string name="CreateCallLink__share_a_link_for">Bagikan tautan untuk panggilan Signal</string>
+
+    <!-- CreateCallLinkBottomSheetDialogFragment -->
+    <!-- Fragment title -->
+    <string name="CreateCallLinkBottomSheetDialogFragment__create_call_link">Buat tautan panggilan</string>
+    <!-- Displayed as a default name for the signal call -->
+    <string name="CreateCallLinkBottomSheetDialogFragment__signal_call">Panggilan Signal</string>
+    <!-- Displayed on a small button to allow user to instantly join call -->
+    <string name="CreateCallLinkBottomSheetDialogFragment__join">Gabung</string>
+    <!-- Option to open a full screen dialog to enter a call name -->
+    <string name="CreateCallLinkBottomSheetDialogFragment__add_call_name">Tambahkan nama panggilan</string>
+    <!-- Toggle to require approval for all members before joining -->
+    <string name="CreateCallLinkBottomSheetDialogFragment__approve_all_members">Setujui semua anggota</string>
+    <!-- Row label to share the link via Signal -->
+    <string name="CreateCallLinkBottomSheetDialogFragment__share_link_via_signal">Bagikan tautan via Signal</string>
+    <!-- Row label to copy the link to the clipboard -->
+    <string name="CreateCallLinkBottomSheetDialogFragment__copy_link">Salin tautan</string>
+    <!-- Row label to share the link with the external share sheet -->
+    <string name="CreateCallLinkBottomSheetDialogFragment__share_link">Bagikan tautan</string>
+    <!-- Button text to dismiss the sheet and add it as an upcoming call -->
+    <string name="CreateCallLinkBottomSheetDialogFragment__done">Selesai</string>
+    <!-- Displayed when we can\'t find a suitable way to open the system share picker -->
+    <string name="CreateCallLinkBottomSheetDialogFragment__failed_to_open_share_sheet">Gagal membuka layar berbagi.</string>
+    <!-- Displayed when we copy the call link to the clipboard -->
+    <string name="CreateCallLinkBottomSheetDialogFragment__copied_to_clipboard">Disalin ke papan klip</string>
+
+    <!-- EditCallLinkNameDialogFragment -->
+    <!-- App bar title for editing a call name -->
+    <string name="EditCallLinkNameDialogFragment__edit_call_name">Edit nama panggilan</string>
+    <!-- Text on button to confirm edit -->
+    <string name="EditCallLinkNameDialogFragment__save">Simpan</string>
+    <!-- Placeholder text on input field when editing call name -->
+    <string name="EditCallLinkNameDialogFragment__call_name">Nama panggilan</string>
 
     <!-- EOF -->
 </resources>

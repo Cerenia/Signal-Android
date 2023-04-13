@@ -65,7 +65,8 @@ class ConversationRepository {
     long                                lastScrolled                   = metadata.getLastScrolled();
     int                                 lastScrolledPosition           = 0;
     boolean                             isMessageRequestAccepted       = RecipientUtil.isMessageRequestAccepted(context, threadId);
-    ConversationData.MessageRequestData messageRequestData             = new ConversationData.MessageRequestData(isMessageRequestAccepted);
+    boolean                             isConversationHidden           = RecipientUtil.isRecipientHidden(threadId);
+    ConversationData.MessageRequestData messageRequestData             = new ConversationData.MessageRequestData(isMessageRequestAccepted, isConversationHidden);
     boolean                             showUniversalExpireTimerUpdate = false;
 
     if (lastSeen > 0) {
@@ -98,14 +99,14 @@ class ConversationRepository {
       } else if (conversationRecipient.hasGroupsInCommon()) {
         recipientIsKnownOrHasGroupsInCommon = true;
       }
-      messageRequestData = new ConversationData.MessageRequestData(isMessageRequestAccepted, recipientIsKnownOrHasGroupsInCommon, isGroup);
+      messageRequestData = new ConversationData.MessageRequestData(isMessageRequestAccepted, isConversationHidden, recipientIsKnownOrHasGroupsInCommon, isGroup);
     }
 
     if (SignalStore.settings().getUniversalExpireTimer() != 0 &&
         conversationRecipient.getExpiresInSeconds() == 0 &&
         !conversationRecipient.isGroup() &&
         conversationRecipient.isRegistered() &&
-        (threadId == -1 || !SignalDatabase.messages().hasMeaningfulMessage(threadId)))
+        (threadId == -1 || SignalDatabase.messages().canSetUniversalTimer(threadId)))
     {
       showUniversalExpireTimerUpdate = true;
     }
@@ -211,5 +212,13 @@ class ConversationRepository {
         SignalDatabase.messages().insertSmsExportMessage(recipient.getId(), threadId);
       }
     });
+  }
+
+  public void setConversationMuted(@NonNull RecipientId recipientId, long until) {
+    SignalExecutors.BOUNDED.execute(() -> SignalDatabase.recipients().setMuted(recipientId, until));
+  }
+
+  public void setConversationDistributionType(long threadId, int distributionType) {
+    SignalExecutors.BOUNDED.execute(() -> SignalDatabase.threads().setDistributionType(threadId, distributionType));
   }
 }

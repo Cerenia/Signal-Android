@@ -28,6 +28,7 @@ import org.thoughtcrime.securesms.components.registration.VerificationCodeView;
 import org.thoughtcrime.securesms.components.registration.VerificationPinKeyboard;
 import org.thoughtcrime.securesms.registration.ReceivedSmsEvent;
 import org.thoughtcrime.securesms.registration.VerifyAccountRepository;
+import org.thoughtcrime.securesms.registration.VerifyResponseProcessor;
 import org.thoughtcrime.securesms.registration.viewmodel.BaseRegistrationViewModel;
 import org.thoughtcrime.securesms.util.LifecycleDisposable;
 import org.thoughtcrime.securesms.util.ViewUtil;
@@ -163,7 +164,7 @@ public abstract class BaseEnterSmsCodeFragment<ViewModel extends BaseRegistratio
 
       Disposable verify = viewModel.verifyCodeWithoutRegistrationLock(code)
                                    .observeOn(AndroidSchedulers.mainThread())
-                                   .subscribe(processor -> {
+                                   .subscribe((VerifyResponseProcessor processor) -> {
                                      if (!processor.hasResult()) {
                                        Log.w(TAG, "post verify: ", processor.getError());
                                      }
@@ -335,7 +336,7 @@ public abstract class BaseEnterSmsCodeFragment<ViewModel extends BaseRegistratio
                                   .subscribe(processor -> {
                                     if (processor.hasResult()) {
                                       Toast.makeText(requireContext(), getCodeRequestedToastText(mode), Toast.LENGTH_LONG).show();
-                                    } else if (processor.captchaRequired()) {
+                                    } else if (processor.captchaRequired(viewModel.getExcludedChallenges())) {
                                       navigateToCaptcha();
                                     } else if (processor.rateLimit()) {
                                       handleRateLimited();
@@ -384,8 +385,7 @@ public abstract class BaseEnterSmsCodeFragment<ViewModel extends BaseRegistratio
 
     subheader.setText(requireContext().getString(R.string.RegistrationActivity_enter_the_code_we_sent_to_s, viewModel.getNumber().getFullFormattedNumber()));
 
-    MccMncProducer mccMncProducer = new MccMncProducer(requireContext());
-    Disposable request = viewModel.validateSession(sessionE164, mccMncProducer.getMcc(), mccMncProducer.getMnc())
+    Disposable request = viewModel.validateSession(sessionE164)
                                   .observeOn(AndroidSchedulers.mainThread())
                                   .subscribe(processor -> {
                                     if (!processor.hasResult()) {

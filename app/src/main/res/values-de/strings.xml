@@ -15,6 +15,7 @@
   <!-- Removed by excludeNonTranslatables <string name="signal_me_username_url" translatable="false">https://signal.me/#u/%1$s</string> -->
   <!-- Removed by excludeNonTranslatables <string name="signal_me_username_url_no_scheme" translatable="false">signal.me/#u/%1$s</string> -->
   <!-- Removed by excludeNonTranslatables <string name="username_support_url" translatable="false">https://support.signal.org/hc/articles/5389476324250</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="export_account_data_url" translatable="false">https://support.signal.org/hc/articles/5538911756954</string> -->
 
     <string name="yes">Ja</string>
     <string name="no">Nein</string>
@@ -384,6 +385,15 @@
     <!-- Snackbar message shown after dismissing the full screen sms export megaphone indicating we\'ll do it again soon -->
     <string name="ConversationActivity__you_will_be_reminded_again_soon">Du wirst bald erneut daran erinnert.</string>
 
+    <!-- Title for dialog shown when first sending formatted text -->
+    <string name="SendingFormattingTextDialog_title">Formatierten Text senden</string>
+    <!-- Message for dialog shown when first sending formatted text -->
+    <string name="SendingFormattingTextDialog_message">Einige Leute benutzen möglicherweise eine Version von Signal, die keinen formatierten Text unterstützt. Sie können die Formatierungen, die du an deiner Nachricht vorgenommen hast, nicht sehen.</string>
+    <!-- Button text for confirming they\'d like to send the message with formatting after seeing warning. -->
+    <string name="SendingFormattingTextDialog_send_anyway_button">Trotzdem versenden</string>
+    <!-- Button text for canceling sending the message with formatting after seeing warning. -->
+    <string name="SendingFormattingTextDialog_cancel_send_button">Abbrechen</string>
+
     <!-- ConversationAdapter -->
     <plurals name="ConversationAdapter_n_unread_messages">
         <item quantity="one">%1$d ungelesene Nachricht</item>
@@ -488,35 +498,14 @@
         <item quantity="one">Ungelesen</item>
         <item quantity="other">Ungelesen</item>
     </plurals>
-    <plurals name="ConversationListFragment_pin_plural">
-        <item quantity="one">Anheften</item>
-        <item quantity="other">Anheften</item>
-    </plurals>
-    <plurals name="ConversationListFragment_unpin_plural">
-        <item quantity="one">Lösen</item>
-        <item quantity="other">Lösen</item>
-    </plurals>
-    <plurals name="ConversationListFragment_mute_plural">
-        <item quantity="one">Stummschalten</item>
-        <item quantity="other">Stummschalten</item>
-    </plurals>
-    <plurals name="ConversationListFragment_unmute_plural">
-        <item quantity="one">Stummschaltung aufheben</item>
-        <item quantity="other">Stummschaltung aufheben</item>
-    </plurals>
+    <string name="ConversationListFragment_pin">Anheften</string>
+    <string name="ConversationListFragment_unpin">Lösen</string>
+    <string name="ConversationListFragment_mute">Stumm schalten</string>
+    <string name="ConversationListFragment_unmute">Laut schalten</string>
     <string name="ConversationListFragment_select">Auswählen</string>
-    <plurals name="ConversationListFragment_archive_plural">
-        <item quantity="one">Archivieren</item>
-        <item quantity="other">Archivieren</item>
-    </plurals>
-    <plurals name="ConversationListFragment_unarchive_plural">
-        <item quantity="one">Dearchivieren</item>
-        <item quantity="other">Dearchivieren</item>
-    </plurals>
-    <plurals name="ConversationListFragment_delete_plural">
-        <item quantity="one">Löschen</item>
-        <item quantity="other">Löschen</item>
-    </plurals>
+    <string name="ConversationListFragment_archive">Archivieren</string>
+    <string name="ConversationListFragment_unarchive">Dearchivieren</string>
+    <string name="ConversationListFragment_delete">Löschen</string>
     <string name="ConversationListFragment_select_all">Alle auswählen</string>
     <plurals name="ConversationListFragment_s_selected">
         <item quantity="one">%1$d ausgewählt</item>
@@ -542,6 +531,15 @@
 
     <!-- ConversationTypingView -->
     <string name="ConversationTypingView__plus_d">+%1$d</string>
+
+    <!-- Title for a reminder bottom sheet to users who have re-registered that they need to go back to re-link their devices. -->
+    <string name="RelinkDevicesReminderFragment__relink_your_devices">Kopple deine Geräte erneut</string>
+    <!-- Description for a reminder bottom sheet to users who have re-registered that they need to go back to re-link their devices. -->
+    <string name="RelinkDevicesReminderFragment__the_devices_you_added_were_unlinked">Die von dir hinzugefügten Geräte wurden entkoppelt, als dein Gerät abgemeldet wurde. Gehe zu Einstellungen, um alle Geräte erneut zu koppeln.</string>
+    <!-- Button label for the re-link devices bottom sheet reminder to navigate to the Devices page in the settings. -->
+    <string name="RelinkDevicesReminderFragment__open_settings">Einstellungen öffnen</string>
+    <!-- Button label for the re-link devices bottom sheet reminder to dismiss the pop up. -->
+    <string name="RelinkDevicesReminderFragment__later">Später</string>
 
     <!-- CreateGroupActivity -->
     <string name="CreateGroupActivity__select_members">Mitglieder auswählen</string>
@@ -1167,8 +1165,8 @@
     <string name="Megaphones_new_group">Neue Gruppe</string>
     <string name="Megaphones_invite_friends">Freunde einladen</string>
     <string name="Megaphones_use_sms">SMS verwenden</string>
-    <string name="Megaphones_appearance">Darstellung</string>
-    <string name="Megaphones_add_photo">Foto hinzufügen</string>
+    <string name="Megaphones_chat_colors">Unterhaltungsfarben</string>
+    <string name="Megaphones_add_a_profile_photo">Füge ein Profilbild hinzu</string>
 
     <!-- Title of a bottom sheet to render messages that all quote a specific message -->
     <string name="MessageQuotesBottomSheet_replies">Antworten</string>
@@ -1481,6 +1479,8 @@
     <string name="MessageRequestBottomView_delete">Löschen</string>
     <string name="MessageRequestBottomView_block">Blockieren</string>
     <string name="MessageRequestBottomView_unblock">Freigeben</string>
+    <!-- Text explaining a message request from someone you\'ve removed before -->
+    <string name="MessageRequestBottomView_do_you_want_to_let_s_message_you_you_removed_them_before">Let %1$s message you and share your name and photo with them? You have removed this person in the past.</string>
     <string name="MessageRequestBottomView_do_you_want_to_let_s_message_you_they_wont_know_youve_seen_their_messages_until_you_accept">Darf %1$s dir Nachrichten schreiben und deinen Namen und dein Foto sehen? Der Nutzer weiß nicht, dass du seine Nachricht gesehen hast, bis du die Anfrage annimmst.</string>
     <!-- Shown in message request flow. Describes what will happen if you unblock a Signal user -->
     <string name="MessageRequestBottomView_do_you_want_to_let_s_message_you_wont_receive_any_messages_until_you_unblock_them">Darf %1$s dir Nachrichten schreiben und deinen Namen und dein Foto sehen? Du wirst keine Nachrichten erhalten, es sei denn, du erteilst eine Freigabe.</string>
@@ -1726,20 +1726,31 @@
         <item quantity="other">%1$s, %2$s und %3$d weitere Personen nehmen an diesem Anruf teil</item>
     </plurals>
 
-    <!-- Toggle label with hyphenation. Translation can use soft hyphen - Unicode U+00AD -->
-    <string name="WebRtcCallView__flip">Drehen</string>
-    <!-- Toggle label with hyphenation. Translation can use soft hyphen - Unicode U+00AD -->
-    <string name="WebRtcCallView__speaker">Laut­sprecher</string>
-    <!-- Toggle label with hyphenation. Translation can use soft hyphen - Unicode U+00AD -->
-    <string name="WebRtcCallView__camera">Kamera</string>
-    <!-- Toggle label with hyphenation. Translation can use soft hyphen - Unicode U+00AD -->
-    <string name="WebRtcCallView__unmute">Stummschaltung aufheben</string>
-    <!-- Toggle label with hyphenation. Translation can use soft hyphen - Unicode U+00AD -->
-    <string name="WebRtcCallView__mute">Stumm­schalten</string>
-    <!-- Toggle label with hyphenation. Translation can use soft hyphen - Unicode U+00AD -->
-    <string name="WebRtcCallView__ring">Klingeln</string>
-    <!-- Label with hyphenation. Translation can use soft hyphen - Unicode U+00AD -->
+    <!-- Toggle content description for toggling camera direction  -->
+    <string name="WebRtcCallView__toggle_camera_direction">Kamerarichtung ändern</string>
+    <!-- Toggle content description for toggling audio output  -->
+    <string name="WebRtcCallView__toggle_speaker">Lautsprecherlautstärke ändern</string>
+    <!-- Toggle content description for toggling camera state  -->
+    <string name="WebRtcCallView__toggle_camera">Kamerastatus ändern</string>
+    <!-- Toggle content description for toggling mute state  -->
+    <string name="WebRtcCallView__toggle_mute">Stummschaltung ändern</string>
+    <!-- Toggle content description for toggling group ring state  -->
+    <string name="WebRtcCallView__toggle_ring">Gruppenklingelstatus ändern</string>
+    <!-- Content description for end-call button -->
     <string name="WebRtcCallView__end_call">Auflegen</string>
+
+    <!-- Error message when the developer added a button in the wrong place. -->
+    <string name="WebRtcAudioOutputToggleButton_fragment_activity_error">Fehler auf Benutzerschnittstelle aufgetreten. Bitte melde diesen Fehlern den Entwicklern.</string>
+    <!-- Error message when the user is trying to change audio outputs but none are present. -->
+    <string name="WebRtcAudioOutputToggleButton_no_eligible_audio_i_o_detected">Keine geeigneten Audio-Eingänge/-Ausgänge gefunden.</string>
+    <!-- A text description of the bluetooth icon, used for accessibility. -->
+    <string name="WebRtcAudioOutputBottomSheet__bluetooth_icon_content_description">Ein Symbol, das ein Bluetooth-Gerät darstellt.</string>
+    <!-- A text description of the headset icon, used for accessibility. -->
+    <string name="WebRtcAudioOutputBottomSheet__headset_icon_content_description">Ein Symbol, das ein Headset mit Kabel darstellt.</string>
+    <!-- A text description of the speaker icon, used for accessibility. -->
+    <string name="WebRtcAudioOutputBottomSheet__speaker_icon_content_description">Ein Symbol, das eine Freisprechfunktion darstellt.</string>
+    <!-- A text description of the earpiece icon, used for accessibility. -->
+    <string name="WebRtcAudioOutputBottomSheet__earpiece_icon_content_description">Ein Symbol, das Kopfhörer eines Geräts darstellt.</string>
 
     <!-- CallParticipantsListDialog -->
     <plurals name="CallParticipantsListDialog_in_this_call_d_people">
@@ -1807,6 +1818,8 @@
         <item quantity="other">Nur noch %1$d Schritte, und du kannst ein Diagnoseprotokoll übermitteln.</item>
     </plurals>
     <string name="RegistrationActivity_we_need_to_verify_that_youre_human">Bist du ein Mensch?</string>
+    <!-- An error shown when the request was valid, but due to an issue with a partner vendor, the server is unable to send an SMS code -->
+    <string name="RegistrationActivity_external_service_error">Signal konnte aufgrund eines externen Fehlers keinen SMS-Code verschicken.</string>
     <string name="RegistrationActivity_next">Weiter</string>
     <string name="RegistrationActivity_continue">Weiter</string>
     <string name="RegistrationActivity_take_privacy_with_you_be_yourself_in_every_message">Nimm Privatsphäre mit dir.\nSei du selbst in jeder Nachricht.</string>
@@ -1977,6 +1990,8 @@
     <string name="ThreadRecord_message_could_not_be_processed">Nachricht konnte nicht verarbeitet werden</string>
     <string name="ThreadRecord_delivery_issue">Zustellungsproblem</string>
     <string name="ThreadRecord_message_request">Unterhaltungsanfrage</string>
+    <!-- Thread preview for a recipient that has been hidden -->
+    <string name="ThreadRecord_hidden_recipient">You have hidden this person, message them again to add them back to your list.</string>
     <string name="ThreadRecord_photo">Foto</string>
     <string name="ThreadRecord_gif">GIF</string>
     <string name="ThreadRecord_voice_message">Sprachnachricht</string>
@@ -1990,9 +2005,9 @@
     <!-- Displayed in the notification when the user has opened a received gift -->
     <string name="ThreadRecord__you_redeemed_a_badge">Du hast ein Abzeichen eingelöst</string>
     <!-- Displayed in the conversation list when someone reacted to your story -->
-    <string name="ThreadRecord__reacted_s_to_your_story">Mit %1$s auf deine Story reagiert</string>
+    <string name="ThreadRecord__reacted_s_to_your_story">Hat mit %1$s auf deine Story reagiert</string>
     <!-- Displayed in the conversation list when you reacted to someone\'s story -->
-    <string name="ThreadRecord__reacted_s_to_their_story">Mit %1$s auf ihre*seine Story reagiert</string>
+    <string name="ThreadRecord__reacted_s_to_their_story">Hat mit %1$s auf ihre*seine Story reagiert</string>
     <!-- Displayed in the conversation list when your most recent message is a payment to or from the person the conversation is with -->
     <string name="ThreadRecord_payment">Zahlung</string>
     <!-- Displayed in the conversation list when your only message in a conversation is a scheduled send. -->
@@ -2116,6 +2131,10 @@
     <string name="MessageNotifier_most_recent_from_s">Neueste von: %1$s</string>
     <string name="MessageNotifier_locked_message">Gesperrte Nachricht</string>
     <string name="MessageNotifier_message_delivery_failed">Nachrichtenzustellung gescheitert.</string>
+    <!-- Shown in a notification when a story the user tries to send fails to be sent -->
+    <string name="MessageNotifier_story_delivery_failed">Story konnte nicht gesendet werden</string>
+    <!-- Shown as notification title for when a notification about a story sent to a group story %1$s replaced with the group name -->
+    <string name="MessageNotifier_group_story_title">Du an %1$s</string>
     <string name="MessageNotifier_failed_to_deliver_message">Nachricht konnte nicht zugestellt werden.</string>
     <string name="MessageNotifier_error_delivering_message">Fehler beim Zustellen der Nachricht</string>
     <string name="MessageNotifier_message_delivery_paused">Nachrichtenzustellung pausiert.</string>
@@ -2130,14 +2149,16 @@
     <string name="MessageNotifier_unsecured_sms">Unverschlüsselte SMS</string>
     <string name="MessageNotifier_contact_message">%1$s %2$s</string>
     <string name="MessageNotifier_unknown_contact_message">Kontakt</string>
-    <string name="MessageNotifier_reacted_s_to_s">Mit %1$s reagiert auf: »%2$s«.</string>
-    <string name="MessageNotifier_reacted_s_to_your_video">Mit %1$s auf dein Video reagiert.</string>
-    <string name="MessageNotifier_reacted_s_to_your_image">Mit %1$s auf dein Bild reagiert.</string>
-    <string name="MessageNotifier_reacted_s_to_your_gif">Mit %1$s auf dein GIF reagiert.</string>
-    <string name="MessageNotifier_reacted_s_to_your_file">Mit %1$s auf deine Datei reagiert.</string>
-    <string name="MessageNotifier_reacted_s_to_your_audio">Mit %1$s auf dein Audio reagiert.</string>
-    <string name="MessageNotifier_reacted_s_to_your_view_once_media">Mit %1$s auf deine einmalig anzeigbaren Medieninhalte reagiert.</string>
-    <string name="MessageNotifier_reacted_s_to_your_sticker">Mit %1$s auf deinen Sticker reagiert.</string>
+    <string name="MessageNotifier_reacted_s_to_s">Hat mit %1$s auf »%2$s« reagiert.</string>
+    <string name="MessageNotifier_reacted_s_to_your_video">Hat mit %1$s auf dein Video reagiert.</string>
+    <string name="MessageNotifier_reacted_s_to_your_image">Hat mit %1$s auf dein Bild reagiert.</string>
+    <string name="MessageNotifier_reacted_s_to_your_gif">Hat mit %1$s auf dein GIF reagiert.</string>
+    <string name="MessageNotifier_reacted_s_to_your_file">Hat mit %1$s auf deine Datei reagiert.</string>
+    <string name="MessageNotifier_reacted_s_to_your_audio">Hat mit %1$s auf dein Audio reagiert.</string>
+    <string name="MessageNotifier_reacted_s_to_your_view_once_media">Hat mit %1$s auf deine einmalig anzeigbaren Medieninhalte reagiert.</string>
+    <!-- Body of notification shown to user when someone they sent a payment to reacts to it. Placeholder is the emoji used in the reaction. -->
+    <string name="MessageNotifier_reacted_s_to_your_payment">Hat mit %1$s auf deine Zahlung reagiert.</string>
+    <string name="MessageNotifier_reacted_s_to_your_sticker">Hat mit %1$s auf deinen Sticker reagiert.</string>
     <string name="MessageNotifier_this_message_was_deleted">Diese Nachricht wurde gelöscht.</string>
 
     <string name="TurnOffContactJoinedNotificationsActivity__turn_off_contact_joined_signal">Benachrichtigungen über neue Signal-Kontakte ausschalten? Du kannst sie wieder einschalten in Signal → Einstellungen → Benachrichtigungen.</string>
@@ -2237,10 +2258,18 @@
     <string name="WebRtcCallScreen__answer_without_video">Ohne Video annehmen</string>
 
     <!-- WebRtcAudioOutputToggle -->
+    <!-- Label for a dialog asking the user to switch the audio output device during a call -->
     <string name="WebRtcAudioOutputToggle__audio_output">Audioausgang</string>
+    <!-- Audio output option referring to the earpiece built into the phone -->
     <string name="WebRtcAudioOutputToggle__phone_earpiece">Hörer</string>
+    <!-- Audio output option referring to the louder speaker built into the phone -->
     <string name="WebRtcAudioOutputToggle__speaker">Lautsprecher</string>
+    <!-- Audio output option referring to an external audio device connected via wireless Bluetooth -->
     <string name="WebRtcAudioOutputToggle__bluetooth">Bluetooth</string>
+    <!-- Audio output option referring to an external headset connected via a 3.5mm headphone jack -->
+    <string name="WebRtcAudioOutputToggle__wired_headset">Headset mit Kabel</string>
+    <!-- Audio output option referring to an external headset connected via a USB-C data cable -->
+    <string name="WebRtcAudioOutputToggle__wired_headset_usb">Headset mit Kabel (USB-Anschluss)</string>
 
     <string name="WebRtcCallControls_answer_call_description">Anruf annehmen</string>
     <string name="WebRtcCallControls_reject_call_description">Anruf ablehnen</string>
@@ -2253,6 +2282,12 @@
     <!-- contact_selection_activity -->
     <string name="contact_selection_activity__invite_to_signal">Zu Signal einladen</string>
     <string name="contact_selection_activity__new_group">Neue Gruppe</string>
+    <!-- Row item title for refreshing contacts -->
+    <string name="contact_selection_activity__refresh_contacts">Kontakte aktualisieren</string>
+    <!-- Row item description for refreshing contacts -->
+    <string name="contact_selection_activity__missing_someone">Fehlt jemand? Versuche es mit Aktualisieren</string>
+    <!-- Row header title for more section -->
+    <string name="contact_selection_activity__more">Mehr</string>
 
     <!-- contact_filter_toolbar -->
     <string name="contact_filter_toolbar__clear_entered_text_description">Texteingabe leeren</string>
@@ -2352,7 +2387,8 @@
     <string name="ConversationUpdateItem_send_payment">Zahlung senden</string>
     <!-- Update item button text to activate payments -->
     <string name="ConversationUpdateItem_activate_payments">Zahlungen aktivieren</string>
-
+    <!-- Update item alerting the user they hid this person and that they can message them to unhide them -->
+    <string name="ConversationUpdateItem_hidden_contact_message_to_add_back">You have removed this person, messaging them again will add them back to your list.</string>
 
     <!-- audio_view -->
     <string name="audio_view__play_pause_accessibility_description">Abspielen … Pause</string>
@@ -3058,6 +3094,8 @@
 
     <!-- EditNoteFragment -->
     <string name="EditNoteFragment_note">Mitteilung</string>
+    <!-- Content descriptor explaining the use of the save note FAB for Android accessibility settings-->
+    <string name="EditNoteFragment__content_description_save_note">Notiz speichern</string>
 
     <!-- ConfirmPaymentFragment -->
     <string name="ConfirmPayment__confirm_payment">Zahlung bestätigen</string>
@@ -3098,6 +3136,8 @@
     <!-- **************************************** -->
 
     <!-- contact_selection_list -->
+    <!-- Displayed in a row on the new call screen when searching by phone number. -->
+    <string name="contact_selection_list__new_call">Neuer Anruf an…</string>
     <string name="contact_selection_list__unknown_contact">Neue Nachricht an …</string>
     <string name="contact_selection_list__unknown_contact_block">Nutzer blockieren</string>
     <string name="contact_selection_list__unknown_contact_add_to_group">Zur Gruppe hinzufügen</string>
@@ -3454,6 +3494,18 @@
     <string name="BackupUtil_unknown">Unbekannt</string>
     <string name="preferences_app_protection__see_my_phone_number">meine Rufnummer sehen</string>
     <string name="preferences_app_protection__find_me_by_phone_number">mich über die Rufnummer finden</string>
+    <!-- Phone number heading displayed as a screen title -->
+    <string name="preferences_app_protection__phone_number">Rufnummer</string>
+    <!-- Subtext below option to launch into phone number privacy settings screen -->
+    <string name="preferences_app_protection__choose_who_can_see">Lege fest, wer deine Rufnummer sehen kann und wer dich auf Signal mit ihr kontaktieren kann.</string>
+    <!-- Section title above two radio buttons for enabling and disabling phone number display -->
+    <string name="PhoneNumberPrivacySettingsFragment__who_can_see_my_number">Wer meine Rufnummer sehen kann</string>
+    <!-- Subtext below radio buttons when who can see my number is set to nobody -->
+    <string name="PhoneNumberPrivacySettingsFragment__nobody_will_see">Niemand wird deine Rufnummer in Signal sehen</string>
+    <!-- Section title above two radio buttons for enabling and disabling whether users can find me by my phone number  -->
+    <string name="PhoneNumberPrivacySettingsFragment__who_can_find_me_by_number">Wer mich anhand der Rufnummer finden kann</string>
+    <!-- Subtext below radio buttons when who can see my number is set to everyone -->
+    <string name="PhoneNumberPrivacySettingsFragment__your_phone_number">Deine Rufnummer ist sichtbar für alle Personen und Gruppen, mit denen du dich unterhälst. Personen, die deine Rufnummer in ihren Telefonkontakten gespeichert haben, sehen diese auch in Signal.</string>
     <string name="PhoneNumberPrivacy_everyone">Jeder</string>
     <string name="PhoneNumberPrivacy_my_contacts">Meine Kontakte</string>
     <string name="PhoneNumberPrivacy_nobody">Niemand</string>
@@ -3949,6 +4001,49 @@
     <string name="AccountSettingsFragment__youll_be_asked_less_frequently">PIN-Erinnerungen aktivieren. Diese werden seltener angezeigt, wenn du die PIN regelmäßig korrekt eingibst.</string>
     <string name="AccountSettingsFragment__require_your_signal_pin">Signal-PIN erforderlich machen, sobald du deine Rufnummer erneut bei Signal registrierst</string>
     <string name="AccountSettingsFragment__change_phone_number">Rufnummer ändern</string>
+    <!-- Account setting that allows user to request and export their signal account data -->
+    <string name="AccountSettingsFragment__request_account_data">Deine Kontodaten</string>
+
+    <!-- ExportAccountDataFragment -->
+    <!-- Part of requesting account data flow, this is the section title for requesting that account data -->
+    <string name="ExportAccountDataFragment__your_account_data">Deine Kontodaten</string>
+    <!-- Explanation of account data the user can request. %1$s is replaced with Learn more with a link -->
+    <string name="ExportAccountDataFragment__export_explanation">Exportiere einen Bericht deiner Signal-Kontodaten. Dieser Bericht beinhaltet keine Nachrichten oder Medien. %1$s</string>
+    <!-- Learn more link to more information about requesting account data -->
+    <string name="ExportAccountDataFragment__learn_more">Mehr erfahren</string>
+    <!-- Button action to export the report data to another app (e.g. email) -->
+    <string name="ExportAccountDataFragment__export_report">Bericht exportieren</string>
+
+    <!-- Radio option to export the data as a text file .txt -->
+    <string name="ExportAccountDataFragment__export_as_txt">Als TXT exportieren</string>
+    <!-- Label for the text file option -->
+    <string name="ExportAccountDataFragment__export_as_txt_label">Leicht zu lesende Textdatei</string>
+    <!-- Radio option to export the data as a json (java script object notation) file .json -->
+    <string name="ExportAccountDataFragment__export_as_json">Als JSON exportieren</string>
+    <!-- Label for the json file option, the account data in a machine readable file format -->
+    <string name="ExportAccountDataFragment__export_as_json_label">Maschinell lesbare Datei</string>
+
+    <!-- Action to cancel (in a dialog) -->
+    <string name="ExportAccountDataFragment__cancel_action">Abbrechen</string>
+
+    <!-- Acknowledgement for download failure -->
+    <string name="ExportAccountDataFragment__ok_action">OK</string>
+    <!-- Title of dialog shown when report fails to generate -->
+    <string name="ExportAccountDataFragment__report_generation_failed">Bericht konnte nicht erstellt werden</string>
+    <!-- Message of dialog shown when report fails to generate asking user to check network connection -->
+    <string name="ExportAccountDataFragment__check_network">Überprüfe deine Verbindung und versuche es erneut.</string>
+
+    <!-- Title for export confirmation dialog -->
+    <string name="ExportAccountDataFragment__export_report_confirmation">Daten exportieren?</string>
+    <!-- Message for export confirmation dialog -->
+    <string name="ExportAccountDataFragment__export_report_confirmation_message">Teile deine Signal-Kontodaten nur mit Personen oder Apps, denen du vertraust.</string>
+    <!-- Action to export in for export confirmation dialog -->
+    <string name="ExportAccountDataFragment__export_report_action">Exportieren</string>
+
+    <!-- Shown in a dialog with a spinner while the report is downloading -->
+    <string name="ExportAccountDataFragment__download_progress">Bericht wird erstellt…</string>
+    <!-- Explanation that the report is only generated on export and is not saved on the device -->
+    <string name="ExportAccountDataFragment__report_not_stored_disclaimer">Dein Bericht wird nur zum Zeitpunkt des Exports generiert und nicht von Signal auf deinem Gerät gespeichert.</string>
 
     <!-- ChangeNumberFragment -->
     <string name="ChangeNumberFragment__use_this_to_change_your_current_phone_number_to_a_new_phone_number">Verwende diese Funktion, um deine aktuelle Rufnummer auf eine neue Rufnummer zu ändern. Du kannst diese Änderung nicht rückgängig machen.\n\nBevor du fortfährst, vergewissere dich, dass deine neue Rufnummer SMS oder Anrufe empfangen kann.</string>
@@ -4395,6 +4490,9 @@
     <string name="ImageEditorHud__toggle_between_marker_and_highlighter">Zwischen Stift und Textmarker umschalten</string>
     <string name="ImageEditorHud__toggle_between_text_styles">Textstil umschalten</string>
 
+    <!-- Header for section of featured stickers (location/time stickers) -->
+    <string name="ScribbleStickersFragment__featured_stickers">Ausgewählt</string>
+
     <string name="MediaCountIndicatorButton__send">Senden</string>
 
     <string name="MediaReviewSelectedItem__tap_to_remove">Zum Entfernen antippen</string>
@@ -4556,7 +4654,7 @@
     <string name="DonationsErrors__your_donation_could_not_be_sent">Deine Spende konnte aufgrund eines Netzwerkfehlers nicht gesendet werden. Überprüfe deine Verbindung und versuche es erneut.</string>
 
     <!-- Gift message view title -->
-    <string name="GiftMessageView__donation_to_s">Spende an %1$s</string>
+    <string name="GiftMessageView__donation_on_behalf_of_s">Spende im Namen von %1$s</string>
     <!-- Gift message view title for incoming donations -->
     <string name="GiftMessageView__s_donated_to_signal_on">%1$s hat in deinem Namen an Signal gespendet</string>
     <!-- Gift badge redeem action label -->
@@ -4795,6 +4893,8 @@
 
     <!-- Label for Chats tab in home app screen -->
     <string name="ConversationListTabs__chats">Unterhaltungen</string>
+    <!-- Label for Calls tab in home app screen -->
+    <string name="ConversationListTabs__calls">Anrufe</string>
     <!-- Label for Stories tab in home app screen -->
     <string name="ConversationListTabs__stories">Storys</string>
     <!-- String for counts above 99 in conversation list tabs -->
@@ -4901,7 +5001,7 @@
     <!-- Displayed when no longer a group member -->
     <string name="StoryGroupReplyFragment__you_cant_reply">Du kannst nicht auf diese Story antworten, weil du nicht mehr Mitglied in dieser Gruppe bist.</string>
     <!-- Displayed for each user that reacted to a story when viewing replies -->
-    <string name="StoryGroupReactionReplyItem__reacted_to_the_story">Auf Story reagiert</string>
+    <string name="StoryGroupReactionReplyItem__reacted_to_the_story">Hat auf Story reagiert</string>
     <!-- Label for story views tab -->
     <string name="StoryViewsAndRepliesDialogFragment__views">Aufrufe</string>
     <!-- Label for story replies tab -->
@@ -4953,9 +5053,9 @@
     <!-- My story privacy fine print about what the privacy settings are for -->
     <string name="MyStorySettingsFragment__choose_who_can_view_your_story">Wähle aus, wer deine Story sehen kann. Änderungen wirken sich nicht auf bereits gesendete Storys aus.</string>
     <!-- Section header for options related to replies and reactions -->
-    <string name="MyStorySettingsFragment__replies_amp_reactions">Antworten &amp; Reaktionen</string>
+    <string name="MyStorySettingsFragment__replies_amp_reactions">Antworten und Reaktionen</string>
     <!-- Switchable option for allowing replies and reactions on your stories -->
-    <string name="MyStorySettingsFragment__allow_replies_amp_reactions">Antworten &amp; Reaktionen erlauben</string>
+    <string name="MyStorySettingsFragment__allow_replies_amp_reactions">Antworten und Reaktionen erlauben</string>
     <!-- Summary for switchable option allowing replies and reactions on your story -->
     <string name="MyStorySettingsFragment__let_people_who_can_view_your_story_react_and_reply">Erlaube Personen, die deine Story sehen können, auf sie zu antworten und zu reagieren</string>
     <!-- Signal connections bolded text in the Signal Connections sheet -->
@@ -5107,9 +5207,9 @@
     <!-- Conversation Item label for when you react to someone else\'s story -->
     <string name="ConversationItem__you_reacted_to_s_story">Du hast auf die Story von %1$s reagiert</string>
     <!-- Conversation Item label for reactions to your story -->
-    <string name="ConversationItem__reacted_to_your_story">Auf deine Story reagiert</string>
+    <string name="ConversationItem__reacted_to_your_story">Hat auf deine Story reagiert</string>
     <!-- Conversation Item label for reactions to an unavailable story -->
-    <string name="ConversationItem__reacted_to_a_story">Auf eine Story reagiert</string>
+    <string name="ConversationItem__reacted_to_a_story">Hat auf eine Story reagiert</string>
 
     <!-- endregion -->
     <!-- Content description for expand contacts chevron -->
@@ -5636,12 +5736,20 @@
     <string name="TextFormatting_strikethrough">Durchgestrichen</string>
     <!-- Popup menu label for applying monospace font style -->
     <string name="TextFormatting_monospace">Nichtproportionale Schriftart</string>
+    <!-- Popup menu label for applying spoiler style -->
+    <string name="TextFormatting_spoiler">Spoiler</string>
 
     <!-- UsernameEducationFragment -->
     <!-- Continue button which takes the user to the add a username screen -->
     <string name="UsernameEducationFragment__continue">Fortfahren</string>
     <!-- Displayed as a title on the username education screen -->
     <string name="UsernameEducationFragment__set_up_your_signal_username">Richte deinen Signal-Nutzernamen ein</string>
+    <!-- Displayed as body text in the username education screen -->
+    <string name="UsernameEducationFragment__usernames_are_paired_with_a_set_of_digits">Nutzernamen sind mit einer Reihe von Ziffern gekoppelt und werden nicht auf deinem Profil angezeigt.</string>
+    <!-- Displayed as body text in the username education screen -->
+    <string name="UsernameEducationFragment__each_username_has_a_unique_qr_code">Jeder Nutzername hat einen einzigartigen QR-Code und einen Link, den du mit Freunden teilen kannst, damit sie mit dir eine Unterhaltung beginnen können.</string>
+    <!-- Displayed as body text in the username education screen. The string references the names of settings, so they should match our translations for those settings. -->
+    <string name="UsernameEducationFragment__turn_off_phone_number_discovery">Deaktiviere die Rufnummernerkennung unter Einstellungen &gt; Datenschutz &gt; Rufnummer &gt; Wer kann meine Nummer finden, um deinen Nutzernamen als primäre Methode festzulegen, über die dich andere kontaktieren können.</string>
 
     <!-- Username edit dialog -->
     <!-- Option to open username editor displayed as a list item in a dialog -->
@@ -5658,6 +5766,145 @@
     <string name="TimeDurationPickerDialog_positive_button">Festlegen</string>
     <!-- Shown in a time duration picker for selecting duration in hours and minutes, helper text indicating minimum allowable duration -->
     <string name="TimeDurationPickerDialog_minimum_duration_warning">Mindestzeit, bevor die Bildschirmsperre aktiviert wird, beträgt 1 Minute.</string>
+
+    <!-- Call Log -->
+    <!-- Displayed below the user\'s name in row items on the call log. First placeholder is the call status, second is when it occurred -->
+    <string name="CallLogAdapter__s_dot_s">%1$s · %2$s</string>
+    <!-- Displayed for incoming calls -->
+    <string name="CallLogAdapter__incoming">Eingehend</string>
+    <!-- Displayed for outgoing calls -->
+    <string name="CallLogAdapter__outgoing">Ausgehend</string>
+    <!-- Displayed for missed calls -->
+    <string name="CallLogAdapter__missed">Verpasst</string>
+    <!-- Displayed on Group Call button if user is not in the call -->
+    <string name="CallLogAdapter__join">Beitreten</string>
+    <!-- Displayed on Group Call button if user is in the call -->
+    <string name="CallLogAdapter__return">Zurück</string>
+    <!-- Call state template when there is more than one call collapsed into a single row. D is a number > 1 and S is a call info string (like Missed) -->
+    <string name="CallLogAdapter__d_s">(%1$d) %2$s</string>
+
+    <!-- Call Log context menu -->
+    <!-- Displayed as a context menu item to start a video call -->
+    <string name="CallContextMenu__video_call">Videoanruf</string>
+    <!-- Displayed as a context menu item to join an ongoing group call -->
+    <string name="CallContextMenu__join_call">Anruf beitreten</string>
+    <!-- Displayed as a context menu item to return to active call -->
+    <string name="CallContextMenu__return_to_call">Zurück zum Anruf</string>
+    <!-- Displayed as a context menu item to start an audio call -->
+    <string name="CallContextMenu__audio_call">Sprachanruf</string>
+    <!-- Displayed as a context menu item to go to chat -->
+    <string name="CallContextMenu__go_to_chat">Zur Unterhaltung</string>
+    <!-- Displayed as a context menu item to see call info -->
+    <string name="CallContextMenu__info">Info</string>
+    <!-- Displayed as a context menu item to select multiple calls -->
+    <string name="CallContextMenu__select">Auswählen</string>
+    <!-- Displayed as a context menu item to delete this call -->
+    <string name="CallContextMenu__delete">Löschen</string>
+
+    <!-- Call Log Fragment -->
+    <!-- Action bar menu item to only display missed calls -->
+    <string name="CallLogFragment__filter_missed_calls">Entgangene Anrufe filtern</string>
+    <!-- Action bar menu item to clear missed call filter -->
+    <string name="CallLogFragment__clear_filter">Filter entfernen</string>
+    <!-- Action bar menu item to open settings -->
+    <string name="CallLogFragment__settings">Einstellungen</string>
+    <!-- Action bar menu item to open notification profile settings -->
+    <string name="CallLogFragment__notification_profile">Benachrichtigungsprofil</string>
+    <!-- Call log new call content description -->
+    <string name="CallLogFragment__start_a_new_call">Neuen Anruf starten</string>
+    <!-- Filter pull text when pulled -->
+    <string name="CallLogFragment__filtered_by_missed">Gefiltert nach Entgangen</string>
+    <!-- Bottom bar option to select all call entries -->
+    <string name="CallLogFragment__select_all">Alle auswählen</string>
+    <!-- Bottom bar option to delete all selected call entries -->
+    <string name="CallLogFragment__delete">Löschen</string>
+    <!-- Title on multi-delete protection dialog (TODO - final terminology) -->
+  <!-- Removed by excludeNonTranslatables <plurals name="CallLogFragment__delete_d_calls" translatable="false">
+        <item quantity="one">Delete %1$d call?</item>
+        <item quantity="other">Delete %1$d calls?</item>
+    </plurals> -->
+    <!-- Positive action on multi-delete protection dialog -->
+    <string name="CallLogFragment__delete_for_me">Für mich löschen</string>
+    <!-- Snackbar label after deleting call logs -->
+    <plurals name="CallLogFragment__d_calls_deleted">
+        <item quantity="one">%1$d Anruf gelöscht</item>
+        <item quantity="other">%1$d Anrufe gelöscht</item>
+    </plurals>
+    <!-- Undo action for deletion snackbar -->
+    <string name="CallLogFragment__undo">Rückgängig</string>
+    <!-- Shown during empty state -->
+    <string name="CallLogFragment__no_calls">Keine Anrufe.</string>
+    <!-- Shown during empty state -->
+    <string name="CallLogFragment__get_started_by_calling_a_friend">Leg los und rufe eine Freundin oder einen Freund an.</string>
+
+    <!-- New call activity -->
+    <!-- Activity title in title bar -->
+    <string name="NewCallActivity__new_call">Neuer Anruf</string>
+
+    <!-- Call state update popups -->
+    <!-- Displayed when the user enables group call ringing -->
+    <string name="CallStateUpdatePopupWindow__ringing_on">Klingelton an</string>
+    <!-- Displayed when the user disables group call ringing -->
+    <string name="CallStateUpdatePopupWindow__ringing_off">Klingelton aus</string>
+    <!-- Displayed when the user cannot enable group call ringing -->
+    <string name="CallStateUpdatePopupWindow__group_is_too_large">Gruppe ist zu groß, um bei den Teilnehmern zu klingeln</string>
+    <!-- Displayed when the user turns on their mic -->
+    <string name="CallStateUpdatePopupWindow__mic_on">Mikrofon an</string>
+    <!-- Displayed when the user turns off their mic -->
+    <string name="CallStateUpdatePopupWindow__mic_off">Mikrofon aus</string>
+
+    <!-- Accessibility label describing the capture button on the camera screen -->
+    <string name="CameraControls_capture_button_accessibility_label">Schaltfläche »Aufnehmen«</string>
+    <!-- Accessibility label describing the continue button on the camera screen -->
+    <string name="CameraControls_continue_button_accessibility_label">Schaltfläche »Fortfahren«</string>
+
+    <!-- CallPreference -->
+    <!-- Generic group call in call info -->
+    <string name="CallPreference__group_call">Group call</string>
+    <!-- Missed group call in call info -->
+    <string name="CallPreference__missed_group_call">Entgangener Gruppenanruf</string>
+    <!-- Incoming group call in call info -->
+    <string name="CallPreference__incoming_group_call">Eingehender Gruppenanruf</string>
+    <!-- Outgoing group call in call info -->
+    <string name="CallPreference__outgoing_group_call">Ausgehender Gruppenanruf</string>
+
+    <!-- CreateCallLink -->
+    <!-- Call link creation item title on calls tab -->
+    <string name="CreateCallLink__create_a_call_link">Einen Anruflink erstellen</string>
+    <!-- Call link creation item description on calls tab -->
+    <string name="CreateCallLink__share_a_link_for">Einen Link für einen Signal-Anruf teilen</string>
+
+    <!-- CreateCallLinkBottomSheetDialogFragment -->
+    <!-- Fragment title -->
+    <string name="CreateCallLinkBottomSheetDialogFragment__create_call_link">Anruflink erstellen</string>
+    <!-- Displayed as a default name for the signal call -->
+    <string name="CreateCallLinkBottomSheetDialogFragment__signal_call">Signal-Anruf</string>
+    <!-- Displayed on a small button to allow user to instantly join call -->
+    <string name="CreateCallLinkBottomSheetDialogFragment__join">Beitreten</string>
+    <!-- Option to open a full screen dialog to enter a call name -->
+    <string name="CreateCallLinkBottomSheetDialogFragment__add_call_name">Anrufnamen hinzufügen</string>
+    <!-- Toggle to require approval for all members before joining -->
+    <string name="CreateCallLinkBottomSheetDialogFragment__approve_all_members">Alle Mitglieder bestätigen</string>
+    <!-- Row label to share the link via Signal -->
+    <string name="CreateCallLinkBottomSheetDialogFragment__share_link_via_signal">Link über Signal teilen</string>
+    <!-- Row label to copy the link to the clipboard -->
+    <string name="CreateCallLinkBottomSheetDialogFragment__copy_link">Link kopieren</string>
+    <!-- Row label to share the link with the external share sheet -->
+    <string name="CreateCallLinkBottomSheetDialogFragment__share_link">Link teilen</string>
+    <!-- Button text to dismiss the sheet and add it as an upcoming call -->
+    <string name="CreateCallLinkBottomSheetDialogFragment__done">Fertig</string>
+    <!-- Displayed when we can\'t find a suitable way to open the system share picker -->
+    <string name="CreateCallLinkBottomSheetDialogFragment__failed_to_open_share_sheet">Freigabebildschirm konnte nicht geöffnet werden.</string>
+    <!-- Displayed when we copy the call link to the clipboard -->
+    <string name="CreateCallLinkBottomSheetDialogFragment__copied_to_clipboard">In Zwischenablage kopiert</string>
+
+    <!-- EditCallLinkNameDialogFragment -->
+    <!-- App bar title for editing a call name -->
+    <string name="EditCallLinkNameDialogFragment__edit_call_name">Anrufnamen bearbeiten</string>
+    <!-- Text on button to confirm edit -->
+    <string name="EditCallLinkNameDialogFragment__save">Speichern</string>
+    <!-- Placeholder text on input field when editing call name -->
+    <string name="EditCallLinkNameDialogFragment__call_name">Anrufname</string>
 
     <!-- EOF -->
 </resources>

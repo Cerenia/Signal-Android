@@ -4,11 +4,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.thoughtcrime.securesms.database.model.databaseprotos.PendingChangeNumberMetadata;
+import org.thoughtcrime.securesms.jobmanager.impl.ChangeNumberConstraintObserver;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 public final class MiscellaneousValues extends SignalStoreValues {
 
@@ -30,6 +29,7 @@ public final class MiscellaneousValues extends SignalStoreValues {
   private static final String LAST_FOREGROUND_TIME            = "misc.last_foreground_time";
   private static final String PNI_INITIALIZED_DEVICES         = "misc.pni_initialized_devices";
   private static final String SMS_PHASE_1_START_MS            = "misc.sms_export.phase_1_start.3";
+  private static final String LINKED_DEVICES_REMINDER         = "misc.linked_devices_reminder";
 
   MiscellaneousValues(@NonNull KeyValueStore store) {
     super(store);
@@ -111,10 +111,12 @@ public final class MiscellaneousValues extends SignalStoreValues {
 
   public void lockChangeNumber() {
     putBoolean(CHANGE_NUMBER_LOCK, true);
+    ChangeNumberConstraintObserver.INSTANCE.onChange();
   }
 
   public void unlockChangeNumber() {
     putBoolean(CHANGE_NUMBER_LOCK, false);
+    ChangeNumberConstraintObserver.INSTANCE.onChange();
   }
 
   public @Nullable PendingChangeNumberMetadata getPendingChangeNumberMetadata() {
@@ -241,5 +243,13 @@ public final class MiscellaneousValues extends SignalStoreValues {
     long now = System.currentTimeMillis();
     long phase1StartMs = getLong(SMS_PHASE_1_START_MS, now);
     return phase1StartMs + SmsExportPhase.PHASE_3.getDuration();
+  }
+
+  public void setShouldShowLinkedDevicesReminder(boolean value) {
+    putBoolean(LINKED_DEVICES_REMINDER, value);
+  }
+
+  public boolean getShouldShowLinkedDevicesReminder() {
+    return getBoolean(LINKED_DEVICES_REMINDER, false);
   }
 }

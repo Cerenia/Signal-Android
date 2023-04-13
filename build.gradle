@@ -18,11 +18,11 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools:r8:3.3.75'
-        classpath 'com.android.tools.build:gradle:7.4.0'
-        classpath 'androidx.navigation:navigation-safe-args-gradle-plugin:2.5.2'
+        classpath 'com.android.tools.build:gradle:7.4.2'
+        classpath 'androidx.navigation:navigation-safe-args-gradle-plugin:2.5.3'
         classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.17'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath "org.jlleitschuh.gradle:ktlint-gradle:11.1.0"
+        classpath libs.ktlint
         classpath 'app.cash.exhaustive:exhaustive-gradle:0.1.1'
         classpath ('com.squareup.wire:wire-gradle-plugin:4.4.3') {
             exclude group: 'com.squareup.wire', module: 'wire-swift-generator'
@@ -31,6 +31,7 @@ buildscript {
             exclude group: 'com.squareup.wire', module: 'wire-grpc-server-generator'
             exclude group: 'io.outfoxx', module: 'swiftpoet'
         }
+        classpath 'androidx.benchmark:benchmark-gradle-plugin:1.1.0-beta04'
     }
 }
 
@@ -51,7 +52,7 @@ subprojects {
         }
     }
 
-    if (project.name != "Signal-Android" && project.name != "libsignal-service" && project.name != "lintchecks" && !project.name.endsWith("-app")) {
+    if (project.name != "Signal-Android" && project.name != "libsignal-service" && project.name != "lintchecks" && !project.name.endsWith("-app") && project.name != "benchmark") {
         task qa {
             group 'Verification'
             description 'Quality Assurance. Run before pushing'
@@ -60,10 +61,19 @@ subprojects {
     }
 }
 
+task buildQa {
+    group 'Verification'
+    description 'Quality Assurance for build logic.'
+    dependsOn gradle.includedBuild('build-logic').task(':tools:test'),
+            gradle.includedBuild('build-logic').task(':tools:ktlintCheck'),
+            gradle.includedBuild('build-logic').task(':plugins:ktlintCheck')
+}
+
 task qa {
     group 'Verification'
     description 'Quality Assurance. Run before pushing.'
     dependsOn 'clean',
+            'buildQa',
             ':Signal-Android:testPlayProdReleaseUnitTest',
             ':Signal-Android:lintPlayProdRelease',
             'Signal-Android:ktlintCheck',
@@ -74,4 +84,19 @@ task qa {
 
 task clean(type: Delete) {
     delete rootProject.buildDir
+}
+
+task format {
+    group 'Formatting'
+    description 'Runs the ktlint formatter on all sources in this project and included builds'
+
+    def dependencyList = subprojects.collect {
+        tasks.findByPath(":${it.name}:ktlintFormat")
+    }
+
+    dependencyList.removeIf { it == null}
+    dependencyList.add(0, gradle.includedBuild('build-logic').task(':plugins:ktlintFormat'))
+    dependencyList.add(0, gradle.includedBuild('build-logic').task(':tools:ktlintFormat'))
+
+    dependsOn dependencyList
 }

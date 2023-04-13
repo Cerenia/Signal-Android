@@ -69,7 +69,7 @@ import java.util.stream.Stream;
  * @author Moxie Marlinspike
  */
 public class NewConversationActivity extends ContactSelectionActivity
-    implements ContactSelectionListFragment.ListCallback, ContactSelectionListFragment.OnItemLongClickListener
+    implements ContactSelectionListFragment.NewConversationCallback, ContactSelectionListFragment.OnItemLongClickListener
 {
 
   @SuppressWarnings("unused")
@@ -93,7 +93,7 @@ public class NewConversationActivity extends ContactSelectionActivity
     ContactsManagementViewModel.Factory factory    = new ContactsManagementViewModel.Factory(repository);
 
     contactLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), activityResult -> {
-      if (activityResult.getResultCode() == RESULT_OK) {
+      if (activityResult.getResultCode() != RESULT_CANCELED) {
         handleManualRefresh();
       }
     });
@@ -102,7 +102,7 @@ public class NewConversationActivity extends ContactSelectionActivity
   }
 
   @Override
-  public void onBeforeContactSelected(@NonNull Optional<RecipientId> recipientId, String number, @NonNull Consumer<Boolean> callback) {
+  public void onBeforeContactSelected(boolean isFromUnknownSearchKey, @NonNull Optional<RecipientId> recipientId, String number, @NonNull Consumer<Boolean> callback) {
     boolean smsSupported = SignalStore.misc().getSmsExportPhase().allowSmsFeatures();
 
     if (recipientId.isPresent()) {
@@ -177,22 +177,23 @@ public class NewConversationActivity extends ContactSelectionActivity
   public boolean onOptionsItemSelected(MenuItem item) {
     super.onOptionsItemSelected(item);
 
-    switch (item.getItemId()) {
-      case android.R.id.home:
-        super.onBackPressed();
-        return true;
-      case R.id.menu_refresh:
-        handleManualRefresh();
-        return true;
-      case R.id.menu_new_group:
-        handleCreateGroup();
-        return true;
-      case R.id.menu_invite:
-        handleInvite();
-        return true;
-    }
+    int itemId = item.getItemId();
 
-    return false;
+    if (itemId == android.R.id.home) {
+      super.onBackPressed();
+      return true;
+    } else if (itemId == R.id.menu_refresh) {
+      handleManualRefresh();
+      return true;
+    } else if (itemId == R.id.menu_new_group) {
+      handleCreateGroup();
+      return true;
+    } else if (itemId == R.id.menu_invite) {
+      handleInvite();
+      return true;
+    } else {
+      return false;
+    }
   }
 
   private void handleManualRefresh() {

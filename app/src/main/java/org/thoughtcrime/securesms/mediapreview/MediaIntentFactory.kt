@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 import org.signal.core.util.dp
+import org.signal.core.util.getParcelableCompat
 import org.thoughtcrime.securesms.attachments.DatabaseAttachment
 import org.thoughtcrime.securesms.database.MediaTable
 import org.thoughtcrime.securesms.database.MediaTable.MediaRecord
@@ -41,11 +42,16 @@ object MediaIntentFactory {
     val allMediaInRail: Boolean = false,
     val sorting: MediaTable.Sorting,
     val isVideoGif: Boolean,
-    val sharedElementArgs: SharedElementArgs = SharedElementArgs()
-  ) : Parcelable
+    val sharedElementArgs: SharedElementArgs = SharedElementArgs(),
+    val skipSharedElementTransition: Boolean
+  ) : Parcelable {
+    fun skipSharedElementTransition(skipSharedElementTransition: Boolean): MediaPreviewArgs {
+      return copy(skipSharedElementTransition = skipSharedElementTransition)
+    }
+  }
 
   @JvmStatic
-  fun requireArguments(bundle: Bundle): MediaPreviewArgs = bundle.getParcelable(ARGS_KEY)!!
+  fun requireArguments(bundle: Bundle): MediaPreviewArgs = bundle.getParcelableCompat(ARGS_KEY, MediaPreviewArgs::class.java)!!
 
   @JvmStatic
   fun create(context: Context, args: MediaPreviewArgs): Intent {
@@ -79,7 +85,8 @@ object MediaIntentFactory {
           12.dp.toFloat(),
           12.dp.toFloat(),
           12.dp.toFloat()
-        )
+        ),
+        skipSharedElementTransition = false
       )
     )
   }

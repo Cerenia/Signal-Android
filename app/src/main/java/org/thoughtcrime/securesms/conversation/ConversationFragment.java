@@ -184,6 +184,7 @@ import org.thoughtcrime.securesms.util.RemoteDeleteUtil;
 import org.thoughtcrime.securesms.util.SaveAttachmentTask;
 import org.thoughtcrime.securesms.util.SignalLocalMetrics;
 import org.thoughtcrime.securesms.util.SignalProxyUtil;
+import org.thoughtcrime.securesms.util.SignalTrace;
 import org.thoughtcrime.securesms.util.SnapToTopDataObserver;
 import org.thoughtcrime.securesms.util.StickyHeaderDecoration;
 import org.thoughtcrime.securesms.util.StorageUtil;
@@ -290,6 +291,7 @@ public class ConversationFragment extends LoggingFragment implements Multiselect
     this.locale = Locale.getDefault();
     startupStopwatch = new Stopwatch("conversation-open");
     SignalLocalMetrics.ConversationOpen.start();
+    SignalTrace.beginSection("ConversationOpen");
   }
 
   @Override
@@ -747,6 +749,7 @@ public class ConversationFragment extends LoggingFragment implements Multiselect
             startupStopwatch.stop(TAG);
             SignalLocalMetrics.ConversationOpen.onRenderFinished();
             listener.onFirstRender();
+            SignalTrace.endSection();
           });
         }
       });
@@ -1193,7 +1196,6 @@ public class ConversationFragment extends LoggingFragment implements Multiselect
     if (message.getScheduledDate() != -1) {
       return;
     }
-    MessageRecord messageRecord = MessageTable.readerFor(message, threadId).getCurrent();
 
     if (getListAdapter() != null) {
       setLastSeen(0);
@@ -1377,29 +1379,8 @@ public class ConversationFragment extends LoggingFragment implements Multiselect
   }
 
   private void postMarkAsReadRequest() {
-    if (getListAdapter().hasNoConversationMessages()) {
-      return;
-    }
-
-    int position = getListLayoutManager().findFirstVisibleItemPosition();
-    if (position == -1 || position == getListAdapter().getItemCount() - 1) {
-      return;
-    }
-
-    ConversationMessage item = getListAdapter().getItem(position);
-    if (item == null) {
-      item = getListAdapter().getItem(position + 1);
-    }
-
-    if (item != null) {
-      MessageRecord record = item.getMessageRecord();
-      long latestReactionReceived = Stream.of(record.getReactions())
-                                          .map(ReactionRecord::getDateReceived)
-                                          .max(Long::compareTo)
-                                          .orElse(0L);
-
-      conversationViewModel.submitMarkReadRequest(Math.max(record.getDateReceived(), latestReactionReceived));
-    }
+    Optional<Long> timestamp = MarkReadHelper.getLatestTimestamp(Objects.requireNonNull(getListAdapter()), getListLayoutManager());
+    timestamp.ifPresent(conversationViewModel::submitMarkReadRequest);
   }
 
   private void updateToolbarDependentMargins() {
@@ -2114,7 +2095,7 @@ public class ConversationFragment extends LoggingFragment implements Multiselect
     @Override
     public void goToMediaPreview(ConversationItem parent, View sharedElement, MediaIntentFactory.MediaPreviewArgs args) {
       if (listener.isInBubble()) {
-        requireActivity().startActivity(MediaIntentFactory.create(requireActivity(), args));
+        requireActivity().startActivity(MediaIntentFactory.create(requireActivity(), args.skipSharedElementTransition(true)));
         return;
       }
 

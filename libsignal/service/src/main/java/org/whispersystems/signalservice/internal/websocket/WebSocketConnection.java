@@ -142,7 +142,7 @@ public class WebSocketConnection extends WebSocketListener {
 
       OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder().sslSocketFactory(new Tls12SocketFactory(socketFactory.first()),
                                                                                        socketFactory.second())
-                                                                     .connectionSpecs(Util.immutableList(ConnectionSpec.RESTRICTED_TLS))
+                                                                     .connectionSpecs(serviceUrl.getConnectionSpecs().orElse(Util.immutableList(ConnectionSpec.RESTRICTED_TLS)))
                                                                      .readTimeout(KEEPALIVE_TIMEOUT_SECONDS + 10, TimeUnit.SECONDS)
                                                                      .dns(dns.orElse(Dns.SYSTEM))
                                                                      .connectTimeout(KEEPALIVE_TIMEOUT_SECONDS + 10, TimeUnit.SECONDS);
@@ -191,6 +191,14 @@ public class WebSocketConnection extends WebSocketListener {
     }
 
     notifyAll();
+  }
+
+  public synchronized Optional<WebSocketRequestMessage> readRequestIfAvailable() {
+    if (incomingRequests.size() > 0) {
+      return Optional.of(incomingRequests.removeFirst());
+    } else {
+      return Optional.empty();
+    }
   }
 
   public synchronized WebSocketRequestMessage readRequest(long timeoutMillis)

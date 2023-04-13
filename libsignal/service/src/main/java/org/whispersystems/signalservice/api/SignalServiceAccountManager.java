@@ -211,18 +211,7 @@ public class SignalServiceAccountManager {
     }
   }
 
-  public Single<ServiceResponse<BackupAuthCheckResponse>> checkBackupAuthCredentials(@Nonnull String e164, @Nonnull List<String> basicAuthTokens) {
-    List<String> usernamePasswords = basicAuthTokens
-        .stream()
-        .limit(10)
-        .map(t -> {
-          try {
-            return new String(Base64.decode(t.replace("Basic ", "").trim()), StandardCharsets.ISO_8859_1);
-          } catch (IOException e) {
-            return null;
-          }
-        })
-        .collect(Collectors.toList());
+  public Single<ServiceResponse<BackupAuthCheckResponse>> checkBackupAuthCredentials(@Nonnull String e164, @Nonnull List<String> usernamePasswords) {
 
     return pushServiceSocket.checkBackupAuthCredentials(new BackupAuthCheckRequest(e164, usernamePasswords), DefaultResponseMapper.getDefault(BackupAuthCheckResponse.class));
   }
@@ -568,7 +557,9 @@ public class SignalServiceAccountManager {
                                                               boolean clearAll)
       throws IOException, InvalidKeyException
   {
-    ManifestRecord.Builder manifestRecordBuilder = ManifestRecord.newBuilder().setVersion(manifest.getVersion());
+    ManifestRecord.Builder manifestRecordBuilder = ManifestRecord.newBuilder()
+                                                                 .setSourceDevice(manifest.getSourceDeviceId())
+                                                                 .setVersion(manifest.getVersion());
 
     for (StorageId id : manifest.getStorageIds()) {
       ManifestRecord.Identifier idProto = ManifestRecord.Identifier.newBuilder()
@@ -610,7 +601,7 @@ public class SignalServiceAccountManager {
         ids.add(StorageId.forType(id.getRaw().toByteArray(), id.getTypeValue()));
       }
 
-      SignalStorageManifest conflictManifest = new SignalStorageManifest(record.getVersion(), ids);
+      SignalStorageManifest conflictManifest = new SignalStorageManifest(record.getVersion(), record.getSourceDevice(), ids);
 
       return Optional.of(conflictManifest);
     } else {
@@ -629,6 +620,9 @@ public class SignalServiceAccountManager {
     return out;
   }
 
+  public String getAccountDataReport() throws IOException {
+    return pushServiceSocket.getAccountDataReport();
+  }
 
   public String getNewDeviceVerificationCode() throws IOException {
     return this.pushServiceSocket.getNewDeviceVerificationCode();

@@ -11,6 +11,9 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.viewpager2.widget.ViewPager2
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import org.signal.core.util.getParcelableArrayListCompat
+import org.signal.core.util.getParcelableCompat
+import org.signal.core.util.logging.Log
 import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.keyvalue.SignalStore
 import org.thoughtcrime.securesms.recipients.Recipient
@@ -42,7 +45,7 @@ class StoryViewerFragment :
 
   private val lifecycleDisposable = LifecycleDisposable()
 
-  private val storyViewerArgs: StoryViewerArgs by lazy { requireArguments().getParcelable(ARGS)!! }
+  private val storyViewerArgs: StoryViewerArgs by lazy { requireArguments().getParcelableCompat(ARGS, StoryViewerArgs::class.java)!! }
 
   private lateinit var storyCrossfader: StoriesSharedElementCrossFaderView
 
@@ -113,14 +116,17 @@ class StoryViewerFragment :
       if (state.skipCrossfade) {
         viewModel.setCrossfaderIsReady(true)
       }
+    }
 
-      if (state.loadState.isReady()) {
+    lifecycleDisposable += viewModel.loadState.subscribe {
+      if (it.isReady()) {
+        Log.d(TAG, "Content is ready, clearing crossfader.")
         storyCrossfader.alpha = 0f
       }
     }
 
     if (savedInstanceState != null && savedInstanceState.containsKey(HIDDEN)) {
-      val ids: List<RecipientId> = savedInstanceState.getParcelableArrayList(HIDDEN)!!
+      val ids: List<RecipientId> = savedInstanceState.getParcelableArrayListCompat(HIDDEN, RecipientId::class.java)!!
       viewModel.addHiddenAndRefresh(ids.toSet())
     } else {
       viewModel.refresh()
@@ -201,6 +207,8 @@ class StoryViewerFragment :
   }
 
   companion object {
+    private val TAG = Log.tag(StoryViewerFragment::class.java)
+
     private const val ARGS = "args"
     private const val HIDDEN = "hidden"
 

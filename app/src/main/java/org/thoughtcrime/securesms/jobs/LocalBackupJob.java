@@ -2,9 +2,9 @@ package org.thoughtcrime.securesms.jobs;
 
 
 import android.Manifest;
-import android.os.Build;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -21,10 +21,8 @@ import org.thoughtcrime.securesms.crypto.AttachmentSecretProvider;
 import org.thoughtcrime.securesms.database.NoExternalStorageException;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
-import org.thoughtcrime.securesms.jobmanager.Data;
 import org.thoughtcrime.securesms.jobmanager.Job;
 import org.thoughtcrime.securesms.jobmanager.JobManager;
-import org.thoughtcrime.securesms.jobmanager.impl.ChargingConstraint;
 import org.thoughtcrime.securesms.notifications.NotificationChannels;
 import org.thoughtcrime.securesms.permissions.Permissions;
 import org.thoughtcrime.securesms.service.GenericForegroundService;
@@ -56,10 +54,8 @@ public final class LocalBackupJob extends BaseJob {
                                                   .setQueue(QUEUE)
                                                   .setMaxInstancesForFactory(1)
                                                   .setMaxAttempts(3);
-    if (force || Build.VERSION.SDK_INT >= 31) {
+    if (force) {
       jobManager.cancelAllInQueue(QUEUE);
-    } else {
-      parameters.addConstraint(ChargingConstraint.KEY);
     }
 
     if (BackupUtil.isUserSelectionRequired(ApplicationDependencies.getApplication())) {
@@ -74,8 +70,8 @@ public final class LocalBackupJob extends BaseJob {
   }
 
   @Override
-  public @NonNull Data serialize() {
-    return Data.EMPTY;
+  public @Nullable byte[] serialize() {
+    return null;
   }
 
   @Override
@@ -233,7 +229,7 @@ public final class LocalBackupJob extends BaseJob {
 
   public static class Factory implements Job.Factory<LocalBackupJob> {
     @Override
-    public @NonNull LocalBackupJob create(@NonNull Parameters parameters, @NonNull Data data) {
+    public @NonNull LocalBackupJob create(@NonNull Parameters parameters, @Nullable byte[] serializedData) {
       return new LocalBackupJob(parameters);
     }
   }

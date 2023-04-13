@@ -9,11 +9,13 @@ import android.os.Bundle
 import android.os.Parcelable
 import android.util.AttributeSet
 import android.widget.FrameLayout
+import androidx.annotation.StringRes
 import androidx.core.animation.doOnEnd
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.core.view.doOnNextLayout
 import com.google.android.material.animation.ArgbEvaluatorCompat
+import org.signal.core.util.getParcelableCompat
 import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.animation.AnimationCompleteListener
 import org.thoughtcrime.securesms.databinding.ConversationListFilterPullViewBinding
@@ -77,6 +79,10 @@ class ConversationListFilterPullView @JvmOverloads constructor(
   private val pillDefaultBackgroundTint = ContextCompat.getColor(context, R.color.signal_colorSecondaryContainer)
   private val pillWillCloseBackgroundTint = ContextCompat.getColor(context, R.color.signal_colorSurface1)
 
+  fun setPillText(@StringRes textId: Int) {
+    binding.filterText.setText(textId)
+  }
+
   override fun onSaveInstanceState(): Parcelable {
     val root = super.onSaveInstanceState()
 
@@ -89,7 +95,7 @@ class ConversationListFilterPullView @JvmOverloads constructor(
 
   override fun onRestoreInstanceState(state: Parcelable?) {
     val bundle = state as Bundle
-    val root: Parcelable? = bundle.getParcelable(INSTANCE_STATE_ROOT)
+    val root: Parcelable? = bundle.getParcelableCompat(INSTANCE_STATE_ROOT, Parcelable::class.java)
     super.onRestoreInstanceState(root)
 
     val restoredState: FilterPullState = FilterPullState.valueOf(bundle.getString(INSTANCE_STATE_STATE)!!)
@@ -274,11 +280,11 @@ class ConversationListFilterPullView @JvmOverloads constructor(
     }
   }
 
-  interface OnFilterStateChanged {
+  fun interface OnFilterStateChanged {
     fun newState(state: FilterPullState, source: ConversationFilterSource)
   }
 
-  interface OnCloseClicked {
+  fun interface OnCloseClicked {
     fun onCloseClicked()
   }
 }

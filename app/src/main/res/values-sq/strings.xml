@@ -15,13 +15,14 @@
   <!-- Removed by excludeNonTranslatables <string name="signal_me_username_url" translatable="false">https://signal.me/#u/%1$s</string> -->
   <!-- Removed by excludeNonTranslatables <string name="signal_me_username_url_no_scheme" translatable="false">signal.me/#u/%1$s</string> -->
   <!-- Removed by excludeNonTranslatables <string name="username_support_url" translatable="false">https://support.signal.org/hc/articles/5389476324250</string> -->
+  <!-- Removed by excludeNonTranslatables <string name="export_account_data_url" translatable="false">https://support.signal.org/hc/articles/5538911756954</string> -->
 
     <string name="yes">Po</string>
     <string name="no">Jo</string>
     <string name="delete">Fshije</string>
     <string name="please_wait">Ju lutemi, prisni…</string>
     <string name="save">Ruaje</string>
-    <string name="note_to_self">Shënim për Veten</string>
+    <string name="note_to_self">Shënim për veten</string>
 
     <!-- AlbumThumbnailView -->
   <!-- Removed by excludeNonTranslatables <string name="AlbumThumbnailView_plus" translatable="false">\+%d</string> -->
@@ -384,6 +385,15 @@
     <!-- Snackbar message shown after dismissing the full screen sms export megaphone indicating we\'ll do it again soon -->
     <string name="ConversationActivity__you_will_be_reminded_again_soon">Së shpejti do të kujtoheni përsëri.</string>
 
+    <!-- Title for dialog shown when first sending formatted text -->
+    <string name="SendingFormattingTextDialog_title">Teksti i formatuar po dërgohet</string>
+    <!-- Message for dialog shown when first sending formatted text -->
+    <string name="SendingFormattingTextDialog_message">Disa njerëz mund të përdorin një version të Signal që nuk e mbështet tekstin e formatuar. Ata nuk do të mund të shohin ndryshimet e formatimit që i ke bërë mesazhit.</string>
+    <!-- Button text for confirming they\'d like to send the message with formatting after seeing warning. -->
+    <string name="SendingFormattingTextDialog_send_anyway_button">Dërgoje, gjithsesi</string>
+    <!-- Button text for canceling sending the message with formatting after seeing warning. -->
+    <string name="SendingFormattingTextDialog_cancel_send_button">Anuloje</string>
+
     <!-- ConversationAdapter -->
     <plurals name="ConversationAdapter_n_unread_messages">
         <item quantity="one">%1$d mesazh i palexuar</item>
@@ -481,43 +491,22 @@
         <item quantity="other">%1$d Bisedat u transferuan te mesazhet hyrëse</item>
     </plurals>
     <plurals name="ConversationListFragment_read_plural">
-        <item quantity="one">Lexojeni</item>
-        <item quantity="other">Lexo</item>
+        <item quantity="one">Lexoje</item>
+        <item quantity="other">Lexoji</item>
     </plurals>
     <plurals name="ConversationListFragment_unread_plural">
-        <item quantity="one">Çlexojeni</item>
-        <item quantity="other">Të palexuara</item>
+        <item quantity="one">I palexuar</item>
+        <item quantity="other">Të palexuar</item>
     </plurals>
-    <plurals name="ConversationListFragment_pin_plural">
-        <item quantity="one">Fiksoje</item>
-        <item quantity="other">Fiksoji</item>
-    </plurals>
-    <plurals name="ConversationListFragment_unpin_plural">
-        <item quantity="one">Çfiksoje</item>
-        <item quantity="other">Çfiksoji</item>
-    </plurals>
-    <plurals name="ConversationListFragment_mute_plural">
-        <item quantity="one">Hiqi zërin</item>
-        <item quantity="other">Hiqu zërin</item>
-    </plurals>
-    <plurals name="ConversationListFragment_unmute_plural">
-        <item quantity="one">Ktheja zërin</item>
-        <item quantity="other">Kthejua zërin</item>
-    </plurals>
-    <string name="ConversationListFragment_select">Përzgjidhni</string>
-    <plurals name="ConversationListFragment_archive_plural">
-        <item quantity="one">Arkivoje</item>
-        <item quantity="other">Arkivoji</item>
-    </plurals>
-    <plurals name="ConversationListFragment_unarchive_plural">
-        <item quantity="one">Çarkivoje</item>
-        <item quantity="other">Çarkivoji</item>
-    </plurals>
-    <plurals name="ConversationListFragment_delete_plural">
-        <item quantity="one">Fshije</item>
-        <item quantity="other">Fshiji</item>
-    </plurals>
-    <string name="ConversationListFragment_select_all">Selekto të tëra</string>
+    <string name="ConversationListFragment_pin">Fiksoji</string>
+    <string name="ConversationListFragment_unpin">Çfiksoji</string>
+    <string name="ConversationListFragment_mute">Hiqi zërin</string>
+    <string name="ConversationListFragment_unmute">Ktheja zërin</string>
+    <string name="ConversationListFragment_select">Përzgjidh</string>
+    <string name="ConversationListFragment_archive">Arkivo</string>
+    <string name="ConversationListFragment_unarchive">Çarkivoje</string>
+    <string name="ConversationListFragment_delete">Fshiji</string>
+    <string name="ConversationListFragment_select_all">Përzgjidh të gjitha</string>
     <plurals name="ConversationListFragment_s_selected">
         <item quantity="one">%1$d i përzgjedhur</item>
         <item quantity="other">%1$d të përzgjedhura</item>
@@ -542,6 +531,15 @@
 
     <!-- ConversationTypingView -->
     <string name="ConversationTypingView__plus_d">+%1$d</string>
+
+    <!-- Title for a reminder bottom sheet to users who have re-registered that they need to go back to re-link their devices. -->
+    <string name="RelinkDevicesReminderFragment__relink_your_devices">Rilidh pajisjet e tua</string>
+    <!-- Description for a reminder bottom sheet to users who have re-registered that they need to go back to re-link their devices. -->
+    <string name="RelinkDevicesReminderFragment__the_devices_you_added_were_unlinked">Pajisjet që shtove u shkëputën kur pajisja u çregjistrua. Shko tek parametrat për të rilidhur çdo pajisje.</string>
+    <!-- Button label for the re-link devices bottom sheet reminder to navigate to the Devices page in the settings. -->
+    <string name="RelinkDevicesReminderFragment__open_settings">Hap parametrat</string>
+    <!-- Button label for the re-link devices bottom sheet reminder to dismiss the pop up. -->
+    <string name="RelinkDevicesReminderFragment__later">Më vonë</string>
 
     <!-- CreateGroupActivity -->
     <string name="CreateGroupActivity__select_members">Përzgjidhni anëtarët</string>
@@ -1167,8 +1165,8 @@
     <string name="Megaphones_new_group">Grup i ri</string>
     <string name="Megaphones_invite_friends">Ftoni shokë</string>
     <string name="Megaphones_use_sms">Use SMS</string>
-    <string name="Megaphones_appearance">Dukje</string>
-    <string name="Megaphones_add_photo">Shtoni foto</string>
+    <string name="Megaphones_chat_colors">Ngjyrat e bisedës</string>
+    <string name="Megaphones_add_a_profile_photo">Shto foto profili</string>
 
     <!-- Title of a bottom sheet to render messages that all quote a specific message -->
     <string name="MessageQuotesBottomSheet_replies">Përgjigje</string>
@@ -1481,6 +1479,8 @@
     <string name="MessageRequestBottomView_delete">Fshije</string>
     <string name="MessageRequestBottomView_block">Blloko</string>
     <string name="MessageRequestBottomView_unblock">Zhblloko</string>
+    <!-- Text explaining a message request from someone you\'ve removed before -->
+    <string name="MessageRequestBottomView_do_you_want_to_let_s_message_you_you_removed_them_before">Let %1$s message you and share your name and photo with them? You have removed this person in the past.</string>
     <string name="MessageRequestBottomView_do_you_want_to_let_s_message_you_they_wont_know_youve_seen_their_messages_until_you_accept">Të lejohet %1$s t\\’ju dërgojë mesazh dhe të ndajë emrin dhe foton tuaj me të tjerë? S\\’do ta dijë se e keni parë mesazhin e tij, para se të pranoni këtë.</string>
     <!-- Shown in message request flow. Describes what will happen if you unblock a Signal user -->
     <string name="MessageRequestBottomView_do_you_want_to_let_s_message_you_wont_receive_any_messages_until_you_unblock_them">Dëshiron që %1$s të të dërgojnë mesazh dhe të ndash emrin dhe foton tënde me ta? Nuk do të marrësh asnjë mesazh derisa t\'i zhbllokosh.</string>
@@ -1726,20 +1726,31 @@
         <item quantity="other">%1$s, %2$s, dhe %3$d të tjerë janë në këtë thirrje</item>
     </plurals>
 
-    <!-- Toggle label with hyphenation. Translation can use soft hyphen - Unicode U+00AD -->
-    <string name="WebRtcCallView__flip">Ktheje më anë tjetër</string>
-    <!-- Toggle label with hyphenation. Translation can use soft hyphen - Unicode U+00AD -->
-    <string name="WebRtcCallView__speaker">Altoparlant</string>
-    <!-- Toggle label with hyphenation. Translation can use soft hyphen - Unicode U+00AD -->
-    <string name="WebRtcCallView__camera">Kamerë</string>
-    <!-- Toggle label with hyphenation. Translation can use soft hyphen - Unicode U+00AD -->
-    <string name="WebRtcCallView__unmute">Ktheja zërin</string>
-    <!-- Toggle label with hyphenation. Translation can use soft hyphen - Unicode U+00AD -->
-    <string name="WebRtcCallView__mute">Hiqi zërin</string>
-    <!-- Toggle label with hyphenation. Translation can use soft hyphen - Unicode U+00AD -->
-    <string name="WebRtcCallView__ring">Bjeri ziles</string>
-    <!-- Label with hyphenation. Translation can use soft hyphen - Unicode U+00AD -->
+    <!-- Toggle content description for toggling camera direction  -->
+    <string name="WebRtcCallView__toggle_camera_direction">Ndrysho drejtimin e kamerës</string>
+    <!-- Toggle content description for toggling audio output  -->
+    <string name="WebRtcCallView__toggle_speaker">Ndrysho altoparlantin</string>
+    <!-- Toggle content description for toggling camera state  -->
+    <string name="WebRtcCallView__toggle_camera">Ndrysho kamerën</string>
+    <!-- Toggle content description for toggling mute state  -->
+    <string name="WebRtcCallView__toggle_mute">Aktivizo zërin</string>
+    <!-- Toggle content description for toggling group ring state  -->
+    <string name="WebRtcCallView__toggle_ring">Ndrysho zilen</string>
+    <!-- Content description for end-call button -->
     <string name="WebRtcCallView__end_call">Përfundoje thirrjen</string>
+
+    <!-- Error message when the developer added a button in the wrong place. -->
+    <string name="WebRtcAudioOutputToggleButton_fragment_activity_error">Ndodhi një gabim i ndërfaqes së përdoruesit. Ju lutemi raporto këtë gabim te zhvilluesit.</string>
+    <!-- Error message when the user is trying to change audio outputs but none are present. -->
+    <string name="WebRtcAudioOutputToggleButton_no_eligible_audio_i_o_detected">Nuk u zbulua asnjë audio hyrje/dalje e përshtatshme.</string>
+    <!-- A text description of the bluetooth icon, used for accessibility. -->
+    <string name="WebRtcAudioOutputBottomSheet__bluetooth_icon_content_description">Ikonë që përfaqëson një pajisje Bluetooth.</string>
+    <!-- A text description of the headset icon, used for accessibility. -->
+    <string name="WebRtcAudioOutputBottomSheet__headset_icon_content_description">Ikonë që përfaqëson kufje me tela.</string>
+    <!-- A text description of the speaker icon, used for accessibility. -->
+    <string name="WebRtcAudioOutputBottomSheet__speaker_icon_content_description">Ikonë që përfaqëson një altoparlant.</string>
+    <!-- A text description of the earpiece icon, used for accessibility. -->
+    <string name="WebRtcAudioOutputBottomSheet__earpiece_icon_content_description">Ikonë që përfaqëson kufjen e një pajisjeje.</string>
 
     <!-- CallParticipantsListDialog -->
     <plurals name="CallParticipantsListDialog_in_this_call_d_people">
@@ -1807,6 +1818,8 @@
         <item quantity="other">Ju ndajnë %1$d hapa nga parashtrimi i një regjistri diagnostikimesh.</item>
     </plurals>
     <string name="RegistrationActivity_we_need_to_verify_that_youre_human">Na duhet të verifikojmë se jeni qenie njerëzore.</string>
+    <!-- An error shown when the request was valid, but due to an issue with a partner vendor, the server is unable to send an SMS code -->
+    <string name="RegistrationActivity_external_service_error">Signal nuk mund të dërgonte një kod SMS për shkak të një dështimi të jashtëm.</string>
     <string name="RegistrationActivity_next">Pasuesi</string>
     <string name="RegistrationActivity_continue">Vazhdo</string>
     <string name="RegistrationActivity_take_privacy_with_you_be_yourself_in_every_message">Merreni privatësinë me vete.\nJini ju vetë, në çdo mesazh.</string>
@@ -1977,6 +1990,8 @@
     <string name="ThreadRecord_message_could_not_be_processed">Mesazhi s\\’u përpunua dot</string>
     <string name="ThreadRecord_delivery_issue">Problem dërgimi</string>
     <string name="ThreadRecord_message_request">Kërkesë Mesazhi</string>
+    <!-- Thread preview for a recipient that has been hidden -->
+    <string name="ThreadRecord_hidden_recipient">You have hidden this person, message them again to add them back to your list.</string>
     <string name="ThreadRecord_photo">Foto</string>
     <string name="ThreadRecord_gif">GIF</string>
     <string name="ThreadRecord_voice_message">Mesazh Zanor</string>
@@ -2116,6 +2131,10 @@
     <string name="MessageNotifier_most_recent_from_s">Më të rejat nga: %1$s</string>
     <string name="MessageNotifier_locked_message">Mesazh i kyçur</string>
     <string name="MessageNotifier_message_delivery_failed">Dërgimi i mesazhit dështoi.</string>
+    <!-- Shown in a notification when a story the user tries to send fails to be sent -->
+    <string name="MessageNotifier_story_delivery_failed">Dërgimi i postimit të përkohshëm dështoi</string>
+    <!-- Shown as notification title for when a notification about a story sent to a group story %1$s replaced with the group name -->
+    <string name="MessageNotifier_group_story_title">Ti për %1$s</string>
     <string name="MessageNotifier_failed_to_deliver_message">S\\’u arrit të dërgohej mesazhi.</string>
     <string name="MessageNotifier_error_delivering_message">Gabim në dërgimin e mesazhit.</string>
     <string name="MessageNotifier_message_delivery_paused">U ndal dërgimi i mesazheve.</string>
@@ -2131,13 +2150,15 @@
     <string name="MessageNotifier_contact_message">%1$s %2$s</string>
     <string name="MessageNotifier_unknown_contact_message">Kontakt</string>
     <string name="MessageNotifier_reacted_s_to_s">Reagoi me %1$s ndaj: \"%2$s\".</string>
-    <string name="MessageNotifier_reacted_s_to_your_video">Reagoi me %1$s ndaj videos tuaj.</string>
-    <string name="MessageNotifier_reacted_s_to_your_image">Reagoi me %1$s ndaj figurës tuaj.</string>
-    <string name="MessageNotifier_reacted_s_to_your_gif">Reagoi me %1$s ndaj GIF-it tuaj.</string>
-    <string name="MessageNotifier_reacted_s_to_your_file">Reagoi me %1$s ndaj kartelës tuaj.</string>
-    <string name="MessageNotifier_reacted_s_to_your_audio">Reagoi me %1$s ndaj audios tuaj.</string>
-    <string name="MessageNotifier_reacted_s_to_your_view_once_media">Reagoi me %1$s te media juaj për një parje të vetme.</string>
-    <string name="MessageNotifier_reacted_s_to_your_sticker">Reagoi me %1$s ndaj ngjitësit tuaj.</string>
+    <string name="MessageNotifier_reacted_s_to_your_video">Reagoi me %1$s ndaj videos tënde.</string>
+    <string name="MessageNotifier_reacted_s_to_your_image">Reagoi me %1$s ndaj figurës tënde.</string>
+    <string name="MessageNotifier_reacted_s_to_your_gif">Reagoi me %1$s ndaj GIF-it tënd.</string>
+    <string name="MessageNotifier_reacted_s_to_your_file">Reagoi me %1$s ndaj kartelës tënde.</string>
+    <string name="MessageNotifier_reacted_s_to_your_audio">Reagoi me %1$s ndaj audios tënde.</string>
+    <string name="MessageNotifier_reacted_s_to_your_view_once_media">Reagoi me %1$s te media jote, të cilën mund ta shohësh veç një herë.</string>
+    <!-- Body of notification shown to user when someone they sent a payment to reacts to it. Placeholder is the emoji used in the reaction. -->
+    <string name="MessageNotifier_reacted_s_to_your_payment">Reagoi me %1$s ndaj pagesës tënde.</string>
+    <string name="MessageNotifier_reacted_s_to_your_sticker">Reagoi me %1$s ndaj ngjitësit tënd.</string>
     <string name="MessageNotifier_this_message_was_deleted">Ky mesazh u fshi.</string>
 
     <string name="TurnOffContactJoinedNotificationsActivity__turn_off_contact_joined_signal">Të çaktivizohen njoftime Signal për kontakte të sapoardhur? Mund t\\’i aktivizoni sërish që nga Signal &gt; Rregullime &gt; Njoftime.</string>
@@ -2237,10 +2258,18 @@
     <string name="WebRtcCallScreen__answer_without_video">Përgjigjuni pa video</string>
 
     <!-- WebRtcAudioOutputToggle -->
+    <!-- Label for a dialog asking the user to switch the audio output device during a call -->
     <string name="WebRtcAudioOutputToggle__audio_output">Zë në dalje</string>
+    <!-- Audio output option referring to the earpiece built into the phone -->
     <string name="WebRtcAudioOutputToggle__phone_earpiece">Kufje telefoni</string>
+    <!-- Audio output option referring to the louder speaker built into the phone -->
     <string name="WebRtcAudioOutputToggle__speaker">Altoparlant</string>
+    <!-- Audio output option referring to an external audio device connected via wireless Bluetooth -->
     <string name="WebRtcAudioOutputToggle__bluetooth">Bluetooth</string>
+    <!-- Audio output option referring to an external headset connected via a 3.5mm headphone jack -->
+    <string name="WebRtcAudioOutputToggle__wired_headset">Kufje me tela</string>
+    <!-- Audio output option referring to an external headset connected via a USB-C data cable -->
+    <string name="WebRtcAudioOutputToggle__wired_headset_usb">Kufje me tel (USB)</string>
 
     <string name="WebRtcCallControls_answer_call_description">Përgjigju thirrjes</string>
     <string name="WebRtcCallControls_reject_call_description">Mos e prano thirrjen</string>
@@ -2253,6 +2282,12 @@
     <!-- contact_selection_activity -->
     <string name="contact_selection_activity__invite_to_signal">Ftojeni në Signal</string>
     <string name="contact_selection_activity__new_group">Grup i ri</string>
+    <!-- Row item title for refreshing contacts -->
+    <string name="contact_selection_activity__refresh_contacts">Rifresko kontaktet</string>
+    <!-- Row item description for refreshing contacts -->
+    <string name="contact_selection_activity__missing_someone">A të mungon njeri? Provo të rifreskosh</string>
+    <!-- Row header title for more section -->
+    <string name="contact_selection_activity__more">Më shumë</string>
 
     <!-- contact_filter_toolbar -->
     <string name="contact_filter_toolbar__clear_entered_text_description">Spastro tekstin e dhënë</string>
@@ -2352,7 +2387,8 @@
     <string name="ConversationUpdateItem_send_payment">Dërgoni Pagesë</string>
     <!-- Update item button text to activate payments -->
     <string name="ConversationUpdateItem_activate_payments">Pagesa</string>
-
+    <!-- Update item alerting the user they hid this person and that they can message them to unhide them -->
+    <string name="ConversationUpdateItem_hidden_contact_message_to_add_back">You have removed this person, messaging them again will add them back to your list.</string>
 
     <!-- audio_view -->
     <string name="audio_view__play_pause_accessibility_description">Luaje … Pauzë</string>
@@ -2530,8 +2566,8 @@
 
     <!-- BadDecryptLearnMoreDialog -->
     <string name="BadDecryptLearnMoreDialog_delivery_issue">Problem Dërgimi</string>
-    <string name="BadDecryptLearnMoreDialog_couldnt_be_delivered_individual">S\\’u dërgua dot te ju një mesazh, ngjitës, reagim, ose dëftesë leximi nga %1$s. Mund të ketë provuar ta dërgojë drejtpërsëdrejti për ju, ose në një grup.</string>
-    <string name="BadDecryptLearnMoreDialog_couldnt_be_delivered_group">S\\’u dërgua dot te ju një mesazh, ngjitës, reagim, ose dëftesë leximi nga %1$s.</string>
+    <string name="BadDecryptLearnMoreDialog_couldnt_be_delivered_individual">Një mesazh, ngjitës, reagim, ose verifikim leximi i %1$s nuk u dërgua dot te ti. Mund të ketë provuar ta dërgojë drejtpërsëdrejti te ti ose në një grup.</string>
+    <string name="BadDecryptLearnMoreDialog_couldnt_be_delivered_group">Një mesazh, ngjitës, reagim, ose verifikim leximi i %1$s nuk u dërgua dot te ti.</string>
 
     <!-- profile_create_activity -->
     <string name="CreateProfileActivity_first_name_required">Emër (i domosdoshëm)</string>
@@ -3058,6 +3094,8 @@
 
     <!-- EditNoteFragment -->
     <string name="EditNoteFragment_note">Shënim</string>
+    <!-- Content descriptor explaining the use of the save note FAB for Android accessibility settings-->
+    <string name="EditNoteFragment__content_description_save_note">Ruaj shënimin</string>
 
     <!-- ConfirmPaymentFragment -->
     <string name="ConfirmPayment__confirm_payment">Ripohoni pagesën</string>
@@ -3098,6 +3136,8 @@
     <!-- **************************************** -->
 
     <!-- contact_selection_list -->
+    <!-- Displayed in a row on the new call screen when searching by phone number. -->
+    <string name="contact_selection_list__new_call">Thirrje e re për…</string>
     <string name="contact_selection_list__unknown_contact">Mesazh i ri për…</string>
     <string name="contact_selection_list__unknown_contact_block">Blloko përdoruesin</string>
     <string name="contact_selection_list__unknown_contact_add_to_group">Shtoje te grupi</string>
@@ -3454,6 +3494,18 @@
     <string name="BackupUtil_unknown">E panjohur</string>
     <string name="preferences_app_protection__see_my_phone_number">Shohë numrin tim të telefonit</string>
     <string name="preferences_app_protection__find_me_by_phone_number">Të më gjejë përmes numrit të telefonit</string>
+    <!-- Phone number heading displayed as a screen title -->
+    <string name="preferences_app_protection__phone_number">Numër telefoni</string>
+    <!-- Subtext below option to launch into phone number privacy settings screen -->
+    <string name="preferences_app_protection__choose_who_can_see">Zgjidh se kush mund ta shohë numrin tënd të telefonit dhe kush mund të të kontaktojë nëpërmjet tij në Signal.</string>
+    <!-- Section title above two radio buttons for enabling and disabling phone number display -->
+    <string name="PhoneNumberPrivacySettingsFragment__who_can_see_my_number">Kush mund të shohë numrin tim</string>
+    <!-- Subtext below radio buttons when who can see my number is set to nobody -->
+    <string name="PhoneNumberPrivacySettingsFragment__nobody_will_see">Askush nuk do ta shohë numrin tënd të telefonit në Signal</string>
+    <!-- Section title above two radio buttons for enabling and disabling whether users can find me by my phone number  -->
+    <string name="PhoneNumberPrivacySettingsFragment__who_can_find_me_by_number">Kush mund të më gjejë nëpërmjet numrit</string>
+    <!-- Subtext below radio buttons when who can see my number is set to everyone -->
+    <string name="PhoneNumberPrivacySettingsFragment__your_phone_number">Numri yt i telefonit do të jetë i dukshëm për personat dhe grupet, të cilëve u dërgon mesazhe. Personat që kanë numrin tënd të telefonit në kontaktet e tyre, do ta shohin edhe te Signal.</string>
     <string name="PhoneNumberPrivacy_everyone">Cilido</string>
     <string name="PhoneNumberPrivacy_my_contacts">Kontaktet e mia</string>
     <string name="PhoneNumberPrivacy_nobody">Askush</string>
@@ -3832,12 +3884,12 @@
     <!-- DeactivateWalletFragment -->
     <string name="DeactivateWalletFragment__deactivate_wallet">Çaktivizoni Portofolin</string>
     <string name="DeactivateWalletFragment__your_balance">Depozita juaj</string>
-    <string name="DeactivateWalletFragment__its_recommended_that_you">Rekomandohet që të shpërngulni fondet tuaja në një portofol tjetër, përpara se të çaktivizoni pagesat. Nëse zgjidhni të mos shpërngulen fonte tuaja tani, do të mbeten në portofolin tuaj të lidhur me Signal-in, nëse riaktivizoni pagesat.</string>
+    <string name="DeactivateWalletFragment__its_recommended_that_you">Rekomandohet që të transferosh fondet e tua në një portofol tjetër, para se të çaktivizosh pagesat. Nëse zgjedh të mos transferosh fondet e tua tani, do të mbeten në portofolin tënd të lidhur me Signal, nëse riaktivizon pagesat.</string>
     <string name="DeactivateWalletFragment__transfer_remaining_balance">Shpërngulni depozitën e mbetur</string>
     <string name="DeactivateWalletFragment__deactivate_without_transferring">Çaktivizoje pa e shpërngulur</string>
     <string name="DeactivateWalletFragment__deactivate">Çaktivizoje</string>
     <string name="DeactivateWalletFragment__deactivate_without_transferring_question">Të çaktivizohet pa e shpërngulur?</string>
-    <string name="DeactivateWalletFragment__your_balance_will_remain">Depozita juaj do të mbetet në portofolin tuaj të lidhur me Signal-in, nëse zgjidhni të riaktivizoni pagesat.</string>
+    <string name="DeactivateWalletFragment__your_balance_will_remain">Depozita jote do të mbetet në portofolin tënd të lidhur me Signal, nëse zgjedh të riaktivizosh pagesat.</string>
     <string name="DeactivateWalletFragment__error_deactivating_wallet">Gabim gjatë çaktivizimit të portofolit.</string>
   <!-- Removed by excludeNonTranslatables <string name="DeactivateWalletFragment__learn_more__we_recommend_transferring_your_funds" translatable="false">https://support.signal.org/hc/articles/360057625692#payments_deactivate</string> -->
 
@@ -3949,6 +4001,49 @@
     <string name="AccountSettingsFragment__youll_be_asked_less_frequently">Me kalimin e kohës, do të pyeteni më rrallë</string>
     <string name="AccountSettingsFragment__require_your_signal_pin">Kërko që PIN-i i Signal-it tuaj të riregjistrojë numrin e telefonit tuaj me Signal-in</string>
     <string name="AccountSettingsFragment__change_phone_number">Ndryshoni numër telefoni</string>
+    <!-- Account setting that allows user to request and export their signal account data -->
+    <string name="AccountSettingsFragment__request_account_data">Të dhënat e llogarisë tënde</string>
+
+    <!-- ExportAccountDataFragment -->
+    <!-- Part of requesting account data flow, this is the section title for requesting that account data -->
+    <string name="ExportAccountDataFragment__your_account_data">Të dhënat e llogarisë tënde</string>
+    <!-- Explanation of account data the user can request. %1$s is replaced with Learn more with a link -->
+    <string name="ExportAccountDataFragment__export_explanation">Eksporto një raport të të dhënave të llogarisë tënde Signal. Ky raport nuk përfshin asnjë mesazh apo media. %1$s</string>
+    <!-- Learn more link to more information about requesting account data -->
+    <string name="ExportAccountDataFragment__learn_more">Mëso më tepër</string>
+    <!-- Button action to export the report data to another app (e.g. email) -->
+    <string name="ExportAccountDataFragment__export_report">Eksporto raportin</string>
+
+    <!-- Radio option to export the data as a text file .txt -->
+    <string name="ExportAccountDataFragment__export_as_txt">Eksporto si TXT</string>
+    <!-- Label for the text file option -->
+    <string name="ExportAccountDataFragment__export_as_txt_label">Skedari teksti i lehtë për t\'u lexuar</string>
+    <!-- Radio option to export the data as a json (java script object notation) file .json -->
+    <string name="ExportAccountDataFragment__export_as_json">Eksporto si JSON</string>
+    <!-- Label for the json file option, the account data in a machine readable file format -->
+    <string name="ExportAccountDataFragment__export_as_json_label">Skedar i lexueshëm nga makineri</string>
+
+    <!-- Action to cancel (in a dialog) -->
+    <string name="ExportAccountDataFragment__cancel_action">Anuloje</string>
+
+    <!-- Acknowledgement for download failure -->
+    <string name="ExportAccountDataFragment__ok_action">OK</string>
+    <!-- Title of dialog shown when report fails to generate -->
+    <string name="ExportAccountDataFragment__report_generation_failed">Raporti nuk u krijua dot</string>
+    <!-- Message of dialog shown when report fails to generate asking user to check network connection -->
+    <string name="ExportAccountDataFragment__check_network">Kontrollo lidhjen e internetit dhe riprovo.</string>
+
+    <!-- Title for export confirmation dialog -->
+    <string name="ExportAccountDataFragment__export_report_confirmation">Do t\'i eksportosh të dhënat?</string>
+    <!-- Message for export confirmation dialog -->
+    <string name="ExportAccountDataFragment__export_report_confirmation_message">Ndaji të dhënat e llogarisë Signal vetëm me njerëzit apo aplikacionet që beson.</string>
+    <!-- Action to export in for export confirmation dialog -->
+    <string name="ExportAccountDataFragment__export_report_action">Eksporto</string>
+
+    <!-- Shown in a dialog with a spinner while the report is downloading -->
+    <string name="ExportAccountDataFragment__download_progress">Raporti po krijohet…</string>
+    <!-- Explanation that the report is only generated on export and is not saved on the device -->
+    <string name="ExportAccountDataFragment__report_not_stored_disclaimer">Raporti yt krijohet vetëm në momentin e eksportimit dhe nuk ruhet nga Signal në pajisjen tënde.</string>
 
     <!-- ChangeNumberFragment -->
     <string name="ChangeNumberFragment__use_this_to_change_your_current_phone_number_to_a_new_phone_number">Përdoreni këtë që të ndryshoni numrin tuaj të tanishëm të telefonit me një numër të ri. Këtë ndryshim s\\’mund ta zhbëni.\n\nPara se të vazhdoni, sigurohuni se numri juaj i ri mund të marrë SMS ose thirrje.</string>
@@ -4154,7 +4249,7 @@
     <string name="Donate2022Q2Megaphone_not_now">Jo tani</string>
 
     <!-- EditReactionsFragment -->
-    <string name="EditReactionsFragment__customize_reactions">Përshtatni reagime</string>
+    <string name="EditReactionsFragment__customize_reactions">Personalizo reagimet</string>
     <string name="EditReactionsFragment__tap_to_replace_an_emoji">Prekeni që të zëvendësoni një emoxhi</string>
     <string name="EditReactionsFragment__reset">Riktheje</string>
     <string name="EditReactionsFragment_save">Ruaje</string>
@@ -4395,6 +4490,9 @@
     <string name="ImageEditorHud__toggle_between_marker_and_highlighter">Këmbe shënuesin me theksuesin, ose anasjelltas</string>
     <string name="ImageEditorHud__toggle_between_text_styles">Kaloni nga një stil teksti në tjetër</string>
 
+    <!-- Header for section of featured stickers (location/time stickers) -->
+    <string name="ScribbleStickersFragment__featured_stickers">Sugjeruar</string>
+
     <string name="MediaCountIndicatorButton__send">Dërgoje</string>
 
     <string name="MediaReviewSelectedItem__tap_to_remove">Preke që të hiqet</string>
@@ -4556,7 +4654,7 @@
     <string name="DonationsErrors__your_donation_could_not_be_sent">Dhurata jote nuk u dërgua dot për shkak të një gabimi në rrjet. Kontrollo lidhjen e internetit dhe riprovo.</string>
 
     <!-- Gift message view title -->
-    <string name="GiftMessageView__donation_to_s">Dhurim për %1$s</string>
+    <string name="GiftMessageView__donation_on_behalf_of_s">Dhurim në emër të %1$s</string>
     <!-- Gift message view title for incoming donations -->
     <string name="GiftMessageView__s_donated_to_signal_on">%1$s dhuroi për Signal në emrin tënd</string>
     <!-- Gift badge redeem action label -->
@@ -4795,6 +4893,8 @@
 
     <!-- Label for Chats tab in home app screen -->
     <string name="ConversationListTabs__chats">Fjalosje</string>
+    <!-- Label for Calls tab in home app screen -->
+    <string name="ConversationListTabs__calls">Thirrjet</string>
     <!-- Label for Stories tab in home app screen -->
     <string name="ConversationListTabs__stories">Postime të përkohshme</string>
     <!-- String for counts above 99 in conversation list tabs -->
@@ -4953,9 +5053,9 @@
     <!-- My story privacy fine print about what the privacy settings are for -->
     <string name="MyStorySettingsFragment__choose_who_can_view_your_story">Zgjidh personat që mund ta shohin postimin e përkohshëm. Ndryshimet nuk zbatohen te postimet e përkohshme që tashmë i ke dërguar.</string>
     <!-- Section header for options related to replies and reactions -->
-    <string name="MyStorySettingsFragment__replies_amp_reactions">Përgjigje &amp; reagime</string>
+    <string name="MyStorySettingsFragment__replies_amp_reactions">Përgjigjet &amp; reagimet</string>
     <!-- Switchable option for allowing replies and reactions on your stories -->
-    <string name="MyStorySettingsFragment__allow_replies_amp_reactions">Lejo përgjigje &amp; reagime</string>
+    <string name="MyStorySettingsFragment__allow_replies_amp_reactions">Lejo përgjigjet &amp; reagimet</string>
     <!-- Summary for switchable option allowing replies and reactions on your story -->
     <string name="MyStorySettingsFragment__let_people_who_can_view_your_story_react_and_reply">Lëri njerëzit që mund të shohin postimin tënd të përkohshëm të reagojnë dhe të përgjigjen</string>
     <!-- Signal connections bolded text in the Signal Connections sheet -->
@@ -5105,7 +5205,7 @@
     <!-- Label for a button in a notification at the bottom of the chat list to turn off censorship circumvention -->
 
     <!-- Conversation Item label for when you react to someone else\'s story -->
-    <string name="ConversationItem__you_reacted_to_s_story">Ti reagove ndaj postimit të përkohshëm të %1$s</string>
+    <string name="ConversationItem__you_reacted_to_s_story">Reagove ndaj postimit të përkohshëm të %1$s</string>
     <!-- Conversation Item label for reactions to your story -->
     <string name="ConversationItem__reacted_to_your_story">Reagoi ndaj postimit tënd të përkohshëm</string>
     <!-- Conversation Item label for reactions to an unavailable story -->
@@ -5370,7 +5470,7 @@
     <!-- Title of the screen -->
     <string name="ExportingSmsMessagesFragment__exporting_sms_messages">Mesazhet SMS po eksportohen</string>
     <!-- Message of the screen when exporting sms messages -->
-    <string name="ExportingSmsMessagesFragment__this_may_take_awhile">Kjo mund të dojë pak kohë</string>
+    <string name="ExportingSmsMessagesFragment__this_may_take_awhile">Mund të duhet pak kohë</string>
     <!-- Progress indicator for export -->
     <plurals name="ExportingSmsMessagesFragment__exporting_d_of_d">
         <item quantity="one">Po eksportohet %1$d nga %2$d…</item>
@@ -5636,12 +5736,20 @@
     <string name="TextFormatting_strikethrough">Mesvijëzuar</string>
     <!-- Popup menu label for applying monospace font style -->
     <string name="TextFormatting_monospace">Njëhapësirëshe</string>
+    <!-- Popup menu label for applying spoiler style -->
+    <string name="TextFormatting_spoiler">Fsheh</string>
 
     <!-- UsernameEducationFragment -->
     <!-- Continue button which takes the user to the add a username screen -->
     <string name="UsernameEducationFragment__continue">Vazhdo</string>
     <!-- Displayed as a title on the username education screen -->
     <string name="UsernameEducationFragment__set_up_your_signal_username">Vendos emrin tënd të përdoruesit në Signal</string>
+    <!-- Displayed as body text in the username education screen -->
+    <string name="UsernameEducationFragment__usernames_are_paired_with_a_set_of_digits">Emrat e përdoruesve janë bashkuar me një grup shifrash dhe nuk shpërndahen në profilin tënd</string>
+    <!-- Displayed as body text in the username education screen -->
+    <string name="UsernameEducationFragment__each_username_has_a_unique_qr_code">Çdo emër përdoruesi ka një kod unik QR dhe një lidhje që mund ta ndash me miqtë për të filluar bisedën</string>
+    <!-- Displayed as body text in the username education screen. The string references the names of settings, so they should match our translations for those settings. -->
+    <string name="UsernameEducationFragment__turn_off_phone_number_discovery">Çaktivizo zbulimin e numrit të telefonit te Parametrat &gt; Privatësia &gt; Numri i telefonit &gt; Kush mund ta gjejë numrin tim, për të përdorur emrin e përdoruesit si mënyrën kryesore për të të kontaktuar</string>
 
     <!-- Username edit dialog -->
     <!-- Option to open username editor displayed as a list item in a dialog -->
@@ -5658,6 +5766,145 @@
     <string name="TimeDurationPickerDialog_positive_button">Vendose</string>
     <!-- Shown in a time duration picker for selecting duration in hours and minutes, helper text indicating minimum allowable duration -->
     <string name="TimeDurationPickerDialog_minimum_duration_warning">Koha minimale përpara se të aplikohet kyçja e ekranit është 1 minutë.</string>
+
+    <!-- Call Log -->
+    <!-- Displayed below the user\'s name in row items on the call log. First placeholder is the call status, second is when it occurred -->
+    <string name="CallLogAdapter__s_dot_s">%1$s · %2$s</string>
+    <!-- Displayed for incoming calls -->
+    <string name="CallLogAdapter__incoming">Hyrëse</string>
+    <!-- Displayed for outgoing calls -->
+    <string name="CallLogAdapter__outgoing">Dalëse</string>
+    <!-- Displayed for missed calls -->
+    <string name="CallLogAdapter__missed">E humbur</string>
+    <!-- Displayed on Group Call button if user is not in the call -->
+    <string name="CallLogAdapter__join">Bashkohu</string>
+    <!-- Displayed on Group Call button if user is in the call -->
+    <string name="CallLogAdapter__return">Kthehu</string>
+    <!-- Call state template when there is more than one call collapsed into a single row. D is a number > 1 and S is a call info string (like Missed) -->
+    <string name="CallLogAdapter__d_s">(%1$d) %2$s</string>
+
+    <!-- Call Log context menu -->
+    <!-- Displayed as a context menu item to start a video call -->
+    <string name="CallContextMenu__video_call">Thirrje me video</string>
+    <!-- Displayed as a context menu item to join an ongoing group call -->
+    <string name="CallContextMenu__join_call">Bashkoju thirrjes</string>
+    <!-- Displayed as a context menu item to return to active call -->
+    <string name="CallContextMenu__return_to_call">Kthehu te thirrja</string>
+    <!-- Displayed as a context menu item to start an audio call -->
+    <string name="CallContextMenu__audio_call">Thirrje me audio</string>
+    <!-- Displayed as a context menu item to go to chat -->
+    <string name="CallContextMenu__go_to_chat">Kalo te biseda</string>
+    <!-- Displayed as a context menu item to see call info -->
+    <string name="CallContextMenu__info">Info</string>
+    <!-- Displayed as a context menu item to select multiple calls -->
+    <string name="CallContextMenu__select">Përzgjidh</string>
+    <!-- Displayed as a context menu item to delete this call -->
+    <string name="CallContextMenu__delete">Fshije</string>
+
+    <!-- Call Log Fragment -->
+    <!-- Action bar menu item to only display missed calls -->
+    <string name="CallLogFragment__filter_missed_calls">Filtro thirrjet e humbura</string>
+    <!-- Action bar menu item to clear missed call filter -->
+    <string name="CallLogFragment__clear_filter">Pastro filtrin</string>
+    <!-- Action bar menu item to open settings -->
+    <string name="CallLogFragment__settings">Cilësimet</string>
+    <!-- Action bar menu item to open notification profile settings -->
+    <string name="CallLogFragment__notification_profile">Profili i njoftimit</string>
+    <!-- Call log new call content description -->
+    <string name="CallLogFragment__start_a_new_call">Nis një thirrje të re</string>
+    <!-- Filter pull text when pulled -->
+    <string name="CallLogFragment__filtered_by_missed">Filtruar sipas të humburave</string>
+    <!-- Bottom bar option to select all call entries -->
+    <string name="CallLogFragment__select_all">Përzgjidh të gjitha</string>
+    <!-- Bottom bar option to delete all selected call entries -->
+    <string name="CallLogFragment__delete">Fshiji</string>
+    <!-- Title on multi-delete protection dialog (TODO - final terminology) -->
+  <!-- Removed by excludeNonTranslatables <plurals name="CallLogFragment__delete_d_calls" translatable="false">
+        <item quantity="one">Delete %1$d call?</item>
+        <item quantity="other">Delete %1$d calls?</item>
+    </plurals> -->
+    <!-- Positive action on multi-delete protection dialog -->
+    <string name="CallLogFragment__delete_for_me">Fshije për mua</string>
+    <!-- Snackbar label after deleting call logs -->
+    <plurals name="CallLogFragment__d_calls_deleted">
+        <item quantity="one">%1$d thirrja u fshi</item>
+        <item quantity="other">%1$d thirrjet u fshinë</item>
+    </plurals>
+    <!-- Undo action for deletion snackbar -->
+    <string name="CallLogFragment__undo">Zhbëje</string>
+    <!-- Shown during empty state -->
+    <string name="CallLogFragment__no_calls">Asnjë thirrje.</string>
+    <!-- Shown during empty state -->
+    <string name="CallLogFragment__get_started_by_calling_a_friend">Fillo duke telefonuar një mik.</string>
+
+    <!-- New call activity -->
+    <!-- Activity title in title bar -->
+    <string name="NewCallActivity__new_call">Thirrje e re</string>
+
+    <!-- Call state update popups -->
+    <!-- Displayed when the user enables group call ringing -->
+    <string name="CallStateUpdatePopupWindow__ringing_on">Po bie zilja</string>
+    <!-- Displayed when the user disables group call ringing -->
+    <string name="CallStateUpdatePopupWindow__ringing_off">Zilja nuk po bie</string>
+    <!-- Displayed when the user cannot enable group call ringing -->
+    <string name="CallStateUpdatePopupWindow__group_is_too_large">Grupi është shumë i madh për të thirrur pjesëmarrësit</string>
+    <!-- Displayed when the user turns on their mic -->
+    <string name="CallStateUpdatePopupWindow__mic_on">Mikrofoni i ndezur</string>
+    <!-- Displayed when the user turns off their mic -->
+    <string name="CallStateUpdatePopupWindow__mic_off">Mikrofoni fikur</string>
+
+    <!-- Accessibility label describing the capture button on the camera screen -->
+    <string name="CameraControls_capture_button_accessibility_label">Butoni Shkrepje</string>
+    <!-- Accessibility label describing the continue button on the camera screen -->
+    <string name="CameraControls_continue_button_accessibility_label">Butoni Vazhdo</string>
+
+    <!-- CallPreference -->
+    <!-- Generic group call in call info -->
+    <string name="CallPreference__group_call">Group call</string>
+    <!-- Missed group call in call info -->
+    <string name="CallPreference__missed_group_call">Thirrje e humbur në grup</string>
+    <!-- Incoming group call in call info -->
+    <string name="CallPreference__incoming_group_call">Thirrje hyrëse në grup</string>
+    <!-- Outgoing group call in call info -->
+    <string name="CallPreference__outgoing_group_call">Thirrje dalëse në grup</string>
+
+    <!-- CreateCallLink -->
+    <!-- Call link creation item title on calls tab -->
+    <string name="CreateCallLink__create_a_call_link">Krijo një lidhje thirrjeje</string>
+    <!-- Call link creation item description on calls tab -->
+    <string name="CreateCallLink__share_a_link_for">Ndaj një lidhje për një thirrje në Signal</string>
+
+    <!-- CreateCallLinkBottomSheetDialogFragment -->
+    <!-- Fragment title -->
+    <string name="CreateCallLinkBottomSheetDialogFragment__create_call_link">Krijo lidhjen e thirrjes</string>
+    <!-- Displayed as a default name for the signal call -->
+    <string name="CreateCallLinkBottomSheetDialogFragment__signal_call">Thirrje përmes Signal</string>
+    <!-- Displayed on a small button to allow user to instantly join call -->
+    <string name="CreateCallLinkBottomSheetDialogFragment__join">Bashkohu</string>
+    <!-- Option to open a full screen dialog to enter a call name -->
+    <string name="CreateCallLinkBottomSheetDialogFragment__add_call_name">Shto emrin e thirrjes</string>
+    <!-- Toggle to require approval for all members before joining -->
+    <string name="CreateCallLinkBottomSheetDialogFragment__approve_all_members">Mirato të gjithë anëtarët</string>
+    <!-- Row label to share the link via Signal -->
+    <string name="CreateCallLinkBottomSheetDialogFragment__share_link_via_signal">Ndaj lidhjen përmes Signal</string>
+    <!-- Row label to copy the link to the clipboard -->
+    <string name="CreateCallLinkBottomSheetDialogFragment__copy_link">Kopjo linkun</string>
+    <!-- Row label to share the link with the external share sheet -->
+    <string name="CreateCallLinkBottomSheetDialogFragment__share_link">Ndaj lidhjen</string>
+    <!-- Button text to dismiss the sheet and add it as an upcoming call -->
+    <string name="CreateCallLinkBottomSheetDialogFragment__done">U bë</string>
+    <!-- Displayed when we can\'t find a suitable way to open the system share picker -->
+    <string name="CreateCallLinkBottomSheetDialogFragment__failed_to_open_share_sheet">Hapja e faqes së përbashkët dështoi.</string>
+    <!-- Displayed when we copy the call link to the clipboard -->
+    <string name="CreateCallLinkBottomSheetDialogFragment__copied_to_clipboard">U kopjua në kujtesën e fragmenteve</string>
+
+    <!-- EditCallLinkNameDialogFragment -->
+    <!-- App bar title for editing a call name -->
+    <string name="EditCallLinkNameDialogFragment__edit_call_name">Redakto emrin e telefonuesit</string>
+    <!-- Text on button to confirm edit -->
+    <string name="EditCallLinkNameDialogFragment__save">Ruaj</string>
+    <!-- Placeholder text on input field when editing call name -->
+    <string name="EditCallLinkNameDialogFragment__call_name">Emri i telefonuesit</string>
 
     <!-- EOF -->
 </resources>

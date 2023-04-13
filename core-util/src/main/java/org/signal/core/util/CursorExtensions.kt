@@ -137,6 +137,11 @@ inline fun <T> Cursor.readToList(predicate: (T) -> Boolean = { true }, mapper: (
   return list
 }
 
+@JvmOverloads
+inline fun <K, V> Cursor.readToMap(predicate: (Pair<K, V>) -> Boolean = { true }, mapper: (Cursor) -> Pair<K, V>): Map<K, V> {
+  return readToList(predicate, mapper).associate { it }
+}
+
 inline fun <T> Cursor.readToSet(predicate: (T) -> Boolean = { true }, mapper: (Cursor) -> T): Set<T> {
   val set = mutableSetOf<T>()
   use {
@@ -160,6 +165,14 @@ inline fun <T> Cursor.firstOrNull(predicate: (T) -> Boolean = { true }, mapper: 
     }
   }
   return null
+}
+
+inline fun Cursor.forEach(operation: (Cursor) -> Unit) {
+  use {
+    while (moveToNext()) {
+      operation(this)
+    }
+  }
 }
 
 fun Boolean.toInt(): Int = if (this) 1 else 0
