@@ -237,6 +237,17 @@ public final class IdentityUtil {
         identityStore.setVerified(recipient.getId(), verifiedMessage.getIdentityKey(), IdentityTable.VerifiedStatus.MANUALLY_VERIFIED);
         markIdentityVerified(context, recipient, true, true);
       }
+      // TODO: remove after testing...
+      if (verifiedMessage.getVerified() == VerifiedMessage.VerifiedState.INTRODUCED &&
+          (!identityRecord.isPresent() ||
+           (identityRecord.isPresent() && !identityRecord.get().getIdentityKey().equals(verifiedMessage.getIdentityKey())) ||
+           (identityRecord.isPresent() && !IdentityTable.VerifiedStatus.isVerified(identityRecord.get().getVerifiedStatus())))){
+        // TODO: This must be properly adapted to support multidevice together with trusted intros
+        Log.i(TAG, "Setting " + recipient.getId() + " verified status to " + IdentityTable.VerifiedStatus.INTRODUCED);
+        saveIdentity(verifiedMessage.getDestination().getIdentifier(), verifiedMessage.getIdentityKey());
+        identityStore.setVerified(recipient.getId(), verifiedMessage.getIdentityKey(), IdentityTable.VerifiedStatus.INTRODUCED);
+        markIdentityVerified(context, recipient, true, true);
+      }
     }
   }
 

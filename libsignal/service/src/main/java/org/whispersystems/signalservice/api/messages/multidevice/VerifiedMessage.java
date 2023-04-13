@@ -7,7 +7,7 @@ import org.whispersystems.signalservice.api.push.SignalServiceAddress;
 public class VerifiedMessage {
 
   public enum VerifiedState {
-    DEFAULT, VERIFIED, UNVERIFIED
+    DEFAULT,  VERIFIED, UNVERIFIED, MANUALLY_VERIFIED, DIRECTLY_VERIFIED, INTRODUCED, DUPLEX_VERIFIED // todo: Handle "manually verified"
   }
 
   private final SignalServiceAddress destination;

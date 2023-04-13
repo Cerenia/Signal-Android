@@ -16,6 +16,7 @@ import org.signal.libsignal.zkgroup.profiles.ProfileKey;
 import org.thoughtcrime.securesms.conversation.colors.ChatColorsMapper;
 import org.thoughtcrime.securesms.crypto.ProfileKeyUtil;
 import org.thoughtcrime.securesms.crypto.UnidentifiedAccessUtil;
+import org.thoughtcrime.securesms.database.IdentityTable;
 import org.thoughtcrime.securesms.database.RecipientTable;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.database.model.IdentityRecord;
@@ -363,10 +364,10 @@ public class MultiDeviceContactUpdateJob extends BaseJob {
     VerifiedMessage.VerifiedState state;
 
     switch (identity.get().getVerifiedStatus()) {
-      case MANUALLY_VERIFIED:
-      case DIRECTLY_VERIFIED:
-      case INTRODUCED:
-      case DUPLEX_VERIFIED: state = VerifiedMessage.VerifiedState.VERIFIED;   break;
+      case MANUALLY_VERIFIED: state = VerifiedMessage.VerifiedState.MANUALLY_VERIFIED; break;
+      case DIRECTLY_VERIFIED: state = VerifiedMessage.VerifiedState.DIRECTLY_VERIFIED; break;
+      case INTRODUCED: state = VerifiedMessage.VerifiedState.INTRODUCED; break;
+      case DUPLEX_VERIFIED: state = VerifiedMessage.VerifiedState.DUPLEX_VERIFIED;   break;
       case UNVERIFIED: state = VerifiedMessage.VerifiedState.UNVERIFIED; break;
       case DEFAULT:    state = VerifiedMessage.VerifiedState.DEFAULT;    break;
       default: throw new AssertionError("Unknown state: " + identity.get().getVerifiedStatus());

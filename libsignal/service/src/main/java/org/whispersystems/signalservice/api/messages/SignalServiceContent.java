@@ -849,9 +849,15 @@ import javax.annotation.Nullable;
           if (verified.getState() == SignalServiceProtos.Verified.State.DEFAULT) {
             verifiedState = VerifiedMessage.VerifiedState.DEFAULT;
           } else if (verified.getState() == SignalServiceProtos.Verified.State.VERIFIED) {
-            verifiedState = VerifiedMessage.VerifiedState.VERIFIED;
+            verifiedState = VerifiedMessage.VerifiedState.VERIFIED; // todo - refactor VERIFIED to MANUALLY_VERIFIED
           } else if (verified.getState() == SignalServiceProtos.Verified.State.UNVERIFIED) {
             verifiedState = VerifiedMessage.VerifiedState.UNVERIFIED;
+          } else if (verified.getState() == SignalServiceProtos.Verified.State.DIRECTLY_VERIFIED) {
+            verifiedState = VerifiedMessage.VerifiedState.DIRECTLY_VERIFIED;
+          } else if (verified.getState() == SignalServiceProtos.Verified.State.INTRODUCED) {
+            verifiedState = VerifiedMessage.VerifiedState.INTRODUCED;
+          } else if (verified.getState() == SignalServiceProtos.Verified.State.DUPLEX_VERIFIED) {
+            verifiedState = VerifiedMessage.VerifiedState.DUPLEX_VERIFIED;
           } else {
             throw new InvalidMessageStructureException("Unknown state: " + verified.getState().getNumber(),
                                                        metadata.getSender().getIdentifier(),

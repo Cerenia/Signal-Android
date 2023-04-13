@@ -64,6 +64,9 @@ public class DeviceContactsOutputStream extends ChunkedOutputStream {
       switch (contact.getVerified().get().getVerified()) {
         case VERIFIED:   state = SignalServiceProtos.Verified.State.VERIFIED;   break;
         case UNVERIFIED: state = SignalServiceProtos.Verified.State.UNVERIFIED; break;
+        case DIRECTLY_VERIFIED: state = SignalServiceProtos.Verified.State.DIRECTLY_VERIFIED; break;
+        case INTRODUCED: state = SignalServiceProtos.Verified.State.INTRODUCED; break;
+        case DUPLEX_VERIFIED: state = SignalServiceProtos.Verified.State.DUPLEX_VERIFIED; break;
         default:         state = SignalServiceProtos.Verified.State.DEFAULT;    break;
       }
 

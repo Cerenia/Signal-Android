@@ -77,6 +77,9 @@ public class DeviceContactsInputStream extends ChunkedInputStream {
         switch (details.getVerified().getState()) {
           case VERIFIED:  state = VerifiedMessage.VerifiedState.VERIFIED;   break;
           case UNVERIFIED:state = VerifiedMessage.VerifiedState.UNVERIFIED; break;
+          case DIRECTLY_VERIFIED: state = VerifiedMessage.VerifiedState.DIRECTLY_VERIFIED; break;
+          case INTRODUCED: state = VerifiedMessage.VerifiedState.INTRODUCED; break;
+          case DUPLEX_VERIFIED: state = VerifiedMessage.VerifiedState.DUPLEX_VERIFIED; break;
           case DEFAULT:   state = VerifiedMessage.VerifiedState.DEFAULT;    break;
           default:        throw new InvalidMessageException("Unknown state: " + details.getVerified().getState());
         }

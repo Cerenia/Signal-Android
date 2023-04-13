@@ -68,7 +68,8 @@ public class TI_Cursor implements Cursor {
         int idx = cursor.getColumnIndex(t);
         int type = cursor.getType(idx);
         if(t.equals(IdentityTable.VERIFIED)){
-          v.set(idx, IdentityTable.VerifiedStatus.toVanilla(cursor.getInt(idx)));
+          //v.set(idx, IdentityTable.VerifiedStatus.toVanilla(cursor.getInt(idx)));
+          v.set(idx, cursor.getInt(idx));
         } else if(type == Cursor.FIELD_TYPE_INTEGER){
           v.set(idx, cursor.getLong(idx));
         } else if(type == Cursor.FIELD_TYPE_STRING) {

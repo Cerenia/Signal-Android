@@ -229,7 +229,10 @@ public final class StorageSyncModels {
 
   public static @NonNull IdentityTable.VerifiedStatus remoteToLocalIdentityStatus(@NonNull IdentityState identityState) {
     switch (identityState) {
-      case VERIFIED:   return IdentityTable.VerifiedStatus.MANUALLY_VERIFIED;
+      case VERIFIED:   return IdentityTable.VerifiedStatus.MANUALLY_VERIFIED; // todo: Handle the case with "manually verified"
+      case DIRECTLY_VERIFIED: return IdentityTable.VerifiedStatus.DIRECTLY_VERIFIED;
+      case DUPLEX_VERIFIED: return IdentityTable.VerifiedStatus.DUPLEX_VERIFIED;
+      case INTRODUCED: return IdentityTable.VerifiedStatus.INTRODUCED;
       case UNVERIFIED: return IdentityTable.VerifiedStatus.UNVERIFIED;
       default:         return IdentityTable.VerifiedStatus.DEFAULT;
     }
@@ -237,10 +240,10 @@ public final class StorageSyncModels {
 
   private static IdentityState localToRemoteIdentityState(@NonNull IdentityTable.VerifiedStatus local) {
     switch (local) {
-      case MANUALLY_VERIFIED:
-      case DIRECTLY_VERIFIED:
-      case DUPLEX_VERIFIED:
-      case INTRODUCED: return IdentityState.VERIFIED;
+      case MANUALLY_VERIFIED: return IdentityState.VERIFIED; // todo: Handle the case with "manually verified"
+      case DIRECTLY_VERIFIED: return IdentityState.DIRECTLY_VERIFIED;
+      case DUPLEX_VERIFIED: return IdentityState.DUPLEX_VERIFIED;
+      case INTRODUCED: return IdentityState.INTRODUCED;
       case UNVERIFIED: return IdentityState.UNVERIFIED;
       default:         return IdentityState.DEFAULT;
     }

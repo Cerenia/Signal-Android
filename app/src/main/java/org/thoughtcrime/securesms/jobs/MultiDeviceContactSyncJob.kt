@@ -99,6 +99,10 @@ class MultiDeviceContactSyncJob(parameters: Parameters, private val attachmentPo
       if (contact.verified.isPresent) {
         val verifiedStatus: VerifiedStatus = when (contact.verified.get().verified) {
           VerifiedState.VERIFIED -> VerifiedStatus.MANUALLY_VERIFIED // TODO: For now just set to manual, must be propperly handled by expanding the VerifiedState if this is to be properly supported in the future.
+          VerifiedState.MANUALLY_VERIFIED -> VerifiedStatus.MANUALLY_VERIFIED
+          VerifiedState.DIRECTLY_VERIFIED -> VerifiedStatus.DIRECTLY_VERIFIED
+          VerifiedState.INTRODUCED -> VerifiedStatus.INTRODUCED
+          VerifiedState.DUPLEX_VERIFIED -> VerifiedStatus.DUPLEX_VERIFIED
           VerifiedState.UNVERIFIED -> VerifiedStatus.UNVERIFIED
           else -> VerifiedStatus.DEFAULT
         }

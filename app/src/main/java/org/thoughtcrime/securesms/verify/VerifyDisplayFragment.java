@@ -604,7 +604,7 @@ public class VerifyDisplayFragment extends Fragment implements ViewTreeObserver.
           ApplicationDependencies.getProtocolStore().aci().identities().setVerified(recipientId, remoteIdentity, status);
         }
 
-        // For other devices but the Android phone, we map the finer statusses to verified or unverified.
+        // For other devices but the Android phone, we map the finer statuses to verified or unverified.
         ApplicationDependencies.getJobManager()
                                .add(new MultiDeviceVerifiedUpdateJob(recipientId,
                                                                      remoteIdentity,

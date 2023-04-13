@@ -1557,8 +1557,13 @@ public class SignalServiceMessageSender {
 
     switch(verifiedMessage.getVerified()) {
       case DEFAULT:    verifiedMessageBuilder.setState(Verified.State.DEFAULT);    break;
-      case VERIFIED:   verifiedMessageBuilder.setState(Verified.State.VERIFIED);   break;
+      case VERIFIED:
+      case MANUALLY_VERIFIED:
+        verifiedMessageBuilder.setState(Verified.State.VERIFIED);   break; // TODO: handle this properly
       case UNVERIFIED: verifiedMessageBuilder.setState(Verified.State.UNVERIFIED); break;
+      case DIRECTLY_VERIFIED: verifiedMessageBuilder.setState(Verified.State.DIRECTLY_VERIFIED); break;
+      case INTRODUCED: verifiedMessageBuilder.setState(Verified.State.INTRODUCED); break;
+      case DUPLEX_VERIFIED: verifiedMessageBuilder.setState(Verified.State.DUPLEX_VERIFIED); break;
       default:         throw new AssertionError("Unknown: " + verifiedMessage.getVerified());
     }
 

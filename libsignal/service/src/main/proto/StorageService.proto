@@ -77,6 +77,9 @@ message ContactRecord {
     DEFAULT    = 0;
     VERIFIED   = 1;
     UNVERIFIED = 2;
+    DIRECTLY_VERIFIED = 3;
+    INTRODUCED = 4;
+    DUPLEX_VERIFIED = 5;
   }
 
   string        serviceId               = 1;
