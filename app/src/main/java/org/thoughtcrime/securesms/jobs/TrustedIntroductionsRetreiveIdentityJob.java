@@ -1,6 +1,7 @@
 package org.thoughtcrime.securesms.jobs;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -9,8 +10,8 @@ import org.signal.libsignal.protocol.IdentityKey;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
-import org.thoughtcrime.securesms.jobmanager.Data;
 import org.thoughtcrime.securesms.jobmanager.Job;
+import org.thoughtcrime.securesms.jobmanager.JsonJobData;
 import org.thoughtcrime.securesms.jobmanager.impl.NetworkConstraint;
 import org.thoughtcrime.securesms.keyvalue.SignalStore;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
@@ -25,6 +26,7 @@ import org.whispersystems.signalservice.internal.ServiceResponse;
 
 
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 
 import io.reactivex.rxjava3.core.Observable;
@@ -98,7 +100,7 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
   /**
    * Serialize your job state so that it can be recreated in the future.
    */
-  @NonNull @Override public Data serialize() {
+  @NonNull @Override public byte[] serialize() {
     JSONObject serializedData = new JSONObject();
     try{
       serializedData.put(KEY_TI_DATA_J, data.TIData.serialize());
@@ -111,8 +113,8 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
      e.printStackTrace();
      throw new AssertionError(TAG + " Json serialization of TI_RetrieveIDJobResult failed!");
     }
-    return new Data.Builder().putString(KEY_DATA_J, serializedData.toString())
-                             .build();
+    return Objects.requireNonNull(new JsonJobData.Builder().putString(KEY_DATA_J, serializedData.toString())
+                                                           .build().serialize());
   }
 
   /**
@@ -190,7 +192,8 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
 
   public static final class Factory implements Job.Factory<TrustedIntroductionsRetreiveIdentityJob> {
 
-    @NonNull @Override public TrustedIntroductionsRetreiveIdentityJob create(@NonNull Parameters parameters, @NonNull Data data) {
+    @NonNull @Override public TrustedIntroductionsRetreiveIdentityJob create(@NonNull Parameters parameters, @Nullable byte[] serializedData) {
+      JsonJobData data = JsonJobData.deserialize(serializedData);
       // deserialize TI_Data if present
       String serializedTiData = data.getString(KEY_DATA_J);
       TI_RetrieveIDJobResult result;

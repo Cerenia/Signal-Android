@@ -1092,7 +1092,7 @@ public class ConversationParentFragment extends Fragment
         CanNotIntroduceDialog.ConversationType conversationType;
         if (viewModel.isDefaultSmsApplication()){
           conversationType = CanNotIntroduceDialog.ConversationType.SMS;
-        } else if (!isSingleConversation()){
+        } else if (isGroupConversation()){
           // Dialogue for Group (at some point this can be implemented)
           conversationType = CanNotIntroduceDialog.ConversationType.GROUP;
         } else if (!(recipientRecord.isPresent() && VerifiedStatus.ti_recipientUnlocked(recipientRecord.get().getVerifiedStatus()))){

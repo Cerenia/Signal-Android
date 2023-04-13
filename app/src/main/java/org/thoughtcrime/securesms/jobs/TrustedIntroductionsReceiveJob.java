@@ -5,25 +5,21 @@ import androidx.annotation.Nullable;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
-import org.thoughtcrime.securesms.jobmanager.Data;
+import org.thoughtcrime.securesms.jobmanager.JsonJobData;
 import org.thoughtcrime.securesms.jobmanager.Job;
 import org.thoughtcrime.securesms.jobmanager.impl.NetworkConstraint;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
-import org.thoughtcrime.securesms.util.Base64;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.parseTIMessage;
 
@@ -77,7 +73,7 @@ public class TrustedIntroductionsReceiveJob extends BaseJob  {
    * // TODO: Test serialization and deserialization
    * Serialize your job state so that it can be recreated in the future.
    */
-  @NonNull @Override public Data serialize() {
+  @NonNull @Override public byte[] serialize() {
     while (inserts_succeeded > 0){
       introductions.remove(0);
       inserts_succeeded--;
@@ -86,13 +82,13 @@ public class TrustedIntroductionsReceiveJob extends BaseJob  {
     for (TI_Data d: introductions){
       serializedIntroductions.put(d.serialize());
     }
-    return new Data.Builder()
-        .putString(KEY_INTRODUCER_ID, introducerId.serialize())
-        .putString(KEY_MESSAGE_BODY, messageBody)
-        .putBoolean(KEY_BODY_PARSED, bodyParsed)
-        .putString(KEY_INTRODUCTIONS, serializedIntroductions.toString())
-        .putLong(KEY_TIMESTAMP, timestamp)
-        .build();
+    return Objects.requireNonNull(new JsonJobData.Builder()
+                                      .putString(KEY_INTRODUCER_ID, introducerId.serialize())
+                                      .putString(KEY_MESSAGE_BODY, messageBody)
+                                      .putBoolean(KEY_BODY_PARSED, bodyParsed)
+                                      .putString(KEY_INTRODUCTIONS, serializedIntroductions.toString())
+                                      .putLong(KEY_TIMESTAMP, timestamp)
+                                      .build().serialize());
   }
 
   /**
@@ -135,8 +131,9 @@ public class TrustedIntroductionsReceiveJob extends BaseJob  {
 
   public static final class Factory implements Job.Factory<TrustedIntroductionsReceiveJob> {
 
-    @NonNull @Override public TrustedIntroductionsReceiveJob create(@NonNull Parameters parameters, @NonNull Data data) {
+    @NonNull @Override public TrustedIntroductionsReceiveJob create(@NonNull Parameters parameters, @Nullable byte[] serializedData) {
       // Deserialize introduction_data if present
+      JsonJobData data = JsonJobData.deserialize(serializedData);
       String serializedIntroductions = data.getString(KEY_INTRODUCTIONS);
       ArrayList<TI_Data> tiData = new ArrayList<>();
       Log.i(TAG, serializedIntroductions);
