@@ -105,8 +105,8 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
       from_title_view.setVisibility(View.GONE);
       all_header.setVisibility(View.VISIBLE);
     } else {
-      from_title_view.setText(String.format(getString(R.string.ManageIntroductionsFragment__Title_Introductions_from), viewModel.getIntroducerName()));
       from_title_view.setVisibility(View.VISIBLE);
+      from_title_view.setText(String.format(getString(R.string.ManageIntroductionsFragment__Title_Introductions_from), viewModel.getIntroducerName()));
       all_header.setVisibility(View.GONE);
     }
     initializeNavigationButton(view);
@@ -122,13 +122,10 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
         } else {
           all_header.setVisibility(View.VISIBLE);
         }
-        // Filtering behavior
-        String filter = null;
+        // Filter if present
         if (!viewModel.getFilter().getValue().isEmpty()){
-          filter = viewModel.getFilter().getValue();
+          refreshList();
         }
-        List<Pair<TI_Data, ManageViewModel.IntroducerInformation>> filtered = getFiltered(introductions, filter);
-        refreshList();
       } else {
         no_introductions.setVisibility(View.VISIBLE);
         navigationExplanation.setVisibility(View.GONE);
