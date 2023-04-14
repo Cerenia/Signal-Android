@@ -1292,7 +1292,7 @@ public class MessageContentProcessor {
 
     log(envelopeTimestamp, "Synchronize call event call: " + callId);
 
-    CallTable.Call call = SignalDatabase.calls().getCallById(callId, new CallTable.CallConversationId.Peer(recipientId));
+    CallTable.Call call = SignalDatabase.calls().getCallById(callId);
     if (call != null) {
       boolean typeMismatch      = call.getType() != type;
       boolean directionMismatch = call.getDirection() != direction;
@@ -1333,11 +1333,7 @@ public class MessageContentProcessor {
       return;
     }
 
-    GroupId                      groupId            = GroupId.push(callEvent.getConversationId().toByteArray());
-    RecipientId                  recipientId        = Recipient.externalGroupExact(groupId).getId();
-    CallTable.CallConversationId callConversationId = new CallTable.CallConversationId.Peer(recipientId);
-
-    CallTable.Call call = SignalDatabase.calls().getCallById(callId, callConversationId);
+    CallTable.Call call = SignalDatabase.calls().getCallById(callId);
     if (call != null) {
       if (call.getType() != type) {
         warn(envelopeTimestamp, "Group/Ad-hoc call event type mismatch, ignoring. timestamp: " + timestamp + " type: " + type + " direction: " + direction + " event: " + event + " hasPeer: " + callEvent.hasConversationId());
@@ -1350,7 +1346,7 @@ public class MessageContentProcessor {
           break;
         case ACCEPTED:
           if (call.getTimestamp() < callEvent.getTimestamp()) {
-            SignalDatabase.calls().setTimestamp(call.getCallId(), callConversationId, callEvent.getTimestamp());
+            SignalDatabase.calls().setTimestamp(call.getCallId(), callEvent.getTimestamp());
           }
 
           if (callEvent.getDirection() == SyncMessage.CallEvent.Direction.INCOMING) {
@@ -1365,6 +1361,9 @@ public class MessageContentProcessor {
           warn("Unsupported event type " + event + ". Ignoring. timestamp: " + timestamp + " type: " + type + " direction: " + direction + " event: " + event + " hasPeer: " + callEvent.hasConversationId());
       }
     } else {
+      GroupId     groupId     = GroupId.push(callEvent.getConversationId().toByteArray());
+      RecipientId recipientId = Recipient.externalGroupExact(groupId).getId();
+
       switch (event) {
         case DELETE:
           SignalDatabase.calls().insertDeletedGroupCallFromSyncEvent(callEvent.getId(), recipientId, direction, timestamp);
