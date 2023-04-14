@@ -3,6 +3,8 @@ package org.thoughtcrime.securesms.components.spoiler
 import android.graphics.Canvas
 import android.text.Layout
 import org.thoughtcrime.securesms.util.LayoutUtil
+import kotlin.math.max
+import kotlin.math.min
 
 /**
  * Handles drawing the spoiler sparkles for a TextView.
@@ -15,7 +17,8 @@ abstract class SpoilerRenderer {
     startLine: Int,
     endLine: Int,
     startOffset: Int,
-    endOffset: Int
+    endOffset: Int,
+    spoilerDrawables: List<SpoilerDrawable>
   )
 
   protected fun getLineTop(layout: Layout, line: Int): Int {
@@ -30,7 +33,7 @@ abstract class SpoilerRenderer {
     return getOrPut(line * 31 + layout.hashCode() * 31, default)
   }
 
-  class SingleLineSpoilerRenderer(private val spoilerDrawable: SpoilerDrawable) : SpoilerRenderer() {
+  class SingleLineSpoilerRenderer : SpoilerRenderer() {
     private val lineTopCache = HashMap<Int, Int>()
     private val lineBottomCache = HashMap<Int, Int>()
 
@@ -40,19 +43,20 @@ abstract class SpoilerRenderer {
       startLine: Int,
       endLine: Int,
       startOffset: Int,
-      endOffset: Int
+      endOffset: Int,
+      spoilerDrawables: List<SpoilerDrawable>
     ) {
       val lineTop = lineTopCache.get(startLine, layout) { getLineTop(layout, startLine) }
       val lineBottom = lineBottomCache.get(startLine, layout) { getLineBottom(layout, startLine) }
       val left = startOffset.coerceAtMost(endOffset)
       val right = startOffset.coerceAtLeast(endOffset)
 
-      spoilerDrawable.setBounds(left, lineTop, right, lineBottom)
-      spoilerDrawable.draw(canvas)
+      spoilerDrawables[0].setBounds(left, lineTop, right, lineBottom)
+      spoilerDrawables[0].draw(canvas)
     }
   }
 
-  class MultiLineSpoilerRenderer(private val spoilerDrawable: SpoilerDrawable) : SpoilerRenderer() {
+  class MultiLineSpoilerRenderer : SpoilerRenderer() {
     private val lineTopCache = HashMap<Int, Int>()
     private val lineBottomCache = HashMap<Int, Int>()
 
@@ -62,48 +66,56 @@ abstract class SpoilerRenderer {
       startLine: Int,
       endLine: Int,
       startOffset: Int,
-      endOffset: Int
+      endOffset: Int,
+      spoilerDrawables: List<SpoilerDrawable>
     ) {
       val paragraphDirection = layout.getParagraphDirection(startLine)
 
       val lineEndOffset: Float = if (paragraphDirection == Layout.DIR_RIGHT_TO_LEFT) layout.getLineLeft(startLine) else layout.getLineRight(startLine)
       var lineBottom = lineBottomCache.get(startLine, layout) { getLineBottom(layout, startLine) }
       var lineTop = lineTopCache.get(startLine, layout) { getLineTop(layout, startLine) }
-      drawStart(canvas, startOffset, lineTop, lineEndOffset.toInt(), lineBottom)
+      drawStart(canvas, startOffset, lineTop, lineEndOffset.toInt(), lineBottom, spoilerDrawables)
 
-      for (line in startLine + 1 until endLine) {
-        val left: Int = layout.getLineLeft(line).toInt()
-        val right: Int = layout.getLineRight(line).toInt()
+      if (startLine + 1 < endLine) {
+        var left = Int.MAX_VALUE
+        var right = -1
+        lineTop = Int.MAX_VALUE
+        lineBottom = -1
+        for (line in startLine + 1 until endLine) {
+          left = min(left, layout.getLineLeft(line).toInt())
+          right = max(right, layout.getLineRight(line).toInt())
 
-        lineTop = getLineTop(layout, line)
-        lineBottom = getLineBottom(layout, line)
-
-        spoilerDrawable.setBounds(left, lineTop, right, lineBottom)
-        spoilerDrawable.draw(canvas)
+          lineTop = min(lineTop, lineTopCache.get(line, layout) { getLineTop(layout, line) })
+          lineBottom = max(lineBottom, lineBottomCache.get(line, layout) { getLineBottom(layout, line) })
+        }
+        spoilerDrawables[1].setBounds(left, lineTop, right, lineBottom)
+        spoilerDrawables[1].draw(canvas)
       }
 
       val lineStartOffset: Float = if (paragraphDirection == Layout.DIR_RIGHT_TO_LEFT) layout.getLineRight(startLine) else layout.getLineLeft(startLine)
       lineBottom = lineBottomCache.get(endLine, layout) { getLineBottom(layout, endLine) }
       lineTop = lineTopCache.get(endLine, layout) { getLineTop(layout, endLine) }
-      drawEnd(canvas, lineStartOffset.toInt(), lineTop, endOffset, lineBottom)
+      drawEnd(canvas, lineStartOffset.toInt(), lineTop, endOffset, lineBottom, spoilerDrawables)
     }
 
-    private fun drawStart(canvas: Canvas, start: Int, top: Int, end: Int, bottom: Int) {
+    private fun drawStart(canvas: Canvas, start: Int, top: Int, end: Int, bottom: Int, spoilerDrawables: List<SpoilerDrawable>) {
       if (start > end) {
-        spoilerDrawable.setBounds(end, top, start, bottom)
+        spoilerDrawables[2].setBounds(end, top, start, bottom)
+        spoilerDrawables[2].draw(canvas)
       } else {
-        spoilerDrawable.setBounds(start, top, end, bottom)
+        spoilerDrawables[0].setBounds(start, top, end, bottom)
+        spoilerDrawables[0].draw(canvas)
       }
-      spoilerDrawable.draw(canvas)
     }
 
-    private fun drawEnd(canvas: Canvas, start: Int, top: Int, end: Int, bottom: Int) {
+    private fun drawEnd(canvas: Canvas, start: Int, top: Int, end: Int, bottom: Int, spoilerDrawables: List<SpoilerDrawable>) {
       if (start > end) {
-        spoilerDrawable.setBounds(end, top, start, bottom)
+        spoilerDrawables[0].setBounds(end, top, start, bottom)
+        spoilerDrawables[0].draw(canvas)
       } else {
-        spoilerDrawable.setBounds(start, top, end, bottom)
+        spoilerDrawables[2].setBounds(start, top, end, bottom)
+        spoilerDrawables[2].draw(canvas)
       }
-      spoilerDrawable.draw(canvas)
     }
   }
 }

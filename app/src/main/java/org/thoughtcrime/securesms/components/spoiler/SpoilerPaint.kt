@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapShader
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.ColorFilter
 import android.graphics.Paint
 import android.graphics.Rect
 import android.graphics.Shader
@@ -25,7 +26,7 @@ object SpoilerPaint {
   /**
    * A paint that can be used to apply the spoiler effect.
    */
-  var shader: BitmapShader? = null
+  val paint: Paint = Paint()
 
   private val SIZE = if (Util.isLowMemory(ApplicationDependencies.getApplication())) 100.dp else 200.dp
   private val PARTICLES_PER_PIXEL = if (Util.isLowMemory(ApplicationDependencies.getApplication())) 0.002f else 0.005f
@@ -50,8 +51,7 @@ object SpoilerPaint {
   init {
     val strokeWidth = DimensionUnit.DP.toPixels(1.5f)
 
-    particlePaints.forEachIndexed { index, paint ->
-      paint.alpha = (255 * alphaStrength[index]).toInt()
+    particlePaints.forEach { paint ->
       paint.strokeCap = Paint.Cap.ROUND
       paint.strokeWidth = strokeWidth
     }
@@ -62,8 +62,6 @@ object SpoilerPaint {
       bounds.right + strokeWidth.toInt(),
       bounds.bottom + strokeWidth.toInt()
     )
-
-    update()
   }
 
   /**
@@ -72,11 +70,9 @@ object SpoilerPaint {
   @MainThread
   fun update() {
     val now = System.currentTimeMillis()
-    var dt = now - lastDrawTime
-    if (dt < 32) {
+    val dt = now - lastDrawTime
+    if (dt < 16) {
       return
-    } else if (dt > 48) {
-      dt = 32
     }
     lastDrawTime = now
 
@@ -91,7 +87,24 @@ object SpoilerPaint {
     shaderBitmap = bufferBitmap
     bufferBitmap = swap
 
-    shader = BitmapShader(shaderBitmap, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT)
+    paint.shader = BitmapShader(shaderBitmap, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT)
+  }
+
+  @MainThread
+  fun applyColorFilter(colorFilter: ColorFilter?) {
+    for (paint in particlePaints) {
+      paint.colorFilter = colorFilter
+    }
+
+    lastDrawTime = 0
+    update()
+  }
+
+  @MainThread
+  fun applyAlpha(alpha: Int) {
+    particlePaints.forEachIndexed { index, paint ->
+      paint.alpha = (alpha * alphaStrength[index]).toInt()
+    }
   }
 
   /**
