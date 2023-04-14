@@ -92,10 +92,6 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
       viewModel.loadIntroductions();
     }
     ManageActivity.IntroductionScreenType t = viewModel.getScreenType();
-    if(t.equals(ALL)){
-      view.findViewById(R.id.manage_fragment_header).setVisibility(View.VISIBLE);
-      view.findViewById(R.id.introduction_title_view).setVisibility(View.GONE);
-    }
     adapter = new ManageAdapter(requireContext(), new IntroductionClickListener(this, this), t, this);
     introductionList = view.findViewById(R.id.recycler_view);
     introductionList.setClipToPadding(true);
@@ -135,12 +131,16 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
       }
     });
     from_title_view = view.findViewById(R.id.introduction_title_view);
-    if (viewModel.getScreenType() == ALL){
+    View all_header = view.findViewById(R.id.manage_fragment_header);
+    /*
+    if (t == ALL){
       from_title_view.setVisibility(View.GONE);
+      all_header.setVisibility(View.VISIBLE);
     } else {
       from_title_view.setText(String.format(getString(R.string.ManageIntroductionsFragment__Title_Introductions_from), viewModel.getIntroducerName()));
       from_title_view.setVisibility(View.VISIBLE);
-    }
+      all_header.setVisibility(View.GONE);
+    }*/
   }
 
   private void initializeNavigationButton(@NonNull View view){
