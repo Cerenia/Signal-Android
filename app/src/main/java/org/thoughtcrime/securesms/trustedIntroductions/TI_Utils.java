@@ -367,8 +367,8 @@ public class TI_Utils {
           knownIds.add(introduceeServiceId);
           String name = cursor.getString(cursor.getColumnIndex(SORT_NAME));
           String phone = cursor.getString(cursor.getColumnIndex(PHONE));
-          // TODO: hacky workaround, using Carols number if empty. Will need to set up another background Job to handle this case properly after demo.
-          phone = phone == null? "+17078612020" : phone;
+          // TODO: hacky workaround, using placeholder if empty. Will need to set up another background Job to handle this case properly after demo (Carol was an unknown recipient -> no nr. yet.).
+          phone = phone == null? "missing" : phone;
           String identityKey = IdKeyPair.findCorrespondingKeyInList(introduceeServiceId, idKeyPairs);
           TI_Data d = new TI_Data(null, TrustedIntroductionsDatabase.State.PENDING, introducerServiceId, introduceeServiceId, name, phone, identityKey, null, timestamp);
           result.add(d);
@@ -384,8 +384,8 @@ public class TI_Utils {
         if (knownIds.contains(introduceeServiceId)){
           int j = 0;
           while(!result.get(j).getIntroduceeServiceId().equals(introduceeServiceId)) j++;
-          if (j < knownIds.size() - 1){
-            throw new AssertionError("Something went wrong fetching recipients in parseTIMessage (size of service IDs > JSONArray)");
+          if (j >= result.size()){
+            throw new AssertionError("Known Id not found in the original JSON Data");
           }
           result.get(j).setPredictedSecurityNumber(o.getString(PREDICTED_FINGERPRINT_J));
         } else {
