@@ -97,7 +97,9 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
     introductionList = view.findViewById(R.id.recycler_view);
     introductionList.setClipToPadding(true);
     introductionList.setAdapter(adapter);
-
+    no_introductions = view.findViewById(R.id.no_introductions_found);
+    navigationExplanation = view.findViewById(R.id.navigation_explanation);
+    all_header = view.findViewById(R.id.manage_fragment_header);
     from_title_view = view.findViewById(R.id.introduction_title_view);
     if (t == ALL){
       from_title_view.setVisibility(View.GONE);
@@ -107,7 +109,9 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
       from_title_view.setVisibility(View.VISIBLE);
       all_header.setVisibility(View.GONE);
     }
+    initializeNavigationButton(view);
     final String finalIntroducerName = viewModel.getIntroducerName();
+    // Observer
     this.viewModel.getIntroductions().observe(getViewLifecycleOwner(), introductions -> {
       // Screen layout
       if(introductions.size() > 0){
@@ -137,10 +141,6 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
         }
       }
     });
-    initializeNavigationButton(view);
-    no_introductions = view.findViewById(R.id.no_introductions_found);
-    navigationExplanation = view.findViewById(R.id.navigation_explanation);
-    all_header = view.findViewById(R.id.manage_fragment_header);
   }
 
   private void initializeNavigationButton(@NonNull View view){
