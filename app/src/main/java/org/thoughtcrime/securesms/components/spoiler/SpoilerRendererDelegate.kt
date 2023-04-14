@@ -5,8 +5,6 @@ import android.graphics.Canvas
 import android.text.Annotation
 import android.text.Layout
 import android.text.Spanned
-import android.view.View
-import android.view.View.OnAttachStateChangeListener
 import android.view.animation.LinearInterpolator
 import android.widget.TextView
 import org.thoughtcrime.securesms.components.spoiler.SpoilerAnnotation.SpoilerClickableSpan
@@ -44,11 +42,6 @@ class SpoilerRendererDelegate @JvmOverloads constructor(private val view: TextVi
     spoilerDrawable = SpoilerDrawable(textColor)
     single = SingleLineSpoilerRenderer(spoilerDrawable)
     multi = MultiLineSpoilerRenderer(spoilerDrawable)
-
-    view.addOnAttachStateChangeListener(object : OnAttachStateChangeListener {
-      override fun onViewDetachedFromWindow(v: View) = stopAnimating()
-      override fun onViewAttachedToWindow(v: View) = Unit
-    })
   }
 
   fun updateFromTextColor() {
@@ -97,13 +90,9 @@ class SpoilerRendererDelegate @JvmOverloads constructor(private val view: TextVi
         animatorRunning = true
       }
     } else {
-      stopAnimating()
+      animator.pause()
+      animatorRunning = false
     }
-  }
-
-  private fun stopAnimating() {
-    animator.pause()
-    animatorRunning = false
   }
 
   private inline fun <V> MutableMap<Int, V>.getFromCache(vararg keys: Any, default: () -> V): V {
