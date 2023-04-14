@@ -151,7 +151,7 @@
             android:ellipsize="marquee"
             android:singleLine="true"
             android:text="@string/ManageIntroductionsListItemHeader__Introducee"
-            android:textAppearance="@style/Signal.Text.BodyLarge"
+            android:textAppearance="@style/Signal.Text.BodyMedium"
             android:textColor="@color/signal_text_primary"
             android:textStyle="bold"
             android:gravity="start"

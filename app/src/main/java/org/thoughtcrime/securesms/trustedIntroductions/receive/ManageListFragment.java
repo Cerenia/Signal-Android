@@ -49,6 +49,7 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
   private TextView no_introductions;
   private TextView navigationExplanation;
   private TextView from_title_view;
+  private View all_header;
 
   // Because final onCreate in AppCompat dissalows me from using a Fragment Factory, I need to use a Bundle for Arguments.
   static String TYPE_KEY = "type_key";
@@ -96,43 +97,8 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
     introductionList = view.findViewById(R.id.recycler_view);
     introductionList.setClipToPadding(true);
     introductionList.setAdapter(adapter);
-    this.viewModel.getIntroductions().observe(getViewLifecycleOwner(), users -> {
-      String filter = null;
-      if (!viewModel.getFilter().getValue().isEmpty()){
-        filter = viewModel.getFilter().getValue();
-      }
-      List<Pair<TI_Data, ManageViewModel.IntroducerInformation>> filtered = getFiltered(users, filter);
-      if(adapter != null){
-        adapter.submitList(new ArrayList<>(filtered));
-      }
-    });
-    initializeNavigationButton(view);
-    no_introductions = view.findViewById(R.id.no_introductions_found);
-    navigationExplanation = view.findViewById(R.id.navigation_explanation);
-    // Observer
-    final String finalIntroducerName = viewModel.getIntroducerName();
-    viewModel.getIntroductions().observe(getViewLifecycleOwner(), introductions -> {
-      if(introductions.size() > 0){
-        no_introductions.setVisibility(View.GONE);
-        navigationExplanation.setVisibility(View.VISIBLE);
-        if(viewModel.getScreenType() == RECIPIENT_SPECIFIC){
-          from_title_view.setVisibility(View.VISIBLE);
-        }
-        refreshList();
-      } else {
-        no_introductions.setVisibility(View.VISIBLE);
-        navigationExplanation.setVisibility(View.GONE);
-        from_title_view.setVisibility(View.GONE);
-        if(viewModel.getScreenType() == ALL){
-          no_introductions.setText(R.string.ManageIntroductionsFragment__No_Introductions_all);
-        } else {
-          no_introductions.setText(this.getString(R.string.ManageIntroductionsFragment__No_Introductions_from, finalIntroducerName));
-        }
-      }
-    });
+
     from_title_view = view.findViewById(R.id.introduction_title_view);
-    View all_header = view.findViewById(R.id.manage_fragment_header);
-    /*
     if (t == ALL){
       from_title_view.setVisibility(View.GONE);
       all_header.setVisibility(View.VISIBLE);
@@ -140,7 +106,41 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
       from_title_view.setText(String.format(getString(R.string.ManageIntroductionsFragment__Title_Introductions_from), viewModel.getIntroducerName()));
       from_title_view.setVisibility(View.VISIBLE);
       all_header.setVisibility(View.GONE);
-    }*/
+    }
+    final String finalIntroducerName = viewModel.getIntroducerName();
+    this.viewModel.getIntroductions().observe(getViewLifecycleOwner(), introductions -> {
+      // Screen layout
+      if(introductions.size() > 0){
+        no_introductions.setVisibility(View.GONE);
+        navigationExplanation.setVisibility(View.VISIBLE);
+        if(viewModel.getScreenType() == RECIPIENT_SPECIFIC){
+          from_title_view.setVisibility(View.VISIBLE);
+        } else {
+          all_header.setVisibility(View.VISIBLE);
+        }
+        // Filtering behavior
+        String filter = null;
+        if (!viewModel.getFilter().getValue().isEmpty()){
+          filter = viewModel.getFilter().getValue();
+        }
+        List<Pair<TI_Data, ManageViewModel.IntroducerInformation>> filtered = getFiltered(introductions, filter);
+        refreshList();
+      } else {
+        no_introductions.setVisibility(View.VISIBLE);
+        navigationExplanation.setVisibility(View.GONE);
+        from_title_view.setVisibility(View.GONE);
+        all_header.setVisibility(View.GONE);
+        if(viewModel.getScreenType() == ALL){
+          no_introductions.setText(R.string.ManageIntroductionsFragment__No_Introductions_all);
+        } else {
+          no_introductions.setText(this.getString(R.string.ManageIntroductionsFragment__No_Introductions_from, finalIntroducerName));
+        }
+      }
+    });
+    initializeNavigationButton(view);
+    no_introductions = view.findViewById(R.id.no_introductions_found);
+    navigationExplanation = view.findViewById(R.id.navigation_explanation);
+    all_header = view.findViewById(R.id.manage_fragment_header);
   }
 
   private void initializeNavigationButton(@NonNull View view){
