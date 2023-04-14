@@ -9,7 +9,7 @@
 
     <org.thoughtcrime.securesms.components.FromTextView
         android:id="@+id/date_header"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="16dp"
@@ -20,6 +20,7 @@
         android:text="@string/ManageIntroductionsListItemHeader__Date"
         android:textAppearance="@style/Signal.Text.BodyMedium"
         android:textColor="@color/signal_text_primary"
+        android:textStyle="bold"
         android:gravity="start"
         app:layout_constraintHorizontal_bias="0"
         app:layout_constraintStart_toStartOf="parent"
@@ -30,7 +31,7 @@
 
     <org.thoughtcrime.securesms.components.FromTextView
         android:id="@+id/from_header"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="16dp"
@@ -41,6 +42,7 @@
         android:text="@string/ManageIntroductionsListItemHeader__Introducer"
         android:textAppearance="@style/Signal.Text.BodyMedium"
         android:textColor="@color/signal_text_primary"
+        android:textStyle="bold"
         android:gravity="start"
         app:layout_constraintHorizontal_bias="0"
         app:layout_constraintStart_toEndOf="@id/date_header"
@@ -58,7 +60,7 @@
 
     <org.thoughtcrime.securesms.components.FromTextView
         android:id="@+id/introducee_header"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
@@ -68,8 +70,8 @@
         android:text="@string/ManageIntroductionsListItemHeader__Introducee"
         android:textAppearance="@style/Signal.Text.BodyLarge"
         android:textColor="@color/signal_text_primary"
-        android:gravity="start|top"
-        android:visibility="gone"
+        android:textStyle="bold"
+        android:gravity="start"
         app:layout_constraintStart_toStartOf="@id/half_guide_header"
         app:layout_constraintHorizontal_bias="0"
         app:layout_constraintTop_toTopOf="parent"
