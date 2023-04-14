@@ -374,8 +374,8 @@ public class TI_Utils {
           result.add(d);
           cursor.moveToNext();
         }
-        cursor.close();
       }
+      cursor.close();
       // Iterate through JSONData again, create the introductions for the still unknown recipients & set the predictedSecurityNumbers for all
       for(int i = 0; i < introducees.length(); i++){
         JSONObject o = introducees.getJSONObject(i);
