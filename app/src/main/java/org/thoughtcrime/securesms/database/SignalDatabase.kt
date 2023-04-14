@@ -109,7 +109,6 @@ open class SignalDatabase(private val context: Application, databaseSecret: Data
     db.execSQL(CdsTable.CREATE_TABLE)
     db.execSQL(RemoteMegaphoneTable.CREATE_TABLE)
     db.execSQL(PendingPniSignatureMessageTable.CREATE_TABLE)
-    db.execSQL(CallLinkTable.CREATE_TABLE)
     db.execSQL(CallTable.CREATE_TABLE)
     db.execSQL(TrustedIntroductionsDatabase.CREATE_TABLE)
     executeStatements(db, SearchTable.CREATE_TABLE)
