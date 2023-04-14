@@ -372,7 +372,8 @@ public class ConversationParentFragment extends Fragment
                ScheduleMessageTimePickerBottomSheet.ScheduleCallback,
                ConversationBottomSheetCallback,
                ScheduleMessageDialogCallback,
-               ConversationOptionsMenu.Callback
+               ConversationOptionsMenu.Callback,
+               ConversationOptionsMenu.Dependencies
 {
 
   private static final int SHORTCUT_ICON_SIZE = Build.VERSION.SDK_INT >= 26 ? ViewUtil.dpToPx(72) : ViewUtil.dpToPx(48 + 16 * 2);
@@ -521,7 +522,7 @@ public class ConversationParentFragment extends Fragment
   @Override
   public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
     disposables.bindTo(getViewLifecycleOwner());
-    menuProvider = new ConversationOptionsMenu.Provider(this, disposables);
+    menuProvider = new ConversationOptionsMenu.Provider(this, this, disposables);
     SpoilerAnnotation.resetRevealedSpoilers();
 
     if (requireActivity() instanceof Callback) {
@@ -1333,8 +1334,8 @@ public class ConversationParentFragment extends Fragment
   }
 
   @Override
-  public void handleDial(boolean isSecure) {
-    Recipient recipient = getRecipient();
+  public void handleDial(final Recipient recipient, boolean isSecure) {
+    if (recipient == null) return;
 
     if (isSecure) {
       CommunicationActions.startVoiceCall(this, recipient);
@@ -1344,8 +1345,8 @@ public class ConversationParentFragment extends Fragment
   }
 
   @Override
-  public void handleVideo() {
-    Recipient recipient = getRecipient();
+  public void handleVideo(final Recipient recipient) {
+    if (recipient == null) return;
 
     if (recipient.isPushV2Group() && groupCallViewModel.hasActiveGroupCall().getValue() == Boolean.FALSE && groupViewModel.isNonAdminInAnnouncementGroup()) {
       new MaterialAlertDialogBuilder(requireContext()).setTitle(R.string.ConversationActivity_cant_start_group_call)
@@ -2026,7 +2027,7 @@ public class ConversationParentFragment extends Fragment
 
     reactionDelegate.setOnReactionSelectedListener(this);
 
-    joinGroupCallButton.setOnClickListener(v -> handleVideo());
+    joinGroupCallButton.setOnClickListener(v -> handleVideo(getRecipient()));
 
     voiceNoteMediaController.getVoiceNotePlayerViewState().observe(getViewLifecycleOwner(), state -> {
       if (state.isPresent()) {
@@ -2744,8 +2745,13 @@ public class ConversationParentFragment extends Fragment
     }
   }
 
+  @Override
   public boolean isInMessageRequest() {
     return messageRequestBottomView.getVisibility() == View.VISIBLE;
+  }
+
+  private boolean isSingleConversation() {
+    return getRecipient() != null && !getRecipient().isGroup();
   }
 
   private boolean isActiveGroup() {
@@ -2771,8 +2777,18 @@ public class ConversationParentFragment extends Fragment
     return sendButton.isManualSelection() && sendButton.getSelectedSendType().usesSmsTransport();
   }
 
+  @Override
+  public @Nullable LiveRecipient getLiveRecipient() {
+    return recipient;
+  }
+
   protected Recipient getRecipient() {
     return this.recipient.get();
+  }
+
+  @Override
+  public long getThreadId() {
+    return this.threadId;
   }
 
   private String getMessage() throws InvalidMessageException {
@@ -3591,32 +3607,28 @@ public class ConversationParentFragment extends Fragment
   }
 
   @Override
-  public @NonNull ConversationOptionsMenu.Snapshot getSnapshot() {
-    ConversationGroupViewModel.GroupActiveState groupActiveState = groupViewModel.getGroupActiveState().getValue();
-
-    return new ConversationOptionsMenu.Snapshot(
-        recipient != null ? recipient.get() : null,
-        viewModel.isPushAvailable(),
-        viewModel.canShowAsBubble(),
-        groupActiveState != null && groupActiveState.isActiveGroup(),
-        groupActiveState != null && groupActiveState.isActiveV2Group(),
-        groupActiveState != null && !groupActiveState.isActiveGroup(),
-        groupCallViewModel != null && groupCallViewModel.hasActiveGroupCall().getValue() == Boolean.TRUE,
-        distributionType,
-        threadId,
-        isInMessageRequest(),
-        isInBubble()
-    );
+  public @NonNull  ConversationViewModel getViewModel() {
+    return viewModel;
   }
 
   @Override
-  public void showExpiring(@NonNull Recipient recipient) {
-    titleView.showExpiring(recipient);
+  public @NonNull ConversationGroupViewModel getGroupViewModel() {
+    return groupViewModel;
   }
 
   @Override
-  public void clearExpiring() {
-    titleView.clearExpiring();
+  public @Nullable GroupCallViewModel getGroupCallViewModel() {
+    return groupCallViewModel;
+  }
+
+  @Override
+  public @NonNull ConversationTitleView getTitleView() {
+    return titleView;
+  }
+
+  @Override
+  public int getDistributionType() {
+    return distributionType;
   }
 
   // Listeners
