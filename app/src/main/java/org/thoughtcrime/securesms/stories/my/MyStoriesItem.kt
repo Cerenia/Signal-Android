@@ -21,7 +21,6 @@ import org.thoughtcrime.securesms.mms.DecryptableStreamUriLoader
 import org.thoughtcrime.securesms.mms.GlideApp
 import org.thoughtcrime.securesms.stories.StoryTextPostModel
 import org.thoughtcrime.securesms.util.DateUtils
-import org.thoughtcrime.securesms.util.DebouncedOnClickListener
 import org.thoughtcrime.securesms.util.adapter.mapping.LayoutFactory
 import org.thoughtcrime.securesms.util.adapter.mapping.MappingAdapter
 import org.thoughtcrime.securesms.util.adapter.mapping.MappingViewHolder
@@ -105,11 +104,7 @@ object MyStoriesItem {
 
     override fun bind(model: Model) {
       storyPreview.isClickable = false
-      itemView.setOnClickListener(
-        DebouncedOnClickListener {
-          model.onClick(model, storyPreview)
-        }
-      )
+      itemView.setOnClickListener { model.onClick(model, storyPreview) }
       downloadTarget.setOnClickListener { model.onSaveClick(model) }
       moreTarget.setOnClickListener { showContextMenu(model) }
       presentDateOrStatus(model)
