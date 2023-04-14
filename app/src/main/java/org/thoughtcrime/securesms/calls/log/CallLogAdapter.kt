@@ -155,29 +155,24 @@ class CallLogAdapter(
       binding.callRecipientAvatar.setAvatar(GlideApp.with(binding.callRecipientAvatar), model.call.peer, true)
       binding.callRecipientBadge.setBadgeFromRecipient(model.call.peer)
       binding.callRecipientName.text = model.call.peer.getDisplayName(context)
-      presentCallInfo(model.call, model.call.date)
+      presentCallInfo(model.call.call, model.call.date)
       presentCallType(model)
     }
 
-    private fun presentCallInfo(call: CallLogRow.Call, date: Long) {
-      val callState = context.getString(getCallStateStringRes(call.record))
+    private fun presentCallInfo(call: CallTable.Call, date: Long) {
       binding.callInfo.text = context.getString(
         R.string.CallLogAdapter__s_dot_s,
-        if (call.children.size > 1) {
-          context.getString(R.string.CallLogAdapter__d_s, call.children.size, callState)
-        } else {
-          callState
-        },
+        context.getString(getCallStateStringRes(call)),
         DateUtils.getBriefRelativeTimeSpanString(context, Locale.getDefault(), date)
       )
 
       binding.callInfo.setRelativeDrawables(
-        start = getCallStateDrawableRes(call.record)
+        start = getCallStateDrawableRes(call)
       )
 
       val color = ContextCompat.getColor(
         context,
-        if (call.record.event == CallTable.Event.MISSED) {
+        if (call.event == CallTable.Event.MISSED) {
           R.color.signal_colorError
         } else {
           R.color.signal_colorOnSurface
@@ -193,7 +188,7 @@ class CallLogAdapter(
     }
 
     private fun presentCallType(model: CallModel) {
-      when (model.call.record.type) {
+      when (model.call.call.type) {
         CallTable.Type.AUDIO_CALL -> {
           binding.callType.setImageResource(R.drawable.symbol_phone_24)
           binding.callType.setOnClickListener { onStartAudioCallClicked(model.call.peer) }
