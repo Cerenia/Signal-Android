@@ -5,11 +5,13 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import androidx.annotation.IdRes
 import androidx.core.view.MenuProvider
-import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.kotlin.subscribeBy
 import org.thoughtcrime.securesms.R
+import org.thoughtcrime.securesms.conversation.ConversationGroupViewModel.GroupActiveState
+import org.thoughtcrime.securesms.conversation.ui.groupcall.GroupCallViewModel
 import org.thoughtcrime.securesms.database.ThreadTable
 import org.thoughtcrime.securesms.keyvalue.SignalStore
+import org.thoughtcrime.securesms.recipients.LiveRecipient
 import org.thoughtcrime.securesms.recipients.Recipient
 import org.thoughtcrime.securesms.util.LifecycleDisposable
 
@@ -22,63 +24,56 @@ internal object ConversationOptionsMenu {
    * MenuProvider implementation for the conversation options menu.
    */
   class Provider(
-    private val callback: Callback,
+    private val dependencies: Dependencies,
+    private val optionsMenuProviderCallback: Callback,
     private val lifecycleDisposable: LifecycleDisposable
-  ) : MenuProvider {
+  ) : MenuProvider, Dependencies by dependencies {
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
       menu.clear()
 
-      val (
-        recipient,
-        isPushAvailable,
-        canShowAsBubble,
-        isActiveGroup,
-        isActiveV2Group,
-        isInActiveGroup,
-        hasActiveGroupCall,
-        distributionType,
-        threadId,
-        isInMessageRequest,
-        isInBubble
-      ) = callback.getSnapshot()
+      val recipient: Recipient? = liveRecipient?.get()
+      val groupActiveState: GroupActiveState? = groupViewModel.groupActiveState.value
+      val isActiveGroup = groupActiveState != null && groupActiveState.isActiveGroup
+      val isActiveV2Group = groupActiveState != null && groupActiveState.isActiveV2Group
+      val isInActiveGroup = groupActiveState != null && !groupActiveState.isActiveGroup
 
-      if (isInMessageRequest && (recipient != null) && !recipient.isBlocked) {
+      if (isInMessageRequest() && (recipient != null) && !recipient.isBlocked) {
         if (isActiveGroup) {
           menuInflater.inflate(R.menu.conversation_message_requests_group, menu)
         }
       }
 
-      if (isPushAvailable) {
+      if (viewModel.isPushAvailable) {
         if (recipient!!.expiresInSeconds > 0) {
           if (!isInActiveGroup) {
             menuInflater.inflate(R.menu.conversation_expiring_on, menu)
           }
-          callback.showExpiring(recipient)
+          titleView.showExpiring(liveRecipient!!)
         } else {
           if (!isInActiveGroup) {
             menuInflater.inflate(R.menu.conversation_expiring_off, menu)
           }
-          callback.clearExpiring()
+          titleView.clearExpiring()
         }
       }
 
-      if (recipient?.isGroup == false) {
-        if (isPushAvailable) {
+      if (isSingleConversation()) {
+        if (viewModel.isPushAvailable) {
           menuInflater.inflate(R.menu.conversation_callable_secure, menu)
-        } else if (!recipient.isReleaseNotes && SignalStore.misc().smsExportPhase.allowSmsFeatures()) {
+        } else if (!recipient!!.isReleaseNotes && SignalStore.misc().smsExportPhase.allowSmsFeatures()) {
           menuInflater.inflate(R.menu.conversation_callable_insecure, menu)
         }
-      } else if (recipient?.isGroup == true) {
+      } else if (isGroupConversation()) {
         if (isActiveV2Group) {
           menuInflater.inflate(R.menu.conversation_callable_groupv2, menu)
-          if (hasActiveGroupCall) {
+          if (groupCallViewModel != null && java.lang.Boolean.TRUE == groupCallViewModel.hasActiveGroupCall().getValue()) {
             hideMenuItem(menu, R.id.menu_video_secure)
           }
-          callback.showGroupCallingTooltip()
+          showGroupCallingTooltip()
         }
         menuInflater.inflate(R.menu.conversation_group_options, menu)
-        if (!recipient.isPushGroup) {
+        if (!isPushGroupConversation()) {
           menuInflater.inflate(R.menu.conversation_mms_group_options, menu)
           if (distributionType == ThreadTable.DistributionTypes.BROADCAST) {
             menu.findItem(R.id.menu_distribution_broadcast).isChecked = true
@@ -91,22 +86,22 @@ internal object ConversationOptionsMenu {
 
       menuInflater.inflate(R.menu.conversation, menu)
 
-      if (isInMessageRequest && !recipient!!.isBlocked) {
+      if (isInMessageRequest() && !recipient!!.isBlocked) {
         hideMenuItem(menu, R.id.menu_conversation_settings)
       }
 
-      if (recipient?.isGroup == false && !isPushAvailable && !recipient.isReleaseNotes) {
+      if (isSingleConversation() && !viewModel.isPushAvailable && !recipient!!.isReleaseNotes) {
         menuInflater.inflate(R.menu.conversation_insecure, menu)
       }
 
-      if (recipient?.isMuted == true) menuInflater.inflate(R.menu.conversation_muted, menu) else menuInflater.inflate(R.menu.conversation_unmuted, menu)
+      if (recipient != null && recipient.isMuted) menuInflater.inflate(R.menu.conversation_muted, menu) else menuInflater.inflate(R.menu.conversation_unmuted, menu)
 
-      if (recipient?.isGroup == false && recipient.contactUri == null && !recipient.isReleaseNotes && !recipient.isSelf && recipient.hasE164()) {
+      if (isSingleConversation() && getRecipient()!!.contactUri == null && !recipient!!.isReleaseNotes && !recipient.isSelf && recipient.hasE164()) {
         menuInflater.inflate(R.menu.conversation_add_to_contacts, menu)
       }
 
       if (recipient != null && recipient.isSelf) {
-        if (isPushAvailable) {
+        if (viewModel.isPushAvailable) {
           hideMenuItem(menu, R.id.menu_call_secure)
           hideMenuItem(menu, R.id.menu_video_secure)
         } else {
@@ -115,8 +110,8 @@ internal object ConversationOptionsMenu {
         hideMenuItem(menu, R.id.menu_mute_notifications)
       }
 
-      if (recipient?.isBlocked == true) {
-        if (isPushAvailable) {
+      if (recipient != null && recipient.isBlocked) {
+        if (viewModel.isPushAvailable) {
           hideMenuItem(menu, R.id.menu_call_secure)
           hideMenuItem(menu, R.id.menu_video_secure)
           hideMenuItem(menu, R.id.menu_expiring_messages)
@@ -127,7 +122,7 @@ internal object ConversationOptionsMenu {
         hideMenuItem(menu, R.id.menu_mute_notifications)
       }
 
-      if (recipient?.isReleaseNotes == true) {
+      if (recipient != null && recipient.isReleaseNotes) {
         hideMenuItem(menu, R.id.menu_add_shortcut)
       }
 
@@ -136,15 +131,15 @@ internal object ConversationOptionsMenu {
       if (isActiveV2Group) {
         hideMenuItem(menu, R.id.menu_mute_notifications)
         hideMenuItem(menu, R.id.menu_conversation_settings)
-      } else if (recipient?.isGroup == true) {
+      } else if (isGroupConversation()) {
         hideMenuItem(menu, R.id.menu_conversation_settings)
       }
 
       hideMenuItem(menu, R.id.menu_create_bubble)
-      lifecycleDisposable += canShowAsBubble.subscribeBy(onNext = { yes: Boolean ->
+      lifecycleDisposable += viewModel.canShowAsBubble().subscribeBy(onNext = { canShowAsBubble: Boolean ->
         val item = menu.findItem(R.id.menu_create_bubble)
         if (item != null) {
-          item.isVisible = yes && !isInBubble
+          item.isVisible = canShowAsBubble && !isInBubble()
         }
       })
 
@@ -152,34 +147,38 @@ internal object ConversationOptionsMenu {
         hideMenuItem(menu, R.id.menu_view_media)
       }
 
-      callback.onOptionsMenuCreated(menu)
+      optionsMenuProviderCallback.onOptionsMenuCreated(menu)
     }
 
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
       when (menuItem.itemId) {
-        R.id.menu_call_secure -> callback.handleDial(true)
-        R.id.menu_video_secure -> callback.handleVideo()
-        R.id.menu_call_insecure -> callback.handleDial(false)
-        R.id.menu_view_media -> callback.handleViewMedia()
-        R.id.menu_add_shortcut -> callback.handleAddShortcut()
-        R.id.menu_search -> callback.handleSearch()
-        R.id.menu_add_to_contacts -> callback.handleAddToContacts()
-        R.id.menu_group_recipients -> callback.handleDisplayGroupRecipients()
-        R.id.menu_distribution_broadcast -> callback.handleDistributionBroadcastEnabled(menuItem)
-        R.id.menu_distribution_conversation -> callback.handleDistributionConversationEnabled(menuItem)
-        R.id.menu_group_settings -> callback.handleManageGroup()
-        R.id.menu_leave -> callback.handleLeavePushGroup()
-        R.id.menu_invite -> callback.handleInviteLink()
-        R.id.menu_mute_notifications -> callback.handleMuteNotifications()
-        R.id.menu_unmute_notifications -> callback.handleUnmuteNotifications()
-        R.id.menu_conversation_settings -> callback.handleConversationSettings()
-        R.id.menu_expiring_messages_off, R.id.menu_expiring_messages -> callback.handleSelectMessageExpiration()
-        R.id.menu_create_bubble -> callback.handleCreateBubble()
-        R.id.home -> callback.handleGoHome()
+        R.id.menu_call_secure -> optionsMenuProviderCallback.handleDial(getRecipient(), true)
+        R.id.menu_video_secure -> optionsMenuProviderCallback.handleVideo(getRecipient())
+        R.id.menu_call_insecure -> optionsMenuProviderCallback.handleDial(getRecipient(), false)
+        R.id.menu_view_media -> optionsMenuProviderCallback.handleViewMedia()
+        R.id.menu_add_shortcut -> optionsMenuProviderCallback.handleAddShortcut()
+        R.id.menu_search -> optionsMenuProviderCallback.handleSearch()
+        R.id.menu_add_to_contacts -> optionsMenuProviderCallback.handleAddToContacts()
+        R.id.menu_group_recipients -> optionsMenuProviderCallback.handleDisplayGroupRecipients()
+        R.id.menu_distribution_broadcast -> optionsMenuProviderCallback.handleDistributionBroadcastEnabled(menuItem)
+        R.id.menu_distribution_conversation -> optionsMenuProviderCallback.handleDistributionConversationEnabled(menuItem)
+        R.id.menu_group_settings -> optionsMenuProviderCallback.handleManageGroup()
+        R.id.menu_leave -> optionsMenuProviderCallback.handleLeavePushGroup()
+        R.id.menu_invite -> optionsMenuProviderCallback.handleInviteLink()
+        R.id.menu_mute_notifications -> optionsMenuProviderCallback.handleMuteNotifications()
+        R.id.menu_unmute_notifications -> optionsMenuProviderCallback.handleUnmuteNotifications()
+        R.id.menu_conversation_settings -> optionsMenuProviderCallback.handleConversationSettings()
+        R.id.menu_expiring_messages_off, R.id.menu_expiring_messages -> optionsMenuProviderCallback.handleSelectMessageExpiration()
+        R.id.menu_create_bubble -> optionsMenuProviderCallback.handleCreateBubble()
+        R.id.home -> optionsMenuProviderCallback.handleGoHome()
         else -> return false
       }
 
       return true
+    }
+
+    private fun getRecipient(): Recipient? {
+      return liveRecipient?.get()
     }
 
     private fun hideMenuItem(menu: Menu, @IdRes menuItem: Int) {
@@ -187,35 +186,38 @@ internal object ConversationOptionsMenu {
         menu.findItem(menuItem).isVisible = false
       }
     }
+
+    private fun isSingleConversation(): Boolean = getRecipient()?.isGroup == false
+
+    private fun isGroupConversation(): Boolean = getRecipient()?.isGroup == true
+
+    private fun isPushGroupConversation(): Boolean = getRecipient()?.isPushGroup == true
   }
 
   /**
-   * Data snapshot for building out menu state.
+   * Dependencies abstraction for the conversation options menu
    */
-  data class Snapshot(
-    val recipient: Recipient?,
-    val isPushAvailable: Boolean,
-    val canShowAsBubble: Observable<Boolean>,
-    val isActiveGroup: Boolean,
-    val isActiveV2Group: Boolean,
-    val isInActiveGroup: Boolean,
-    val hasActiveGroupCall: Boolean,
-    val distributionType: Int,
-    val threadId: Long,
-    val isInMessageRequest: Boolean,
-    val isInBubble: Boolean
-  )
+  interface Dependencies {
+    val liveRecipient: LiveRecipient?
+    val viewModel: ConversationViewModel
+    val groupViewModel: ConversationGroupViewModel
+    val groupCallViewModel: GroupCallViewModel?
+    val titleView: ConversationTitleView
+    val distributionType: Int
+    val threadId: Long
+    fun isInMessageRequest(): Boolean
+    fun showGroupCallingTooltip()
+    fun isInBubble(): Boolean
+  }
 
   /**
    * Callbacks abstraction for the converstaion options menu
    */
   interface Callback {
-    fun getSnapshot(): Snapshot
-
     fun onOptionsMenuCreated(menu: Menu)
 
-    fun handleVideo()
-    fun handleDial(isSecure: Boolean)
+    fun handleVideo(recipient: Recipient?)
+    fun handleDial(recipient: Recipient?, isSecure: Boolean)
     fun handleViewMedia()
     fun handleAddShortcut()
     fun handleSearch()
@@ -232,8 +234,5 @@ internal object ConversationOptionsMenu {
     fun handleSelectMessageExpiration()
     fun handleCreateBubble()
     fun handleGoHome()
-    fun showExpiring(recipient: Recipient)
-    fun clearExpiring()
-    fun showGroupCallingTooltip()
   }
 }
