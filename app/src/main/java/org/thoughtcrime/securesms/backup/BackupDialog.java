@@ -130,7 +130,6 @@ public class BackupDialog {
                                      Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
                     try {
-                       Log.d(TAG, "Starting choose backup location dialog");
                        fragment.startActivityForResult(intent, requestCode);
                      } catch (ActivityNotFoundException e) {
                        Toast.makeText(fragment.requireContext(), R.string.BackupDialog_no_file_picker_available, Toast.LENGTH_LONG)
