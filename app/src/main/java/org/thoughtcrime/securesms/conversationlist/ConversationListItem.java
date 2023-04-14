@@ -569,11 +569,7 @@ public final class ConversationListItem extends ConstraintLayout implements Bind
     int defaultTint = ContextCompat.getColor(context, R.color.signal_text_secondary);
 
     if (!thread.isMessageRequestAccepted()) {
-      if (thread.isRecipientHidden()) {
-        return emphasisAdded(context, context.getString(R.string.ThreadRecord_hidden_recipient), defaultTint);
-      } else {
-        return emphasisAdded(context, context.getString(R.string.ThreadRecord_message_request), defaultTint);
-      }
+      return emphasisAdded(context, context.getString(R.string.ThreadRecord_message_request), defaultTint);
     } else if (MessageTypes.isGroupUpdate(thread.getType())) {
       if (thread.getRecipient().isPushV2Group()) {
         return emphasisAdded(context, MessageRecord.getGv2ChangeDescription(context, thread.getBody(), null), defaultTint);

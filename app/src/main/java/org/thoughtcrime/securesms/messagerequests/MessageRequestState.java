@@ -35,8 +35,5 @@ public enum MessageRequestState {
   GROUP_V2_ADD,
 
   /** A message request is needed for an individual */
-  INDIVIDUAL,
-
-  /** A message request is needed for an individual since they have been hidden */
-  INDIVIDUAL_HIDDEN
+  INDIVIDUAL
 }

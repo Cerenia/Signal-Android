@@ -24,13 +24,12 @@ data class ConversationData(
 
   data class MessageRequestData @JvmOverloads constructor(
     val isMessageRequestAccepted: Boolean,
-    val isHidden: Boolean,
     private val groupsInCommon: Boolean = false,
     val isGroup: Boolean = false
   ) {
 
     fun includeWarningUpdateMessage(): Boolean {
-      return !isMessageRequestAccepted && !groupsInCommon && !isHidden
+      return !isMessageRequestAccepted && !groupsInCommon
     }
   }
 }
