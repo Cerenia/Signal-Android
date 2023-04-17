@@ -21,6 +21,7 @@ import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
+import org.whispersystems.signalservice.api.push.ServiceId;
 import org.whispersystems.signalservice.api.util.Preconditions;
 
 import java.util.Date;
@@ -128,11 +129,11 @@ public class ManageListItem extends ConstraintLayout {
   }
 
   @Nullable String getIntroducerName(Context c){
-    if(data.getIntroducerServiceId().equals(RecipientId.UNKNOWN)){
+    String introducerId = data.getIntroducerServiceId();
+    if(introducerId == null || introducerId.equals(RecipientId.UNKNOWN.toString())){
       return c.getString(R.string.ManageIntroductionsListItem__Forgotten_Introducer);
     }
-    // TODO: problematic in terms of work on UI thread?
-    Recipient r = Recipient.live(TI_Utils.getRecipientIdOrUnknown(data.getIntroducerServiceId())).resolve();
+    Recipient r = Recipient.live(TI_Utils.getRecipientIdOrUnknown(introducerId)).resolve();
     return r.getDisplayNameOrUsername(c);
   }
 
