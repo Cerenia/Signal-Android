@@ -75,9 +75,6 @@
         app:layout_constraintTop_toBottomOf="@id/barrier_title" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/manage_fragment_header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -178,7 +175,6 @@
         android:paddingBottom="?android:attr/actionBarSize"
         android:scrollbarThumbVertical="@drawable/contact_selection_scrollbar_thumb"
         android:scrollbars="vertical"
-        android:visibility="invisible"
         app:layout_constraintTop_toBottomOf="@id/barrier_recycle"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         tools:listitem="@layout/ti_manage_list_item" />

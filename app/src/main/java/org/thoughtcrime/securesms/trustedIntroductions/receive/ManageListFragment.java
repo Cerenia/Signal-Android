@@ -101,14 +101,6 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
     navigationExplanation = view.findViewById(R.id.navigation_explanation);
     all_header = view.findViewById(R.id.manage_fragment_header);
     from_title_view = view.findViewById(R.id.introduction_title_view);
-    if (t == ALL){
-      from_title_view.setVisibility(View.GONE);
-      all_header.setVisibility(View.VISIBLE);
-    } else {
-      from_title_view.setVisibility(View.VISIBLE);
-      from_title_view.setText(String.format(getString(R.string.ManageIntroductionsFragment__Title_Introductions_from), viewModel.getIntroducerName()));
-      all_header.setVisibility(View.GONE);
-    }
     initializeNavigationButton(view);
     final String finalIntroducerName = viewModel.getIntroducerName();
     // Observer
@@ -119,12 +111,11 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
         navigationExplanation.setVisibility(View.VISIBLE);
         if(viewModel.getScreenType() == RECIPIENT_SPECIFIC){
           from_title_view.setVisibility(View.VISIBLE);
+          from_title_view.setText(String.format(getString(R.string.ManageIntroductionsFragment__Title_Introductions_from), viewModel.getIntroducerName()));
+          all_header.setVisibility(View.GONE);
         } else {
+          from_title_view.setVisibility(View.GONE);
           all_header.setVisibility(View.VISIBLE);
-        }
-        // Filter if present
-        if (!viewModel.getFilter().getValue().isEmpty()){
-          refreshList();
         }
       } else {
         no_introductions.setVisibility(View.VISIBLE);
@@ -137,6 +128,7 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
           no_introductions.setText(this.getString(R.string.ManageIntroductionsFragment__No_Introductions_from, finalIntroducerName));
         }
       }
+      refreshList();
     });
   }
 
