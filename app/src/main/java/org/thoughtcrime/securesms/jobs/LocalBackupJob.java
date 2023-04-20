@@ -102,7 +102,7 @@ public final class LocalBackupJob extends BaseJob {
       String backupPassword  = BackupPassphrase.get(context);
       File   backupDirectory = StorageUtil.getOrCreateBackupDirectory();
       String timestamp       = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.US).format(new Date());
-      String[] backupNames = {"signal-%s.backup", "signal-trusted-introductions-%s.backup"};
+      String[] backupNames = {"signal-%s.backup", "signal_trusted_introductions-%s.backup"};
       for (String name: backupNames) {
         String fileName        = String.format(name, timestamp);
         File   backupFile      = new File(backupDirectory, fileName);
@@ -128,7 +128,7 @@ public final class LocalBackupJob extends BaseJob {
                                                                 tempFile,
                                                                 backupPassword,
                                                                 this::isCanceled,
-                                                                !name.contains("trusted-introductions"));
+                                                                !name.contains("trusted_introductions"));
           stopwatch.split("backup-create");
 
         boolean valid = BackupVerifier.verifyFile(new FileInputStream(tempFile), backupPassword, finishedEvent.getCount(), this::isCanceled);

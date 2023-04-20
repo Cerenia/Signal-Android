@@ -240,6 +240,10 @@ public class BackupUtil {
   }
 
   private static long getBackupTimestamp(@NonNull String backupName) {
+    // Backwards compatibility
+    if(backupName.contains("signal-trusted-introductions")){
+      backupName = backupName.replace("signal-trusted-introductions", "signal_trusted_introductions");
+    }
     String[] prefixSuffix = backupName.split("[.]");
 
     if (prefixSuffix.length == 2) {
