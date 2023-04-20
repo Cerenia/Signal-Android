@@ -107,7 +107,6 @@ public final class LocalBackupJob extends BaseJob {
         String fileName        = String.format(name, timestamp);
         File   backupFile      = new File(backupDirectory, fileName);
 
-        // TODO: Does that erase the first backup? if yes, take out of loop
         deleteOldTemporaryBackups(backupDirectory);
 
         if (backupFile.exists()) {
