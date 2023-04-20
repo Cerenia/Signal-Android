@@ -23,6 +23,7 @@ import org.thoughtcrime.securesms.backup.BackupVerifier;
 import org.thoughtcrime.securesms.backup.FullBackupExporter;
 import org.thoughtcrime.securesms.crypto.AttachmentSecretProvider;
 import org.thoughtcrime.securesms.database.SignalDatabase;
+import org.thoughtcrime.securesms.jobmanager.JsonJobData;
 import org.thoughtcrime.securesms.jobmanager.Job;
 import org.thoughtcrime.securesms.keyvalue.SignalStore;
 import org.thoughtcrime.securesms.notifications.NotificationChannels;
@@ -202,9 +203,11 @@ public final class LocalBackupJobApi29 extends BaseJob {
           Log.w(TAG, "Unable to verify backup", e);
           valid = false;
         }
-      } catch (SecurityException | IOException e) {
+      } catch (IOException e) {
         attempts++;
-        Log.w(TAG, "Unable to find backup file, attempt: " + attempts + "/" + MAX_STORAGE_ATTEMPTS, e);
+        Log.w(TAG, "Unable to find backup file, attempt: " + attempts + "/" + MAX_STORAGE_ATTEMPTS);
+      } catch (SecurityException e) {
+        Log.w(TAG, "Getting security exception when attempting to read file, aborting", e);
       }
     }
 
