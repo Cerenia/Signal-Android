@@ -1379,8 +1379,29 @@ public class ConversationFragment extends LoggingFragment implements Multiselect
   }
 
   private void postMarkAsReadRequest() {
-    Optional<Long> timestamp = MarkReadHelper.getLatestTimestamp(Objects.requireNonNull(getListAdapter()), getListLayoutManager());
-    timestamp.ifPresent(conversationViewModel::submitMarkReadRequest);
+    if (getListAdapter().hasNoConversationMessages()) {
+      return;
+    }
+
+    int position = getListLayoutManager().findFirstVisibleItemPosition();
+    if (position == -1 || position == getListAdapter().getItemCount() - 1) {
+      return;
+    }
+
+    ConversationMessage item = getListAdapter().getItem(position);
+    if (item == null) {
+      item = getListAdapter().getItem(position + 1);
+    }
+
+    if (item != null) {
+      MessageRecord record = item.getMessageRecord();
+      long latestReactionReceived = Stream.of(record.getReactions())
+                                          .map(ReactionRecord::getDateReceived)
+                                          .max(Long::compareTo)
+                                          .orElse(0L);
+
+      conversationViewModel.submitMarkReadRequest(Math.max(record.getDateReceived(), latestReactionReceived));
+    }
   }
 
   private void updateToolbarDependentMargins() {
