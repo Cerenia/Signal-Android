@@ -198,22 +198,6 @@ public class RecipientUtil {
     StorageSyncHelper.scheduleSyncForDataChange();
   }
 
-  @WorkerThread
-  public static boolean isRecipientHidden(long threadId) {
-    if (threadId < 0) {
-      return false;
-    }
-
-    ThreadTable threadTable     = SignalDatabase.threads();
-    Recipient   threadRecipient = threadTable.getRecipientForThreadId(threadId);
-
-    if (threadRecipient == null) {
-      return false;
-    }
-
-    return threadRecipient.isHidden();
-  }
-
   /**
    * If true, the new message request UI does not need to be shown, and it's safe to send read
    * receipts.
@@ -297,8 +281,7 @@ public class RecipientUtil {
            threadRecipient.isProfileSharing() ||
            threadRecipient.isSystemContact()  ||
            !threadRecipient.isRegistered()    ||
-           threadRecipient.isForceSmsSelection() ||
-           threadRecipient.isHidden();
+           threadRecipient.isForceSmsSelection();
   }
 
   /**
@@ -348,11 +331,9 @@ public class RecipientUtil {
            threadRecipient.isSystemContact() ||
            threadRecipient.isForceSmsSelection() ||
            !threadRecipient.isRegistered() ||
-           (!threadRecipient.isHidden() && (
-               hasSentMessageInThread(threadId) ||
-               noSecureMessagesAndNoCallsInThread(threadId) ||
-               isPreMessageRequestThread(threadId))
-           );
+           hasSentMessageInThread(threadId) ||
+           noSecureMessagesAndNoCallsInThread(threadId) ||
+           isPreMessageRequestThread(threadId);
   }
 
   @WorkerThread
