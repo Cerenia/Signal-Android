@@ -201,7 +201,7 @@ import java.util.concurrent.TimeUnit;
 @SuppressWarnings({ "OptionalGetWithoutIsPresent", "OptionalIsPresent" })
 public class MessageContentProcessor {
 
-  public static final String TAG = Log.tag(MessageContentProcessor.class);
+  private static final String TAG = Log.tag(MessageContentProcessor.class);
 
   private final Context context;
 
