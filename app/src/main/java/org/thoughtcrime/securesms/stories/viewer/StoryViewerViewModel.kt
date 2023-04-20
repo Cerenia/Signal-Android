@@ -4,7 +4,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Flowable
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
@@ -35,13 +34,10 @@ class StoryViewerViewModel(
     )
   )
 
-  private val loadStore = RxStore(StoryLoadState())
-
   private val disposables = CompositeDisposable()
 
   val stateSnapshot: StoryViewerState get() = store.state
   val state: Flowable<StoryViewerState> = store.stateFlowable
-  val loadState: Flowable<StoryLoadState> = loadStore.stateFlowable.distinctUntilChanged().observeOn(AndroidSchedulers.mainThread())
 
   private val hidden = mutableSetOf<RecipientId>()
 
@@ -51,7 +47,7 @@ class StoryViewerViewModel(
   private val childScrollStatePublisher: BehaviorSubject<Boolean> = BehaviorSubject.createDefault(false)
   val allowParentScrolling: Observable<Boolean> = Observable.combineLatest(
     childScrollStatePublisher.distinctUntilChanged(),
-    loadState.toObservable().map { it.isReady() }.distinctUntilChanged()
+    state.toObservable().map { it.loadState.isReady() }.distinctUntilChanged()
   ) { a, b -> !a && b }
 
   var hasConsumedInitialState = false
@@ -84,14 +80,14 @@ class StoryViewerViewModel(
   }
 
   fun setContentIsReady() {
-    loadStore.update {
-      it.copy(isContentReady = true)
+    store.update {
+      it.copy(loadState = it.loadState.copy(isContentReady = true))
     }
   }
 
   fun setCrossfaderIsReady(isReady: Boolean) {
-    loadStore.update {
-      it.copy(isCrossfaderReady = isReady)
+    store.update {
+      it.copy(loadState = it.loadState.copy(isCrossfaderReady = isReady))
     }
   }
 
@@ -155,7 +151,6 @@ class StoryViewerViewModel(
   override fun onCleared() {
     disposables.clear()
     store.dispose()
-    loadStore.dispose()
   }
 
   fun setSelectedPage(page: Int) {

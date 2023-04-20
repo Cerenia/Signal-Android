@@ -370,12 +370,10 @@ class StoryViewerPageFragment :
       }
     }
 
-    lifecycleDisposable += sharedViewModel.loadState.subscribe {
-      viewModel.setIsRunningSharedElementAnimation(!it.isCrossfaderReady)
-      storyContentContainer.visible = it.isCrossfaderReady
-    }
-
     lifecycleDisposable += sharedViewModel.state.distinctUntilChanged().observeOn(AndroidSchedulers.mainThread()).subscribe { parentState ->
+      viewModel.setIsRunningSharedElementAnimation(!parentState.loadState.isCrossfaderReady)
+      storyContentContainer.visible = parentState.loadState.isCrossfaderReady
+
       if (parentState.pages.size <= parentState.page) {
         viewModel.setIsSelectedPage(false)
       } else if (storyViewerPageArgs.recipientId == parentState.pages[parentState.page]) {
