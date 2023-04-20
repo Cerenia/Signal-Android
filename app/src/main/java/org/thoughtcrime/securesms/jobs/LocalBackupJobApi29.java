@@ -114,7 +114,7 @@ public final class LocalBackupJobApi29 extends BaseJob {
       String       backupPassword  = BackupPassphrase.get(context);
       DocumentFile backupDirectory = DocumentFile.fromTreeUri(context, backupDirectoryUri);
       String       timestamp       = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.US).format(new Date());
-      String[] backupNames = {"signal-%s.backup", "signal-trusted-introductions-%s.backup"};
+      String[] backupNames = {"signal-%s.backup", "signal_trusted_introductions-%s.backup"};
       for (String name: backupNames) {
 
         String       fileName        = String.format(name, timestamp);
@@ -149,7 +149,7 @@ public final class LocalBackupJobApi29 extends BaseJob {
                                                                 temporaryFile,
                                                                 backupPassword,
                                                                 this::isCanceled,
-                                                                !name.contains("trusted-introductions"));
+                                                                !name.contains("trusted_introductions"));
           stopwatch.split("backup-create");
 
           boolean valid = verifyBackup(backupPassword, temporaryFile, finishedEvent);
