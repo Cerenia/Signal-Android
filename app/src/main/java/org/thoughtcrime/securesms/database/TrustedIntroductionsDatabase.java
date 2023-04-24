@@ -767,7 +767,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
 
   public static class SetStateCallback extends Callback{
 
-    private static String tag = Log.tag(SetStateCallback.class);
+    public static String tag = Log.tag(SetStateCallback.class);
 
     public SetStateData data;
     boolean result;
@@ -849,7 +849,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
       return false;
     }
 
-    public static String getTag(){
+    public String getTag(){
       return tag;
     }
 
@@ -892,8 +892,8 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
   // TODO: all state transition methods can be public => FSM Logic adhered to this way.
   public static class InsertCallback extends Callback{
 
-    private static final String tag = Log.tag(InsertCallback.class);
-    private TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult data;
+    public static final String                                                         tag = Log.tag(InsertCallback.class);
+    private             TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult data;
     long result;
 
     public InsertCallback(@NonNull TI_Data data, @Nullable String base64KeyResult, @Nullable String aciResult){
@@ -921,7 +921,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
       return data;
     }
 
-    public static String getTag() {
+    public String getTag() {
       return tag;
     }
 
@@ -993,9 +993,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     abstract public void callback();
     abstract public TI_Data getIntroduction();
     abstract public TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult getRetrieveIdJobStruct();
-    public static String getTag(){
-      return Log.tag(Callback.class);
-    }
+    abstract public String getTag();
   }
 
   public static class IntroductionReader implements Closeable{

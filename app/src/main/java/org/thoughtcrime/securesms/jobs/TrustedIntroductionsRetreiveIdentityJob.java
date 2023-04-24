@@ -54,8 +54,8 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
   @SuppressWarnings("rawtypes") public static HashMap<String, TI_JobCallback.Factory> instantiate = new HashMap<>();
 
   static {
-    instantiate.put(TrustedIntroductionsDatabase.InsertCallback.getTag(), new TrustedIntroductionsDatabase.InsertCallback.Factory());
-    instantiate.put(TrustedIntroductionsDatabase.SetStateCallback.getTag(), new TrustedIntroductionsDatabase.SetStateCallback.Factory());
+    instantiate.put(TrustedIntroductionsDatabase.InsertCallback.tag, new TrustedIntroductionsDatabase.InsertCallback.Factory());
+    instantiate.put(TrustedIntroductionsDatabase.SetStateCallback.tag, new TrustedIntroductionsDatabase.SetStateCallback.Factory());
   }
 
   public static class TI_RetrieveIDJobResult extends JobCallbackData {
