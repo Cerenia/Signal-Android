@@ -8,8 +8,8 @@ import java.util.HashMap;
 // We are generally using json so working with Strings.
 // TODO: Not sure I need this anymore given it's a single callback now anyways?
 // Keeping it for now in case I need to add more.
-public abstract class TI_Serialize {
-  abstract public String serialize() throws JSONException;
+public interface TI_Serialize {
+  String serialize() throws JSONException;
 
   /**
    * Must also set the factory variable.
@@ -17,6 +17,6 @@ public abstract class TI_Serialize {
    * @return the deserialized object.
    * @throws JSONException
    */
-  abstract public TI_Serialize deserialize(String serialized) throws JSONException;
-  abstract public TI_Data getIntroduction();
+  TI_Serialize deserialize(String serialized) throws JSONException;
+  TI_Data getIntroduction();
 }
