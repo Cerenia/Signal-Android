@@ -367,8 +367,10 @@ public class TI_Utils {
           knownIds.add(introduceeServiceId);
           String name = cursor.getString(cursor.getColumnIndex(SORT_NAME));
           String phone = cursor.getString(cursor.getColumnIndex(PHONE));
-          // TODO: hacky workaround, using placeholder if empty. Will need to set up another background Job to handle this case properly after demo (Carol was an unknown recipient -> no nr. yet.).
-          phone = phone == null? "missing" : phone;
+          // TODO: hacky workaround, using nr provided in introduction if empty.
+          // couldn't find how I can check the matching phone nr. against directory easily
+          // -> at some point, defer this intro, add background task that verifies number and reinsert.
+          phone = phone == null? getPhone(introducees, introduceeServiceId) : phone;
           String identityKey = IdKeyPair.findCorrespondingKeyInList(introduceeServiceId, idKeyPairs);
           TI_Data d = new TI_Data(null, TrustedIntroductionsDatabase.State.PENDING, introducerServiceId, introduceeServiceId, name, phone, identityKey, null, timestamp);
           result.add(d);
@@ -399,6 +401,21 @@ public class TI_Utils {
       return null; // unsuccessful parse
     }
     return result;
+  }
+
+  private static String getPhone(JSONArray introducees, String introuceeServiceId){
+    try {
+      for (int i = 0; i < introducees.length(); i++) {
+        JSONObject o = introducees.getJSONObject(i);
+        if (o.getString(INTRODUCEE_SERVICE_ID_J).equals(introuceeServiceId)){
+          return o.getString(NUMBER_J);
+        }
+      }
+    } catch (JSONException e){
+      e.printStackTrace();
+      Log.i(TAG, "Error while extracting phone nr. from introduction. Using placeholder.");
+    }
+    return "missing";
   }
 
   /**
