@@ -1,22 +1,15 @@
 package org.thoughtcrime.securesms.trustedIntroductions
 
-import androidx.annotation.AnyThread
-import androidx.annotation.WorkerThread
 import org.json.JSONObject
 import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase
-import org.thoughtcrime.securesms.recipients.RecipientId
-import org.whispersystems.signalservice.api.push.ServiceId
-import org.whispersystems.signalservice.api.util.OptionalUtil.asOptional
-import org.whispersystems.signalservice.api.util.UuidUtil
-import java.util.Optional
-import java.util.UUID
+import org.thoughtcrime.securesms.trustedIntroductions.jobUtils.TI_Serialize
 
 // TODO: predictedSecurityNumber only needs to be nullable because I parse the TI_Message somewhat awkardly... maybe change at some point? Not super critical...
 // IntroduceeRecipientId and Introducer
 // introduceeIdentityKey is encoded in Base64 (this is how it is currently stored in the Identity Database) @see TI_Utils.encodeIdentityKey
-data class TI_Data (val id: Long?, val state: TrustedIntroductionsDatabase.State,  val introducerServiceId: String?, val introduceeServiceId: String, val introduceeName: String, val introduceeNumber: String, val introduceeIdentityKey: String, var predictedSecurityNumber: String?, val timestamp: Long){
+data class TI_Data (val id: Long?, val state: TrustedIntroductionsDatabase.State,  val introducerServiceId: String?, val introduceeServiceId: String, val introduceeName: String, val introduceeNumber: String, val introduceeIdentityKey: String, var predictedSecurityNumber: String?, val timestamp: Long) : TI_Serialize<TI_Data>() {
 
-  fun serialize() : String {
+  override fun serialize() : String {
     // Absence of key signifies null
     val builder = JSONObject()
     // does nothing iff id == null see: https://developer.android.com/reference/kotlin/org/json/JSONObject
@@ -30,6 +23,10 @@ data class TI_Data (val id: Long?, val state: TrustedIntroductionsDatabase.State
     builder.putOpt("predictedSecurityNumber", predictedSecurityNumber)
     builder.put("timestamp", timestamp)
     return builder.toString()
+  }
+
+  override fun deserialize(serialized: String) : TI_Data{
+    return Deserializer.deserialize(serialized)
   }
 
   companion object Deserializer {

@@ -38,12 +38,11 @@ public class TrustedIntroductionSendJob extends BaseJob {
   // TODO: How about enforcing rate limiting?
   // I think I will just enforce ignoring the messages on the receiving side instead
 
-
   public TrustedIntroductionSendJob(@NonNull RecipientId introductionRecipientId, @NonNull Set<RecipientId> introduceeIds){
     this(introductionRecipientId,
          introduceeIds,
          new Parameters.Builder()
-                       .setQueue(introductionRecipientId.toQueueKey() + TI_Utils.serializeForQueue(transformIntroduceeIdSetToLong(introduceeIds)))
+                       .setQueue(introductionRecipientId.toQueueKey() + TI_Utils.serializeForQueue(introduceeIdSetToLong(introduceeIds)))
                        .setLifespan(TI_Utils.TI_JOB_LIFESPAN)
                        .setMaxAttempts(TI_Utils.TI_JOB_MAX_ATTEMPTS)
                        .addConstraint(NetworkConstraint.KEY)
@@ -64,7 +63,7 @@ public class TrustedIntroductionSendJob extends BaseJob {
    * Makes sure this parameter of the job is serializable for queue key creation.
    * TODO: Is this reused? should that be somewhere else?
    */
-  private static @NonNull Set<Long> transformIntroduceeIdSetToLong(@NonNull Set<RecipientId> introduceeIds){
+  private static @NonNull Set<Long> introduceeIdSetToLong(@NonNull Set<RecipientId> introduceeIds){
     Set<Long> result = new HashSet<>();
     // Can't do this, min API too low
     //introduceeIds.forEach((id) -> result.add(id.toLong()));

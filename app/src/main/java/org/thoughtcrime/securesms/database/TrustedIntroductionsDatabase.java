@@ -12,14 +12,13 @@ import androidx.annotation.WorkerThread;
 
 import org.signal.core.util.SqlUtil;
 import org.signal.core.util.logging.Log;
-import org.thoughtcrime.securesms.crypto.storage.SignalIdentityKeyStore;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.jobs.TrustedIntroductionsRetreiveIdentityJob;
-import org.thoughtcrime.securesms.jobs.TrustedIntroductionsWaitForIdentityJob;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.recipients.RecipientUtil;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
+import org.thoughtcrime.securesms.trustedIntroductions.jobUtils.TI_Serialize;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
 import org.whispersystems.signalservice.api.push.ServiceId;
 import org.whispersystems.signalservice.api.util.Preconditions;
@@ -431,7 +430,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     RecipientId introduceeId = introduceeOpt.orElse(null);
     if(introduceeId == null){
       // Do not save identity when you are simply checking for conflict. We do not want persistent data that the user did not consciously decide to add.
-      ApplicationDependencies.getJobManager().add(new TrustedIntroductionsRetreiveIdentityJob(data, false, true));
+      ApplicationDependencies.getJobManager().add(new TrustedIntroductionsRetreiveIdentityJob(data, false, new InsertCallback(data, null, null)));
       Log.i(TAG, "Unknown recipient, deferred insertion of Introduction into database for: " + data.getIntroduceeName());
       // This is expected and not an error.
       return 0;
@@ -445,10 +444,13 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
         return -1;
       }
       try {
-        return insertIntroductionCallback(data, TI_Utils.getEncodedIdentityKey(introduceeId), introduceeServiceId.toString());
+        InsertCallback cb = new InsertCallback(data, TI_Utils.getEncodedIdentityKey(introduceeId), introduceeServiceId.toString());
+        cb.callback();
+        return cb.getResult();
       } catch (TI_Utils.TI_MissingIdentityException e){
         e.printStackTrace();
-        ApplicationDependencies.getJobManager().add(new TrustedIntroductionsRetreiveIdentityJob(data, false, true));
+        // Fetch identity key from infrastructure for conflict detection. The user still has not interacted so identity is not saved.
+        ApplicationDependencies.getJobManager().add(new TrustedIntroductionsRetreiveIdentityJob(data, false, new InsertCallback(data, null, null)));
         Log.i(TAG, "Unknown identity, deferred insertion of Introduction into database for: " + data.getIntroduceeName());
         // This is expected and not an error.
         return 0;
@@ -456,35 +458,6 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     }
   }
 
-  // Callback for profile retreive Identity job
-  // TODO: annoying that this needs to be public. Should be private and just passed as function pointer..
-  // But java is annoying when it comes to function serialization so I won't do that for now
-  // Only meant to be called by Job & @incomingIntroduction
-  /**
-   * @param data the introduction to be inserted, predicted security nr. may not be null
-   * @param base64KeyResult the public key fetched from the server for the introducee
-   * @param aciResult the aci fetched from the server for the introducee
-   * @return id of introduction or -1 if fail.
-   */
-  @WorkerThread
-  public long insertIntroductionCallback(TI_Data data, String base64KeyResult, String aciResult){
-    Preconditions.checkArgument(aciResult != null && data != null &&
-                                aciResult.equals(data.getIntroduceeServiceId()));
-    Preconditions.checkArgument(data.getPredictedSecurityNumber() != null);
-
-    ContentValues values = buildContentValuesForInsert(base64KeyResult.equals(data.getIntroduceeIdentityKey()) ? State.PENDING : State.CONFLICTING,
-                                                       data.getIntroducerServiceId(),
-                                                       data.getIntroduceeServiceId(),
-                                                       data.getIntroduceeName(),
-                                                       data.getIntroduceeNumber(),
-                                                       data.getIntroduceeIdentityKey(),
-                                                       data.getPredictedSecurityNumber(),
-                                                       data.getTimestamp());
-    SQLiteDatabase writeableDatabase = databaseHelper.getSignalWritableDatabase();
-    long id = writeableDatabase.insert(TABLE_NAME, null, values);
-    Log.i(TAG, "Inserted new introduction for: " + data.getIntroduceeName() + ", with id: " + id);
-    return id;
-  }
 
   /**
    * @param introduction the introduction to be modified.
@@ -511,6 +484,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
       // Save identity, the user specifically decided to interfere with the introduction (accept/reject) so saving this state is ok.
       Log.d(TAG, "Saving identity for: " + recipientId);
       ApplicationDependencies.getJobManager().add(new TrustedIntroductionsRetreiveIdentityJob(introduction, true, false));
+      // TODO: use emptyQueueListener instead!
       ApplicationDependencies.getJobManager().add(new TrustedIntroductionsWaitForIdentityJob(introduction, newState, logMessage));
       return false; // TODO: simply postponed, do we need ternary state here?
     }
@@ -798,6 +772,118 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
   // For this case, having a record of stale introductions could be used to restore the verification state without having to reverify.
 
   // TODO: all state transition methods can be public => FSM Logic adhered to this way.
+  public static class InsertCallback extends Callback<TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult>{
+
+    TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult data;
+    long result;
+
+    public InsertCallback(@NonNull TI_Data data, @Nullable String base64KeyResult, @Nullable String aciResult){
+
+      this.data = new TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult(data, base64KeyResult, aciResult);
+
+    }
+
+    public void setPublicKey(String base64KeyResult) {
+      this.data.key = base64KeyResult;
+    }
+
+    public void setAciResult(String aciResult) {
+      this.data.aci = aciResult;
+    }
+
+    public void callback(){
+      this.result = insertIntroduction();
+    }
+
+    // Callback for profile retreive Identity job
+    // But java is annoying when it comes to function serialization so I won't do that for now
+    // Only meant to be called by Job & @incomingIntroduction
+    /**
+     * @return id of introduction or -1 if fail.
+     */
+    @WorkerThread
+    private long insertIntroduction(){
+      Preconditions.checkArgument(data.aci != null && data.TIData != null &&
+                                  data.aci.equals(data.TIData.getIntroduceeServiceId()));
+      Preconditions.checkArgument(data.TIData.getPredictedSecurityNumber() != null);
+      TrustedIntroductionsDatabase db = SignalDatabase.trustedIntroductions();
+      ContentValues values = db.buildContentValuesForInsert(data.aci.equals(data.TIData.getIntroduceeIdentityKey()) ? State.PENDING : State.CONFLICTING,
+                                                         data.TIData.getIntroducerServiceId(),
+                                                         data.TIData.getIntroduceeServiceId(),
+                                                         data.TIData.getIntroduceeName(),
+                                                         data.TIData.getIntroduceeNumber(),
+                                                         data.TIData.getIntroduceeIdentityKey(),
+                                                         data.TIData.getPredictedSecurityNumber(),
+                                                         data.TIData.getTimestamp());
+      SQLiteDatabase writeableDatabase = db.databaseHelper.getSignalWritableDatabase();
+      long id = writeableDatabase.insert(TABLE_NAME, null, values);
+      Log.i(TAG, "Inserted new introduction for: " + data.TIData.getIntroduceeName() + ", with id: " + id);
+      return id;
+    }
+
+    public long getResult() {
+      return result;
+    }
+  }
+
+  public class RetreiveCallback extends Callback<TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult>{
+
+    TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult data;
+    boolean saveIdentity;
+    long result;
+
+    public RetreiveCallback(@NonNull TI_Data data, @Nullable String base64KeyResult, @Nullable String aciResult, boolean saveIdentity){
+      this.data = new TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult(data, base64KeyResult, aciResult);
+      this.saveIdentity = saveIdentity;
+    }
+
+    public void setPublicKey(String base64KeyResult) {
+      this.data.key = base64KeyResult;
+    }
+
+    public void setAciResult(String aciResult) {
+      this.data.aci = aciResult;
+    }
+
+    public void callback(){
+      this.result = insertIntroduction();
+    }
+
+    // Callback for profile retreive Identity job
+    // But java is annoying when it comes to function serialization so I won't do that for now
+    // Only meant to be called by Job & @incomingIntroduction
+    /**
+     * @return id of introduction or -1 if fail.
+     */
+    @WorkerThread
+    private long insertIntroduction(){
+      Preconditions.checkArgument(data.aci != null && data.TIData != null &&
+                                  data.aci.equals(data.TIData.getIntroduceeServiceId()));
+      Preconditions.checkArgument(data.TIData.getPredictedSecurityNumber() != null);
+
+      ContentValues values = buildContentValuesForInsert(data.aci.equals(data.TIData.getIntroduceeIdentityKey()) ? State.PENDING : State.CONFLICTING,
+                                                         data.TIData.getIntroducerServiceId(),
+                                                         data.TIData.getIntroduceeServiceId(),
+                                                         data.TIData.getIntroduceeName(),
+                                                         data.TIData.getIntroduceeNumber(),
+                                                         data.TIData.getIntroduceeIdentityKey(),
+                                                         data.TIData.getPredictedSecurityNumber(),
+                                                         data.TIData.getTimestamp());
+      SQLiteDatabase writeableDatabase = databaseHelper.getSignalWritableDatabase();
+      long id = writeableDatabase.insert(TABLE_NAME, null, values);
+      Log.i(TAG, "Inserted new introduction for: " + data.TIData.getIntroduceeName() + ", with id: " + id);
+      return id;
+    }
+
+    public long getResult() {
+      return result;
+    }
+  }
+
+  public abstract static class Callback<T extends TI_Serialize<T>>{
+    T data;
+    abstract public void callback();
+  }
 
   public static class IntroductionReader implements Closeable{
     private final Cursor cursor;
