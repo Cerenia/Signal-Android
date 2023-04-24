@@ -10,6 +10,8 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.annotation.WorkerThread;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.signal.core.util.SqlUtil;
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
@@ -18,6 +20,7 @@ import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.recipients.RecipientUtil;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
+import org.thoughtcrime.securesms.trustedIntroductions.jobUtils.TI_JobCallback;
 import org.thoughtcrime.securesms.trustedIntroductions.jobUtils.TI_Serialize;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
 import org.whispersystems.signalservice.api.push.ServiceId;
@@ -477,68 +480,18 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
 
     // Recipient not yet in database, must insert it first and update the introducee ID
     RecipientId recipientId = TI_Utils.getRecipientIdOrUnknown(introduction.getIntroduceeServiceId());
+    SetStateCallback cb = new SetStateCallback(new SetStateData(new TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult(introduction, null, null), newState, logMessage));
     if (recipientId.equals(RecipientId.UNKNOWN) ||
         !ApplicationDependencies.getProtocolStore().aci().identities().getIdentityRecord(recipientId).isPresent()){
       RecipientTable db = SignalDatabase.recipients();
       db.getAndPossiblyMerge(ServiceId.parseOrThrow(introduction.getIntroduceeServiceId()), introduction.getIntroduceeNumber());
       // Save identity, the user specifically decided to interfere with the introduction (accept/reject) so saving this state is ok.
       Log.d(TAG, "Saving identity for: " + recipientId);
-      ApplicationDependencies.getJobManager().add(new TrustedIntroductionsRetreiveIdentityJob(introduction, true, false));
-      // TODO: use emptyQueueListener instead!
-      ApplicationDependencies.getJobManager().add(new TrustedIntroductionsWaitForIdentityJob(introduction, newState, logMessage));
+      ApplicationDependencies.getJobManager().add(new TrustedIntroductionsRetreiveIdentityJob(introduction, true, cb));
       return false; // TODO: simply postponed, do we need ternary state here?
     }
-    return setStateCallback(introduction, newState, logMessage);
-  }
-
-  /**
-   * Callback for modifying introductions state,
-   * PRE: assumes that recipient equivalent to introducee exists in the recipient table as well as their identity in the identity table.
-   * @param introduction the introduction to be modified.
-   * @param newState the new state for the introduction.
-   * @param logMessage what should be written on the logcat for the modification.
-   * @return  if the insertion succeeded or failed
-   * TODO: currently can't distinguish between total failure or having to wait for a profilefetch. (Important?)
-   * => would only be necessary if we bubble this state up to the user... We could have a Toast stating that the verification state may take a while to update
-   * if recipient was not yet in the database.
-   * PRE: Introducee must be present in the RecipientTable & have a verificationStatus in the IdentityTable
-   */
-  @WorkerThread
-  public boolean setStateCallback(@NonNull TI_Data introduction, @NonNull State newState, @NonNull String logMessage){
-    RecipientId introduceeID = TI_Utils.getRecipientIdOrUnknown(introduction.getIntroduceeServiceId());
-    try (Cursor rdc = fetchRecipientDBCursor(introduceeID)) {
-      if (rdc.getCount() <= 0) {
-        // Programming error in setState codepath if this occurs.
-        throw new AssertionError("Unexpected missing recipient " + introduction.getIntroduceeName() + " in database while trying to change introduction state...");
-      }
-    }
-
-    IdentityTable.VerifiedStatus previousIntroduceeVerification = SignalDatabase.identities().getVerifiedStatus(introduceeID);
-    if (previousIntroduceeVerification == null){
-      throw new AssertionError("Unexpected missing verification status for " + introduction.getIntroduceeName());
-    }
-
-    // If the state turned stale we only change the introduction, not the verification status. Changing security nr. already has a hook for that.
-    // TODO: Potential Race condition, mutex?
-    if(!newState.isStale()){
-      modifyIntroduceeVerification(introduction.getIntroduceeServiceId(),
-                                   previousIntroduceeVerification,
-                                   newState,
-                                   String.format("Updated %s's verification state to: %s", introduction.getIntroduceeName(), newState));
-    }
-
-    // Modify introduction
-    ContentValues newValues = buildContentValuesForStateUpdate(introduction, newState);
-    SQLiteDatabase writeableDatabase = databaseHelper.getSignalWritableDatabase();
-    long result = writeableDatabase.update(TABLE_NAME, newValues, ID + " = ?", SqlUtil.buildArgs(introduction.getId()));
-
-    if ( result > 0 ){
-      // Log message on success
-      Log.i(TAG, logMessage);
-      return true;
-    }
-    Log.e(TAG, "State modification of introduction: " + introduction.getId() + " failed!");
-    return false;
+    cb.callback();
+    return cb.getResult();
   }
 
   /**
@@ -766,6 +719,147 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     return rdb.getCursorForSendingTI(s);
   }
 
+  public static class SetStateData extends TI_Serialize<SetStateData>{
+
+    @Nullable private TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult identityResult;
+    @NonNull private State newState;
+    @NonNull private String logMessage;
+
+    private static final String KEY_CALLBACK_JOB_RESULT = "setStateCallbackJobResult";
+    private static final String KEY_NEW_STATE = "setStateCallbackNewState";
+    private static final String KEY_LOG_MESSAGE = "setStateCallbackLogMessage";
+
+    public SetStateData(){
+
+    }
+
+    public SetStateData(@Nullable TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult identityResult, @NonNull State newState, @NonNull String logMessage){
+      this.identityResult = identityResult;
+      this.newState = newState;
+      this.logMessage = logMessage;
+    }
+
+    @Override public String serialize() throws JSONException {
+      JSONObject serializedData = new JSONObject();
+      serializedData.putOpt(KEY_CALLBACK_JOB_RESULT, identityResult == null ? null : identityResult.serialize());
+      serializedData.put(KEY_NEW_STATE, newState.toInt());
+      serializedData.put(KEY_LOG_MESSAGE, logMessage);
+      return serializedData.toString();
+    }
+
+    @Override public SetStateData deserialize(String serialized) throws JSONException {
+      JSONObject j   = new JSONObject(serialized);
+      this.identityResult = j.has(KEY_CALLBACK_JOB_RESULT) ? new TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult().deserialize(j.getString(KEY_CALLBACK_JOB_RESULT)) : null;
+      this.newState = State.forState(j.getInt(KEY_NEW_STATE));
+      this.logMessage = j.getString(KEY_LOG_MESSAGE);
+      return this;
+    }
+
+    @Override public TI_Data getIntroduction() {
+      return identityResult == null? null: identityResult.TIData;
+    }
+  }
+
+  public static class SetStateCallback extends Callback<SetStateData>{
+
+    public static String tag = Log.tag(SetStateCallback.class);
+
+    public SetStateData data;
+    boolean result;
+
+    SetStateCallback(@Nullable SetStateData data){
+      this.data = data == null ? new SetStateData() : data;
+    }
+
+    @Override public void callback() {
+      if(data == null){
+        throw new AssertionError("Data missing in SetStateCallback!");
+      }
+      result = setStateCallback(data.identityResult.TIData, data.newState, data.logMessage);
+    }
+
+    @Override public TI_Data getIntroduction() {
+      return data == null? null: data.getIntroduction();
+    }
+
+    public boolean getResult(){
+      return result;
+    }
+
+    /**
+     * Callback for modifying introductions state,
+     * PRE: assumes that recipient equivalent to introducee exists in the recipient table as well as their identity in the identity table.
+     * @param introduction the introduction to be modified.
+     * @param newState the new state for the introduction.
+     * @param logMessage what should be written on the logcat for the modification.
+     * @return  if the insertion succeeded or failed
+     * TODO: currently can't distinguish between total failure or having to wait for a profilefetch. (Important?)
+     * => would only be necessary if we bubble this state up to the user... We could have a Toast stating that the verification state may take a while to update
+     * if recipient was not yet in the database.
+     * PRE: Introducee must be present in the RecipientTable & have a verificationStatus in the IdentityTable
+     */
+    @WorkerThread
+    boolean setStateCallback(@NonNull TI_Data introduction, @NonNull State newState, @NonNull String logMessage){
+      TrustedIntroductionsDatabase db = SignalDatabase.trustedIntroductions();
+      RecipientId introduceeID = TI_Utils.getRecipientIdOrUnknown(introduction.getIntroduceeServiceId());
+      try (Cursor rdc = db.fetchRecipientDBCursor(introduceeID)) {
+        if (rdc.getCount() <= 0) {
+          // Programming error in setState codepath if this occurs.
+          throw new AssertionError("Unexpected missing recipient " + introduction.getIntroduceeName() + " in database while trying to change introduction state...");
+        }
+      }
+
+      IdentityTable.VerifiedStatus previousIntroduceeVerification = SignalDatabase.identities().getVerifiedStatus(introduceeID);
+      if (previousIntroduceeVerification == null){
+        throw new AssertionError("Unexpected missing verification status for " + introduction.getIntroduceeName());
+      }
+
+      // If the state turned stale we only change the introduction, not the verification status. Changing security nr. already has a hook for that.
+      // TODO: Potential Race condition, mutex?
+      if(!newState.isStale()){
+        db.modifyIntroduceeVerification(introduction.getIntroduceeServiceId(),
+                                     previousIntroduceeVerification,
+                                     newState,
+                                     String.format("Updated %s's verification state to: %s", introduction.getIntroduceeName(), newState));
+      }
+
+      // Modify introduction
+      ContentValues newValues = db.buildContentValuesForStateUpdate(introduction, newState);
+      SQLiteDatabase writeableDatabase = db.databaseHelper.getSignalWritableDatabase();
+      long result = writeableDatabase.update(TABLE_NAME, newValues, ID + " = ?", SqlUtil.buildArgs(introduction.getId()));
+
+      if ( result > 0 ){
+        // Log message on success
+        Log.i(TAG, logMessage);
+        return true;
+      }
+      Log.e(TAG, "State modification of introduction: " + introduction.getId() + " failed!");
+      return false;
+    }
+
+    public static class Factory implements TI_JobCallback.Factory<SetStateCallback>{
+
+      private SetStateData data;
+      private boolean initialized = false;
+
+      public Factory(){
+
+      }
+
+      public void initialize(@Nullable SetStateData data){
+        this.data = data;
+        initialized = true;
+      }
+
+      public SetStateCallback create(){
+        if(!initialized){
+          throw new AssertionError("SetStateCallback Factory was not initialized!");
+        }
+        return new SetStateCallback(data);
+      }
+    }
+  }
+
   // TODO: For now I'm keeping the history of introductions, but only showing the newest valid one. Might be beneficial to have them eventually go away if they become stale?
   // Maybe keep around one level of previous introduction? Apparently there is a situation in the app, whereas if someone does not follow the instructions of setting up
   // their new device exactly, they may be set as unverified, while they eventually still end up with the same identity key (TODO: find Github issue or discussion?)
@@ -774,11 +868,11 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
   // TODO: all state transition methods can be public => FSM Logic adhered to this way.
   public static class InsertCallback extends Callback<TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult>{
 
-    TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult data;
+    public static String tag = Log.tag(InsertCallback.class);
+    private TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult data;
     long result;
 
     public InsertCallback(@NonNull TI_Data data, @Nullable String base64KeyResult, @Nullable String aciResult){
-
       this.data = new TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult(data, base64KeyResult, aciResult);
 
     }
@@ -793,6 +887,10 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
 
     public void callback(){
       this.result = insertIntroduction();
+    }
+
+    @Override public TI_Data getIntroduction() {
+      return data == null? null: data.getIntroduction();
     }
 
     // Callback for profile retreive Identity job
@@ -824,65 +922,33 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     public long getResult() {
       return result;
     }
-  }
 
-  public class RetreiveCallback extends Callback<TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult>{
+    public static class Factory implements TI_JobCallback.Factory<InsertCallback> {
+      private TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult data;
+      private boolean initialized = false;
 
-    TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult data;
-    boolean saveIdentity;
-    long result;
+      public Factory(){
+      }
 
-    public RetreiveCallback(@NonNull TI_Data data, @Nullable String base64KeyResult, @Nullable String aciResult, boolean saveIdentity){
-      this.data = new TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult(data, base64KeyResult, aciResult);
-      this.saveIdentity = saveIdentity;
-    }
+      public void initialize(TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult data){
+        this.data = data;
+        initialized = true;
+      }
 
-    public void setPublicKey(String base64KeyResult) {
-      this.data.key = base64KeyResult;
-    }
-
-    public void setAciResult(String aciResult) {
-      this.data.aci = aciResult;
-    }
-
-    public void callback(){
-      this.result = insertIntroduction();
-    }
-
-    // Callback for profile retreive Identity job
-    // But java is annoying when it comes to function serialization so I won't do that for now
-    // Only meant to be called by Job & @incomingIntroduction
-    /**
-     * @return id of introduction or -1 if fail.
-     */
-    @WorkerThread
-    private long insertIntroduction(){
-      Preconditions.checkArgument(data.aci != null && data.TIData != null &&
-                                  data.aci.equals(data.TIData.getIntroduceeServiceId()));
-      Preconditions.checkArgument(data.TIData.getPredictedSecurityNumber() != null);
-
-      ContentValues values = buildContentValuesForInsert(data.aci.equals(data.TIData.getIntroduceeIdentityKey()) ? State.PENDING : State.CONFLICTING,
-                                                         data.TIData.getIntroducerServiceId(),
-                                                         data.TIData.getIntroduceeServiceId(),
-                                                         data.TIData.getIntroduceeName(),
-                                                         data.TIData.getIntroduceeNumber(),
-                                                         data.TIData.getIntroduceeIdentityKey(),
-                                                         data.TIData.getPredictedSecurityNumber(),
-                                                         data.TIData.getTimestamp());
-      SQLiteDatabase writeableDatabase = databaseHelper.getSignalWritableDatabase();
-      long id = writeableDatabase.insert(TABLE_NAME, null, values);
-      Log.i(TAG, "Inserted new introduction for: " + data.TIData.getIntroduceeName() + ", with id: " + id);
-      return id;
-    }
-
-    public long getResult() {
-      return result;
+      public InsertCallback create(){
+        if(!initialized){
+          throw new AssertionError("InsertCallback Factory was not initialized!");
+        }
+        return new InsertCallback(data.TIData, data.key, data.aci);
+      }
     }
   }
 
   public abstract static class Callback<T extends TI_Serialize<T>>{
     T data;
     abstract public void callback();
+
+    abstract public TI_Data getIntroduction();
   }
 
   public static class IntroductionReader implements Closeable{

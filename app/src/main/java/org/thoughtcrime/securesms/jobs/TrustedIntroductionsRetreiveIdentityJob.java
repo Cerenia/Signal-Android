@@ -40,13 +40,11 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
   private static final String TAG = String.format(TI_Utils.TI_LOG_TAG, Log.tag(TrustedIntroductionsRetreiveIdentityJob.class));
 
   private static final String KEY_DATA_J    = "data";
-  private static final String KEY_JOB_RESULT = "jobResult";
-
+  private static final String KEY_CALLBACK_DATA_J = "callbackData";
   private static final String KEY_SAVE_IDENTITY_J = "saveIdentity";
-  // TODO: only needed if multiple callbacks
-  //private static final String KEY_CALLBACK_J = "introductionInsertCallback";
+  private static final String KEY_CALLBACK_TYPE_J = "callbackType";
 
-  private final TI_RetrieveIDJobResult data;
+  private final TI_Serialize data;
   private final boolean saveIdentity;
   private final TrustedIntroductionsDatabase.Callback introductionInsertCallback;
 
@@ -84,6 +82,10 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
       this.aci = j.has(KEY_ACI_J) ? j.getString(KEY_ACI_J) : null;
       this.TIData = TI_Data.Deserializer.deserialize(j.getString(KEY_TI_DATA_J));
       return this;
+    }
+
+    @Override public TI_Data getIntroduction() {
+      return TIData;
     }
 
     public static class Factory implements TI_JobCallback.Factory<TI_RetrieveIDJobResult>{
@@ -131,9 +133,8 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
   @NonNull @Override public byte[] serialize() {
     JSONObject serializedData = new JSONObject();
     try{
-      serializedData.put(KEY_JOB_RESULT, data.serialize());
+      serializedData.put(KEY_CALLBACK_DATA_J, data.serialize());
       serializedData.put(KEY_SAVE_IDENTITY_J, saveIdentity);
-
     } catch (JSONException e){
       // TODO: fail gracefully
      e.printStackTrace();
@@ -157,7 +158,11 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
     // TODO: Would we like some kind of note to the user that this happened?
     // Not urgent but may be nice to have in the user-specific screen
     // I think probably not since this could have been a tampered introduction, silent drop seems sensible
-    Log.e(TAG, "Could not find a registered user with service id:" + data.TIData.getIntroduceeServiceId() + " and phone nr: " + data.TIData.getIntroduceeNumber()  + ". This introduction failed and will not be retried.");
+    if(data == null){
+      throw new AssertionError("Missing data in Job!");
+    }
+    TI_Data d = introductionInsertCallback.getIntroduction();
+    Log.e(TAG, "Could not find a registered user with service id:" + d.getIntroduceeServiceId() + " and phone nr: " + d.getIntroduceeNumber()  + ". This introduction failed and will not be retried.");
   }
 
   @Override protected void onRun() throws Exception {
@@ -168,7 +173,7 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
     }
 
     Log.i(TAG, "RetreiveIdentityJob started.");
-    ServiceId sid = ServiceId.parseOrThrow(data.TIData.getIntroduceeServiceId());
+    ServiceId sid = ServiceId.parseOrThrow(data.getIntroduction().getIntroduceeServiceId());
     SignalServiceAddress serviceAddress = new SignalServiceAddress(sid);
     ProfileService                                    profileService = ApplicationDependencies.getProfileService();
     Observable<ServiceResponse<ProfileAndCredential>> result         = profileService.getProfile(serviceAddress, Optional.empty(), Optional.empty(), SignalServiceProfile.RequestType.PROFILE, Locale.getDefault()).toObservable();
@@ -180,20 +185,20 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
     SignalServiceProfile profile;
     TI_RetrieveIDJobResult jobResult = new TI_RetrieveIDJobResult();
     if (processor.notFound()){
-      Log.e(TAG, "No user exists with service ID: " + data.TIData.getIntroduceeServiceId() + ". Ignoring introduction.");
+      Log.e(TAG, "No user exists with service ID: " + data.getIntroduction().getIntroduceeServiceId() + ". Ignoring introduction.");
       return;
     } else if (processor.hasResult()) {
       if (sr.getResult().isPresent()){
-        jobResult.TIData = data.TIData;
+        jobResult.TIData = data.getIntroduction();
         profile  =  sr.getResult().get().getProfile();
         jobResult.key = profile.getIdentityKey();
         jobResult.aci = profile.getServiceId().toString();
       } else {
-        Log.e(TAG, "ServiceResponse.getResult() was empty for service ID: " + data.TIData.getIntroduceeServiceId() + ". Ignoring introduction.");
+        Log.e(TAG, "ServiceResponse.getResult() was empty for service ID: " + data.getIntroduction().getIntroduceeServiceId() + ". Ignoring introduction.");
         return;
       }
     } else {
-      Log.e(TAG, "Processor did not have a result for service ID: " + data.TIData.getIntroduceeServiceId() + ". Ignoring introduction.");
+      Log.e(TAG, "Processor did not have a result for service ID: " + data.getIntroduction().getIntroduceeServiceId() + ". Ignoring introduction.");
       return;
     }
     if(introductionInsertCallback != null) {
@@ -213,7 +218,7 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
   @Override protected boolean onShouldRetry(@NonNull Exception e) {
     if(e instanceof IllegalArgumentException){
       e.printStackTrace();
-      Log.e(TAG,"The introduction for " + data.TIData.getIntroduceeName() + " with number: " + data.TIData.getIntroduceeNumber() + " was not accepted.");
+      Log.e(TAG,"The introduction for " + data.getIntroduction().getIntroduceeName() + " with number: " + data.getIntroduction().getIntroduceeNumber() + " was not accepted.");
       return false;
     }
     return true;
