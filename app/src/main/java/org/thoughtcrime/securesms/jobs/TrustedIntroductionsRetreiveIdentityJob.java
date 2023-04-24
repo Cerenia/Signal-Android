@@ -7,7 +7,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.signal.core.util.logging.Log;
 import org.signal.libsignal.protocol.IdentityKey;
-import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.jobmanager.Job;
@@ -15,6 +14,8 @@ import org.thoughtcrime.securesms.jobmanager.JsonJobData;
 import org.thoughtcrime.securesms.jobmanager.impl.NetworkConstraint;
 import org.thoughtcrime.securesms.keyvalue.SignalStore;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
+import org.thoughtcrime.securesms.trustedIntroductions.jobUtils.TI_JobCallback;
+import org.thoughtcrime.securesms.trustedIntroductions.jobUtils.TI_Serialize;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
 import org.thoughtcrime.securesms.util.Base64;
 import org.whispersystems.signalservice.api.profiles.ProfileAndCredential;
@@ -39,22 +40,27 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
   private static final String TAG = String.format(TI_Utils.TI_LOG_TAG, Log.tag(TrustedIntroductionsRetreiveIdentityJob.class));
 
   private static final String KEY_DATA_J    = "data";
-  private static final String KEY_TI_DATA_J      = "tiData";
-  private static final String KEY_IDENTITY_KEY_J = "key";
-  private static final String KEY_ACI_J          = "aci";
+  private static final String KEY_JOB_RESULT = "jobResult";
+
   private static final String KEY_SAVE_IDENTITY_J = "saveIdentity";
-  private static final String KEY_CALLBACK_J = "introductionInsertCallback";
+  // TODO: only needed if multiple callbacks
+  //private static final String KEY_CALLBACK_J = "introductionInsertCallback";
 
   private final TI_RetrieveIDJobResult data;
   private final boolean saveIdentity;
-  private final boolean introductionInsertCallback;
+  private final TrustedIntroductionsDatabase.Callback introductionInsertCallback;
 
-  public static class TI_RetrieveIDJobResult {
+  public static class TI_RetrieveIDJobResult extends TI_Serialize<TI_RetrieveIDJobResult> {
     public TI_Data TIData;
     public String key;
     public String aci;
 
-    private TI_RetrieveIDJobResult(TI_Data data, String key, String aci){
+    // serialization
+    private static final String KEY_TI_DATA_J      = "tiData";
+    private static final String KEY_IDENTITY_KEY_J = "key";
+    private static final String KEY_ACI_J          = "aci";
+
+    public TI_RetrieveIDJobResult(TI_Data data, String key, String aci){
       this.TIData = data;
       this.key = key;
       this.aci = aci;
@@ -62,6 +68,28 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
 
     public TI_RetrieveIDJobResult() {
 
+    }
+
+    @NonNull @Override public String serialize() throws JSONException {
+      JSONObject serializedData = new JSONObject();
+      serializedData.put(KEY_TI_DATA_J, TIData.serialize());
+      serializedData.putOpt(KEY_IDENTITY_KEY_J, key);
+      serializedData.putOpt(KEY_ACI_J, aci);
+      return serializedData.toString();
+    }
+
+    @Override public TI_RetrieveIDJobResult deserialize(@NonNull String serialized) throws JSONException {
+      JSONObject j   = new JSONObject(serialized);
+      this.key = j.has(KEY_IDENTITY_KEY_J) ? j.getString(KEY_IDENTITY_KEY_J) : null;
+      this.aci = j.has(KEY_ACI_J) ? j.getString(KEY_ACI_J) : null;
+      this.TIData = TI_Data.Deserializer.deserialize(j.getString(KEY_TI_DATA_J));
+      return this;
+    }
+
+    public static class Factory implements TI_JobCallback.Factory<TI_RetrieveIDJobResult>{
+      public TI_RetrieveIDJobResult create(){
+        return new TI_RetrieveIDJobResult();
+      }
     }
   }
 
@@ -75,7 +103,7 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
    * @param saveIdentity weather to save the identity into the identity table
    * @param introductionInsertCallBack weather to call back for an introduction insert at the end of the fetch
    */
-  public TrustedIntroductionsRetreiveIdentityJob(@NonNull TI_Data data, boolean saveIdentity, boolean introductionInsertCallBack){
+  public TrustedIntroductionsRetreiveIdentityJob(@NonNull TI_Data data, boolean saveIdentity, @Nullable TrustedIntroductionsDatabase.Callback introductionInsertCallBack){
     // TODO: Currently bogus introduceeId and IntroduceeNumber lead to an application crash
     this(new TI_RetrieveIDJobResult(data, null, null),
          saveIdentity,
@@ -89,10 +117,10 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
 
   }
 
-  private TrustedIntroductionsRetreiveIdentityJob(@NonNull TI_RetrieveIDJobResult data, boolean saveIdentity, boolean callBack, @NonNull Parameters parameters){
+  private TrustedIntroductionsRetreiveIdentityJob(@NonNull TI_RetrieveIDJobResult data, boolean saveIdentity, @Nullable TrustedIntroductionsDatabase.Callback callBack, @NonNull Parameters parameters){
     super(parameters);
     this.data = data;
-    this.saveIdentity               = saveIdentity;
+    this.saveIdentity = saveIdentity;
     this.introductionInsertCallback = callBack;
   }
 
@@ -103,11 +131,9 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
   @NonNull @Override public byte[] serialize() {
     JSONObject serializedData = new JSONObject();
     try{
-      serializedData.put(KEY_TI_DATA_J, data.TIData.serialize());
-      serializedData.putOpt(KEY_IDENTITY_KEY_J, data.key);
-      serializedData.putOpt(KEY_ACI_J, data.aci);
+      serializedData.put(KEY_JOB_RESULT, data.serialize());
       serializedData.put(KEY_SAVE_IDENTITY_J, saveIdentity);
-      serializedData.put(KEY_CALLBACK_J, introductionInsertCallback);
+
     } catch (JSONException e){
       // TODO: fail gracefully
      e.printStackTrace();
@@ -141,7 +167,6 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
       return;
     }
 
-    //TODO test
     Log.i(TAG, "RetreiveIdentityJob started.");
     ServiceId sid = ServiceId.parseOrThrow(data.TIData.getIntroduceeServiceId());
     SignalServiceAddress serviceAddress = new SignalServiceAddress(sid);
@@ -151,6 +176,8 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
     //@see RetreiveProfileJob
     ServiceResponse<ProfileAndCredential> sr =  result.observeOn(Schedulers.io()).blockingFirst();
     ProfileService.ProfileResponseProcessor processor = new ProfileService.ProfileResponseProcessor(sr);
+
+    SignalServiceProfile profile;
     TI_RetrieveIDJobResult jobResult = new TI_RetrieveIDJobResult();
     if (processor.notFound()){
       Log.e(TAG, "No user exists with service ID: " + data.TIData.getIntroduceeServiceId() + ". Ignoring introduction.");
@@ -158,13 +185,9 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
     } else if (processor.hasResult()) {
       if (sr.getResult().isPresent()){
         jobResult.TIData = data.TIData;
-        SignalServiceProfile profile  =  sr.getResult().get().getProfile();
+        profile  =  sr.getResult().get().getProfile();
         jobResult.key = profile.getIdentityKey();
         jobResult.aci = profile.getServiceId().toString();
-        if(saveIdentity){
-          Log.d(TAG, "Saving identity for service ID: " + jobResult.aci);
-          ApplicationDependencies.getProtocolStore().aci().identities().saveIdentity(profile.getServiceId().toProtocolAddress(SignalServiceAddress.DEFAULT_DEVICE_ID), new IdentityKey(Base64.decode(jobResult.key)), true);
-        }
       } else {
         Log.e(TAG, "ServiceResponse.getResult() was empty for service ID: " + data.TIData.getIntroduceeServiceId() + ". Ignoring introduction.");
         return;
@@ -173,11 +196,17 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
       Log.e(TAG, "Processor did not have a result for service ID: " + data.TIData.getIntroduceeServiceId() + ". Ignoring introduction.");
       return;
     }
-    if(introductionInsertCallback) {
-      // We were simply fetching the identity to check for conflicts, insert the introduction
-      TrustedIntroductionsDatabase db = SignalDatabase.trustedIntroductions();
-      db.insertIntroductionCallback(jobResult.TIData, jobResult.key, jobResult.aci);
-      // TODO: This structure with saveIdentity is missleading and spagetthi...
+    if(introductionInsertCallback != null) {
+      if(introductionInsertCallback instanceof TrustedIntroductionsDatabase.InsertCallback){
+        TrustedIntroductionsDatabase.InsertCallback ic = (TrustedIntroductionsDatabase.InsertCallback) introductionInsertCallback;
+        ic.setAciResult(jobResult.aci);
+        ic.setPublicKey(jobResult.key);
+        if(saveIdentity){
+          Log.d(TAG, "Saving identity for service ID: " + jobResult.aci);
+          ApplicationDependencies.getProtocolStore().aci().identities().saveIdentity(profile.getServiceId().toProtocolAddress(SignalServiceAddress.DEFAULT_DEVICE_ID), new IdentityKey(Base64.decode(jobResult.key)), true);
+        }
+      }
+      introductionInsertCallback.callback();
     }
   }
 
@@ -196,18 +225,14 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
       JsonJobData data = JsonJobData.deserialize(serializedData);
       // deserialize TI_Data if present
       String serializedTiData = data.getString(KEY_DATA_J);
-      TI_RetrieveIDJobResult result;
+      boolean saveIdentity = data.getBoolean(KEY_SAVE_IDENTITY_J);
+
+
       if (!serializedTiData.isEmpty()){
         try {
-          JSONObject j = new JSONObject(serializedTiData);
-          String key = j.has(KEY_IDENTITY_KEY_J) ? j.getString(KEY_IDENTITY_KEY_J) : null;
-          String aci = j.has(KEY_ACI_J) ? j.getString(KEY_ACI_J) : null;
-          boolean saveIdentity = j.getBoolean(KEY_SAVE_IDENTITY_J);
-          boolean callback = j.getBoolean(KEY_CALLBACK_J);
-          result = new TI_RetrieveIDJobResult(TI_Data.Deserializer.deserialize(j.getString(KEY_TI_DATA_J)),
-                                              key,
-                                              aci);
-          return new TrustedIntroductionsRetreiveIdentityJob(result, saveIdentity, callback, parameters);
+          TI_RetrieveIDJobResult result = new TI_RetrieveIDJobResult();
+          result = result.deserialize(serializedTiData);
+          return new TrustedIntroductionsRetreiveIdentityJob(result, saveIdentity, new TrustedIntroductionsDatabase.InsertCallback(result.TIData, result.key, result.aci), parameters);
         } catch (JSONException e) {
           // TODO: How to fail gracefully?
           e.printStackTrace();
