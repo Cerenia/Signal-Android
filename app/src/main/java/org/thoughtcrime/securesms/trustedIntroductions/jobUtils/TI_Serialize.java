@@ -2,7 +2,9 @@ package org.thoughtcrime.securesms.trustedIntroductions.jobUtils;
 
 import org.json.JSONException;
 import org.signal.core.util.logging.Log;
+import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
 import org.thoughtcrime.securesms.jobs.TrustedIntroductionsRetreiveIdentityJob;
+import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 
 import java.util.HashMap;
 
@@ -20,13 +22,14 @@ public abstract class TI_Serialize<T> {
    */
   abstract public T deserialize(String serialized) throws JSONException;
 
+  abstract public TI_Data getIntroduction();
+
   public TI_JobCallback.Factory<T> factory = null;
 
-  // TODO: This would only be necessary if more callbacks are to be passed to the jobs.
-  @SuppressWarnings("rawtypes") public static HashMap<String, TI_JobCallback.Factory> instantiate = new HashMap<String, TI_JobCallback.Factory>();
+  @SuppressWarnings("rawtypes") public static HashMap<String, TI_JobCallback.Factory> instantiate = new HashMap<>();
 
   static {
-    instantiate.put(Log.tag(TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult.class), new TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult.Factory());
-    //instantiate.put()
+    instantiate.put(TrustedIntroductionsDatabase.InsertCallback.tag, new TrustedIntroductionsDatabase.InsertCallback.Factory());
+    instantiate.put(TrustedIntroductionsDatabase.SetStateCallback.tag, new TrustedIntroductionsDatabase.SetStateCallback.Factory());
   }
 }
