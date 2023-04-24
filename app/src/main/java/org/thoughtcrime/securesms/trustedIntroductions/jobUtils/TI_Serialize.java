@@ -11,7 +11,7 @@ import java.util.HashMap;
 // We are generally using json so working with Strings.
 // TODO: Not sure I need this anymore given it's a single callback now anyways?
 // Keeping it for now in case I need to add more.
-public abstract class TI_Serialize<T> {
+public abstract class TI_Serialize {
   abstract public String serialize() throws JSONException;
 
   /**
@@ -20,16 +20,8 @@ public abstract class TI_Serialize<T> {
    * @return the deserialized object.
    * @throws JSONException
    */
-  abstract public T deserialize(String serialized) throws JSONException;
-
+  abstract public TI_Serialize deserialize(String serialized) throws JSONException;
   abstract public TI_Data getIntroduction();
 
-  public TI_JobCallback.Factory<T> factory = null;
-
-  @SuppressWarnings("rawtypes") public static HashMap<String, TI_JobCallback.Factory> instantiate = new HashMap<>();
-
-  static {
-    instantiate.put(TrustedIntroductionsDatabase.InsertCallback.tag, new TrustedIntroductionsDatabase.InsertCallback.Factory());
-    instantiate.put(TrustedIntroductionsDatabase.SetStateCallback.tag, new TrustedIntroductionsDatabase.SetStateCallback.Factory());
-  }
+  public TI_JobCallback.Factory factory = null;
 }

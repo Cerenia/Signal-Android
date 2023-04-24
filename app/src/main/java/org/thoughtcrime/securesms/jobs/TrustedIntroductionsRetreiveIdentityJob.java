@@ -14,6 +14,7 @@ import org.thoughtcrime.securesms.jobmanager.JsonJobData;
 import org.thoughtcrime.securesms.jobmanager.impl.NetworkConstraint;
 import org.thoughtcrime.securesms.keyvalue.SignalStore;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
+import org.thoughtcrime.securesms.trustedIntroductions.jobUtils.JobCallbackData;
 import org.thoughtcrime.securesms.trustedIntroductions.jobUtils.TI_JobCallback;
 import org.thoughtcrime.securesms.trustedIntroductions.jobUtils.TI_Serialize;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
@@ -26,6 +27,7 @@ import org.whispersystems.signalservice.api.services.ProfileService;
 import org.whispersystems.signalservice.internal.ServiceResponse;
 
 
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
@@ -45,10 +47,18 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
   private static final String KEY_CALLBACK_TYPE_J = "callbackType";
 
   private final TI_Serialize data;
-  private final boolean saveIdentity;
-  private final TrustedIntroductionsDatabase.Callback introductionInsertCallback;
+  private final boolean                               saveIdentity;
+  private final TrustedIntroductionsDatabase.Callback callback;
 
-  public static class TI_RetrieveIDJobResult extends TI_Serialize<TI_RetrieveIDJobResult> {
+
+  @SuppressWarnings("rawtypes") public static HashMap<String, TI_JobCallback.Factory> instantiate = new HashMap<>();
+
+  static {
+    instantiate.put(TrustedIntroductionsDatabase.InsertCallback.getTag(), new TrustedIntroductionsDatabase.InsertCallback.Factory());
+    instantiate.put(TrustedIntroductionsDatabase.SetStateCallback.getTag(), new TrustedIntroductionsDatabase.SetStateCallback.Factory());
+  }
+
+  public static class TI_RetrieveIDJobResult extends JobCallbackData {
     public TI_Data TIData;
     public String key;
     public String aci;
@@ -88,10 +98,8 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
       return TIData;
     }
 
-    public static class Factory implements TI_JobCallback.Factory<TI_RetrieveIDJobResult>{
-      public TI_RetrieveIDJobResult create(){
-        return new TI_RetrieveIDJobResult();
-      }
+    @Override public TI_RetrieveIDJobResult getRetrieveIdJobStruct() {
+      return this;
     }
   }
 
@@ -123,7 +131,7 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
     super(parameters);
     this.data = data;
     this.saveIdentity = saveIdentity;
-    this.introductionInsertCallback = callBack;
+    this.callback     = callBack;
   }
 
 
@@ -133,6 +141,7 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
   @NonNull @Override public byte[] serialize() {
     JSONObject serializedData = new JSONObject();
     try{
+      serializedData.put(KEY_CALLBACK_TYPE_J, callback.getTag());
       serializedData.put(KEY_CALLBACK_DATA_J, data.serialize());
       serializedData.put(KEY_SAVE_IDENTITY_J, saveIdentity);
     } catch (JSONException e){
@@ -161,7 +170,7 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
     if(data == null){
       throw new AssertionError("Missing data in Job!");
     }
-    TI_Data d = introductionInsertCallback.getIntroduction();
+    TI_Data d = callback.getIntroduction();
     Log.e(TAG, "Could not find a registered user with service id:" + d.getIntroduceeServiceId() + " and phone nr: " + d.getIntroduceeNumber()  + ". This introduction failed and will not be retried.");
   }
 
@@ -201,9 +210,9 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
       Log.e(TAG, "Processor did not have a result for service ID: " + data.getIntroduction().getIntroduceeServiceId() + ". Ignoring introduction.");
       return;
     }
-    if(introductionInsertCallback != null) {
-      if(introductionInsertCallback instanceof TrustedIntroductionsDatabase.InsertCallback){
-        TrustedIntroductionsDatabase.InsertCallback ic = (TrustedIntroductionsDatabase.InsertCallback) introductionInsertCallback;
+    if(callback != null) {
+      if(callback instanceof TrustedIntroductionsDatabase.InsertCallback){
+        TrustedIntroductionsDatabase.InsertCallback ic = (TrustedIntroductionsDatabase.InsertCallback) callback;
         ic.setAciResult(jobResult.aci);
         ic.setPublicKey(jobResult.key);
         if(saveIdentity){
@@ -211,7 +220,7 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
           ApplicationDependencies.getProtocolStore().aci().identities().saveIdentity(profile.getServiceId().toProtocolAddress(SignalServiceAddress.DEFAULT_DEVICE_ID), new IdentityKey(Base64.decode(jobResult.key)), true);
         }
       }
-      introductionInsertCallback.callback();
+      callback.callback();
     }
   }
 
@@ -231,13 +240,16 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
       // deserialize TI_Data if present
       String serializedTiData = data.getString(KEY_DATA_J);
       boolean saveIdentity = data.getBoolean(KEY_SAVE_IDENTITY_J);
-
+      String callbackType = data.getString(KEY_CALLBACK_TYPE_J);
 
       if (!serializedTiData.isEmpty()){
         try {
-          TI_RetrieveIDJobResult result = new TI_RetrieveIDJobResult();
-          result = result.deserialize(serializedTiData);
-          return new TrustedIntroductionsRetreiveIdentityJob(result, saveIdentity, new TrustedIntroductionsDatabase.InsertCallback(result.TIData, result.key, result.aci), parameters);
+          TI_JobCallback.Factory cbFactory = instantiate.get(callbackType);
+          JobCallbackData deserializedJobData = cbFactory.getEmptyJobDataInstance();
+          deserializedJobData.deserialize(data.getString(KEY_CALLBACK_DATA_J));
+          cbFactory.initialize(deserializedJobData);
+          TrustedIntroductionsDatabase.Callback cb = cbFactory.create();
+          return new TrustedIntroductionsRetreiveIdentityJob(cb.getRetrieveIdJobStruct(), saveIdentity, cb, parameters);
         } catch (JSONException e) {
           // TODO: How to fail gracefully?
           e.printStackTrace();

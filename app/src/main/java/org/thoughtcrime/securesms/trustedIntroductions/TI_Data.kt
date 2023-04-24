@@ -7,7 +7,7 @@ import org.thoughtcrime.securesms.trustedIntroductions.jobUtils.TI_Serialize
 // TODO: predictedSecurityNumber only needs to be nullable because I parse the TI_Message somewhat awkardly... maybe change at some point? Not super critical...
 // IntroduceeRecipientId and Introducer
 // introduceeIdentityKey is encoded in Base64 (this is how it is currently stored in the Identity Database) @see TI_Utils.encodeIdentityKey
-data class TI_Data (val id: Long?, val state: TrustedIntroductionsDatabase.State,  val introducerServiceId: String?, val introduceeServiceId: String, val introduceeName: String, val introduceeNumber: String, val introduceeIdentityKey: String, var predictedSecurityNumber: String?, val timestamp: Long) : TI_Serialize<TI_Data>() {
+data class TI_Data (val id: Long?, val state: TrustedIntroductionsDatabase.State,  val introducerServiceId: String?, val introduceeServiceId: String, val introduceeName: String, val introduceeNumber: String, val introduceeIdentityKey: String, var predictedSecurityNumber: String?, val timestamp: Long) : TI_Serialize() {
 
   override fun serialize() : String {
     // Absence of key signifies null
@@ -27,6 +27,10 @@ data class TI_Data (val id: Long?, val state: TrustedIntroductionsDatabase.State
 
   override fun deserialize(serialized: String) : TI_Data{
     return Deserializer.deserialize(serialized)
+  }
+
+  override fun getIntroduction(): TI_Data {
+    return this
   }
 
   companion object Deserializer {
