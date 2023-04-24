@@ -20,6 +20,7 @@ import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.recipients.RecipientUtil;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
+import org.thoughtcrime.securesms.trustedIntroductions.jobUtils.JobCallbackData;
 import org.thoughtcrime.securesms.trustedIntroductions.jobUtils.TI_JobCallback;
 import org.thoughtcrime.securesms.trustedIntroductions.jobUtils.TI_Serialize;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
@@ -719,7 +720,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     return rdb.getCursorForSendingTI(s);
   }
 
-  public static class SetStateData extends TI_Serialize<SetStateData>{
+  public static class SetStateData extends JobCallbackData{
 
     @Nullable private TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult identityResult;
     @NonNull private State newState;
@@ -758,11 +759,15 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     @Override public TI_Data getIntroduction() {
       return identityResult == null? null: identityResult.TIData;
     }
+
+    @Override public TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult getRetrieveIdJobStruct() {
+      return identityResult;
+    }
   }
 
-  public static class SetStateCallback extends Callback<SetStateData>{
+  public static class SetStateCallback extends Callback{
 
-    public static String tag = Log.tag(SetStateCallback.class);
+    private static String tag = Log.tag(SetStateCallback.class);
 
     public SetStateData data;
     boolean result;
@@ -780,6 +785,13 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
 
     @Override public TI_Data getIntroduction() {
       return data == null? null: data.getIntroduction();
+    }
+
+    @Override public TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult getRetrieveIdJobStruct() {
+      if(data == null){
+        throw new AssertionError("Data of SetStateCallback was not initialized!");
+      }
+      return data.getRetrieveIdJobStruct();
     }
 
     public boolean getResult(){
@@ -837,7 +849,11 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
       return false;
     }
 
-    public static class Factory implements TI_JobCallback.Factory<SetStateCallback>{
+    public static String getTag(){
+      return tag;
+    }
+
+    public static class Factory implements TI_JobCallback.Factory{
 
       private SetStateData data;
       private boolean initialized = false;
@@ -846,16 +862,24 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
 
       }
 
-      public void initialize(@Nullable SetStateData data){
-        this.data = data;
-        initialized = true;
-      }
-
-      public SetStateCallback create(){
+      public Callback create(){
         if(!initialized){
           throw new AssertionError("SetStateCallback Factory was not initialized!");
         }
-        return new SetStateCallback(data);
+        return ((Callback) new SetStateCallback(data));
+      }
+
+      @Override public void initialize(JobCallbackData data) {
+        if(data instanceof SetStateData){
+          this.data = (SetStateData) data;
+          initialized = true;
+        } else {
+          throw new AssertionError("Unexpected datatype for SetStateCallback!");
+        }
+      }
+
+      @Override public JobCallbackData getEmptyJobDataInstance() {
+        return new SetStateData();
       }
     }
   }
@@ -866,9 +890,9 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
   // For this case, having a record of stale introductions could be used to restore the verification state without having to reverify.
 
   // TODO: all state transition methods can be public => FSM Logic adhered to this way.
-  public static class InsertCallback extends Callback<TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult>{
+  public static class InsertCallback extends Callback{
 
-    public static String tag = Log.tag(InsertCallback.class);
+    private static final String tag = Log.tag(InsertCallback.class);
     private TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult data;
     long result;
 
@@ -891,6 +915,14 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
 
     @Override public TI_Data getIntroduction() {
       return data == null? null: data.getIntroduction();
+    }
+
+    @Override public TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult getRetrieveIdJobStruct() {
+      return data;
+    }
+
+    public static String getTag() {
+      return tag;
     }
 
     // Callback for profile retreive Identity job
@@ -923,7 +955,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
       return result;
     }
 
-    public static class Factory implements TI_JobCallback.Factory<InsertCallback> {
+    public static class Factory implements TI_JobCallback.Factory {
       private TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult data;
       private boolean initialized = false;
 
@@ -935,20 +967,35 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
         initialized = true;
       }
 
-      public InsertCallback create(){
+      public Callback create(){
         if(!initialized){
           throw new AssertionError("InsertCallback Factory was not initialized!");
         }
         return new InsertCallback(data.TIData, data.key, data.aci);
       }
+
+      @Override public void initialize(JobCallbackData data) {
+        if(data instanceof TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult){
+          this.data = (TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult) data;
+        } else{
+          throw new AssertionError("Unexpected datatype for InsertCallback!");
+        }
+      }
+
+      @Override public JobCallbackData getEmptyJobDataInstance() {
+        return new TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult();
+      }
     }
   }
 
-  public abstract static class Callback<T extends TI_Serialize<T>>{
-    T data;
-    abstract public void callback();
+  public abstract static class Callback{
 
+    abstract public void callback();
     abstract public TI_Data getIntroduction();
+    abstract public TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult getRetrieveIdJobStruct();
+    public static String getTag(){
+      return Log.tag(Callback.class);
+    }
   }
 
   public static class IntroductionReader implements Closeable{
