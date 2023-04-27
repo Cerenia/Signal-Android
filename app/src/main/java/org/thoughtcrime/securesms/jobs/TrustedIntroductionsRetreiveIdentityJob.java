@@ -78,19 +78,18 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
 
     }
 
-    @NonNull @Override public String serialize() throws JSONException {
+    @NonNull @Override public JSONObject serialize() throws JSONException {
       JSONObject serializedData = new JSONObject();
       serializedData.put(KEY_TI_DATA_J, TIData.serialize());
       serializedData.putOpt(KEY_IDENTITY_KEY_J, key);
       serializedData.putOpt(KEY_ACI_J, aci);
-      return serializedData.toString();
+      return serializedData;
     }
 
-    @Override public TI_RetrieveIDJobResult deserialize(@NonNull String serialized) throws JSONException {
-      JSONObject j   = new JSONObject(serialized);
-      this.key = j.has(KEY_IDENTITY_KEY_J) ? j.getString(KEY_IDENTITY_KEY_J) : null;
-      this.aci = j.has(KEY_ACI_J) ? j.getString(KEY_ACI_J) : null;
-      this.TIData = TI_Data.Deserializer.deserialize(j.getString(KEY_TI_DATA_J));
+    @Override public TI_RetrieveIDJobResult deserialize(@NonNull JSONObject serialized) throws JSONException {
+      this.key = serialized.has(KEY_IDENTITY_KEY_J) ? serialized.getString(KEY_IDENTITY_KEY_J) : null;
+      this.aci = serialized.has(KEY_ACI_J) ? serialized.getString(KEY_ACI_J) : null;
+      this.TIData = TI_Data.Deserializer.deserialize(new JSONObject(serialized.getString(KEY_TI_DATA_J)));
       return this;
     }
 
@@ -239,14 +238,14 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
       JsonJobData data = JsonJobData.deserialize(serializedData);
       // deserialize TI_Data if present
       String serializedTiData = data.getString(KEY_DATA_J);
-      boolean saveIdentity = data.getBoolean(KEY_SAVE_IDENTITY_J);
-      String callbackType = data.getString(KEY_CALLBACK_TYPE_J);
-
       if (!serializedTiData.isEmpty()){
         try {
+          JSONObject innerData = new JSONObject(serializedTiData);
+          boolean saveIdentity = innerData.getBoolean(KEY_SAVE_IDENTITY_J);
+          String callbackType = innerData.getString(KEY_CALLBACK_TYPE_J);
           TI_JobCallback.Factory cbFactory = instantiate.get(callbackType);
           JobCallbackData deserializedJobData = cbFactory.getEmptyJobDataInstance();
-          deserializedJobData.deserialize(data.getString(KEY_CALLBACK_DATA_J));
+          deserializedJobData.deserialize(new JSONObject(innerData.getString(KEY_CALLBACK_DATA_J)));
           cbFactory.initialize(deserializedJobData);
           TrustedIntroductionsDatabase.Callback cb = cbFactory.create();
           return new TrustedIntroductionsRetreiveIdentityJob(cb.getRetrieveIdJobStruct(), saveIdentity, cb, parameters);

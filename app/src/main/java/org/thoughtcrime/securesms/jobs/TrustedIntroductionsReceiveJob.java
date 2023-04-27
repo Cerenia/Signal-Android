@@ -6,6 +6,7 @@ import androidx.annotation.Nullable;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import org.json.JSONObject;
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
@@ -141,7 +142,7 @@ public class TrustedIntroductionsReceiveJob extends BaseJob  {
         try{
           JSONArray arr = new JSONArray(serializedIntroductions);
           for (int i = 0; i < arr.length(); i++){
-            tiData.add(TI_Data.Deserializer.deserialize(arr.getString(i)));
+            tiData.add(TI_Data.Deserializer.deserialize(new JSONObject(arr.getString(i))));
           }
         } catch (JSONException | NullPointerException e) {
           e.printStackTrace();

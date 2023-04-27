@@ -740,19 +740,18 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
       this.logMessage = logMessage;
     }
 
-    @Override public String serialize() throws JSONException {
+    @Override public JSONObject serialize() throws JSONException {
       JSONObject serializedData = new JSONObject();
       serializedData.putOpt(KEY_CALLBACK_JOB_RESULT, identityResult == null ? null : identityResult.serialize());
       serializedData.put(KEY_NEW_STATE, newState.toInt());
       serializedData.put(KEY_LOG_MESSAGE, logMessage);
-      return serializedData.toString();
+      return serializedData;
     }
 
-    @Override public SetStateData deserialize(String serialized) throws JSONException {
-      JSONObject j   = new JSONObject(serialized);
-      this.identityResult = j.has(KEY_CALLBACK_JOB_RESULT) ? new TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult().deserialize(j.getString(KEY_CALLBACK_JOB_RESULT)) : null;
-      this.newState = State.forState(j.getInt(KEY_NEW_STATE));
-      this.logMessage = j.getString(KEY_LOG_MESSAGE);
+    @Override public SetStateData deserialize(JSONObject serialized) throws JSONException {
+      this.identityResult = serialized.has(KEY_CALLBACK_JOB_RESULT) ? new TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult().deserialize(new JSONObject(serialized.getString(KEY_CALLBACK_JOB_RESULT))) : null;
+      this.newState = State.forState(serialized.getInt(KEY_NEW_STATE));
+      this.logMessage = serialized.getString(KEY_LOG_MESSAGE);
       return this;
     }
 
