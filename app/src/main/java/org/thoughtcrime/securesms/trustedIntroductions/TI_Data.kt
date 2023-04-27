@@ -9,7 +9,7 @@ import org.thoughtcrime.securesms.trustedIntroductions.jobUtils.TI_Serialize
 // introduceeIdentityKey is encoded in Base64 (this is how it is currently stored in the Identity Database) @see TI_Utils.encodeIdentityKey
 data class TI_Data (val id: Long?, val state: TrustedIntroductionsDatabase.State,  val introducerServiceId: String?, val introduceeServiceId: String, val introduceeName: String, val introduceeNumber: String, val introduceeIdentityKey: String, var predictedSecurityNumber: String?, val timestamp: Long) : TI_Serialize {
 
-  override fun serialize() : String {
+  override fun serialize() : JSONObject {
     // Absence of key signifies null
     val builder = JSONObject()
     // does nothing iff id == null see: https://developer.android.com/reference/kotlin/org/json/JSONObject
@@ -22,10 +22,10 @@ data class TI_Data (val id: Long?, val state: TrustedIntroductionsDatabase.State
     builder.put("introduceeIdentityKey", introduceeIdentityKey)
     builder.putOpt("predictedSecurityNumber", predictedSecurityNumber)
     builder.put("timestamp", timestamp)
-    return builder.toString()
+    return builder
   }
 
-  override fun deserialize(serialized: String) : TI_Data{
+  override fun deserialize(serialized: JSONObject) : TI_Data{
     return Deserializer.deserialize(serialized)
   }
 
@@ -35,33 +35,32 @@ data class TI_Data (val id: Long?, val state: TrustedIntroductionsDatabase.State
 
   companion object Deserializer {
     // factory from serialized String
-    fun deserialize(serialized: String): TI_Data {
-      val d = JSONObject(serialized)
+    fun deserialize(serialized: JSONObject): TI_Data {
       // Absence of key signifies null
       val id: Long?
-      if (d.has("id")){
-        id = d.getLong("id")
+      if (serialized.has("id")){
+        id = serialized.getLong("id")
       } else{
         id = null
       }
-      val  state = TrustedIntroductionsDatabase.State.forState(d.getInt("state"))
+      val  state = TrustedIntroductionsDatabase.State.forState(serialized.getInt("state"))
       val introducerServiceId: String?
-      if (d.has("introducerServiceId")){
-        introducerServiceId = d.getString("introducerServiceId")
+      if (serialized.has("introducerServiceId")){
+        introducerServiceId = serialized.getString("introducerServiceId")
       } else {
         introducerServiceId = null
       }
-      val introduceeServiceId = d.getString("introduceeServiceId")
-      val introduceeName = d.getString("introduceeName")
-      val introduceeNumber = d.getString("introduceeNumber")
-      val introduceeIdentityKey = d.getString("introduceeIdentityKey")
+      val introduceeServiceId = serialized.getString("introduceeServiceId")
+      val introduceeName = serialized.getString("introduceeName")
+      val introduceeNumber = serialized.getString("introduceeNumber")
+      val introduceeIdentityKey = serialized.getString("introduceeIdentityKey")
       val predictedSecurityNumber: String?
-      if (d.has("predictedSecurityNumber")){
-        predictedSecurityNumber = d.getString("predictedSecurityNumber")
+      if (serialized.has("predictedSecurityNumber")){
+        predictedSecurityNumber = serialized.getString("predictedSecurityNumber")
       } else{
         predictedSecurityNumber = null
       }
-      val timestamp = d.getLong("timestamp")
+      val timestamp = serialized.getLong("timestamp")
       return TI_Data(id, state, introducerServiceId, introduceeServiceId, introduceeName, introduceeNumber, introduceeIdentityKey, predictedSecurityNumber, timestamp)
     }
   }
