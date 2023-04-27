@@ -936,7 +936,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
                                   data.aci.equals(data.TIData.getIntroduceeServiceId()));
       Preconditions.checkArgument(data.TIData.getPredictedSecurityNumber() != null);
       TrustedIntroductionsDatabase db = SignalDatabase.trustedIntroductions();
-      ContentValues values = db.buildContentValuesForInsert(data.aci.equals(data.TIData.getIntroduceeIdentityKey()) ? State.PENDING : State.CONFLICTING,
+      ContentValues values = db.buildContentValuesForInsert(data.key.equals(data.TIData.getIntroduceeIdentityKey()) ? State.PENDING : State.CONFLICTING,
                                                          data.TIData.getIntroducerServiceId(),
                                                          data.TIData.getIntroduceeServiceId(),
                                                          data.TIData.getIntroduceeName(),
@@ -961,11 +961,6 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
       public Factory(){
       }
 
-      public void initialize(TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult data){
-        this.data = data;
-        initialized = true;
-      }
-
       public Callback create(){
         if(!initialized){
           throw new AssertionError("InsertCallback Factory was not initialized!");
@@ -976,6 +971,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
       @Override public void initialize(JobCallbackData data) {
         if(data instanceof TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult){
           this.data = (TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult) data;
+          initialized = true;
         } else{
           throw new AssertionError("Unexpected datatype for InsertCallback!");
         }
