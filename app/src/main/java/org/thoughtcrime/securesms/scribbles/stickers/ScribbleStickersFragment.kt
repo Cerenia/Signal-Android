@@ -17,7 +17,7 @@ import org.thoughtcrime.securesms.util.adapter.mapping.MappingViewHolder
 import org.thoughtcrime.securesms.util.fragments.findListener
 
 /**
- * Sticker chooser fragment for the image editor. Implement the Callback for
+ * Sticker chooser fragment for the image editor. Implement the TI_DB_Callback for
  * both feature stickers, and regular stickers from StickerKeyboardPageFragment
  */
 class ScribbleStickersFragment : StickerKeyboardPageFragment() {

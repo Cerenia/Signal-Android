@@ -75,7 +75,7 @@ public class SnapToTopDataObserver extends RecyclerView.AdapterDataObserver {
    * PagedList#loadAround(int).
    *
    * @param position                The position to scroll to.
-   * @param onPerformScroll         Callback allowing the caller to perform the scroll themselves.
+   * @param onPerformScroll         TI_DB_Callback allowing the caller to perform the scroll themselves.
    * @param onScrollRequestComplete Notification that the scroll has completed successfully.
    * @param onInvalidPosition       Notification that the requested position has become invalid.
    */

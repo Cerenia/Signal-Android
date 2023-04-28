@@ -530,7 +530,7 @@ public class ConversationParentFragment extends Fragment
     } else if (getParentFragment() instanceof Callback) {
       callback = (Callback) getParentFragment();
     } else {
-      throw new ClassCastException("Cannot cast activity or parent fragment into a Callback object");
+      throw new ClassCastException("Cannot cast activity or parent fragment into a TI_DB_Callback object");
     }
 
     // TODO [alex] LargeScreenSupport -- This check will no longer be valid / necessary

@@ -30,7 +30,7 @@ public final class GroupDescriptionUtil {
    * @param description   full description
    * @param emojiTextView Text view to update with description
    * @param linkify       flag indicating if web urls should be linkified
-   * @param moreClick     Callback for when truncating and need to show more via another means. Required to enable truncating.
+   * @param moreClick     TI_DB_Callback for when truncating and need to show more via another means. Required to enable truncating.
    */
   public static void setText(@NonNull Context context, @NonNull EmojiTextView emojiTextView, @NonNull String description, boolean linkify, @Nullable Runnable moreClick) {
     boolean         shouldEllipsize      = moreClick != null;

@@ -31,7 +31,7 @@ public class ClearVerificationDialog {
 
     /**
      * @param context Caller context.
-     * @param cb Calling Fragment which implements the Callback.
+     * @param cb Calling Fragment which implements the TI_DB_Callback.
      * @param status The contacts verification status. Must be strongly verified (@see IdentityTable)
      * @return Returns the users decision. If true, clear, otherwise don't.
      */

@@ -76,7 +76,7 @@ public class AddGroupDetailsFragment extends LoggingFragment {
     if (context instanceof Callback) {
       callback = (Callback) context;
     } else {
-      throw new ClassCastException("Parent context should implement AddGroupDetailsFragment.Callback");
+      throw new ClassCastException("Parent context should implement AddGroupDetailsFragment.TI_DB_Callback");
     }
   }
 
