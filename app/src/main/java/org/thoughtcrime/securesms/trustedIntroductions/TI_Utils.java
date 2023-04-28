@@ -365,7 +365,7 @@ public class TI_Utils {
           String name = cursor.getString(cursor.getColumnIndex(SORT_NAME));
           String phone = cursor.getString(cursor.getColumnIndex(PHONE));
           // TODO: hacky workaround, using nr provided in introduction if empty.
-          // couldn't find how I can check the matching phone nr. against directory easily
+          // couldn't easily find how I can check the matching phone nr. against directory
           // -> at some point, defer this intro, add background task that verifies number and reinsert.
           phone = phone == null? getPhone(introducees, introduceeServiceId) : phone;
           String identityKey = IdKeyPair.findCorrespondingKeyInList(introduceeServiceId, idKeyPairs);

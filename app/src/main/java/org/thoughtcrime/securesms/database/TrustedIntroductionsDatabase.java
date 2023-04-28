@@ -433,7 +433,9 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     RecipientId introduceeId = introduceeOpt.orElse(null);
     if(introduceeId == null){
       // Do not save identity when you are simply checking for conflict. We do not want persistent data that the user did not consciously decide to add.
-      ApplicationDependencies.getJobManager().add(new TrustedIntroductionsRetreiveIdentityJob(data, false, new InsertCallback(data, null, null)));
+      InsertCallback cb = new InsertCallback(data, null, null);
+      TrustedIntroductionsRetreiveIdentityJob job = new TrustedIntroductionsRetreiveIdentityJob(data, false, cb);
+      ApplicationDependencies.getJobManager().add(job);
       Log.i(TAG, "Unknown recipient, deferred insertion of Introduction into database for: " + data.getIntroduceeName());
       // This is expected and not an error.
       return 0;
@@ -902,12 +904,11 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
   public static class InsertCallback extends TI_DB_Callback {
 
     public static final String                                                         tag = Log.tag(InsertCallback.class);
-    private             TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult data;
+    private final       TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult data;
     long result;
 
     public InsertCallback(@NonNull TI_Data data, @Nullable String base64KeyResult, @Nullable String aciResult){
       this.data = new TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult(data, base64KeyResult, aciResult);
-
     }
 
     public void callback(){
