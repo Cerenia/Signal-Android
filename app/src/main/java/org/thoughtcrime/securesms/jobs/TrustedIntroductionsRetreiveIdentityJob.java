@@ -98,6 +98,11 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
     @Override public TI_RetrieveIDJobResult getRetrieveIdJobStruct() {
       return this;
     }
+
+    public static interface setResult{
+      public void setAci(String aci);
+      public void setPublicKey(String publicKey);
+    }
   }
 
   /**
@@ -138,7 +143,7 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
     JSONObject serializedData = new JSONObject();
     try{
       serializedData.put(KEY_CALLBACK_TYPE_J, callback.getTag());
-      serializedData.put(KEY_CALLBACK_DATA_J, callback.data.serialize());
+      serializedData.put(KEY_CALLBACK_DATA_J, callback.getCallbackData().serialize());
       serializedData.put(KEY_SAVE_IDENTITY_J, saveIdentity);
     } catch (JSONException e){
       // TODO: fail gracefully
@@ -178,7 +183,7 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
     }
 
     Log.i(TAG, "RetreiveIdentityJob started.");
-    ServiceId sid = ServiceId.parseOrThrow(data.getIntroduction().getIntroduceeServiceId());
+    ServiceId sid = ServiceId.parseOrThrow(callback.getIntroduction().getIntroduceeServiceId());
     SignalServiceAddress serviceAddress = new SignalServiceAddress(sid);
     ProfileService                                    profileService = ApplicationDependencies.getProfileService();
     Observable<ServiceResponse<ProfileAndCredential>> result         = profileService.getProfile(serviceAddress, Optional.empty(), Optional.empty(), SignalServiceProfile.RequestType.PROFILE, Locale.getDefault()).toObservable();
@@ -190,40 +195,38 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
     SignalServiceProfile profile;
     TI_RetrieveIDJobResult jobResult = new TI_RetrieveIDJobResult();
     if (processor.notFound()){
-      Log.e(TAG, "No user exists with service ID: " + data.getIntroduction().getIntroduceeServiceId() + ". Ignoring introduction.");
+      Log.e(TAG, "No user exists with service ID: " + callback.getIntroduction().getIntroduceeServiceId() + ". Ignoring introduction.");
       return;
     } else if (processor.hasResult()) {
       if (sr.getResult().isPresent()){
-        jobResult.TIData = data.getIntroduction();
+        jobResult.TIData = callback.getIntroduction();
         profile  =  sr.getResult().get().getProfile();
         jobResult.key = profile.getIdentityKey();
         jobResult.aci = profile.getServiceId().toString();
       } else {
-        Log.e(TAG, "ServiceResponse.getResult() was empty for service ID: " + data.getIntroduction().getIntroduceeServiceId() + ". Ignoring introduction.");
+        Log.e(TAG, "ServiceResponse.getResult() was empty for service ID: " + callback.getIntroduction().getIntroduceeServiceId() + ". Ignoring introduction.");
         return;
       }
     } else {
-      Log.e(TAG, "Processor did not have a result for service ID: " + data.getIntroduction().getIntroduceeServiceId() + ". Ignoring introduction.");
+      Log.e(TAG, "Processor did not have a result for service ID: " + callback.getIntroduction().getIntroduceeServiceId() + ". Ignoring introduction.");
       return;
     }
-    if(callback != null) {
-      if(callback instanceof TrustedIntroductionsDatabase.InsertCallback){
-        TrustedIntroductionsDatabase.InsertCallback ic = (TrustedIntroductionsDatabase.InsertCallback) callback;
-        ic.setAciResult(jobResult.aci);
-        ic.setPublicKey(jobResult.key);
-        if(saveIdentity){
-          Log.d(TAG, "Saving identity for service ID: " + jobResult.aci);
-          ApplicationDependencies.getProtocolStore().aci().identities().saveIdentity(profile.getServiceId().toProtocolAddress(SignalServiceAddress.DEFAULT_DEVICE_ID), new IdentityKey(Base64.decode(jobResult.key)), true);
-        }
-      }
-      callback.callback();
+    if(callback.getCallbackData() instanceof TI_RetrieveIDJobResult.setResult){
+      TI_RetrieveIDJobResult.setResult cbData = (TI_RetrieveIDJobResult.setResult) callback.getCallbackData();
+      cbData.setAci(jobResult.aci);
+      cbData.setPublicKey(jobResult.key);
     }
+    if(saveIdentity){
+      Log.d(TAG, "Saving identity for service ID: " + jobResult.aci);
+      ApplicationDependencies.getProtocolStore().aci().identities().saveIdentity(profile.getServiceId().toProtocolAddress(SignalServiceAddress.DEFAULT_DEVICE_ID), new IdentityKey(Base64.decode(jobResult.key)), true);
+    }
+    callback.callback();
   }
 
   @Override protected boolean onShouldRetry(@NonNull Exception e) {
     if(e instanceof IllegalArgumentException){
       e.printStackTrace();
-      Log.e(TAG,"The introduction for " + data.getIntroduction().getIntroduceeName() + " with number: " + data.getIntroduction().getIntroduceeNumber() + " was not accepted.");
+      Log.e(TAG,"The introduction for " + callback.getIntroduction().getIntroduceeName() + " with number: " + callback.getIntroduction().getIntroduceeNumber() + " was not accepted.");
       return false;
     }
     return true;
