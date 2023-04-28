@@ -136,6 +136,7 @@ public class ManageViewModel extends ViewModel {
    * Generic iterator for manipulating the introductions list
    * @param introductionId which introduction to manipulate
    * @param m function handles for modification and database call
+   * Does not modify the original introduction
    */
   private void iterateAndModify(@NonNull Long introductionId, Modify m){
     List<Pair<TI_Data, IntroducerInformation>> all = introductions.getValue();
@@ -171,6 +172,11 @@ public class ManageViewModel extends ViewModel {
   }
 
   private interface Modify{
+    /**
+     *
+     * @param introductionItem the item to be modified. Implementations must return a modified copy and leave the original item untouched.
+     * @return a modified introduction list item
+     */
     @Nullable Pair<TI_Data, IntroducerInformation> modifiedIntroductionItem(Pair<TI_Data, IntroducerInformation> introductionItem);
     @WorkerThread boolean databaseCall(TI_Data introduction);
     @NonNull String errorMessage(Long introductionId);

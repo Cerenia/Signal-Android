@@ -20,9 +20,8 @@ import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.recipients.RecipientUtil;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
-import org.thoughtcrime.securesms.trustedIntroductions.jobUtils.JobCallbackData;
+import org.thoughtcrime.securesms.trustedIntroductions.jobUtils.TI_JobCallbackData;
 import org.thoughtcrime.securesms.trustedIntroductions.jobUtils.TI_JobCallback;
-import org.thoughtcrime.securesms.trustedIntroductions.jobUtils.TI_Serialize;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
 import org.whispersystems.signalservice.api.push.ServiceId;
 import org.whispersystems.signalservice.api.util.Preconditions;
@@ -481,7 +480,9 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
 
     // Recipient not yet in database, must insert it first and update the introducee ID
     RecipientId recipientId = TI_Utils.getRecipientIdOrUnknown(introduction.getIntroduceeServiceId());
-    SetStateCallback cb = new SetStateCallback(new SetStateData(new TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult(introduction, null, null), newState, logMessage));
+    TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult res  = new TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult(introduction, null, null);
+    SetStateCallback.SetStateData                                  data = new SetStateCallback.SetStateData(res, newState, logMessage);
+    SetStateCallback                                               cb   = new SetStateCallback(data);
     if (recipientId.equals(RecipientId.UNKNOWN) ||
         !ApplicationDependencies.getProtocolStore().aci().identities().getIdentityRecord(recipientId).isPresent()){
       RecipientTable db = SignalDatabase.recipients();
@@ -720,51 +721,8 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     return rdb.getCursorForSendingTI(s);
   }
 
-  public static class SetStateData extends JobCallbackData{
 
-    @Nullable private TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult identityResult;
-    @NonNull private State newState;
-    @NonNull private String logMessage;
-
-    private static final String KEY_CALLBACK_JOB_RESULT = "setStateCallbackJobResult";
-    private static final String KEY_NEW_STATE = "setStateCallbackNewState";
-    private static final String KEY_LOG_MESSAGE = "setStateCallbackLogMessage";
-
-    public SetStateData(){
-
-    }
-
-    public SetStateData(@Nullable TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult identityResult, @NonNull State newState, @NonNull String logMessage){
-      this.identityResult = identityResult;
-      this.newState = newState;
-      this.logMessage = logMessage;
-    }
-
-    @Override public JSONObject serialize() throws JSONException {
-      JSONObject serializedData = new JSONObject();
-      serializedData.putOpt(KEY_CALLBACK_JOB_RESULT, identityResult == null ? null : identityResult.serialize());
-      serializedData.put(KEY_NEW_STATE, newState.toInt());
-      serializedData.put(KEY_LOG_MESSAGE, logMessage);
-      return serializedData;
-    }
-
-    @Override public SetStateData deserialize(JSONObject serialized) throws JSONException {
-      this.identityResult = serialized.has(KEY_CALLBACK_JOB_RESULT) ? new TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult().deserialize(new JSONObject(serialized.getString(KEY_CALLBACK_JOB_RESULT))) : null;
-      this.newState = State.forState(serialized.getInt(KEY_NEW_STATE));
-      this.logMessage = serialized.getString(KEY_LOG_MESSAGE);
-      return this;
-    }
-
-    @Override public TI_Data getIntroduction() {
-      return identityResult == null? null: identityResult.TIData;
-    }
-
-    @Override public TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult getRetrieveIdJobStruct() {
-      return identityResult;
-    }
-  }
-
-  public static class SetStateCallback extends Callback{
+  public static class SetStateCallback extends TI_DB_Callback {
 
     public static String tag = Log.tag(SetStateCallback.class);
 
@@ -786,7 +744,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
       return data == null? null: data.getIntroduction();
     }
 
-    @Override public TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult getRetrieveIdJobStruct() {
+    @Override public TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult getCallbackData() {
       if(data == null){
         throw new AssertionError("Data of SetStateCallback was not initialized!");
       }
@@ -798,7 +756,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     }
 
     /**
-     * Callback for modifying introductions state,
+     * TI_DB_Callback for modifying introductions state,
      * PRE: assumes that recipient equivalent to introducee exists in the recipient table as well as their identity in the identity table.
      * @param introduction the introduction to be modified.
      * @param newState the new state for the introduction.
@@ -852,6 +810,50 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
       return tag;
     }
 
+    public static class SetStateData extends TI_JobCallbackData {
+
+      @Nullable private TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult identityResult;
+      @NonNull private State newState;
+      @NonNull private String logMessage;
+
+      private static final String KEY_CALLBACK_JOB_RESULT = "setStateCallbackJobResult";
+      private static final String KEY_NEW_STATE = "setStateCallbackNewState";
+      private static final String KEY_LOG_MESSAGE = "setStateCallbackLogMessage";
+
+      public SetStateData(){
+
+      }
+
+      public SetStateData(@Nullable TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult identityResult, @NonNull State newState, @NonNull String logMessage){
+        this.identityResult = identityResult;
+        this.newState = newState;
+        this.logMessage = logMessage;
+      }
+
+      @Override public JSONObject serialize() throws JSONException {
+        JSONObject serializedData = new JSONObject();
+        serializedData.putOpt(KEY_CALLBACK_JOB_RESULT, identityResult == null ? null : identityResult.serialize());
+        serializedData.put(KEY_NEW_STATE, newState.toInt());
+        serializedData.put(KEY_LOG_MESSAGE, logMessage);
+        return serializedData;
+      }
+
+      @Override public SetStateData deserialize(JSONObject serialized) throws JSONException {
+        this.identityResult = serialized.has(KEY_CALLBACK_JOB_RESULT) ? new TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult().deserialize(new JSONObject(serialized.getString(KEY_CALLBACK_JOB_RESULT))) : null;
+        this.newState = State.forState(serialized.getInt(KEY_NEW_STATE));
+        this.logMessage = serialized.getString(KEY_LOG_MESSAGE);
+        return this;
+      }
+
+      @Override public TI_Data getIntroduction() {
+        return identityResult == null? null: identityResult.TIData;
+      }
+
+      @Override public TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult getRetrieveIdJobStruct() {
+        return identityResult;
+      }
+    }
+
     public static class Factory implements TI_JobCallback.Factory{
 
       private SetStateData data;
@@ -861,14 +863,14 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
 
       }
 
-      public Callback create(){
+      public TI_DB_Callback create(){
         if(!initialized){
           throw new AssertionError("SetStateCallback Factory was not initialized!");
         }
-        return ((Callback) new SetStateCallback(data));
+        return ((TI_DB_Callback) new SetStateCallback(data));
       }
 
-      @Override public void initialize(JobCallbackData data) {
+      @Override public void initialize(TI_JobCallbackData data) {
         if(data instanceof SetStateData){
           this.data = (SetStateData) data;
           initialized = true;
@@ -877,7 +879,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
         }
       }
 
-      @Override public JobCallbackData getEmptyJobDataInstance() {
+      @Override public TI_JobCallbackData getEmptyJobDataInstance() {
         return new SetStateData();
       }
     }
@@ -889,7 +891,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
   // For this case, having a record of stale introductions could be used to restore the verification state without having to reverify.
 
   // TODO: all state transition methods can be public => FSM Logic adhered to this way.
-  public static class InsertCallback extends Callback{
+  public static class InsertCallback extends TI_DB_Callback {
 
     public static final String                                                         tag = Log.tag(InsertCallback.class);
     private             TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult data;
@@ -916,7 +918,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
       return data == null? null: data.getIntroduction();
     }
 
-    @Override public TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult getRetrieveIdJobStruct() {
+    @Override public TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult getCallbackData() {
       return data;
     }
 
@@ -924,7 +926,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
       return tag;
     }
 
-    // Callback for profile retreive Identity job
+    // TI_DB_Callback for profile retreive Identity job
     // But java is annoying when it comes to function serialization so I won't do that for now
     // Only meant to be called by Job & @incomingIntroduction
     /**
@@ -961,14 +963,14 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
       public Factory(){
       }
 
-      public Callback create(){
+      public TI_DB_Callback create(){
         if(!initialized){
           throw new AssertionError("InsertCallback Factory was not initialized!");
         }
         return new InsertCallback(data.TIData, data.key, data.aci);
       }
 
-      @Override public void initialize(JobCallbackData data) {
+      @Override public void initialize(TI_JobCallbackData data) {
         if(data instanceof TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult){
           this.data = (TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult) data;
           initialized = true;
@@ -977,17 +979,17 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
         }
       }
 
-      @Override public JobCallbackData getEmptyJobDataInstance() {
+      @Override public TI_JobCallbackData getEmptyJobDataInstance() {
         return new TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult();
       }
     }
   }
 
-  public abstract static class Callback{
+  public abstract static class TI_DB_Callback {
 
     abstract public void callback();
     abstract public TI_Data getIntroduction();
-    abstract public TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult getRetrieveIdJobStruct();
+    abstract public TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult getCallbackData();
     abstract public String getTag();
   }
 

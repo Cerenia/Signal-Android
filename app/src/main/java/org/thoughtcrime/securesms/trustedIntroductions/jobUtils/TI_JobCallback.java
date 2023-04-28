@@ -2,11 +2,11 @@ package org.thoughtcrime.securesms.trustedIntroductions.jobUtils;
 
 import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
 
-//@see also Callback in TrustedIntroductionsDatabase
+//@see also TI_DB_Callback in TrustedIntroductionsDatabase
 public interface TI_JobCallback {
   interface Factory{
-    TrustedIntroductionsDatabase.Callback create();
-    void initialize(JobCallbackData data);
-    JobCallbackData getEmptyJobDataInstance();
+    TrustedIntroductionsDatabase.TI_DB_Callback create();
+    void initialize(TI_JobCallbackData data);
+    TI_JobCallbackData getEmptyJobDataInstance();
   }
 }

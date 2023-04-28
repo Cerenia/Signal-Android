@@ -14,9 +14,8 @@ import org.thoughtcrime.securesms.jobmanager.JsonJobData;
 import org.thoughtcrime.securesms.jobmanager.impl.NetworkConstraint;
 import org.thoughtcrime.securesms.keyvalue.SignalStore;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
-import org.thoughtcrime.securesms.trustedIntroductions.jobUtils.JobCallbackData;
+import org.thoughtcrime.securesms.trustedIntroductions.jobUtils.TI_JobCallbackData;
 import org.thoughtcrime.securesms.trustedIntroductions.jobUtils.TI_JobCallback;
-import org.thoughtcrime.securesms.trustedIntroductions.jobUtils.TI_Serialize;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
 import org.thoughtcrime.securesms.util.Base64;
 import org.whispersystems.signalservice.api.profiles.ProfileAndCredential;
@@ -46,9 +45,8 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
   private static final String KEY_SAVE_IDENTITY_J = "saveIdentity";
   private static final String KEY_CALLBACK_TYPE_J = "callbackType";
 
-  private final TI_Serialize data;
-  private final boolean                               saveIdentity;
-  private final TrustedIntroductionsDatabase.Callback callback;
+  private final boolean                                     saveIdentity;
+  private final TrustedIntroductionsDatabase.TI_DB_Callback callback;
 
 
   @SuppressWarnings("rawtypes") public static HashMap<String, TI_JobCallback.Factory> instantiate = new HashMap<>();
@@ -58,7 +56,7 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
     instantiate.put(TrustedIntroductionsDatabase.SetStateCallback.tag, new TrustedIntroductionsDatabase.SetStateCallback.Factory());
   }
 
-  public static class TI_RetrieveIDJobResult extends JobCallbackData {
+  public static class TI_RetrieveIDJobResult extends TI_JobCallbackData {
     public TI_Data TIData;
     public String key;
     public String aci;
@@ -112,7 +110,7 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
    * @param saveIdentity weather to save the identity into the identity table
    * @param introductionInsertCallBack weather to call back for an introduction insert at the end of the fetch
    */
-  public TrustedIntroductionsRetreiveIdentityJob(@NonNull TI_Data data, boolean saveIdentity, @Nullable TrustedIntroductionsDatabase.Callback introductionInsertCallBack){
+  public TrustedIntroductionsRetreiveIdentityJob(@NonNull TI_Data data, boolean saveIdentity, @Nullable TrustedIntroductionsDatabase.TI_DB_Callback introductionInsertCallBack){
     // TODO: Currently bogus introduceeId and IntroduceeNumber lead to an application crash
     this(new TI_RetrieveIDJobResult(data, null, null),
          saveIdentity,
@@ -126,9 +124,8 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
 
   }
 
-  private TrustedIntroductionsRetreiveIdentityJob(@NonNull TI_RetrieveIDJobResult data, boolean saveIdentity, @Nullable TrustedIntroductionsDatabase.Callback callBack, @NonNull Parameters parameters){
+  private TrustedIntroductionsRetreiveIdentityJob(@NonNull TI_RetrieveIDJobResult data, boolean saveIdentity, @Nullable TrustedIntroductionsDatabase.TI_DB_Callback callBack, @NonNull Parameters parameters){
     super(parameters);
-    this.data = data;
     this.saveIdentity = saveIdentity;
     this.callback     = callBack;
   }
@@ -141,7 +138,7 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
     JSONObject serializedData = new JSONObject();
     try{
       serializedData.put(KEY_CALLBACK_TYPE_J, callback.getTag());
-      serializedData.put(KEY_CALLBACK_DATA_J, data.serialize());
+      serializedData.put(KEY_CALLBACK_DATA_J, callback.data.serialize());
       serializedData.put(KEY_SAVE_IDENTITY_J, saveIdentity);
     } catch (JSONException e){
       // TODO: fail gracefully
@@ -166,8 +163,8 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
     // TODO: Would we like some kind of note to the user that this happened?
     // Not urgent but may be nice to have in the user-specific screen
     // I think probably not since this could have been a tampered introduction, silent drop seems sensible
-    if(data == null){
-      throw new AssertionError("Missing data in Job!");
+    if(callback.getCallbackData() == null){
+      throw new AssertionError("Missing data in Job Callback!");
     }
     TI_Data d = callback.getIntroduction();
     Log.e(TAG, "Could not find a registered user with service id:" + d.getIntroduceeServiceId() + " and phone nr: " + d.getIntroduceeNumber()  + ". This introduction failed and will not be retried.");
@@ -243,12 +240,12 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
           JSONObject innerData = new JSONObject(serializedTiData);
           boolean saveIdentity = innerData.getBoolean(KEY_SAVE_IDENTITY_J);
           String callbackType = innerData.getString(KEY_CALLBACK_TYPE_J);
-          TI_JobCallback.Factory cbFactory = instantiate.get(callbackType);
-          JobCallbackData deserializedJobData = cbFactory.getEmptyJobDataInstance();
+          TI_JobCallback.Factory cbFactory           = instantiate.get(callbackType);
+          TI_JobCallbackData     deserializedJobData = cbFactory.getEmptyJobDataInstance();
           deserializedJobData.deserialize(new JSONObject(innerData.getString(KEY_CALLBACK_DATA_J)));
           cbFactory.initialize(deserializedJobData);
-          TrustedIntroductionsDatabase.Callback cb = cbFactory.create();
-          return new TrustedIntroductionsRetreiveIdentityJob(cb.getRetrieveIdJobStruct(), saveIdentity, cb, parameters);
+          TrustedIntroductionsDatabase.TI_DB_Callback cb = cbFactory.create();
+          return new TrustedIntroductionsRetreiveIdentityJob(cb.getCallbackData(), saveIdentity, cb, parameters);
         } catch (JSONException e) {
           // TODO: How to fail gracefully?
           e.printStackTrace();

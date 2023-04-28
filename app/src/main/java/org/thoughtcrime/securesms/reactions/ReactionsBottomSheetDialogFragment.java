@@ -63,7 +63,7 @@ public final class ReactionsBottomSheetDialogFragment extends BottomSheetDialogF
     } else if (getParentFragment() instanceof Callback) {
       callback = (Callback) getParentFragment();
     } else {
-      throw new IllegalStateException("Parent component does not implement Callback");
+      throw new IllegalStateException("Parent component does not implement TI_DB_Callback");
     }
   }
 

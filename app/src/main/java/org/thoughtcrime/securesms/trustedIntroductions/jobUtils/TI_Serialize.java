@@ -13,7 +13,7 @@ public interface TI_Serialize {
   JSONObject serialize() throws JSONException;
 
   /**
-   * Must also set the factory variable.
+   * Must also set the factory initialization state.
    * @param serialized the serialization string.
    * @return the deserialized object.
    * @throws JSONException
