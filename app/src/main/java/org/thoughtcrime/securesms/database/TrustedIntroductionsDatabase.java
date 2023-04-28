@@ -810,7 +810,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
       return tag;
     }
 
-    public static class SetStateData extends TI_JobCallbackData implements TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult.setResult {
+    public static class SetStateData extends TI_JobCallbackData implements TrustedIntroductionsRetreiveIdentityJob.setRetreiveIdJobResult {
 
       @Nullable private TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult identityResult;
       @NonNull private State newState;
@@ -899,7 +899,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
   // For this case, having a record of stale introductions could be used to restore the verification state without having to reverify.
 
   // TODO: all state transition methods can be public => FSM Logic adhered to this way.
-  public static class InsertCallback extends TI_DB_Callback implements TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult.setResult {
+  public static class InsertCallback extends TI_DB_Callback {
 
     public static final String                                                         tag = Log.tag(InsertCallback.class);
     private             TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult data;
@@ -908,14 +908,6 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     public InsertCallback(@NonNull TI_Data data, @Nullable String base64KeyResult, @Nullable String aciResult){
       this.data = new TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult(data, base64KeyResult, aciResult);
 
-    }
-
-    @Override public void setAci(String aci) {
-      this.data.aci = aci;
-    }
-
-    @Override public void setPublicKey(String base64KeyResult) {
-      this.data.key = base64KeyResult;
     }
 
     public void callback(){
