@@ -49,14 +49,14 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
   private final TrustedIntroductionsDatabase.TI_DB_Callback callback;
 
 
-  @SuppressWarnings("rawtypes") public static HashMap<String, TI_JobCallback.Factory> instantiate = new HashMap<>();
+  public static HashMap<String, TI_JobCallback.Factory> instantiate = new HashMap<>();
 
   static {
     instantiate.put(TrustedIntroductionsDatabase.InsertCallback.tag, new TrustedIntroductionsDatabase.InsertCallback.Factory());
     instantiate.put(TrustedIntroductionsDatabase.SetStateCallback.tag, new TrustedIntroductionsDatabase.SetStateCallback.Factory());
   }
 
-  public static class TI_RetrieveIDJobResult extends TI_JobCallbackData {
+  public static class TI_RetrieveIDJobResult extends TI_JobCallbackData implements setRetreiveIdJobResult {
     public TI_Data TIData;
     public String key;
     public String aci;
@@ -99,10 +99,18 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
       return this;
     }
 
-    public interface setResult{
-      void setAci(String aci);
-      void setPublicKey(String publicKey);
+    @Override public void setAci(String aci) {
+      this.aci = aci;
     }
+
+    @Override public void setPublicKey(String publicKey) {
+      this.key = publicKey;
+    }
+  }
+
+  public interface setRetreiveIdJobResult {
+    void setAci(String aci);
+    void setPublicKey(String publicKey);
   }
 
   /**
@@ -210,8 +218,8 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
       Log.e(TAG, "Processor did not have a result for service ID: " + callback.getIntroduction().getIntroduceeServiceId() + ". Ignoring introduction.");
       return;
     }
-    if(callback.getCallbackData() instanceof TI_RetrieveIDJobResult.setResult){
-      TI_RetrieveIDJobResult.setResult cbData = (TI_RetrieveIDJobResult.setResult) callback.getCallbackData();
+    if(callback.getCallbackData() instanceof setRetreiveIdJobResult){
+      setRetreiveIdJobResult cbData = (setRetreiveIdJobResult) callback.getCallbackData();
       cbData.setAci(jobResult.aci);
       cbData.setPublicKey(jobResult.key);
     }
@@ -244,14 +252,14 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
           String callbackType = innerData.getString(KEY_CALLBACK_TYPE_J);
           TI_JobCallback.Factory cbFactory           = instantiate.get(callbackType);
           TI_JobCallbackData     deserializedJobData = cbFactory.getEmptyJobDataInstance();
-          deserializedJobData.deserialize(new JSONObject(innerData.getString(KEY_CALLBACK_DATA_J)));
+          deserializedJobData.deserialize(innerData.getJSONObject(KEY_CALLBACK_DATA_J));
           cbFactory.initialize(deserializedJobData);
           TrustedIntroductionsDatabase.TI_DB_Callback cb = cbFactory.create();
           return new TrustedIntroductionsRetreiveIdentityJob(saveIdentity, cb, parameters);
         } catch (JSONException e) {
           // TODO: How to fail gracefully?
           e.printStackTrace();
-          throw new AssertionError("Deserialization of TI_RetrieveIDJobResult failed");
+          //throw new AssertionError("Deserialization of TI_RetrieveIDJobResult failed");
         }
       }
       // unreachable code but compiler complains..
