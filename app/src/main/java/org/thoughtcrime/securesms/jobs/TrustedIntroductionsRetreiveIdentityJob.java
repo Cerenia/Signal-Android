@@ -99,9 +99,9 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
       return this;
     }
 
-    public static interface setResult{
-      public void setAci(String aci);
-      public void setPublicKey(String publicKey);
+    public interface setResult{
+      void setAci(String aci);
+      void setPublicKey(String publicKey);
     }
   }
 
@@ -117,8 +117,7 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
    */
   public TrustedIntroductionsRetreiveIdentityJob(@NonNull TI_Data data, boolean saveIdentity, @Nullable TrustedIntroductionsDatabase.TI_DB_Callback introductionInsertCallBack){
     // TODO: Currently bogus introduceeId and IntroduceeNumber lead to an application crash
-    this(new TI_RetrieveIDJobResult(data, null, null),
-         saveIdentity,
+    this(saveIdentity,
          introductionInsertCallBack,
          new Parameters.Builder()
                                .setQueue(data.getIntroducerServiceId() + TAG)
@@ -129,7 +128,7 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
 
   }
 
-  private TrustedIntroductionsRetreiveIdentityJob(@NonNull TI_RetrieveIDJobResult data, boolean saveIdentity, @Nullable TrustedIntroductionsDatabase.TI_DB_Callback callBack, @NonNull Parameters parameters){
+  private TrustedIntroductionsRetreiveIdentityJob(boolean saveIdentity, @Nullable TrustedIntroductionsDatabase.TI_DB_Callback callBack, @NonNull Parameters parameters){
     super(parameters);
     this.saveIdentity = saveIdentity;
     this.callback     = callBack;
@@ -248,7 +247,7 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
           deserializedJobData.deserialize(new JSONObject(innerData.getString(KEY_CALLBACK_DATA_J)));
           cbFactory.initialize(deserializedJobData);
           TrustedIntroductionsDatabase.TI_DB_Callback cb = cbFactory.create();
-          return new TrustedIntroductionsRetreiveIdentityJob(cb.getCallbackData(), saveIdentity, cb, parameters);
+          return new TrustedIntroductionsRetreiveIdentityJob(saveIdentity, cb, parameters);
         } catch (JSONException e) {
           // TODO: How to fail gracefully?
           e.printStackTrace();
