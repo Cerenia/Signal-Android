@@ -34,11 +34,11 @@ import java.util.Optional;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
-public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
+public class TrustedIntroductionsRetrieveIdentityJob extends BaseJob{
 
   public static final String KEY = "TrustedIntroductionsRetreiveIdentityJob";
 
-  private static final String TAG = String.format(TI_Utils.TI_LOG_TAG, Log.tag(TrustedIntroductionsRetreiveIdentityJob.class));
+  private static final String TAG = String.format(TI_Utils.TI_LOG_TAG, Log.tag(TrustedIntroductionsRetrieveIdentityJob.class));
 
   private static final String KEY_DATA_J    = "data";
   private static final String KEY_CALLBACK_DATA_J = "callbackData";
@@ -123,7 +123,7 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
    * @param saveIdentity weather to save the identity into the identity table
    * @param introductionInsertCallBack weather to call back for an introduction insert at the end of the fetch
    */
-  public TrustedIntroductionsRetreiveIdentityJob(@NonNull TI_Data data, boolean saveIdentity, @Nullable TI_JobCallback introductionInsertCallBack){
+  public TrustedIntroductionsRetrieveIdentityJob(@NonNull TI_Data data, boolean saveIdentity, @Nullable TI_JobCallback introductionInsertCallBack){
     // TODO: Currently bogus introduceeId and IntroduceeNumber lead to an application crash
     this(saveIdentity,
          introductionInsertCallBack,
@@ -136,7 +136,7 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
 
   }
 
-  private TrustedIntroductionsRetreiveIdentityJob(boolean saveIdentity, @Nullable TI_JobCallback callBack, @NonNull Parameters parameters){
+  private TrustedIntroductionsRetrieveIdentityJob(boolean saveIdentity, @Nullable TI_JobCallback callBack, @NonNull Parameters parameters){
     super(parameters);
     this.saveIdentity = saveIdentity;
     this.callback     = callBack;
@@ -239,9 +239,9 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
     return true;
   }
 
-  public static final class Factory implements Job.Factory<TrustedIntroductionsRetreiveIdentityJob> {
+  public static final class Factory implements Job.Factory<TrustedIntroductionsRetrieveIdentityJob> {
 
-    @NonNull @Override public TrustedIntroductionsRetreiveIdentityJob create(@NonNull Parameters parameters, @Nullable byte[] serializedData) {
+    @NonNull @Override public TrustedIntroductionsRetrieveIdentityJob create(@NonNull Parameters parameters, @Nullable byte[] serializedData) {
       JsonJobData data = JsonJobData.deserialize(serializedData);
       // deserialize TI_Data if present
       String serializedTiData = data.getString(KEY_DATA_J);
@@ -255,7 +255,7 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
           deserializedJobData.deserialize(innerData.getJSONObject(KEY_CALLBACK_DATA_J));
           cbFactory.initialize(deserializedJobData);
           TI_JobCallback cb = cbFactory.create();
-          return new TrustedIntroductionsRetreiveIdentityJob(saveIdentity, cb, parameters);
+          return new TrustedIntroductionsRetrieveIdentityJob(saveIdentity, cb, parameters);
         } catch (JSONException e) {
           // TODO: How to fail gracefully?
           e.printStackTrace();
