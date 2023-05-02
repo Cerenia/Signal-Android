@@ -1632,6 +1632,8 @@
     <string name="MessageRequestBottomView_delete">Scrios</string>
     <string name="MessageRequestBottomView_block">Cuir bac</string>
     <string name="MessageRequestBottomView_unblock">Bain an bac</string>
+    <!-- Text explaining a message request from someone you\'ve removed before -->
+    <string name="MessageRequestBottomView_do_you_want_to_let_s_message_you_you_removed_them_before">Lig do %1$s teachtaireachtaí a sheoladh chugat agus comhroinn d\'ainm agus grianghraf leis/léi? Bhain tú an duine sin roimhe.</string>
     <string name="MessageRequestBottomView_do_you_want_to_let_s_message_you_they_wont_know_youve_seen_their_messages_until_you_accept">Lig do %1$s teachtaireachtaí a sheoladh chugat agus comhroinn d\'ainm agus grianghraf leis/léi? Ní bheidh a fhios ag an duine sin go bhfaca tú an teachtaireacht go dtí go nglacfaidh tú.</string>
     <!-- Shown in message request flow. Describes what will happen if you unblock a Signal user -->
     <string name="MessageRequestBottomView_do_you_want_to_let_s_message_you_wont_receive_any_messages_until_you_unblock_them">Lig do %1$s teachtaireachtaí a sheoladh chugat agus comhroinn d\'ainm agus grianghraf leis an duine sin? Ní bhfaighidh tú aon teachtaireacht go dtí go mbainfidh tú an bac de/di.</string>
@@ -2180,6 +2182,8 @@
     <string name="ThreadRecord_message_could_not_be_processed">Níorbh fhéidir an teachtaireacht a phróiseáil</string>
     <string name="ThreadRecord_delivery_issue">Delivery Issue</string>
     <string name="ThreadRecord_message_request">Iarratas Teachtaireachta</string>
+    <!-- Thread preview for a recipient that has been hidden -->
+    <string name="ThreadRecord_hidden_recipient">Tá an duine sin folaithe agat, seol teachtaireacht arís le cur ar ais ar do liosta é/í.</string>
     <string name="ThreadRecord_photo">Grianghraf</string>
     <string name="ThreadRecord_gif">GIF</string>
     <string name="ThreadRecord_voice_message">Teachtaireacht Ghutha</string>
@@ -2590,7 +2594,8 @@
     <string name="ConversationUpdateItem_send_payment">Seol íocaíocht</string>
     <!-- Update item button text to activate payments -->
     <string name="ConversationUpdateItem_activate_payments">Gníomhachtaigh íocaíochtaí</string>
-
+    <!-- Update item alerting the user they hid this person and that they can message them to unhide them -->
+    <string name="ConversationUpdateItem_hidden_contact_message_to_add_back">Bhain tú an duine sin, má sheolann tú teachtaireachtaí chuige/chuici arís cuirfear ar do liosta arís é/í.</string>
 
     <!-- audio_view -->
     <string name="audio_view__play_pause_accessibility_description">Seinn … Cuir ar sos</string>
@@ -4280,11 +4285,11 @@
     <string name="ExportAccountDataFragment__export_report">Easpórtáil an tuairisc</string>
 
     <!-- Radio option to export the data as a text file .txt -->
-    <string name="ExportAccountDataFragment__export_as_txt">Easpórtáil leagan TXT</string>
+    <string name="ExportAccountDataFragment__export_as_txt">Easpórtáil mar TXT</string>
     <!-- Label for the text file option -->
     <string name="ExportAccountDataFragment__export_as_txt_label">Comhad téacs soléite</string>
     <!-- Radio option to export the data as a json (java script object notation) file .json -->
-    <string name="ExportAccountDataFragment__export_as_json">Easpórtáil leagan JSON</string>
+    <string name="ExportAccountDataFragment__export_as_json">Easpórtáil mar JSON</string>
     <!-- Label for the json file option, the account data in a machine readable file format -->
     <string name="ExportAccountDataFragment__export_as_json_label">Comhad atá inléite ag meaisín</string>
 
@@ -4301,7 +4306,7 @@
     <!-- Title for export confirmation dialog -->
     <string name="ExportAccountDataFragment__export_report_confirmation">Easpórtáil sonraí?</string>
     <!-- Message for export confirmation dialog -->
-    <string name="ExportAccountDataFragment__export_report_confirmation_message">Ná comhroinn sonraí do chuntais Signal ach le daoine nó aipeanna a bhfuil muinín agat iontu.</string>
+    <string name="ExportAccountDataFragment__export_report_confirmation_message">Ná comhroinn sonraí do chuntas Signal ach le daoine nó aipeanna a bhfuil muinín agat iontu.</string>
     <!-- Action to export in for export confirmation dialog -->
     <string name="ExportAccountDataFragment__export_report_action">Easpórtáil</string>
 
@@ -6209,6 +6214,8 @@
     <string name="CameraControls_continue_button_accessibility_label">Cnaipe Ar Aghaidh</string>
 
     <!-- CallPreference -->
+    <!-- Generic group call in call info -->
+    <string name="CallPreference__group_call">Glao grúpa</string>
     <!-- Missed group call in call info -->
     <string name="CallPreference__missed_group_call">Missed group call</string>
     <!-- Incoming group call in call info -->

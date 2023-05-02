@@ -35,6 +35,7 @@ import android.view.WindowManager;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.util.Consumer;
 import androidx.lifecycle.ViewModelProvider;
@@ -275,12 +276,16 @@ public class WebRtcCallActivity extends BaseActivity implements SafetyNumberChan
   }
 
   private boolean enterPipModeIfPossible() {
-    if (viewModel.canEnterPipMode() && isSystemPipEnabledAndAvailable()) {
-      PictureInPictureParams params = new PictureInPictureParams.Builder()
-          .setAspectRatio(new Rational(9, 16))
-          .build();
-      enterPictureInPictureMode(params);
-      CallParticipantsListDialog.dismiss(getSupportFragmentManager());
+    if (isSystemPipEnabledAndAvailable()) {
+      if (viewModel.canEnterPipMode()) {
+        try {
+          enterPictureInPictureMode(pipBuilderParams.build());
+        } catch (IllegalStateException e) {
+          Log.w(TAG, "Device lied to us about supporting PiP.", e);
+          return false;
+        }
+
+        CallParticipantsListDialog.dismiss(getSupportFragmentManager());
 
       return true;
     }

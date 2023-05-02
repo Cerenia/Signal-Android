@@ -172,10 +172,10 @@ class CallTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTabl
       .readToSingleLong(0L)
   }
 
-  fun deleteCallEventsDeletedBefore(threshold: Long) {
-    writableDatabase
+  fun deleteCallEventsDeletedBefore(threshold: Long): Int {
+    return writableDatabase
       .delete(TABLE_NAME)
-      .where("$DELETION_TIMESTAMP <= ?", threshold)
+      .where("$DELETION_TIMESTAMP > 0 AND $DELETION_TIMESTAMP <= ?", threshold)
       .run()
   }
 
@@ -200,7 +200,10 @@ class CallTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTabl
 
       db
         .update(TABLE_NAME)
-        .values(DELETION_TIMESTAMP to System.currentTimeMillis())
+        .values(
+          EVENT to Event.serialize(Event.DELETE),
+          DELETION_TIMESTAMP to System.currentTimeMillis()
+        )
         .where(where, type)
         .run()
 
@@ -224,7 +227,7 @@ class CallTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTabl
           EVENT to Event.serialize(Event.DELETE),
           DELETION_TIMESTAMP to System.currentTimeMillis()
         )
-        .where("$CALL_ID = ?", call.callId)
+        .where("$CALL_ID = ? AND $PEER = ?", call.callId, call.peer)
         .run()
 
       if (call.messageId != null) {
@@ -704,9 +707,9 @@ class CallTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTabl
   // endregion
 
   private fun getCallsCursor(isCount: Boolean, offset: Int, limit: Int, searchTerm: String?, filter: CallLogFilter): Cursor {
-    val filterClause = when (filter) {
-      CallLogFilter.ALL -> SqlUtil.buildQuery("$EVENT != ${Event.serialize(Event.DELETE)}")
-      CallLogFilter.MISSED -> SqlUtil.buildQuery("$EVENT == ${Event.serialize(Event.MISSED)}")
+    val filterClause: SqlUtil.Query = when (filter) {
+      CallLogFilter.ALL -> SqlUtil.buildQuery("$DELETION_TIMESTAMP = 0")
+      CallLogFilter.MISSED -> SqlUtil.buildQuery("$EVENT = ${Event.serialize(Event.MISSED)} AND $DELETION_TIMESTAMP = 0")
     }
 
     val queryClause = if (!searchTerm.isNullOrEmpty()) {
@@ -739,17 +742,69 @@ class CallTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTabl
       ""
     }
 
+    val projection = if (isCount) {
+      "COUNT(*),"
+    } else {
+      "p.$ID, $TIMESTAMP, $EVENT, $DIRECTION, $PEER, p.$TYPE, $CALL_ID, $MESSAGE_ID, $RINGER, children, in_period, ${MessageTable.DATE_RECEIVED}, ${MessageTable.BODY},"
+    }
+
     //language=sql
     val statement = """
-      SELECT
-      ${if (isCount) "COUNT(*)," else "$TABLE_NAME.*, ${MessageTable.DATE_RECEIVED}, ${MessageTable.BODY},"}
-      LOWER(
-        COALESCE(
-          NULLIF(${RecipientTable.TABLE_NAME}.${RecipientTable.SYSTEM_JOINED_NAME}, ''),
-          NULLIF(${RecipientTable.TABLE_NAME}.${RecipientTable.SYSTEM_GIVEN_NAME}, ''),
-          NULLIF(${RecipientTable.TABLE_NAME}.${RecipientTable.PROFILE_JOINED_NAME}, ''),
-          NULLIF(${RecipientTable.TABLE_NAME}.${RecipientTable.PROFILE_GIVEN_NAME}, ''),
-          NULLIF(${RecipientTable.TABLE_NAME}.${RecipientTable.USERNAME}, '')
+      SELECT $projection
+        LOWER(
+          COALESCE(
+            NULLIF(${RecipientTable.TABLE_NAME}.${RecipientTable.SYSTEM_JOINED_NAME}, ''),
+            NULLIF(${RecipientTable.TABLE_NAME}.${RecipientTable.SYSTEM_GIVEN_NAME}, ''),
+            NULLIF(${RecipientTable.TABLE_NAME}.${RecipientTable.PROFILE_JOINED_NAME}, ''),
+            NULLIF(${RecipientTable.TABLE_NAME}.${RecipientTable.PROFILE_GIVEN_NAME}, ''),
+            NULLIF(${RecipientTable.TABLE_NAME}.${RecipientTable.USERNAME}, '')
+          )
+        ) AS sort_name
+      FROM (
+        WITH cte AS (
+          SELECT
+            $ID, $TIMESTAMP, $EVENT, $DIRECTION, $PEER, $TYPE, $CALL_ID, $MESSAGE_ID, $RINGER,
+            (
+              SELECT
+                $ID
+              FROM
+                $TABLE_NAME
+              WHERE
+                $TABLE_NAME.$DIRECTION = c.$DIRECTION
+                AND $TABLE_NAME.$PEER = c.$PEER
+                AND $TABLE_NAME.$TIMESTAMP - $TIME_WINDOW <= c.$TIMESTAMP
+                AND $TABLE_NAME.$TIMESTAMP >= c.$TIMESTAMP
+                AND ${filterClause.where}
+              ORDER BY
+                $TIMESTAMP DESC
+            ) as parent,
+            (
+              SELECT
+                group_concat($ID)
+              FROM
+                $TABLE_NAME
+              WHERE
+                $TABLE_NAME.$DIRECTION = c.$DIRECTION
+                AND $TABLE_NAME.$PEER = c.$PEER
+                AND c.$TIMESTAMP - $TIME_WINDOW <= $TABLE_NAME.$TIMESTAMP
+                AND c.$TIMESTAMP >= $TABLE_NAME.$TIMESTAMP
+                AND ${filterClause.where}
+            ) as children,
+            (
+              SELECT
+                group_concat($ID)
+              FROM
+                $TABLE_NAME
+              WHERE
+                c.$TIMESTAMP - $TIME_WINDOW <= $TABLE_NAME.$TIMESTAMP
+                AND c.$TIMESTAMP >= $TABLE_NAME.$TIMESTAMP
+                AND ${filterClause.where}
+            ) as in_period
+          FROM
+            $TABLE_NAME c
+          WHERE ${filterClause.where}
+          ORDER BY
+            $TIMESTAMP DESC
         )
       ) AS sort_name
       FROM $TABLE_NAME
@@ -777,11 +832,27 @@ class CallTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTabl
       val date = it.requireLong(MessageTable.DATE_RECEIVED)
       val groupCallDetails = GroupCallUpdateDetailsUtil.parse(it.requireString(MessageTable.BODY))
 
+      Log.d(TAG, "${cursor.requireNonNullString("in_period")}")
+
+      val children = cursor.requireNonNullString("children")
+        .split(',')
+        .map { it.toLong() }
+        .toSet()
+
+      val inPeriod = cursor.requireNonNullString("in_period")
+        .split(',')
+        .map { it.toLong() }
+        .sortedDescending()
+        .toSet()
+
+      val actualChildren = inPeriod.takeWhile { children.contains(it) }
+
       CallLogRow.Call(
         call = call,
         peer = recipient,
         date = date,
-        groupCallState = CallLogRow.GroupCallState.fromDetails(groupCallDetails)
+        groupCallState = CallLogRow.GroupCallState.fromDetails(groupCallDetails),
+        children = actualChildren.toSet()
       )
     }
   }

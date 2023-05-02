@@ -246,15 +246,22 @@ class CallLogAdapter(
     }
 
     @StringRes
-    private fun getCallStateStringRes(callEvent: CallTable.Event, callDirection: CallTable.Direction): Int {
-      if (callEvent == CallTable.Event.MISSED) {
-        return R.string.CallLogAdapter__missed
-      }
-
-      return if (callDirection == CallTable.Direction.INCOMING) {
-        R.string.CallLogAdapter__incoming
-      } else {
-        R.string.CallLogAdapter__outgoing
+    private fun getCallStateStringRes(call: CallTable.Call): Int {
+      return when (call.messageType) {
+        MessageTypes.MISSED_VIDEO_CALL_TYPE -> R.string.CallLogAdapter__missed
+        MessageTypes.MISSED_AUDIO_CALL_TYPE -> R.string.CallLogAdapter__missed
+        MessageTypes.INCOMING_AUDIO_CALL_TYPE -> R.string.CallLogAdapter__incoming
+        MessageTypes.INCOMING_VIDEO_CALL_TYPE -> R.string.CallLogAdapter__incoming
+        MessageTypes.OUTGOING_AUDIO_CALL_TYPE -> R.string.CallLogAdapter__outgoing
+        MessageTypes.OUTGOING_VIDEO_CALL_TYPE -> R.string.CallLogAdapter__outgoing
+        MessageTypes.GROUP_CALL_TYPE -> when {
+          call.event == CallTable.Event.MISSED -> R.string.CallLogAdapter__missed
+          call.event == CallTable.Event.GENERIC_GROUP_CALL || call.event == CallTable.Event.JOINED -> R.string.CallPreference__group_call
+          call.direction == CallTable.Direction.INCOMING -> R.string.CallLogAdapter__incoming
+          call.direction == CallTable.Direction.OUTGOING -> R.string.CallLogAdapter__outgoing
+          else -> throw AssertionError()
+        }
+        else -> error("Unexpected type ${call.messageType}")
       }
     }
   }
