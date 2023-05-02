@@ -724,7 +724,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
   }
 
 
-  public static class SetStateCallback extends TI_DB_Callback {
+  public static class SetStateCallback implements TI_JobCallback {
 
     public static String tag = Log.tag(SetStateCallback.class);
 
@@ -742,15 +742,11 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
       result = setStateCallback(data.identityResult.TIData, data.newState, data.logMessage);
     }
 
-    @Override public TI_Data getIntroduction() {
-      return data == null? null: data.getIntroduction();
-    }
-
-    @Override public TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult getCallbackData() {
+    @Override public TI_JobCallbackData  getCallbackData() {
       if(data == null){
         throw new AssertionError("Data of SetStateCallback was not initialized!");
       }
-      return data.getRetrieveIdJobStruct();
+      return data;
     }
 
     public boolean getResult(){
@@ -851,16 +847,16 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
         return identityResult == null? null: identityResult.TIData;
       }
 
-      @Override public TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult getRetrieveIdJobStruct() {
-        return identityResult;
-      }
-
       @Override public void setAci(String aci) {
         identityResult.aci = aci;
       }
 
       @Override public void setPublicKey(String publicKey) {
         identityResult.key = publicKey;
+      }
+
+      @Override public TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult getIdentityResult() {
+        return identityResult;
       }
     }
 
@@ -873,11 +869,11 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
 
       }
 
-      public TI_DB_Callback create(){
+      public TI_JobCallback create(){
         if(!initialized){
           throw new AssertionError("SetStateCallback Factory was not initialized!");
         }
-        return ((TI_DB_Callback) new SetStateCallback(data));
+        return ((TI_JobCallback) new SetStateCallback(data));
       }
 
       @Override public void initialize(TI_JobCallbackData data) {
@@ -901,7 +897,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
   // For this case, having a record of stale introductions could be used to restore the verification state without having to reverify.
 
   // TODO: all state transition methods can be public => FSM Logic adhered to this way.
-  public static class InsertCallback extends TI_DB_Callback {
+  public static class InsertCallback implements TI_JobCallback {
 
     public static final String                                                         tag = Log.tag(InsertCallback.class);
     private final       TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult data;
@@ -915,9 +911,6 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
       this.result = insertIntroduction();
     }
 
-    @Override public TI_Data getIntroduction() {
-      return data == null? null: data.getIntroduction();
-    }
 
     @Override public TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult getCallbackData() {
       return data;
@@ -964,7 +957,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
       public Factory(){
       }
 
-      public TI_DB_Callback create(){
+      public TI_JobCallback create(){
         if(!initialized){
           throw new AssertionError("InsertCallback Factory was not initialized!");
         }
@@ -984,14 +977,6 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
         return new TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult();
       }
     }
-  }
-
-  public abstract static class TI_DB_Callback {
-
-    abstract public void callback();
-    abstract public TI_Data getIntroduction();
-    abstract public TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult getCallbackData();
-    abstract public String getTag();
   }
 
   public static class IntroductionReader implements Closeable{
