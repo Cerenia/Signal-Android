@@ -46,7 +46,7 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
   private static final String KEY_CALLBACK_TYPE_J = "callbackType";
 
   private final boolean                                     saveIdentity;
-  private final TrustedIntroductionsDatabase.TI_DB_Callback callback;
+  private final TI_JobCallback callback;
 
 
   public static HashMap<String, TI_JobCallback.Factory> instantiate = new HashMap<>();
@@ -91,12 +91,12 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
       return this;
     }
 
-    @Override public TI_Data getIntroduction() {
-      return TIData;
+    @Override public TI_RetrieveIDJobResult getIdentityResult() {
+      return this;
     }
 
-    @Override public TI_RetrieveIDJobResult getRetrieveIdJobStruct() {
-      return this;
+    @Override public TI_Data getIntroduction() {
+      return TIData;
     }
 
     @Override public void setAci(String aci) {
@@ -123,7 +123,7 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
    * @param saveIdentity weather to save the identity into the identity table
    * @param introductionInsertCallBack weather to call back for an introduction insert at the end of the fetch
    */
-  public TrustedIntroductionsRetreiveIdentityJob(@NonNull TI_Data data, boolean saveIdentity, @Nullable TrustedIntroductionsDatabase.TI_DB_Callback introductionInsertCallBack){
+  public TrustedIntroductionsRetreiveIdentityJob(@NonNull TI_Data data, boolean saveIdentity, @Nullable TI_JobCallback introductionInsertCallBack){
     // TODO: Currently bogus introduceeId and IntroduceeNumber lead to an application crash
     this(saveIdentity,
          introductionInsertCallBack,
@@ -136,7 +136,7 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
 
   }
 
-  private TrustedIntroductionsRetreiveIdentityJob(boolean saveIdentity, @Nullable TrustedIntroductionsDatabase.TI_DB_Callback callBack, @NonNull Parameters parameters){
+  private TrustedIntroductionsRetreiveIdentityJob(boolean saveIdentity, @Nullable TI_JobCallback callBack, @NonNull Parameters parameters){
     super(parameters);
     this.saveIdentity = saveIdentity;
     this.callback     = callBack;
@@ -178,7 +178,7 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
     if(callback.getCallbackData() == null){
       throw new AssertionError("Missing data in Job Callback!");
     }
-    TI_Data d = callback.getIntroduction();
+    TI_Data d = callback.getCallbackData().getIntroduction();
     Log.e(TAG, "Could not find a registered user with service id:" + d.getIntroduceeServiceId() + " and phone nr: " + d.getIntroduceeNumber()  + ". This introduction failed and will not be retried.");
   }
 
@@ -190,7 +190,7 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
     }
 
     Log.i(TAG, "RetreiveIdentityJob started.");
-    ServiceId sid = ServiceId.parseOrThrow(callback.getIntroduction().getIntroduceeServiceId());
+    ServiceId sid = ServiceId.parseOrThrow(callback.getCallbackData().getIntroduction().getIntroduceeServiceId());
     SignalServiceAddress serviceAddress = new SignalServiceAddress(sid);
     ProfileService                                    profileService = ApplicationDependencies.getProfileService();
     Observable<ServiceResponse<ProfileAndCredential>> result         = profileService.getProfile(serviceAddress, Optional.empty(), Optional.empty(), SignalServiceProfile.RequestType.PROFILE, Locale.getDefault()).toObservable();
@@ -202,20 +202,20 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
     SignalServiceProfile profile;
     TI_RetrieveIDJobResult jobResult = new TI_RetrieveIDJobResult();
     if (processor.notFound()){
-      Log.e(TAG, "No user exists with service ID: " + callback.getIntroduction().getIntroduceeServiceId() + ". Ignoring introduction.");
+      Log.e(TAG, "No user exists with service ID: " + callback.getCallbackData().getIntroduction().getIntroduceeServiceId() + ". Ignoring introduction.");
       return;
     } else if (processor.hasResult()) {
       if (sr.getResult().isPresent()){
-        jobResult.TIData = callback.getIntroduction();
+        jobResult.TIData = callback.getCallbackData().getIntroduction();
         profile  =  sr.getResult().get().getProfile();
         jobResult.key = profile.getIdentityKey();
         jobResult.aci = profile.getServiceId().toString();
       } else {
-        Log.e(TAG, "ServiceResponse.getResult() was empty for service ID: " + callback.getIntroduction().getIntroduceeServiceId() + ". Ignoring introduction.");
+        Log.e(TAG, "ServiceResponse.getResult() was empty for service ID: " + callback.getCallbackData().getIntroduction().getIntroduceeServiceId() + ". Ignoring introduction.");
         return;
       }
     } else {
-      Log.e(TAG, "Processor did not have a result for service ID: " + callback.getIntroduction().getIntroduceeServiceId() + ". Ignoring introduction.");
+      Log.e(TAG, "Processor did not have a result for service ID: " + callback.getCallbackData().getIntroduction().getIntroduceeServiceId() + ". Ignoring introduction.");
       return;
     }
     if(callback.getCallbackData() instanceof setRetreiveIdJobResult){
@@ -233,7 +233,7 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
   @Override protected boolean onShouldRetry(@NonNull Exception e) {
     if(e instanceof IllegalArgumentException){
       e.printStackTrace();
-      Log.e(TAG,"The introduction for " + callback.getIntroduction().getIntroduceeName() + " with number: " + callback.getIntroduction().getIntroduceeNumber() + " was not accepted.");
+      Log.e(TAG,"The introduction for " + callback.getCallbackData().getIntroduction().getIntroduceeName() + " with number: " + callback.getCallbackData().getIntroduction().getIntroduceeNumber() + " was not accepted.");
       return false;
     }
     return true;
@@ -254,7 +254,7 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
           TI_JobCallbackData     deserializedJobData = cbFactory.getEmptyJobDataInstance();
           deserializedJobData.deserialize(innerData.getJSONObject(KEY_CALLBACK_DATA_J));
           cbFactory.initialize(deserializedJobData);
-          TrustedIntroductionsDatabase.TI_DB_Callback cb = cbFactory.create();
+          TI_JobCallback cb = cbFactory.create();
           return new TrustedIntroductionsRetreiveIdentityJob(saveIdentity, cb, parameters);
         } catch (JSONException e) {
           // TODO: How to fail gracefully?
