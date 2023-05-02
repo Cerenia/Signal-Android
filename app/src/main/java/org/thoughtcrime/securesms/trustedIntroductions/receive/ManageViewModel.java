@@ -160,9 +160,9 @@ public class ManageViewModel extends ViewModel {
         all.add(i, current);
       }
     } // else don't add back to list
-
     final TI_Data finalIntroduction = modifiedIntroduction;
     introductions.postValue(all);
+    Log.i(TAG, "Introduction modification complete!");
     SignalExecutors.BOUNDED.execute(() -> {
       boolean res = m.databaseCall(finalIntroduction);
       if(!res){
