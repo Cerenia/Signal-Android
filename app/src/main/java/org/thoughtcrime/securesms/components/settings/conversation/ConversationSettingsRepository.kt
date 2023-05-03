@@ -49,6 +49,7 @@ class ConversationSettingsRepository(
         SignalDatabase.messages.getMessages(callMessageIds.toList()).iterator().asSequence()
           .filter { callMap.containsKey(it.id) }
           .map { callMap[it.id]!! to it }
+          .sortedByDescending { it.first.timestamp }
           .toList()
       }
     }

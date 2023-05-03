@@ -6,6 +6,7 @@ import android.view.MenuItem
 import androidx.annotation.IdRes
 import androidx.core.view.MenuProvider
 import io.reactivex.rxjava3.kotlin.subscribeBy
+import org.signal.core.util.concurrent.LifecycleDisposable
 import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.conversation.ConversationGroupViewModel.GroupActiveState
 import org.thoughtcrime.securesms.conversation.ui.groupcall.GroupCallViewModel
@@ -13,7 +14,6 @@ import org.thoughtcrime.securesms.database.ThreadTable
 import org.thoughtcrime.securesms.keyvalue.SignalStore
 import org.thoughtcrime.securesms.recipients.LiveRecipient
 import org.thoughtcrime.securesms.recipients.Recipient
-import org.thoughtcrime.securesms.util.LifecycleDisposable
 
 /**
  * Delegate object for managing the conversation options menu

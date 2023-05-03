@@ -40,7 +40,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
-import android.view.Window;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.FrameLayout;
@@ -121,7 +120,6 @@ import org.thoughtcrime.securesms.database.model.MediaMmsMessageRecord;
 import org.thoughtcrime.securesms.database.model.MessageId;
 import org.thoughtcrime.securesms.database.model.MessageRecord;
 import org.thoughtcrime.securesms.database.model.MmsMessageRecord;
-import org.thoughtcrime.securesms.database.model.ReactionRecord;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.giph.mp4.GiphyMp4ItemDecoration;
 import org.thoughtcrime.securesms.giph.mp4.GiphyMp4PlaybackController;
@@ -178,7 +176,7 @@ import org.thoughtcrime.securesms.stories.viewer.StoryViewerActivity;
 import org.thoughtcrime.securesms.util.CachedInflater;
 import org.thoughtcrime.securesms.util.CommunicationActions;
 import org.thoughtcrime.securesms.util.HtmlUtil;
-import org.thoughtcrime.securesms.util.LifecycleDisposable;
+import org.signal.core.util.concurrent.LifecycleDisposable;
 import org.thoughtcrime.securesms.util.MessageRecordUtil;
 import org.thoughtcrime.securesms.util.Projection;
 import org.thoughtcrime.securesms.util.RemoteDeleteUtil;
@@ -357,13 +355,13 @@ public class ConversationFragment extends LoggingFragment implements Multiselect
     typingView = (ConversationTypingView) inflater.inflate(R.layout.conversation_typing_view, container, false);
 
     new ConversationItemSwipeCallback(
-            conversationMessage -> actionMode == null &&
-                                   MenuState.canReplyToMessage(recipient.get(),
-                                                               MenuState.isActionMessage(conversationMessage.getMessageRecord()),
-                                                               conversationMessage.getMessageRecord(),
-                                                               messageRequestViewModel.shouldShowMessageRequest(),
-                                                               groupViewModel.isNonAdminInAnnouncementGroup()),
-            this::handleReplyMessage
+        conversationMessage -> actionMode == null &&
+                               MenuState.canReplyToMessage(recipient.get(),
+                                                           MenuState.isActionMessage(conversationMessage.getMessageRecord()),
+                                                           conversationMessage.getMessageRecord(),
+                                                           messageRequestViewModel.shouldShowMessageRequest(),
+                                                           groupViewModel.isNonAdminInAnnouncementGroup()),
+        this::handleReplyMessage
     ).attachToRecyclerView(list);
 
     setupListLayoutListeners();
@@ -1138,13 +1136,13 @@ public class ConversationFragment extends LoggingFragment implements Multiselect
       deleteForEveryone.run();
     } else {
       new MaterialAlertDialogBuilder(requireActivity())
-                     .setMessage(R.string.ConversationFragment_this_message_will_be_deleted_for_everyone_in_the_conversation)
-                     .setPositiveButton(R.string.ConversationFragment_delete_for_everyone, (dialog, which) -> {
-                       SignalStore.uiHints().markHasConfirmedDeleteForEveryoneOnce();
-                       deleteForEveryone.run();
-                     })
-                     .setNegativeButton(android.R.string.cancel, null)
-                     .show();
+          .setMessage(R.string.ConversationFragment_this_message_will_be_deleted_for_everyone_in_the_conversation)
+          .setPositiveButton(R.string.ConversationFragment_delete_for_everyone, (dialog, which) -> {
+            SignalStore.uiHints().markHasConfirmedDeleteForEveryoneOnce();
+            deleteForEveryone.run();
+          })
+          .setNegativeButton(android.R.string.cancel, null)
+          .show();
     }
   }
 
@@ -1366,7 +1364,7 @@ public class ConversationFragment extends LoggingFragment implements Multiselect
                                }
                                getListAdapter().pulseAtPosition(position);
                              })
-                         ))
+                                              ))
                          .withOnInvalidPosition(() -> {
                            if (onMessageNotFound != null) {
                              onMessageNotFound.run();
@@ -1411,29 +1409,8 @@ public class ConversationFragment extends LoggingFragment implements Multiselect
   }
 
   private void postMarkAsReadRequest() {
-    if (getListAdapter().hasNoConversationMessages()) {
-      return;
-    }
-
-    int position = getListLayoutManager().findFirstVisibleItemPosition();
-    if (position == -1 || position == getListAdapter().getItemCount() - 1) {
-      return;
-    }
-
-    ConversationMessage item = getListAdapter().getItem(position);
-    if (item == null) {
-      item = getListAdapter().getItem(position + 1);
-    }
-
-    if (item != null) {
-      MessageRecord record = item.getMessageRecord();
-      long latestReactionReceived = Stream.of(record.getReactions())
-                                          .map(ReactionRecord::getDateReceived)
-                                          .max(Long::compareTo)
-                                          .orElse(0L);
-
-      conversationViewModel.submitMarkReadRequest(Math.max(record.getDateReceived(), latestReactionReceived));
-    }
+    Optional<Long> timestamp = MarkReadHelper.getLatestTimestamp(Objects.requireNonNull(getListAdapter()), getListLayoutManager());
+    timestamp.ifPresent(conversationViewModel::submitMarkReadRequest);
   }
 
   private void updateToolbarDependentMargins() {
@@ -1490,8 +1467,8 @@ public class ConversationFragment extends LoggingFragment implements Multiselect
   public void jumpToMessage(@NonNull MessageRecord messageRecord) {
     SimpleTask.run(getLifecycle(), () -> {
       return SignalDatabase.messages().getMessagePositionInConversation(threadId,
-                                                                      messageRecord.getDateReceived(),
-                                                                      messageRecord.isOutgoing() ? Recipient.self().getId() : messageRecord.getRecipient().getId());
+                                                                        messageRecord.getDateReceived(),
+                                                                        messageRecord.isOutgoing() ? Recipient.self().getId() : messageRecord.getRecipient().getId());
     }, p -> moveToPosition(p + (isTypingIndicatorShowing() ? 1 : 0), () -> {
       Toast.makeText(getContext(), R.string.ConversationFragment_failed_to_open_message, Toast.LENGTH_SHORT).show();
     }));
@@ -1661,15 +1638,15 @@ public class ConversationFragment extends LoggingFragment implements Multiselect
           View focusedView = listener.isKeyboardOpen() ? conversationItem.getRootView().findFocus() : null;
 
           final ConversationItemBodyBubble bodyBubble                = conversationItem.bodyBubble;
-                SelectedConversationModel  selectedConversationModel = new SelectedConversationModel(bitmap,
-                                                                                                     itemView.getX(),
-                                                                                                     itemView.getY() + list.getTranslationY(),
-                                                                                                     bodyBubble.getX(),
-                                                                                                     bodyBubble.getY(),
-                                                                                                     bodyBubble.getWidth(),
-                                                                                                     audioUri,
-                                                                                                     messageRecord.isOutgoing(),
-                                                                                                     focusedView);
+          SelectedConversationModel  selectedConversationModel = new SelectedConversationModel(bitmap,
+                                                                                               itemView.getX(),
+                                                                                               itemView.getY() + list.getTranslationY(),
+                                                                                               bodyBubble.getX(),
+                                                                                               bodyBubble.getY(),
+                                                                                               bodyBubble.getWidth(),
+                                                                                               audioUri,
+                                                                                               messageRecord.isOutgoing(),
+                                                                                               focusedView);
 
           bodyBubble.setVisibility(View.INVISIBLE);
           conversationItem.reactionsView.setVisibility(View.INVISIBLE);
@@ -1772,9 +1749,9 @@ public class ConversationFragment extends LoggingFragment implements Multiselect
         startActivity(StoryViewerActivity.createIntent(
             requireContext(),
             new StoryViewerArgs.Builder(messageRecord.getQuote().getAuthor(), Recipient.resolved(messageRecord.getQuote().getAuthor()).shouldHideStory())
-                               .withStoryId(messageRecord.getParentStoryId().asMessageId().getId())
-                               .isFromQuote(true)
-                               .build()));
+                .withStoryId(messageRecord.getParentStoryId().asMessageId().getId())
+                .isFromQuote(true)
+                .build()));
         return;
       }
 
@@ -1839,8 +1816,8 @@ public class ConversationFragment extends LoggingFragment implements Multiselect
           Slide       thumbnailSlide = messageRecord.getSlideDeck().getThumbnailSlide();
           InputStream inputStream    = PartAuthority.getAttachmentStream(requireContext(), thumbnailSlide.getUri());
           Uri         tempUri        = BlobProvider.getInstance().forData(inputStream, thumbnailSlide.getFileSize())
-                                                                 .withMimeType(thumbnailSlide.getContentType())
-                                                                 .createForSingleSessionOnDisk(requireContext());
+                                                   .withMimeType(thumbnailSlide.getContentType())
+                                                   .createForSingleSessionOnDisk(requireContext());
 
           SignalDatabase.attachments().deleteAttachmentFilesForViewOnceMessage(messageRecord.getId());
 
@@ -2015,20 +1992,20 @@ public class ConversationFragment extends LoggingFragment implements Multiselect
       }
 
       AlertDialog dialog = new AlertDialog.Builder(requireContext())
-                                          .setView(R.layout.safety_number_changed_learn_more_dialog)
-                                          .setPositiveButton(R.string.ConversationFragment_verify, (d, w) -> {
-                                            SimpleTask.run(getLifecycle(), () -> {
-                                              return ApplicationDependencies.getProtocolStore().aci().identities().getIdentityRecord(recipient.getId());
-                                            }, identityRecord -> {
-                                              if (identityRecord.isPresent()) {
-                                                startActivity(VerifyIdentityActivity.newIntent(requireContext(), identityRecord.get()));
-                                              }});
-                                            d.dismiss();
-                                          })
-                                          .setNegativeButton(R.string.ConversationFragment_not_now, (d, w) -> {
-                                            d.dismiss();
-                                          })
-                                          .create();
+          .setView(R.layout.safety_number_changed_learn_more_dialog)
+          .setPositiveButton(R.string.ConversationFragment_verify, (d, w) -> {
+            SimpleTask.run(getLifecycle(), () -> {
+              return ApplicationDependencies.getProtocolStore().aci().identities().getIdentityRecord(recipient.getId());
+            }, identityRecord -> {
+              if (identityRecord.isPresent()) {
+                startActivity(VerifyIdentityActivity.newIntent(requireContext(), identityRecord.get()));
+              }});
+            d.dismiss();
+          })
+          .setNegativeButton(R.string.ConversationFragment_not_now, (d, w) -> {
+            d.dismiss();
+          })
+          .create();
       dialog.setOnShowListener(d -> {
         TextView title = Objects.requireNonNull(dialog.findViewById(R.id.safety_number_learn_more_title));
         TextView body  = Objects.requireNonNull(dialog.findViewById(R.id.safety_number_learn_more_body));

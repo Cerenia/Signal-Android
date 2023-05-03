@@ -1479,6 +1479,8 @@
     <string name="MessageRequestBottomView_delete">پاک کردن</string>
     <string name="MessageRequestBottomView_block">مسدود کردن</string>
     <string name="MessageRequestBottomView_unblock">رفع مسدودیت</string>
+    <!-- Text explaining a message request from someone you\'ve removed before -->
+    <string name="MessageRequestBottomView_do_you_want_to_let_s_message_you_you_removed_them_before">اجازه می‌دهید که %1$s به شما پیام بفرستد و نام و عکس‌تان با او به اشتراک گذاشته شود؟ این شخص را در گذشته حذف کرده‌اید.</string>
     <string name="MessageRequestBottomView_do_you_want_to_let_s_message_you_they_wont_know_youve_seen_their_messages_until_you_accept">آیا به %1$s اجازه می‌دهید که به شما پیام دهد و نام و عکس خود را با او به اشتراک می‌گذارید؟ تا زمانی که نپذیرید او متوجه نمی‌شود که پیامش را خوانده‌اید.</string>
     <!-- Shown in message request flow. Describes what will happen if you unblock a Signal user -->
     <string name="MessageRequestBottomView_do_you_want_to_let_s_message_you_wont_receive_any_messages_until_you_unblock_them">می‌خواهید به %1$s اجازه دهید به شما پیام دهد و نام و عکستان را با او به اشتراک بگذارید؟ تا وقتی او را رفع مسدودیت نکنید هیچ پیامی دریافت نخواهید کرد.</string>
@@ -1988,6 +1990,8 @@
     <string name="ThreadRecord_message_could_not_be_processed">پیام قابل پردازش نیست</string>
     <string name="ThreadRecord_delivery_issue">اشکال تحویل</string>
     <string name="ThreadRecord_message_request">درخواست تبادل پیام</string>
+    <!-- Thread preview for a recipient that has been hidden -->
+    <string name="ThreadRecord_hidden_recipient">شما این فرد را پنهان کرده‌اید، برای افزودن دوباره او به فهرست‌تان دوباره به او پیامی بفرستید.</string>
     <string name="ThreadRecord_photo">عکس</string>
     <string name="ThreadRecord_gif">گیف</string>
     <string name="ThreadRecord_voice_message">پیام صوتی</string>
@@ -2383,7 +2387,8 @@
     <string name="ConversationUpdateItem_send_payment">ارسال پرداخت</string>
     <!-- Update item button text to activate payments -->
     <string name="ConversationUpdateItem_activate_payments">فعال کردن پرداخت‌ها</string>
-
+    <!-- Update item alerting the user they hid this person and that they can message them to unhide them -->
+    <string name="ConversationUpdateItem_hidden_contact_message_to_add_back">این شخص را حذف کرده‌اید، ارسال مجدد پیام به او موجب افزودن دوباره او به لیست شما می‌شود.</string>
 
     <!-- audio_view -->
     <string name="audio_view__play_pause_accessibility_description">پخش … توقف</string>
@@ -4003,7 +4008,7 @@
     <!-- Part of requesting account data flow, this is the section title for requesting that account data -->
     <string name="ExportAccountDataFragment__your_account_data">اطلاعات حساب شما</string>
     <!-- Explanation of account data the user can request. %1$s is replaced with Learn more with a link -->
-    <string name="ExportAccountDataFragment__export_explanation">Export a report of your Signal account data. This report does not include any messages or media. %1$s</string>
+    <string name="ExportAccountDataFragment__export_explanation">یگ گزارش از اطلاعات حساب سیگنال خود خروجی بگیرید. این گزارش هیچ پیام یا رسانه‌ای ندارد. %1$s</string>
     <!-- Learn more link to more information about requesting account data -->
     <string name="ExportAccountDataFragment__learn_more">اطلاعات بیشتر</string>
     <!-- Button action to export the report data to another app (e.g. email) -->
@@ -4031,7 +4036,7 @@
     <!-- Title for export confirmation dialog -->
     <string name="ExportAccountDataFragment__export_report_confirmation">از اطلاعات خروجی گرفته شود؟</string>
     <!-- Message for export confirmation dialog -->
-    <string name="ExportAccountDataFragment__export_report_confirmation_message">اطلاعات حساب سیگنال خود را فقط با افراد یا برنامه‌های مورد اعتمادتان هم‌رسانی کنید.</string>
+    <string name="ExportAccountDataFragment__export_report_confirmation_message">اطلاعات حساب سیگنال خود را فقط با افراد یا برنامه‌های مورد اعتمادتان به اشتراک بگذارید.</string>
     <!-- Action to export in for export confirmation dialog -->
     <string name="ExportAccountDataFragment__export_report_action">خروجی گرفتن</string>
 
@@ -5852,6 +5857,8 @@
     <string name="CameraControls_continue_button_accessibility_label">دکمه ادامه</string>
 
     <!-- CallPreference -->
+    <!-- Generic group call in call info -->
+    <string name="CallPreference__group_call">تماس گروهی</string>
     <!-- Missed group call in call info -->
     <string name="CallPreference__missed_group_call">Missed group call</string>
     <!-- Incoming group call in call info -->
