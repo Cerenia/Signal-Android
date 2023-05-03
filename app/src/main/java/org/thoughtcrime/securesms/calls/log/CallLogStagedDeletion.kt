@@ -28,16 +28,15 @@ class CallLogStagedDeletion(
     }
 
     isCommitted = true
-    val callRowIds = stateSnapshot.selected()
+    val callIds = stateSnapshot.selected()
       .filterIsInstance<CallLogRow.Id.Call>()
-      .map { it.children }
-      .flatten()
+      .map { it.callId }
       .toSet()
 
     if (stateSnapshot.isExclusionary()) {
-      repository.deleteAllCallLogsExcept(callRowIds).subscribe()
+      repository.deleteAllCallLogsExcept(callIds).subscribe()
     } else {
-      repository.deleteSelectedCallLogs(callRowIds).subscribe()
+      repository.deleteSelectedCallLogs(callIds).subscribe()
     }
   }
 }
