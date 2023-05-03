@@ -203,7 +203,7 @@ import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.handleTIM
 @SuppressWarnings({ "OptionalGetWithoutIsPresent", "OptionalIsPresent" })
 public class MessageContentProcessor {
 
-  private static final String TAG = Log.tag(MessageContentProcessor.class);
+  public static final String TAG = Log.tag(MessageContentProcessor.class);
 
   private final Context context;
 
@@ -336,8 +336,8 @@ public class MessageContentProcessor {
             if (groupId.isPresent() && groupId.get().isV2()) {
               Log.i(TAG, "Message was to a GV2 group. Ensuring our group profile keys are up to date.");
               ApplicationDependencies.getJobManager().startChain(new RefreshAttributesJob(false))
-                                                     .then(GroupV2UpdateSelfProfileKeyJob.withQueueLimits(groupId.get().requireV2()))
-                                                     .enqueue();
+                                     .then(GroupV2UpdateSelfProfileKeyJob.withQueueLimits(groupId.get().requireV2()))
+                                     .enqueue();
             } else if (!threadRecipient.isGroup()) {
               Log.i(TAG, "Message was to a 1:1. Ensuring this user has our profile key.");
               ProfileKeySendJob profileSendJob = ProfileKeySendJob.create(SignalDatabase.threads().getOrCreateThreadIdFor(threadRecipient), true);
@@ -1083,7 +1083,7 @@ public class MessageContentProcessor {
       return null;
     } else {
       warn(String.valueOf(content.getTimestamp()), String.format(Locale.ENGLISH, "[handleRemoteDelete] Invalid remote delete! deleteTime: %d, targetTime: %d, deleteAuthor: %s, targetAuthor: %s",
-          content.getServerReceivedTimestamp(), targetMessage.getServerTimestamp(), senderRecipient.getId(), targetMessage.getRecipient().getId()));
+                                                                 content.getServerReceivedTimestamp(), targetMessage.getServerTimestamp(), senderRecipient.getId(), targetMessage.getRecipient().getId()));
       return null;
     }
   }
@@ -1224,17 +1224,17 @@ public class MessageContentProcessor {
     UUID uuid = UUID.randomUUID();
     try {
       SignalDatabase.payments()
-                     .createSuccessfulPayment(uuid,
-                                              recipientId,
-                                              address.get(),
-                                              timestamp,
-                                              outgoingPaymentMessage.getBlockIndex(),
-                                              outgoingPaymentMessage.getNote().orElse(""),
-                                              outgoingPaymentMessage.getAmount(),
-                                              outgoingPaymentMessage.getFee(),
-                                              outgoingPaymentMessage.getReceipt().toByteArray(),
-                                              PaymentMetaDataUtil.fromKeysAndImages(outgoingPaymentMessage.getPublicKeys(), outgoingPaymentMessage.getKeyImages()));
-   } catch (SerializationException e) {
+                    .createSuccessfulPayment(uuid,
+                                             recipientId,
+                                             address.get(),
+                                             timestamp,
+                                             outgoingPaymentMessage.getBlockIndex(),
+                                             outgoingPaymentMessage.getNote().orElse(""),
+                                             outgoingPaymentMessage.getAmount(),
+                                             outgoingPaymentMessage.getFee(),
+                                             outgoingPaymentMessage.getReceipt().toByteArray(),
+                                             PaymentMetaDataUtil.fromKeysAndImages(outgoingPaymentMessage.getPublicKeys(), outgoingPaymentMessage.getKeyImages()));
+    } catch (SerializationException e) {
       warn(content.getTimestamp(), "Ignoring synchronized outgoing payment with bad data.", e);
     }
 
@@ -1292,7 +1292,7 @@ public class MessageContentProcessor {
 
     log(envelopeTimestamp, "Synchronize call event call: " + callId);
 
-    CallTable.Call call = SignalDatabase.calls().getCallById(callId);
+    CallTable.Call call = SignalDatabase.calls().getCallById(callId, new CallTable.CallConversationId.Peer(recipientId));
     if (call != null) {
       boolean typeMismatch      = call.getType() != type;
       boolean directionMismatch = call.getDirection() != direction;
@@ -1333,7 +1333,11 @@ public class MessageContentProcessor {
       return;
     }
 
-    CallTable.Call call = SignalDatabase.calls().getCallById(callId);
+    GroupId                      groupId            = GroupId.push(callEvent.getConversationId().toByteArray());
+    RecipientId                  recipientId        = Recipient.externalGroupExact(groupId).getId();
+    CallTable.CallConversationId callConversationId = new CallTable.CallConversationId.Peer(recipientId);
+
+    CallTable.Call call = SignalDatabase.calls().getCallById(callId, callConversationId);
     if (call != null) {
       if (call.getType() != type) {
         warn(envelopeTimestamp, "Group/Ad-hoc call event type mismatch, ignoring. timestamp: " + timestamp + " type: " + type + " direction: " + direction + " event: " + event + " hasPeer: " + callEvent.hasConversationId());
@@ -1346,7 +1350,7 @@ public class MessageContentProcessor {
           break;
         case ACCEPTED:
           if (call.getTimestamp() < callEvent.getTimestamp()) {
-            SignalDatabase.calls().setTimestamp(call.getCallId(), callEvent.getTimestamp());
+            SignalDatabase.calls().setTimestamp(call.getCallId(), callConversationId, callEvent.getTimestamp());
           }
 
           if (callEvent.getDirection() == SyncMessage.CallEvent.Direction.INCOMING) {
@@ -1361,9 +1365,6 @@ public class MessageContentProcessor {
           warn("Unsupported event type " + event + ". Ignoring. timestamp: " + timestamp + " type: " + type + " direction: " + direction + " event: " + event + " hasPeer: " + callEvent.hasConversationId());
       }
     } else {
-      GroupId     groupId     = GroupId.push(callEvent.getConversationId().toByteArray());
-      RecipientId recipientId = Recipient.externalGroupExact(groupId).getId();
-
       switch (event) {
         case DELETE:
           SignalDatabase.calls().insertDeletedGroupCallFromSyncEvent(callEvent.getId(), recipientId, direction, timestamp);
@@ -1496,9 +1497,9 @@ public class MessageContentProcessor {
 
     if (message.isConfigurationRequest()) {
       ApplicationDependencies.getJobManager().add(new MultiDeviceConfigurationUpdateJob(TextSecurePreferences.isReadReceiptsEnabled(context),
-          TextSecurePreferences.isTypingIndicatorsEnabled(context),
-          TextSecurePreferences.isShowUnidentifiedDeliveryIndicatorsEnabled(context),
-          SignalStore.settings().isLinkPreviewsEnabled()));
+                                                                                        TextSecurePreferences.isTypingIndicatorsEnabled(context),
+                                                                                        TextSecurePreferences.isShowUnidentifiedDeliveryIndicatorsEnabled(context),
+                                                                                        SignalStore.settings().isLinkPreviewsEnabled()));
       ApplicationDependencies.getJobManager().add(new MultiDeviceStickerPackSyncJob());
     }
 
@@ -2030,11 +2031,11 @@ public class MessageContentProcessor {
   }
 
   private @Nullable MessageId handleMediaMessage(@NonNull SignalServiceContent content,
-                                                @NonNull SignalServiceDataMessage message,
-                                                @NonNull Optional<Long> smsMessageId,
-                                                @NonNull Recipient senderRecipient,
-                                                @NonNull Recipient threadRecipient,
-                                                long receivedTime)
+                                                 @NonNull SignalServiceDataMessage message,
+                                                 @NonNull Optional<Long> smsMessageId,
+                                                 @NonNull Recipient senderRecipient,
+                                                 @NonNull Recipient threadRecipient,
+                                                 long receivedTime)
       throws StorageFailedException
   {
     log(message.getTimestamp(), "Media message.");
@@ -2154,7 +2155,7 @@ public class MessageContentProcessor {
    * Handles both story replies and reactions.
    */
   private long handleSynchronizeSentStoryReply(@NonNull SentTranscriptMessage message, long envelopeTimestamp)
-    throws MmsException, BadGroupIdException {
+      throws MmsException, BadGroupIdException {
 
     log(envelopeTimestamp, "Synchronize sent story reply for " + message.getTimestamp());
 
@@ -2544,8 +2545,8 @@ public class MessageContentProcessor {
     }
 
     List<org.signal.libsignal.protocol.util.Pair<RecipientId, Boolean>> unidentifiedStatus = Stream.of(members)
-                                                                                                  .map(m -> new org.signal.libsignal.protocol.util.Pair<>(m.getId(), message.isUnidentified(m.requireServiceId())))
-                                                                                                  .toList();
+                                                                                                   .map(m -> new org.signal.libsignal.protocol.util.Pair<>(m.getId(), message.isUnidentified(m.requireServiceId())))
+                                                                                                   .toList();
     receiptDatabase.setUnidentified(unidentifiedStatus, messageId);
   }
 
@@ -2566,7 +2567,7 @@ public class MessageContentProcessor {
 
     List<org.signal.libsignal.protocol.util.Pair<RecipientId, Boolean>> unidentifiedStatus = members.stream()
                                                                                                     .map(m -> new org.signal.libsignal.protocol.util.Pair<>(m.getId(), message.isUnidentified(m.requireServiceId())))
-                                                                                                   .collect(java.util.stream.Collectors.toList());
+                                                                                                    .collect(java.util.stream.Collectors.toList());
     receiptTable.setUnidentified(unidentifiedStatus, messageId);
   }
 
@@ -3103,7 +3104,7 @@ public class MessageContentProcessor {
       List<SignalServiceAttachment> attachments = message.getAttachments().orElse(Collections.emptyList());
 
       return attachments.size() != 1  ||
-          !isViewOnceSupportedContentType(attachments.get(0).getContentType().toLowerCase());
+             !isViewOnceSupportedContentType(attachments.get(0).getContentType().toLowerCase());
     }
 
     return false;
@@ -3516,7 +3517,7 @@ public class MessageContentProcessor {
 
   public static final class ExceptionMetadata {
     @NonNull  private final String  sender;
-              private final int     senderDevice;
+    private final int     senderDevice;
     @Nullable private final GroupId groupId;
 
     public ExceptionMetadata(@NonNull String sender, int senderDevice, @Nullable GroupId groupId) {

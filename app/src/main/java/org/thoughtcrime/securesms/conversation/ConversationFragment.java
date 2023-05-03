@@ -30,7 +30,6 @@ import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
@@ -189,7 +188,6 @@ import org.thoughtcrime.securesms.util.StickyHeaderDecoration;
 import org.thoughtcrime.securesms.util.StorageUtil;
 import org.thoughtcrime.securesms.util.TextSecurePreferences;
 import org.thoughtcrime.securesms.util.TopToastPopup;
-import org.thoughtcrime.securesms.util.ThemeUtil;
 import org.thoughtcrime.securesms.util.Util;
 import org.thoughtcrime.securesms.util.ViewUtil;
 import org.thoughtcrime.securesms.util.WindowUtil;
@@ -355,16 +353,15 @@ public class ConversationFragment extends LoggingFragment implements Multiselect
     typingView = (ConversationTypingView) inflater.inflate(R.layout.conversation_typing_view, container, false);
 
     new ConversationItemSwipeCallback(
-            conversationMessage -> actionMode == null &&
-                                   MenuState.canReplyToMessage(recipient.get(),
-                                                               MenuState.isActionMessage(conversationMessage.getMessageRecord()),
-                                                               conversationMessage.getMessageRecord(),
-                                                               messageRequestViewModel.shouldShowMessageRequest(),
-                                                               groupViewModel.isNonAdminInAnnouncementGroup()),
-            this::handleReplyMessage
+        conversationMessage -> actionMode == null &&
+                               MenuState.canReplyToMessage(recipient.get(),
+                                                           MenuState.isActionMessage(conversationMessage.getMessageRecord()),
+                                                           conversationMessage.getMessageRecord(),
+                                                           messageRequestViewModel.shouldShowMessageRequest(),
+                                                           groupViewModel.isNonAdminInAnnouncementGroup()),
+        this::handleReplyMessage
     ).attachToRecyclerView(list);
 
-    setupListLayoutListeners();
     giphyMp4ProjectionRecycler = initializeGiphyMp4();
 
     this.groupViewModel         = new ViewModelProvider(getParentFragment(), (ViewModelProvider.Factory) new ConversationGroupViewModel.Factory()).get(ConversationGroupViewModel.class);
@@ -490,35 +487,6 @@ public class ConversationFragment extends LoggingFragment implements Multiselect
   public void clearFocusedItem() {
     multiselectItemDecoration.setFocusedItem(null);
     list.invalidateItemDecorations();
-  }
-
-  private void setupListLayoutListeners() {
-    list.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> setListVerticalTranslation());
-
-    list.addOnChildAttachStateChangeListener(new RecyclerView.OnChildAttachStateChangeListener() {
-      @Override
-      public void onChildViewAttachedToWindow(@NonNull View view) {
-        setListVerticalTranslation();
-      }
-
-      @Override
-      public void onChildViewDetachedFromWindow(@NonNull View view) {
-        setListVerticalTranslation();
-      }
-    });
-  }
-
-  private void setListVerticalTranslation() {
-    if (list.canScrollVertically(1) || list.canScrollVertically(-1) || list.getChildCount() == 0) {
-      list.setTranslationY(0);
-      reactionsShade.setTranslationY(0);
-      list.setOverScrollMode(RecyclerView.OVER_SCROLL_IF_CONTENT_SCROLLS);
-    } else {
-      int chTop = list.getChildAt(list.getChildCount() - 1).getTop();
-      list.setTranslationY(Math.min(0, -chTop));
-      reactionsShade.setTranslationY(Math.min(0, -chTop));
-      list.setOverScrollMode(RecyclerView.OVER_SCROLL_NEVER);
-    }
   }
 
   private void updateConversationItemTimestamps() {
@@ -1136,13 +1104,13 @@ public class ConversationFragment extends LoggingFragment implements Multiselect
       deleteForEveryone.run();
     } else {
       new MaterialAlertDialogBuilder(requireActivity())
-                     .setMessage(R.string.ConversationFragment_this_message_will_be_deleted_for_everyone_in_the_conversation)
-                     .setPositiveButton(R.string.ConversationFragment_delete_for_everyone, (dialog, which) -> {
-                       SignalStore.uiHints().markHasConfirmedDeleteForEveryoneOnce();
-                       deleteForEveryone.run();
-                     })
-                     .setNegativeButton(android.R.string.cancel, null)
-                     .show();
+          .setMessage(R.string.ConversationFragment_this_message_will_be_deleted_for_everyone_in_the_conversation)
+          .setPositiveButton(R.string.ConversationFragment_delete_for_everyone, (dialog, which) -> {
+            SignalStore.uiHints().markHasConfirmedDeleteForEveryoneOnce();
+            deleteForEveryone.run();
+          })
+          .setNegativeButton(android.R.string.cancel, null)
+          .show();
     }
   }
 
@@ -1364,7 +1332,7 @@ public class ConversationFragment extends LoggingFragment implements Multiselect
                                }
                                getListAdapter().pulseAtPosition(position);
                              })
-                         ))
+                                              ))
                          .withOnInvalidPosition(() -> {
                            if (onMessageNotFound != null) {
                              onMessageNotFound.run();
@@ -1409,29 +1377,8 @@ public class ConversationFragment extends LoggingFragment implements Multiselect
   }
 
   private void postMarkAsReadRequest() {
-    if (getListAdapter().hasNoConversationMessages()) {
-      return;
-    }
-
-    int position = getListLayoutManager().findFirstVisibleItemPosition();
-    if (position == -1 || position == getListAdapter().getItemCount() - 1) {
-      return;
-    }
-
-    ConversationMessage item = getListAdapter().getItem(position);
-    if (item == null) {
-      item = getListAdapter().getItem(position + 1);
-    }
-
-    if (item != null) {
-      MessageRecord record = item.getMessageRecord();
-      long latestReactionReceived = Stream.of(record.getReactions())
-                                          .map(ReactionRecord::getDateReceived)
-                                          .max(Long::compareTo)
-                                          .orElse(0L);
-
-      conversationViewModel.submitMarkReadRequest(Math.max(record.getDateReceived(), latestReactionReceived));
-    }
+    Optional<Long> timestamp = MarkReadHelper.getLatestTimestamp(Objects.requireNonNull(getListAdapter()), getListLayoutManager());
+    timestamp.ifPresent(conversationViewModel::submitMarkReadRequest);
   }
 
   private void updateToolbarDependentMargins() {
@@ -1488,8 +1435,8 @@ public class ConversationFragment extends LoggingFragment implements Multiselect
   public void jumpToMessage(@NonNull MessageRecord messageRecord) {
     SimpleTask.run(getLifecycle(), () -> {
       return SignalDatabase.messages().getMessagePositionInConversation(threadId,
-                                                                      messageRecord.getDateReceived(),
-                                                                      messageRecord.isOutgoing() ? Recipient.self().getId() : messageRecord.getRecipient().getId());
+                                                                        messageRecord.getDateReceived(),
+                                                                        messageRecord.isOutgoing() ? Recipient.self().getId() : messageRecord.getRecipient().getId());
     }, p -> moveToPosition(p + (isTypingIndicatorShowing() ? 1 : 0), () -> {
       Toast.makeText(getContext(), R.string.ConversationFragment_failed_to_open_message, Toast.LENGTH_SHORT).show();
     }));
@@ -1659,15 +1606,15 @@ public class ConversationFragment extends LoggingFragment implements Multiselect
           View focusedView = listener.isKeyboardOpen() ? conversationItem.getRootView().findFocus() : null;
 
           final ConversationItemBodyBubble bodyBubble                = conversationItem.bodyBubble;
-                SelectedConversationModel  selectedConversationModel = new SelectedConversationModel(bitmap,
-                                                                                                     itemView.getX(),
-                                                                                                     itemView.getY() + list.getTranslationY(),
-                                                                                                     bodyBubble.getX(),
-                                                                                                     bodyBubble.getY(),
-                                                                                                     bodyBubble.getWidth(),
-                                                                                                     audioUri,
-                                                                                                     messageRecord.isOutgoing(),
-                                                                                                     focusedView);
+          SelectedConversationModel  selectedConversationModel = new SelectedConversationModel(bitmap,
+                                                                                               itemView.getX(),
+                                                                                               itemView.getY() + list.getTranslationY(),
+                                                                                               bodyBubble.getX(),
+                                                                                               bodyBubble.getY(),
+                                                                                               bodyBubble.getWidth(),
+                                                                                               audioUri,
+                                                                                               messageRecord.isOutgoing(),
+                                                                                               focusedView);
 
           bodyBubble.setVisibility(View.INVISIBLE);
           conversationItem.reactionsView.setVisibility(View.INVISIBLE);
@@ -1770,9 +1717,9 @@ public class ConversationFragment extends LoggingFragment implements Multiselect
         startActivity(StoryViewerActivity.createIntent(
             requireContext(),
             new StoryViewerArgs.Builder(messageRecord.getQuote().getAuthor(), Recipient.resolved(messageRecord.getQuote().getAuthor()).shouldHideStory())
-                               .withStoryId(messageRecord.getParentStoryId().asMessageId().getId())
-                               .isFromQuote(true)
-                               .build()));
+                .withStoryId(messageRecord.getParentStoryId().asMessageId().getId())
+                .isFromQuote(true)
+                .build()));
         return;
       }
 
@@ -1837,8 +1784,8 @@ public class ConversationFragment extends LoggingFragment implements Multiselect
           Slide       thumbnailSlide = messageRecord.getSlideDeck().getThumbnailSlide();
           InputStream inputStream    = PartAuthority.getAttachmentStream(requireContext(), thumbnailSlide.getUri());
           Uri         tempUri        = BlobProvider.getInstance().forData(inputStream, thumbnailSlide.getFileSize())
-                                                                 .withMimeType(thumbnailSlide.getContentType())
-                                                                 .createForSingleSessionOnDisk(requireContext());
+                                                   .withMimeType(thumbnailSlide.getContentType())
+                                                   .createForSingleSessionOnDisk(requireContext());
 
           SignalDatabase.attachments().deleteAttachmentFilesForViewOnceMessage(messageRecord.getId());
 
@@ -2013,20 +1960,20 @@ public class ConversationFragment extends LoggingFragment implements Multiselect
       }
 
       AlertDialog dialog = new AlertDialog.Builder(requireContext())
-                                          .setView(R.layout.safety_number_changed_learn_more_dialog)
-                                          .setPositiveButton(R.string.ConversationFragment_verify, (d, w) -> {
-                                            SimpleTask.run(getLifecycle(), () -> {
-                                              return ApplicationDependencies.getProtocolStore().aci().identities().getIdentityRecord(recipient.getId());
-                                            }, identityRecord -> {
-                                              if (identityRecord.isPresent()) {
-                                                startActivity(VerifyIdentityActivity.newIntent(requireContext(), identityRecord.get()));
-                                              }});
-                                            d.dismiss();
-                                          })
-                                          .setNegativeButton(R.string.ConversationFragment_not_now, (d, w) -> {
-                                            d.dismiss();
-                                          })
-                                          .create();
+          .setView(R.layout.safety_number_changed_learn_more_dialog)
+          .setPositiveButton(R.string.ConversationFragment_verify, (d, w) -> {
+            SimpleTask.run(getLifecycle(), () -> {
+              return ApplicationDependencies.getProtocolStore().aci().identities().getIdentityRecord(recipient.getId());
+            }, identityRecord -> {
+              if (identityRecord.isPresent()) {
+                startActivity(VerifyIdentityActivity.newIntent(requireContext(), identityRecord.get()));
+              }});
+            d.dismiss();
+          })
+          .setNegativeButton(R.string.ConversationFragment_not_now, (d, w) -> {
+            d.dismiss();
+          })
+          .create();
       dialog.setOnShowListener(d -> {
         TextView title = Objects.requireNonNull(dialog.findViewById(R.id.safety_number_learn_more_title));
         TextView body  = Objects.requireNonNull(dialog.findViewById(R.id.safety_number_learn_more_body));
