@@ -5862,6 +5862,8 @@
     <string name="CallLogAdapter__join">Join</string>
     <!-- Displayed on Group Call button if user is in the call -->
     <string name="CallLogAdapter__return">Return</string>
+    <!-- Call state template when there is more than one call collapsed into a single row. D is a number > 1 and S is a call info string (like Missed) -->
+    <string name="CallLogAdapter__d_s">(%1$d) %2$s</string>
 
     <!-- Call Log context menu -->
     <!-- Displayed as a context menu item to start a video call -->
@@ -5939,6 +5941,8 @@
     <string name="CameraControls_continue_button_accessibility_label">Continue Button</string>
 
     <!-- CallPreference -->
+    <!-- Generic group call in call info -->
+    <string name="CallPreference__group_call">Group call</string>
     <!-- Missed group call in call info -->
     <string name="CallPreference__missed_group_call">Missed group call</string>
     <!-- Incoming group call in call info -->
