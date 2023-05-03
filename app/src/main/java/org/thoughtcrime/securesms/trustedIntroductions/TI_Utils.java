@@ -270,7 +270,6 @@ public class TI_Utils {
     data.put(TI_VERSION_J, TI_MESSAGE_VERSION);
     // Loop over all the contacts you want to introduce
     recipientCursor.moveToFirst();
-    ArrayList<RecipientId> introduceesList = new ArrayList<>(introducees);
     for(int i = 0; !recipientCursor.isAfterLast(); i++){
       JSONObject introducee = new JSONObject();
       introducee.put(NAME_J, recipientCursor.getString(recipientCursor.getColumnIndex(SORT_NAME)));
@@ -280,9 +279,10 @@ public class TI_Utils {
       introducee.put(INTRODUCEE_SERVICE_ID_J, introduceeServiceId);
       String formatedSafetyNr;
       try{
-        IdentityKey introduceeIdentityKey = getIdentityKey(introduceesList.get(i));
+        RecipientId introduceeRecipientId = RecipientId.from(recipientCursor.getLong(recipientCursor.getColumnIndex("_id")));
+        IdentityKey introduceeIdentityKey = getIdentityKey(introduceeRecipientId);
         introducee.put(IDENTITY_J, encodeIdentityKey(introduceeIdentityKey));
-        formatedSafetyNr = predictFingerprint(introductionRecipientId, introduceesList.get(i), introduceeServiceId, introduceeE164, introduceeIdentityKey);
+        formatedSafetyNr = predictFingerprint(introductionRecipientId, introduceeRecipientId, introduceeServiceId, introduceeE164, introduceeIdentityKey);
       } catch (TI_MissingIdentityException e){
         e.printStackTrace();
         throw new AssertionError(TAG + " Unexpected missing identities when building TI message body!");
