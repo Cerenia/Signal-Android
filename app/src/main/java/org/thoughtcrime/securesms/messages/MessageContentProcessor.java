@@ -102,6 +102,7 @@ import org.thoughtcrime.securesms.jobs.SendDeliveryReceiptJob;
 import org.thoughtcrime.securesms.jobs.SenderKeyDistributionSendJob;
 import org.thoughtcrime.securesms.jobs.StickerPackDownloadJob;
 import org.thoughtcrime.securesms.jobs.TrimThreadJob;
+import org.thoughtcrime.securesms.jobs.TrustedIntroductionMultiDeviceSync;
 import org.thoughtcrime.securesms.keyvalue.SignalStore;
 import org.thoughtcrime.securesms.linkpreview.LinkPreview;
 import org.thoughtcrime.securesms.linkpreview.LinkPreviewUtil;
@@ -1509,6 +1510,10 @@ public class MessageContentProcessor {
 
     if (message.isPniIdentityRequest()) {
       ApplicationDependencies.getJobManager().add(new MultiDevicePniIdentityUpdateJob());
+    }
+
+    if (message.isIntroductionRequest()) {
+      ApplicationDependencies.getJobManager().add(new TrustedIntroductionMultiDeviceSync());
     }
   }
 

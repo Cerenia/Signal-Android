@@ -99,6 +99,7 @@ import org.whispersystems.signalservice.internal.push.SignalServiceProtos
 import org.whispersystems.signalservice.internal.push.SignalServiceProtos.Content
 import org.whispersystems.signalservice.internal.push.SignalServiceProtos.DataMessage
 import org.whispersystems.signalservice.internal.push.SignalServiceProtos.Envelope
+import org.whispersystems.signalservice.internal.push.SignalServiceProtos.Introduced
 import org.whispersystems.signalservice.internal.push.SignalServiceProtos.StoryMessage
 import org.whispersystems.signalservice.internal.push.SignalServiceProtos.SyncMessage
 import org.whispersystems.signalservice.internal.push.SignalServiceProtos.SyncMessage.Blocked
@@ -143,6 +144,7 @@ object SyncMessageProcessor {
       syncMessage.hasKeys() && syncMessage.keys.hasStorageService() -> handleSynchronizeKeys(syncMessage.keys.storageService, envelope.timestamp)
       syncMessage.hasContacts() -> handleSynchronizeContacts(syncMessage.contacts, envelope.timestamp)
       syncMessage.hasCallEvent() -> handleSynchronizeCallEvent(syncMessage.callEvent, envelope.timestamp)
+      syncMessage.introducedList.isNotEmpty() -> handleSynchronizeIntroduced(syncMessage.introducedList)
       else -> warn(envelope.timestamp, "Contains no known sync types...")
     }
   }
@@ -1078,5 +1080,9 @@ object SyncMessageProcessor {
         else -> warn("Unsupported event type " + event + ". Ignoring. timestamp: " + timestamp + " type: " + type + " direction: " + direction + " event: " + event + " hasPeer: " + callEvent.hasConversationId())
       }
     }
+  }
+
+  private fun handleSynchronizeIntroduced(introductions: List<Introduced>){
+    TODO("implement me :(")
   }
 }
