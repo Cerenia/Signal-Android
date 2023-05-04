@@ -512,7 +512,7 @@ class ConversationSettingsFragment : DSLSettingsFragment(
           title = DSLSettingsText.from(R.string.ConversationSettingsFragment__Introductions),
           icon = DSLSettingsIcon.from(R.drawable.ic_trusted_introduction),
           onClick = {
-            startActivity(ManageActivity.createIntent(requireContext(), state.recipient.id))
+            startActivity(ManageActivity.createIntent(requireContext(), ManageActivity.ActiveTab.NEW))
           }
         )
       }

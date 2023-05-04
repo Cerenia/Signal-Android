@@ -104,14 +104,14 @@ public class ManageActivity extends PassphraseRequiredActivity {
     toolbar = findViewById(R.id.toolbar);
     contactFilterView = findViewById(R.id.introduction_filter_edit_text);
 
-    // TODO: use ViewPager
-
     initializeToolbar();
 
     ManagePagerAdapter adapter = new ManagePagerAdapter(this, this);
     pager = findViewById(R.id.pager);
     pager.setAdapter(adapter);
     contactFilterView.setHint(R.string.ManageIntroductionsActivity__Filter_hint);
+
+    // TODO: TabLayout and TabMediator
   }
 
   @Override public void onSaveInstanceState(@NonNull Bundle outState) {
