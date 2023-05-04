@@ -2,8 +2,6 @@ package org.thoughtcrime.securesms.trustedIntroductions.receive;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.graphics.Canvas;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,9 +21,9 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
   private final LayoutInflater layoutInflater;
   private final ManageAdapter.ItemClickListener clickListener;
   private final ManageListItem.SwitchClickListener switchListener;
-  private final ManageActivity.IntroductionScreenType type;
+  private final ManageActivity.ActiveTab           type;
 
-  ManageAdapter(@NonNull Context context, @NonNull ManageAdapter.ItemClickListener clickListener, @NonNull ManageActivity.IntroductionScreenType t, @NonNull ManageListItem.SwitchClickListener switchListener){
+  ManageAdapter(@NonNull Context context, @NonNull ManageAdapter.ItemClickListener clickListener, @NonNull ManageActivity.ActiveTab t, @NonNull ManageListItem.SwitchClickListener switchListener){
     super(new DiffUtil.ItemCallback<Pair<TI_Data, ManageViewModel.IntroducerInformation>>() {
       @Override public boolean areItemsTheSame(@NonNull Pair<TI_Data, ManageViewModel.IntroducerInformation> oldItem, @NonNull Pair<TI_Data, ManageViewModel.IntroducerInformation> newItem) {
         return oldItem.first.getId().compareTo(newItem.first.getId()) == 0;
@@ -84,11 +82,11 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
      *
      * @param d introduction information, iff null, a header will be drawn.
      * @param i introducer information, iff null, a header will be drawn.
-     * @param t screen type @See ManageActivity.IntroductionScreenType
+     * @param t screen type @See ManageActivity.ActiveTab
      */
-    @SuppressLint("RestrictedApi") public void bind(@Nullable TI_Data d, @Nullable ManageViewModel.IntroducerInformation i, @NonNull ManageActivity.IntroductionScreenType t, @NonNull ManageListItem.SwitchClickListener switchListener){
+    @SuppressLint("RestrictedApi") public void bind(@Nullable TI_Data d, @Nullable ManageViewModel.IntroducerInformation i, @NonNull ManageActivity.ActiveTab t, @NonNull ManageListItem.SwitchClickListener switchListener){
       //Preconditions.checkArgument((d == null && i == null && t.equals(ALL))
-        //                          | (d != null && i != null && t.equals(ManageActivity.IntroductionScreenType.RECIPIENT_SPECIFIC)));
+        //                          | (d != null && i != null && t.equals(ManageActivity.ActiveTab.RECIPIENT_SPECIFIC)));
       getView().set(d, i, t, switchListener);
     }
 

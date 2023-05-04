@@ -13,14 +13,12 @@ import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.PassphraseRequiredActivity;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.components.ContactFilterView;
-import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
 import org.thoughtcrime.securesms.util.DynamicNoActionBarTheme;
 import org.thoughtcrime.securesms.util.DynamicTheme;
 
 import static org.thoughtcrime.securesms.trustedIntroductions.receive.ManageListFragment.ID_KEY;
-import static org.thoughtcrime.securesms.trustedIntroductions.receive.ManageListFragment.NAME_KEY;
 import static org.thoughtcrime.securesms.trustedIntroductions.receive.ManageListFragment.TYPE_KEY;
 
 /**
@@ -34,12 +32,12 @@ public class ManageActivity extends PassphraseRequiredActivity implements Manage
 
   private long introducerId;
 
-  public enum IntroductionScreenType {
+  public enum ActiveTab {
     NEW,
     LIBRARY,
     ALL;
 
-    public static IntroductionScreenType fromString(String state) {
+    public static ActiveTab fromString(String state) {
       if(state.equals(ALL.toString())) return ALL;
       if(state.equals(LIBRARY.toString())) return LIBRARY;
       if(state.equals(NEW.toString())) return NEW;
@@ -47,6 +45,33 @@ public class ManageActivity extends PassphraseRequiredActivity implements Manage
         throw new AssertionError("No such screen state!");
       }
     }
+
+    public static ActiveTab fromInt(int position){
+      switch(position) {
+        case 0:
+          return NEW;
+        case 1:
+          return LIBRARY;
+        case 2:
+          return ALL;
+        default:
+          throw new AssertionError("Invalid Tab position!");
+      }
+    }
+
+    public static int toInt(ActiveTab tab){
+      switch(tab){
+        case NEW:
+          return 0;
+        case LIBRARY:
+          return 1;
+        case ALL:
+          return 2;
+        default:
+          throw new AssertionError("Unknown Tab!");
+      }
+    }
+
   }
 
   // String
@@ -75,9 +100,9 @@ public class ManageActivity extends PassphraseRequiredActivity implements Manage
   @Override protected void onCreate(Bundle savedInstanceState, boolean ready){
     //Decide what kind of screen must be instantiated
     RecipientId introducerId = setIntroducerId(savedInstanceState);
-    IntroductionScreenType t;
+    ActiveTab   t;
     // TODO: Differentiation from savedInstanceState?
-    t = IntroductionScreenType.ALL;
+    t = ActiveTab.ALL;
     super.onCreate(savedInstanceState, ready);
 
     dynamicTheme.onCreate(this);
@@ -117,7 +142,7 @@ public class ManageActivity extends PassphraseRequiredActivity implements Manage
 
   @Override public void goToAll() {
     // New all Fragment
-    IntroductionScreenType t = IntroductionScreenType.ALL;
+    ActiveTab          t        = ActiveTab.ALL;
     ManageListFragment fragment = new ManageListFragment();
     Bundle fragmentBundle = new Bundle();
     fragmentBundle.putLong(ID_KEY, ALL_INTRODUCTIONS);
@@ -127,7 +152,7 @@ public class ManageActivity extends PassphraseRequiredActivity implements Manage
     fragmentTransaction.setReorderingAllowed(true);
     fragmentTransaction.addToBackStack(t.toString());
     // TODO??
-    //fragmentTransaction.detach((ManageListFragment) getSupportFragmentManager().findFragmentByTag(IntroductionScreenType.RECIPIENT_SPECIFIC.toString()));
+    //fragmentTransaction.detach((ManageListFragment) getSupportFragmentManager().findFragmentByTag(ActiveTab.RECIPIENT_SPECIFIC.toString()));
     fragmentTransaction.add(R.id.trusted_introduction_manage_fragment, fragment, t.toString());
     fragmentTransaction.commit();
     contactFilterView.setOnFilterChangedListener(fragment);

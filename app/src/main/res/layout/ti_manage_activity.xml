@@ -29,24 +29,14 @@
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
         app:layout_constraintTop_toBottomOf="@id/toolbar">
-        <com.google.android.material.tabs.TabItem
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/ManageIntroductionsActivity__Navigation_Tab_new"/>
 
-        <com.google.android.material.tabs.TabItem
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/ManageIntroductionsActivity__Navigation_Tab_library"/>
-        <!-- android:icon="@drawable/ic_android"/> -->
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/pager"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"/>
 
-    <com.google.android.material.tabs.TabItem
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/ManageIntroductionsActivity__Navigation_Tab_all"/>
-        <!--android:icon="@drawable/ic_android"-->
-
-</com.google.android.material.tabs.TabLayout>
+    </com.google.android.material.tabs.TabLayout>
 
     <org.thoughtcrime.securesms.components.ContactFilterView
         android:id="@+id/introduction_filter_edit_text"

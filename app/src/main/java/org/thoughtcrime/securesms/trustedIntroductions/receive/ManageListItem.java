@@ -21,7 +21,6 @@ import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
-import org.whispersystems.signalservice.api.push.ServiceId;
 import org.whispersystems.signalservice.api.util.Preconditions;
 
 import java.util.Date;
@@ -65,7 +64,7 @@ public class ManageListItem extends ConstraintLayout {
     this.guideline    = findViewById(R.id.half_guide);
   }
 
-  public void set(@Nullable TI_Data data, @Nullable ManageViewModel.IntroducerInformation introducerInformation, ManageActivity.IntroductionScreenType t, SwitchClickListener l){
+  public void set(@Nullable TI_Data data, @Nullable ManageViewModel.IntroducerInformation introducerInformation, ManageActivity.ActiveTab t, SwitchClickListener l){
     if(data == null && introducerInformation == null){
       // Populate as header
       int headerTypeface = Typeface.BOLD_ITALIC;
@@ -105,7 +104,7 @@ public class ManageListItem extends ConstraintLayout {
     // This will duplicate number in case there is no name, but that's just cosmetics.
     introduceeName.setText(data.getIntroduceeName());
     introduceeNumber.setText(data.getIntroduceeNumber());
-    if(t.equals(ManageActivity.IntroductionScreenType.ALL)){
+    if(t.equals(ManageActivity.ActiveTab.ALL)){
       introducerNumber.setText(introducerInformation.number);
       introducerName.setText(introducerInformation.name);
       introducerNumber.setVisibility(View.VISIBLE);

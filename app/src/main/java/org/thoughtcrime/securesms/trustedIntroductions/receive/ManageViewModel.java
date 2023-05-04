@@ -28,12 +28,12 @@ public class ManageViewModel extends ViewModel {
   private final ManageManager             manager;
   private final MutableLiveData<String>   filter;
   private final MutableLiveData<List<Pair<TI_Data, IntroducerInformation>>> introductions;
-  private final ManageActivity.IntroductionScreenType type;
-  @NonNull String forgottenPlaceholder;
+  private final ManageActivity.ActiveTab                                    type;
+  @NonNull      String                                                      forgottenPlaceholder;
   private final String introducerName;
   private boolean      introductionsLoaded;
 
-  ManageViewModel(ManageManager manager, ManageActivity.IntroductionScreenType t, @Nullable String introducerName, @NonNull String forgottenPlaceholder){
+  ManageViewModel(ManageManager manager, ManageActivity.ActiveTab t, @Nullable String introducerName, @NonNull String forgottenPlaceholder){
     this.manager = manager;
     filter = new MutableLiveData<>("");
     introductions = new MutableLiveData<>();
@@ -56,7 +56,7 @@ public class ManageViewModel extends ViewModel {
     return introducerName;
   }
 
-  public @NonNull ManageActivity.IntroductionScreenType getScreenType(){
+  public @NonNull ManageActivity.ActiveTab getScreenType(){
     return type;
   }
 
@@ -205,12 +205,12 @@ public class ManageViewModel extends ViewModel {
 
   static class Factory implements ViewModelProvider.Factory {
 
-    private final ManageManager manager;
-    private final ManageActivity.IntroductionScreenType t;
-    private final String introducer;
+    private final ManageManager            manager;
+    private final ManageActivity.ActiveTab t;
+    private final String                   introducer;
     private final String forgottenPlaceholder;
 
-    Factory(RecipientId id, ManageActivity.IntroductionScreenType t, @Nullable String introducerName, @NonNull String forgottenPlaceholder) {
+    Factory(RecipientId id, ManageActivity.ActiveTab t, @Nullable String introducerName, @NonNull String forgottenPlaceholder) {
       this.t = t;
       this.manager = new ManageManager(id, SignalDatabase.trustedIntroductions(), forgottenPlaceholder);
       introducer = introducerName;

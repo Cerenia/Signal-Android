@@ -14,8 +14,8 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelStoreOwner;
 import androidx.recyclerview.widget.RecyclerView;
 import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.splitIntroductionDate;
-import static org.thoughtcrime.securesms.trustedIntroductions.receive.ManageActivity.IntroductionScreenType.ALL;
-import static org.thoughtcrime.securesms.trustedIntroductions.receive.ManageActivity.IntroductionScreenType.fromString;
+import static org.thoughtcrime.securesms.trustedIntroductions.receive.ManageActivity.ActiveTab.ALL;
+import static org.thoughtcrime.securesms.trustedIntroductions.receive.ManageActivity.ActiveTab.fromString;
 
 import com.pnikosis.materialishprogress.ProgressWheel;
 
@@ -57,9 +57,9 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
 
   private void setViewModel(@NonNull Bundle args, @NonNull ViewModelStoreOwner owner){
     long l = args.getLong(ID_KEY);
-    RecipientId recipient = RecipientId.from(l);
-    ManageActivity.IntroductionScreenType type = fromString(args.getString(TYPE_KEY));
-    String name = args.getString(NAME_KEY);
+    RecipientId              recipient = RecipientId.from(l);
+    ManageActivity.ActiveTab type      = fromString(args.getString(TYPE_KEY));
+    String                   name      = args.getString(NAME_KEY);
     ManageViewModel.Factory factory = new ManageViewModel.Factory(recipient, type, name, FORGOTTEN_INTRODUCER);
     viewModel = new ViewModelProvider(owner, factory).get(ManageViewModel.class);
   }
@@ -84,7 +84,7 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
     if(!viewModel.introductionsLoaded()){
       viewModel.loadIntroductions();
     }
-    ManageActivity.IntroductionScreenType t = viewModel.getScreenType();
+    ManageActivity.ActiveTab t = viewModel.getScreenType();
     adapter = new ManageAdapter(requireContext(), new IntroductionClickListener(this, this), t, this);
     introductionList = view.findViewById(R.id.recycler_view);
     introductionList.setClipToPadding(true);
