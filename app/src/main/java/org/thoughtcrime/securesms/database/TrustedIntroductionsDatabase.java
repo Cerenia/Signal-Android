@@ -15,7 +15,7 @@ import org.json.JSONObject;
 import org.signal.core.util.SqlUtil;
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
-import org.thoughtcrime.securesms.jobs.TrustedIntroductionsRetreiveIdentityJob;
+import org.thoughtcrime.securesms.jobs.TrustedIntroductionsRetrieveIdentityJob;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.recipients.RecipientUtil;
@@ -434,7 +434,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     if(introduceeId == null){
       // Do not save identity when you are simply checking for conflict. We do not want persistent data that the user did not consciously decide to add.
       InsertCallback cb = new InsertCallback(data, null, null);
-      TrustedIntroductionsRetreiveIdentityJob job = new TrustedIntroductionsRetreiveIdentityJob(data, false, cb);
+      TrustedIntroductionsRetrieveIdentityJob job = new TrustedIntroductionsRetrieveIdentityJob(data, false, cb);
       ApplicationDependencies.getJobManager().add(job);
       Log.i(TAG, "Unknown recipient, deferred insertion of Introduction into database for: " + data.getIntroduceeName());
       // This is expected and not an error.
@@ -455,7 +455,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
       } catch (TI_Utils.TI_MissingIdentityException e){
         e.printStackTrace();
         // Fetch identity key from infrastructure for conflict detection. The user still has not interacted so identity is not saved.
-        ApplicationDependencies.getJobManager().add(new TrustedIntroductionsRetreiveIdentityJob(data, false, new InsertCallback(data, null, null)));
+        ApplicationDependencies.getJobManager().add(new TrustedIntroductionsRetrieveIdentityJob(data, false, new InsertCallback(data, null, null)));
         Log.i(TAG, "Unknown identity, deferred insertion of Introduction into database for: " + data.getIntroduceeName());
         // This is expected and not an error.
         return 0;
@@ -482,7 +482,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
 
     // Recipient not yet in database, must insert it first and update the introducee ID
     RecipientId recipientId = TI_Utils.getRecipientIdOrUnknown(introduction.getIntroduceeServiceId());
-    TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult res  = new TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult(introduction, null, null);
+    TrustedIntroductionsRetrieveIdentityJob.TI_RetrieveIDJobResult res  = new TrustedIntroductionsRetrieveIdentityJob.TI_RetrieveIDJobResult(introduction, null, null);
     SetStateCallback.SetStateData                                  data = new SetStateCallback.SetStateData(res, newState, logMessage);
     SetStateCallback                                               cb   = new SetStateCallback(data);
     if (recipientId.equals(RecipientId.UNKNOWN) ||
@@ -491,7 +491,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
       db.getAndPossiblyMerge(ServiceId.parseOrThrow(introduction.getIntroduceeServiceId()), introduction.getIntroduceeNumber());
       // Save identity, the user specifically decided to interfere with the introduction (accept/reject) so saving this state is ok.
       Log.d(TAG, "Saving identity for: " + recipientId);
-      ApplicationDependencies.getJobManager().add(new TrustedIntroductionsRetreiveIdentityJob(introduction, true, cb));
+      ApplicationDependencies.getJobManager().add(new TrustedIntroductionsRetrieveIdentityJob(introduction, true, cb));
       return false; // TODO: simply postponed, do we need ternary state here?
     }
     cb.callback();
@@ -808,9 +808,9 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
       return tag;
     }
 
-    public static class SetStateData extends TI_JobCallbackData implements TrustedIntroductionsRetreiveIdentityJob.setRetreiveIdJobResult {
+    public static class SetStateData extends TI_JobCallbackData implements TrustedIntroductionsRetrieveIdentityJob.setRetrieveIdJobResult {
 
-      @Nullable private TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult identityResult;
+      @Nullable private TrustedIntroductionsRetrieveIdentityJob.TI_RetrieveIDJobResult identityResult;
       @NonNull private State newState;
       @NonNull private String logMessage;
 
@@ -822,7 +822,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
 
       }
 
-      public SetStateData(@Nullable TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult identityResult, @NonNull State newState, @NonNull String logMessage){
+      public SetStateData(@Nullable TrustedIntroductionsRetrieveIdentityJob.TI_RetrieveIDJobResult identityResult, @NonNull State newState, @NonNull String logMessage){
         this.identityResult = identityResult;
         this.newState = newState;
         this.logMessage = logMessage;
@@ -837,7 +837,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
       }
 
       @Override public SetStateData deserialize(JSONObject serialized) throws JSONException {
-        this.identityResult = serialized.has(KEY_CALLBACK_JOB_RESULT) ? new TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult().deserialize(new JSONObject(serialized.getString(KEY_CALLBACK_JOB_RESULT))) : null;
+        this.identityResult = serialized.has(KEY_CALLBACK_JOB_RESULT) ? new TrustedIntroductionsRetrieveIdentityJob.TI_RetrieveIDJobResult().deserialize(new JSONObject(serialized.getString(KEY_CALLBACK_JOB_RESULT))) : null;
         this.newState = State.forState(serialized.getInt(KEY_NEW_STATE));
         this.logMessage = serialized.getString(KEY_LOG_MESSAGE);
         return this;
@@ -855,7 +855,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
         identityResult.key = publicKey;
       }
 
-      @Override public TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult getIdentityResult() {
+      @Override public TrustedIntroductionsRetrieveIdentityJob.TI_RetrieveIDJobResult getIdentityResult() {
         return identityResult;
       }
     }
@@ -900,11 +900,11 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
   public static class InsertCallback implements TI_JobCallback {
 
     public static final String                                                         tag = Log.tag(InsertCallback.class);
-    private final       TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult data;
+    private final       TrustedIntroductionsRetrieveIdentityJob.TI_RetrieveIDJobResult data;
     long result;
 
     public InsertCallback(@NonNull TI_Data data, @Nullable String base64KeyResult, @Nullable String aciResult){
-      this.data = new TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult(data, base64KeyResult, aciResult);
+      this.data = new TrustedIntroductionsRetrieveIdentityJob.TI_RetrieveIDJobResult(data, base64KeyResult, aciResult);
     }
 
     public void callback(){
@@ -912,7 +912,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     }
 
 
-    @Override public TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult getCallbackData() {
+    @Override public TrustedIntroductionsRetrieveIdentityJob.TI_RetrieveIDJobResult getCallbackData() {
       return data;
     }
 
@@ -951,7 +951,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     }
 
     public static class Factory implements TI_JobCallback.Factory {
-      private TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult data;
+      private TrustedIntroductionsRetrieveIdentityJob.TI_RetrieveIDJobResult data;
       private boolean initialized = false;
 
       public Factory(){
@@ -965,8 +965,8 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
       }
 
       @Override public void initialize(TI_JobCallbackData data) {
-        if(data instanceof TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult){
-          this.data = (TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult) data;
+        if(data instanceof TrustedIntroductionsRetrieveIdentityJob.TI_RetrieveIDJobResult){
+          this.data = (TrustedIntroductionsRetrieveIdentityJob.TI_RetrieveIDJobResult) data;
           initialized = true;
         } else{
           throw new AssertionError("Unexpected datatype for InsertCallback!");
@@ -974,7 +974,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
       }
 
       @Override public TI_JobCallbackData getEmptyJobDataInstance() {
-        return new TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult();
+        return new TrustedIntroductionsRetrieveIdentityJob.TI_RetrieveIDJobResult();
       }
     }
   }

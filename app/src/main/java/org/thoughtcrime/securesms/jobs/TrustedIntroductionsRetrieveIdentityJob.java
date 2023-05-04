@@ -36,7 +36,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class TrustedIntroductionsRetrieveIdentityJob extends BaseJob{
 
-  public static final String KEY = "TrustedIntroductionsRetreiveIdentityJob";
+  public static final String KEY = "TrustedIntroductionsRetrieveIdentityJob";
 
   private static final String TAG = String.format(TI_Utils.TI_LOG_TAG, Log.tag(TrustedIntroductionsRetrieveIdentityJob.class));
 
@@ -56,7 +56,7 @@ public class TrustedIntroductionsRetrieveIdentityJob extends BaseJob{
     instantiate.put(TrustedIntroductionsDatabase.SetStateCallback.tag, new TrustedIntroductionsDatabase.SetStateCallback.Factory());
   }
 
-  public static class TI_RetrieveIDJobResult extends TI_JobCallbackData implements setRetreiveIdJobResult {
+  public static class TI_RetrieveIDJobResult extends TI_JobCallbackData implements setRetrieveIdJobResult {
     public TI_Data TIData;
     public String key;
     public String aci;
@@ -108,7 +108,7 @@ public class TrustedIntroductionsRetrieveIdentityJob extends BaseJob{
     }
   }
 
-  public interface setRetreiveIdJobResult {
+  public interface setRetrieveIdJobResult {
     void setAci(String aci);
     void setPublicKey(String publicKey);
   }
@@ -218,8 +218,8 @@ public class TrustedIntroductionsRetrieveIdentityJob extends BaseJob{
       Log.e(TAG, "Processor did not have a result for service ID: " + callback.getCallbackData().getIntroduction().getIntroduceeServiceId() + ". Ignoring introduction.");
       return;
     }
-    if(callback.getCallbackData() instanceof setRetreiveIdJobResult){
-      setRetreiveIdJobResult cbData = (setRetreiveIdJobResult) callback.getCallbackData();
+    if(callback.getCallbackData() instanceof setRetrieveIdJobResult){
+      setRetrieveIdJobResult cbData = (setRetrieveIdJobResult) callback.getCallbackData();
       cbData.setAci(jobResult.aci);
       cbData.setPublicKey(jobResult.key);
     }

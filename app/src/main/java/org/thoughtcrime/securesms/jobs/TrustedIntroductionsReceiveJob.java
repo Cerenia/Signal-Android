@@ -37,7 +37,7 @@ public class TrustedIntroductionsReceiveJob extends BaseJob  {
   private boolean bodyParsed;
   private final ArrayList<TI_Data> introductions;
   // counter keeping track of which TI_DATA has made it's way to the database
-  // allows to only serialize introductions that have not yet been done if process get's interrupted
+  // allows to only serialize introductions that have not yet been done if process gets interrupted
   private int                 inserts_succeeded = 0;
 
   // Serialization Keys

@@ -66,7 +66,7 @@ public class TrustedIntroductionSendJob extends BaseJob {
   private static @NonNull Set<Long> introduceeIdSetToLong(@NonNull Set<RecipientId> introduceeIds){
     Set<Long> result = new HashSet<>();
     // Can't do this, min API too low
-    //introduceeIds.forEach((id) -> result.add(id.toLong()));
+    // introduceeIds.forEach((id) -> result.add(id.toLong()));
     for (RecipientId id: introduceeIds) {
       result.add(id.toLong());
     }
