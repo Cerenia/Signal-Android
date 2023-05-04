@@ -35,12 +35,14 @@ public class ManageActivity extends PassphraseRequiredActivity implements Manage
   private long introducerId;
 
   public enum IntroductionScreenType {
-    ALL,
-    RECIPIENT_SPECIFIC;
+    NEW,
+    LIBRARY,
+    ALL;
 
     public static IntroductionScreenType fromString(String state) {
       if(state.equals(ALL.toString())) return ALL;
-      if(state.equals(RECIPIENT_SPECIFIC.toString())) return RECIPIENT_SPECIFIC;
+      if(state.equals(LIBRARY.toString())) return LIBRARY;
+      if(state.equals(NEW.toString())) return NEW;
       else{
         throw new AssertionError("No such screen state!");
       }
@@ -58,7 +60,6 @@ public class ManageActivity extends PassphraseRequiredActivity implements Manage
 
 
   private final DynamicTheme dynamicTheme = new DynamicNoActionBarTheme();
-  private String introducerName = null;
 
   /**
    * @param id Pass unknown to get the view for all introductions.
@@ -75,12 +76,8 @@ public class ManageActivity extends PassphraseRequiredActivity implements Manage
     //Decide what kind of screen must be instantiated
     RecipientId introducerId = setIntroducerId(savedInstanceState);
     IntroductionScreenType t;
-    if (introducerId.equals(ALL_INTRODUCTIONS)){
-      t = IntroductionScreenType.ALL;
-    } else {
-      t = IntroductionScreenType.RECIPIENT_SPECIFIC;
-      introducerName = Recipient.live(introducerId).resolve().getDisplayNameOrUsername(this);
-    }
+    // TODO: Differentiation from savedInstanceState?
+    t = IntroductionScreenType.ALL;
     super.onCreate(savedInstanceState, ready);
 
     dynamicTheme.onCreate(this);
@@ -95,7 +92,6 @@ public class ManageActivity extends PassphraseRequiredActivity implements Manage
     if(savedInstanceState == null){
       fragment = new ManageListFragment();
       Bundle fragmentBundle = new Bundle();
-      fragmentBundle.putString(NAME_KEY, introducerName);
       fragmentBundle.putLong(ID_KEY, introducerId.toLong());
       fragmentBundle.putString(TYPE_KEY, t.toString());
       fragment.setArguments(fragmentBundle);
@@ -124,20 +120,19 @@ public class ManageActivity extends PassphraseRequiredActivity implements Manage
     IntroductionScreenType t = IntroductionScreenType.ALL;
     ManageListFragment fragment = new ManageListFragment();
     Bundle fragmentBundle = new Bundle();
-    fragmentBundle.putString(NAME_KEY, introducerName);
     fragmentBundle.putLong(ID_KEY, ALL_INTRODUCTIONS);
     fragmentBundle.putString(TYPE_KEY, t.toString());
     fragment.setArguments(fragmentBundle);
     FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
     fragmentTransaction.setReorderingAllowed(true);
     fragmentTransaction.addToBackStack(t.toString());
-    fragmentTransaction.detach((ManageListFragment) getSupportFragmentManager().findFragmentByTag(IntroductionScreenType.RECIPIENT_SPECIFIC.toString()));
+    // TODO??
+    //fragmentTransaction.detach((ManageListFragment) getSupportFragmentManager().findFragmentByTag(IntroductionScreenType.RECIPIENT_SPECIFIC.toString()));
     fragmentTransaction.add(R.id.trusted_introduction_manage_fragment, fragment, t.toString());
     fragmentTransaction.commit();
     contactFilterView.setOnFilterChangedListener(fragment);
     // clearing to avoid trailing text that does not filter
     contactFilterView.clear();
-
   }
 
   /**

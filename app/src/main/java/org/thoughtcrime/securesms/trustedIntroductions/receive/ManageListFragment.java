@@ -13,16 +13,13 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelStoreOwner;
 import androidx.recyclerview.widget.RecyclerView;
-import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.INTRODUCTION_DATE_PATTERN;
 import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.splitIntroductionDate;
 import static org.thoughtcrime.securesms.trustedIntroductions.receive.ManageActivity.IntroductionScreenType.ALL;
-import static org.thoughtcrime.securesms.trustedIntroductions.receive.ManageActivity.IntroductionScreenType.RECIPIENT_SPECIFIC;
 import static org.thoughtcrime.securesms.trustedIntroductions.receive.ManageActivity.IntroductionScreenType.fromString;
 
 import com.pnikosis.materialishprogress.ProgressWheel;
 
 import org.signal.core.util.logging.Log;
-import org.thoughtcrime.securesms.components.ButtonStripItemView;
 import org.thoughtcrime.securesms.components.ContactFilterView;
 import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
 import org.thoughtcrime.securesms.recipients.RecipientId;
@@ -34,9 +31,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import kotlin.Unit;
-import kotlin.jvm.functions.Function0;
-
 public class ManageListFragment extends Fragment implements ContactFilterView.OnFilterChangedListener, DeleteIntroductionDialog.DeleteIntroduction, ForgetIntroducerDialog.ForgetIntroducer, ManageListItem.SwitchClickListener {
 
   private static final String TAG = String.format(TI_Utils.TI_LOG_TAG, Log.tag(ManageListFragment.class));
@@ -47,8 +41,6 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
   private ManageAdapter adapter;
   private RecyclerView introductionList;
   private TextView no_introductions;
-  private TextView navigationExplanation;
-  private TextView from_title_view;
   private View all_header;
 
   // Because final onCreate in AppCompat dissalows me from using a Fragment Factory, I need to use a Bundle for Arguments.
@@ -98,57 +90,20 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
     introductionList.setClipToPadding(true);
     introductionList.setAdapter(adapter);
     no_introductions = view.findViewById(R.id.no_introductions_found);
-    navigationExplanation = view.findViewById(R.id.navigation_explanation);
     all_header = view.findViewById(R.id.manage_fragment_header);
-    from_title_view = view.findViewById(R.id.introduction_title_view);
-    initializeNavigationButton(view);
     final String finalIntroducerName = viewModel.getIntroducerName();
     // Observer
     this.viewModel.getIntroductions().observe(getViewLifecycleOwner(), introductions -> {
       // Screen layout
       if(introductions.size() > 0){
         no_introductions.setVisibility(View.GONE);
-        navigationExplanation.setVisibility(View.VISIBLE);
-        if(viewModel.getScreenType() == RECIPIENT_SPECIFIC){
-          from_title_view.setVisibility(View.VISIBLE);
-          from_title_view.setText(String.format(getString(R.string.ManageIntroductionsFragment__Title_Introductions_from), viewModel.getIntroducerName()));
-          all_header.setVisibility(View.GONE);
-        } else {
-          from_title_view.setVisibility(View.GONE);
-          all_header.setVisibility(View.VISIBLE);
-        }
+        all_header.setVisibility(View.VISIBLE);
       } else {
         no_introductions.setVisibility(View.VISIBLE);
-        navigationExplanation.setVisibility(View.GONE);
-        from_title_view.setVisibility(View.GONE);
         all_header.setVisibility(View.GONE);
-        if(viewModel.getScreenType() == ALL){
-          no_introductions.setText(R.string.ManageIntroductionsFragment__No_Introductions_all);
-        } else {
-          no_introductions.setText(this.getString(R.string.ManageIntroductionsFragment__No_Introductions_from, finalIntroducerName));
-        }
+        no_introductions.setText(R.string.ManageIntroductionsFragment__No_Introductions_all);
       }
       refreshList();
-    });
-  }
-
-  private void initializeNavigationButton(@NonNull View view){
-    ButtonStripItemView                   button = view.findViewById(R.id.navigate_all_button);
-    switch(viewModel.getScreenType()){
-      case RECIPIENT_SPECIFIC:
-        button.setVisibility(View.VISIBLE);
-        break;
-      case ALL:
-        button.setVisibility(View.GONE);
-        break;
-      default:
-        throw new AssertionError(TAG + "No such screenType!");
-    }
-    button.setOnIconClickedListener(new Function0<Unit>() {
-      @Override public Unit invoke() {
-        ((ManageActivity) getActivity()).goToAll();
-        return null;
-      }
     });
   }
 
