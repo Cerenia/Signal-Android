@@ -156,9 +156,8 @@ public class ManageViewModel extends ViewModel {
     if(current != null){
       // only reassign if current was not deleted
       modifiedIntroduction = current.first;
-      if (!(type == ManageActivity.IntroductionScreenType.RECIPIENT_SPECIFIC && modifiedIntroduction.getIntroducerServiceId() == null)){ // recipient specific forgot introducer
-        all.add(i, current);
-      }
+      // TODO: Missing differentiation between NEW and other two screentypes
+      all.add(current);
     } // else don't add back to list
     final TI_Data finalIntroduction = modifiedIntroduction;
     introductions.postValue(all);

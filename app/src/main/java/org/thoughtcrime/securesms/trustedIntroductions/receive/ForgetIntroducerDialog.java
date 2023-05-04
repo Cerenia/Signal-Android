@@ -29,17 +29,8 @@ public final class ForgetIntroducerDialog {
 
     public static void show(@NonNull Context context, @NonNull Long introductionId, @NonNull String introduceeName, @NonNull String introducerName, @NonNull Date date, ForgetIntroducer f, @NonNull ManageActivity.IntroductionScreenType t) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context).setTitle(R.string.ForgetIntroucerDialog__Title);
-        String text;
-        switch(t){
-            case ALL:
-                text = context.getString(R.string.ForgetIntroucerDialog__Forget_Introducer_ALL, introducerName, introduceeName, INTRODUCTION_DATE_PATTERN.format(date));
-                break;
-            case RECIPIENT_SPECIFIC:
-                text = context.getString(R.string.ForgetIntroucerDialog__Forget_Introducer_RECIPIENT_SPECIFIC, introducerName, introduceeName, INTRODUCTION_DATE_PATTERN.format(date));
-                break;
-            default:
-                throw new AssertionError("Invalid management screen type!");
-        }
+        // TODO: do we still want to differentiate? or can we get rid of t?
+        String text = context.getString(R.string.ForgetIntroucerDialog__Forget_Introducer_ALL, introducerName, introduceeName, INTRODUCTION_DATE_PATTERN.format(date));
         builder.setMessage(text);
         builder.setNegativeButton(android.R.string.no, (dialog, which) -> dialog.dismiss())
                .setPositiveButton(R.string.ForgetIntroucerDialog__forget, (dialog, which) -> {
