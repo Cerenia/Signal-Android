@@ -18,7 +18,6 @@ import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
 import org.thoughtcrime.securesms.util.DynamicNoActionBarTheme;
 import org.thoughtcrime.securesms.util.DynamicTheme;
 
-import static org.thoughtcrime.securesms.trustedIntroductions.receive.ManageListFragment.ID_KEY;
 import static org.thoughtcrime.securesms.trustedIntroductions.receive.ManageListFragment.TYPE_KEY;
 
 /**
@@ -112,12 +111,12 @@ public class ManageActivity extends PassphraseRequiredActivity implements Manage
     toolbar = findViewById(R.id.toolbar);
     contactFilterView = findViewById(R.id.introduction_filter_edit_text);
 
+    // TODO: use ViewPager instead
     // Initialize
     ManageListFragment fragment;
     if(savedInstanceState == null){
       fragment = new ManageListFragment();
       Bundle fragmentBundle = new Bundle();
-      fragmentBundle.putLong(ID_KEY, introducerId.toLong());
       fragmentBundle.putString(TYPE_KEY, t.toString());
       fragment.setArguments(fragmentBundle);
       FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
@@ -141,11 +140,11 @@ public class ManageActivity extends PassphraseRequiredActivity implements Manage
   }
 
   @Override public void goToAll() {
+    // TODO: will no longer need to do this manually, remove
     // New all Fragment
     ActiveTab          t        = ActiveTab.ALL;
     ManageListFragment fragment = new ManageListFragment();
     Bundle fragmentBundle = new Bundle();
-    fragmentBundle.putLong(ID_KEY, ALL_INTRODUCTIONS);
     fragmentBundle.putString(TYPE_KEY, t.toString());
     fragment.setArguments(fragmentBundle);
     FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();

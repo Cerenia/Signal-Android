@@ -15,14 +15,12 @@ import androidx.lifecycle.ViewModelStoreOwner;
 import androidx.recyclerview.widget.RecyclerView;
 import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.splitIntroductionDate;
 import static org.thoughtcrime.securesms.trustedIntroductions.receive.ManageActivity.ActiveTab.ALL;
-import static org.thoughtcrime.securesms.trustedIntroductions.receive.ManageActivity.ActiveTab.fromString;
 
 import com.pnikosis.materialishprogress.ProgressWheel;
 
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.components.ContactFilterView;
 import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
-import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
@@ -41,27 +39,21 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
   private ManageAdapter adapter;
   private RecyclerView introductionList;
   private TextView no_introductions;
-  private View all_header;
+  private View                           all_header;
+  private final ManageActivity.ActiveTab tab;
 
   // Because final onCreate in AppCompat dissalows me from using a Fragment Factory, I need to use a Bundle for Arguments.
   static String TYPE_KEY = "type_key";
-  static String NAME_KEY = "name_key";
-  static String ID_KEY = "id_key";
 
   static String FORGOTTEN_INTRODUCER;
 
   public ManageListFragment(){
     super(R.layout.ti_manage_fragment);
+    tab = ALL;
   }
 
-  public ManageListFragment(@NonNull ViewModelStoreOwner owner){
-    ManageViewModel.Factory factory = new ManageViewModel.Factory(FORGOTTEN_INTRODUCER);
-    viewModel = new ViewModelProvider(owner, factory).get(ManageViewModel.class);
-  }
-
-  private void setViewModel(@NonNull Bundle args, @NonNull ViewModelStoreOwner owner){
-    long l = args.getLong(ID_KEY);
-    String                   name      = args.getString(NAME_KEY);
+  public ManageListFragment(@NonNull ViewModelStoreOwner owner, @NonNull ManageActivity.ActiveTab type){
+    this.tab = type;
     ManageViewModel.Factory factory = new ManageViewModel.Factory(FORGOTTEN_INTRODUCER);
     viewModel = new ViewModelProvider(owner, factory).get(ManageViewModel.class);
   }

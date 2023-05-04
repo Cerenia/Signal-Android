@@ -4019,19 +4019,20 @@
     <!-- Trusted Introductions -->
     <!-- ManageIntroductionsActivity -->
     <string name="ManageIntroductionsActivity__Toolbar_Title_Recipient">Introductions:</string>
-    <string name="ManageIntroductionsActivity__Toolbar_Title_All">All Introductions:</string>
     <string name="ManageIntroductionsActivity__Filter_hint">Search Introductions</string>
     <string name="ManageIntroductionsActivity__Navigation_Tab_new">New</string>
     <string name="ManageIntroductionsActivity__Navigation_Tab_library">Library</string>
     <string name="ManageIntroductionsActivity__Navigation_Tab_all">All</string>
     <!-- ManageIntroductionsFragment -->
     <string name="ManageIntroductionsFragment__Explanation">Accept/Reject an introduction by interacting with the switch. Long press the list item to delete the introduction, short press to forget who introduced you.</string>
-    <string name="ManageIntroductionsFragment__No_Introductions_from">%1$s has not made any introductions yet.</string>
-    <string name="ManageIntroductionsFragment__No_Introductions_all">Nobody has introduced anyone to you yet. Try asking your contacts for introductions or start by introducing someone to them!</string>
-    <string name="ManageIntroductionsFragment__Title_Introductions_from">From %1$s\:</string>
-    <string name="ManageIntroductionsFragment__navigate_text">Show all</string>
+    <string name="ManageIntroductionsFragment__No_Introductions_all">Nobody has introduced anyone to you yet. Ask your contacts for introductions or initiate by introducing someone to them!</string>
     <string name="ManageIntroductionsFragment__already_erased_toast">You already erased the introducer information of this introduction.</string>
     <string name="ManageIntroductionsFragment__conflict_resolution_todo">The guided conflict resolution process is not yet implemented. TODO</string>
+    <string name="ManageIntroductionsFragment__filter">Show:</string>
+    <string name="ManageIntroductionsFragment__Rejected">Mistrusted</string>
+    <string name="ManageIntroductionsFragment__Accepted">Trusted</string>
+    <string name="ManageIntroductionsFragment__Conflicting">Conflicting</string>
+    <string name="ManageIntroductionsFragment__Stale">Stale</string>
     <!-- ManageIntroductionsListItem -->
     <string name="ManageIntroductionsListItem__Pending">Pending</string>
     <string name="ManageIntroductionsListItem__Rejected">Rejected</string>
