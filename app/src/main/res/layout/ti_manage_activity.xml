@@ -33,13 +33,37 @@
         app:layout_constraintTop_toBottomOf="@id/toolbar"
         app:layout_constraintStart_toStartOf="parent"/>
 
-    <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/trusted_introduction_manage_fragment"
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tab_navigation"
+        android:layout_height="wrap_content"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:gravity="top"
-        android:layout_margin="4dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/introduction_filter_edit_text" />
+        app:layout_constraintTop_toBottomOf="@id/introduction_filter_edit_text">
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/ManageIntroductionsActivity__Navigation_Tab_new"/>
+
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/ManageIntroductionsActivity__Navigation_Tab_library"/>
+        <!-- android:icon="@drawable/ic_android"/> -->
+
+    <com.google.android.material.tabs.TabItem
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/ManageIntroductionsActivity__Navigation_Tab_all"/>
+        <!--android:icon="@drawable/ic_android"-->
+
+</com.google.android.material.tabs.TabLayout>
+
+<androidx.fragment.app.FragmentContainerView
+    android:id="@+id/trusted_introduction_manage_fragment"
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    android:gravity="top"
+    android:layout_margin="4dp"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintTop_toBottomOf="@id/tab_navigation" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
