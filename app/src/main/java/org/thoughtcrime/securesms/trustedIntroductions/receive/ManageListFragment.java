@@ -60,7 +60,7 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
     RecipientId              recipient = RecipientId.from(l);
     ManageActivity.ActiveTab type      = fromString(args.getString(TYPE_KEY));
     String                   name      = args.getString(NAME_KEY);
-    ManageViewModel.Factory factory = new ManageViewModel.Factory(recipient, name, FORGOTTEN_INTRODUCER);
+    ManageViewModel.Factory factory = new ManageViewModel.Factory(name, FORGOTTEN_INTRODUCER);
     viewModel = new ViewModelProvider(owner, factory).get(ManageViewModel.class);
   }
 
@@ -84,14 +84,12 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
     if(!viewModel.introductionsLoaded()){
       viewModel.loadIntroductions();
     }
-    ManageActivity.ActiveTab t = viewModel.getScreenType();
-    adapter = new ManageAdapter(requireContext(), new IntroductionClickListener(this, this), t, this);
+    adapter = new ManageAdapter(requireContext(), new IntroductionClickListener(this, this), this);
     introductionList = view.findViewById(R.id.recycler_view);
     introductionList.setClipToPadding(true);
     introductionList.setAdapter(adapter);
     no_introductions = view.findViewById(R.id.no_introductions_found);
     all_header = view.findViewById(R.id.manage_fragment_header);
-    final String finalIntroducerName = viewModel.getIntroducerName();
     // Observer
     this.viewModel.getIntroductions().observe(getViewLifecycleOwner(), introductions -> {
       // Screen layout
@@ -179,26 +177,12 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
       c = requireContext();
     }
 
-    private String getIntroducerName(ManageListItem item){
-      String itemIntroducerName;
-      if(viewModel.getScreenType() == ALL){
-        itemIntroducerName = item.getIntroducerName(c);
-        // could still be null after iff this introducer information has been cleared.
-        itemIntroducerName = (itemIntroducerName == null) ? getString(R.string.ManageIntroductionsListItem__Forgotten_Introducer): itemIntroducerName;
-      } else {
-        if(viewModel.getIntroducerName() == null){
-          throw new AssertionError("Expected name not to be null for Recipient Specific introductions!");
-        }
-        itemIntroducerName = viewModel.getIntroducerName();
-      }
-      return itemIntroducerName;
-    }
 
     // TODO
     @Override public void onItemClick(ManageListItem item) {
-      String name = getIntroducerName(item);
+      String name = item.getIntroducerName(requireContext());
       if(!name.equals(getString(R.string.ManageIntroductionsListItem__Forgotten_Introducer))){
-        ForgetIntroducerDialog.show(c, item.getIntroductionId(), item.getIntroduceeName(), getIntroducerName(item), item.getDate(), forgetHandler, viewModel.getScreenType());
+        ForgetIntroducerDialog.show(c, item.getIntroductionId(), item.getIntroduceeName(), item.getIntroducerName(requireContext()), item.getDate(), forgetHandler);
         return;
       }
       // All screen
@@ -212,7 +196,7 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
         // TODO: Proper go through managing conflicts path, to implement later.
         Toast.makeText(c, R.string.ManageIntroductionsFragment__conflict_resolution_todo, Toast.LENGTH_LONG).show();
       }*/
-      DeleteIntroductionDialog.show(c, item.getIntroductionId(), item.getIntroduceeName(), getIntroducerName(item), item.getDate(), deleteHandler);
+      DeleteIntroductionDialog.show(c, item.getIntroductionId(), item.getIntroduceeName(), item.getIntroducerName(requireContext()), item.getDate(), deleteHandler);
     }
   }
 

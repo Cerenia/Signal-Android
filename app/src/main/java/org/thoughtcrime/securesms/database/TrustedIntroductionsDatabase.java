@@ -603,21 +603,13 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
 
   @WorkerThread
   /**
-   * Fetches Introduction data by Introducer. Pass null to get all the data.
-   * @return IntroductionReader which can be used to iterate through the rows.
+   * Fetches All Introduction data.
+   * @return IntroductionReader which can be used as an iterator.
    */
-  public IntroductionReader getIntroductions(@Nullable String introducerServiceId){
-    String query;
+  public IntroductionReader getAllIntroductions() {
+    String query = "SELECT  * FROM " + TABLE_NAME;
     SQLiteDatabase db = databaseHelper.getSignalReadableDatabase();
-    if(introducerServiceId == null){
-      query = "SELECT  * FROM " + TABLE_NAME;
-      return new IntroductionReader(db.rawQuery(query, null));
-    } else {
-      // query only the Introductions made by introducerServiceId
-      query = INTRODUCER_SERVICE_ID + " = ?";
-      String[] arg = SqlUtil.buildArgs(introducerServiceId);
-      return new IntroductionReader(db.query(TABLE_NAME, TI_ALL_PROJECTION, query, arg, null, null, null));
-    }
+    return new IntroductionReader(db.rawQuery(query, null));
   }
 
  @WorkerThread

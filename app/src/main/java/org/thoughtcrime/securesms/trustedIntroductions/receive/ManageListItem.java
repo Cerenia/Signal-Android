@@ -64,7 +64,7 @@ public class ManageListItem extends ConstraintLayout {
     this.guideline    = findViewById(R.id.half_guide);
   }
 
-  public void set(@Nullable TI_Data data, @Nullable ManageViewModel.IntroducerInformation introducerInformation, ManageActivity.ActiveTab t, SwitchClickListener l){
+  public void set(@Nullable TI_Data data, @Nullable ManageViewModel.IntroducerInformation introducerInformation, SwitchClickListener l){
     if(data == null && introducerInformation == null){
       // Populate as header
       int headerTypeface = Typeface.BOLD_ITALIC;
@@ -104,17 +104,11 @@ public class ManageListItem extends ConstraintLayout {
     // This will duplicate number in case there is no name, but that's just cosmetics.
     introduceeName.setText(data.getIntroduceeName());
     introduceeNumber.setText(data.getIntroduceeNumber());
-    if(t.equals(ManageActivity.ActiveTab.ALL)){
       introducerNumber.setText(introducerInformation.number);
       introducerName.setText(introducerInformation.name);
       introducerNumber.setVisibility(View.VISIBLE);
       introducerName.setVisibility(View.VISIBLE);
       guideline.setGuidelinePercent(0.5f);
-    } else {
-      introducerName.setVisibility(View.GONE);
-      introducerNumber.setVisibility(View.GONE);
-      guideline.setGuidelinePercent(0.25f);
-    }
     toggleSwitch.setOnClickListener(v -> toggleSwitch());
     changeByState(data.getState());
   }

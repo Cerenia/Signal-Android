@@ -197,8 +197,8 @@ public class ManageViewModel extends ViewModel {
     private final String                   introducer;
     private final String forgottenPlaceholder;
 
-    Factory(RecipientId id, @Nullable String introducerName, @NonNull String forgottenPlaceholder) {
-      this.manager = new ManageManager(id, SignalDatabase.trustedIntroductions(), forgottenPlaceholder);
+    Factory(@Nullable String introducerName, @NonNull String forgottenPlaceholder) {
+      this.manager = new ManageManager(SignalDatabase.trustedIntroductions(), forgottenPlaceholder);
       introducer = introducerName;
       this.forgottenPlaceholder = forgottenPlaceholder;
     }

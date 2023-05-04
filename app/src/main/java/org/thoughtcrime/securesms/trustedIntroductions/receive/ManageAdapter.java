@@ -21,9 +21,8 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
   private final LayoutInflater layoutInflater;
   private final ManageAdapter.ItemClickListener clickListener;
   private final ManageListItem.SwitchClickListener switchListener;
-  private final ManageActivity.ActiveTab           type;
 
-  ManageAdapter(@NonNull Context context, @NonNull ManageAdapter.ItemClickListener clickListener, @NonNull ManageActivity.ActiveTab t, @NonNull ManageListItem.SwitchClickListener switchListener){
+  ManageAdapter(@NonNull Context context, @NonNull ManageAdapter.ItemClickListener clickListener, @NonNull ManageListItem.SwitchClickListener switchListener){
     super(new DiffUtil.ItemCallback<Pair<TI_Data, ManageViewModel.IntroducerInformation>>() {
       @Override public boolean areItemsTheSame(@NonNull Pair<TI_Data, ManageViewModel.IntroducerInformation> oldItem, @NonNull Pair<TI_Data, ManageViewModel.IntroducerInformation> newItem) {
         return oldItem.first.getId().compareTo(newItem.first.getId()) == 0;
@@ -46,7 +45,6 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
     this.layoutInflater = LayoutInflater.from(context);
     this.clickListener = clickListener;
     this.switchListener = switchListener;
-    this.type = t;
   }
 
   // TODO: in case you want to fancify this by adding header list items, add int viewType here
@@ -56,7 +54,7 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
 
   @Override public void onBindViewHolder(@NonNull IntroductionViewHolder holder, int position) {
     Pair<TI_Data, ManageViewModel.IntroducerInformation> current = getItem(position);
-    holder.bind(current.first, current.second, type, switchListener);
+    holder.bind(current.first, current.second, switchListener);
   }
 
   static class IntroductionViewHolder extends RecyclerView.ViewHolder {
@@ -82,12 +80,11 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
      *
      * @param d introduction information, iff null, a header will be drawn.
      * @param i introducer information, iff null, a header will be drawn.
-     * @param t screen type @See ManageActivity.ActiveTab
      */
-    @SuppressLint("RestrictedApi") public void bind(@Nullable TI_Data d, @Nullable ManageViewModel.IntroducerInformation i, @NonNull ManageActivity.ActiveTab t, @NonNull ManageListItem.SwitchClickListener switchListener){
+    @SuppressLint("RestrictedApi") public void bind(@Nullable TI_Data d, @Nullable ManageViewModel.IntroducerInformation i, @NonNull ManageListItem.SwitchClickListener switchListener){
       //Preconditions.checkArgument((d == null && i == null && t.equals(ALL))
         //                          | (d != null && i != null && t.equals(ManageActivity.ActiveTab.RECIPIENT_SPECIFIC)));
-      getView().set(d, i, t, switchListener);
+      getView().set(d, i, switchListener);
     }
 
     public void setEnabled(boolean enabled){

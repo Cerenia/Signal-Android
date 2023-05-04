@@ -27,7 +27,7 @@ public final class ForgetIntroducerDialog {
     private ForgetIntroducerDialog() {
     }
 
-    public static void show(@NonNull Context context, @NonNull Long introductionId, @NonNull String introduceeName, @NonNull String introducerName, @NonNull Date date, ForgetIntroducer f, @NonNull ManageActivity.ActiveTab t) {
+    public static void show(@NonNull Context context, @NonNull Long introductionId, @NonNull String introduceeName, @NonNull String introducerName, @NonNull Date date, ForgetIntroducer f) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context).setTitle(R.string.ForgetIntroucerDialog__Title);
         // TODO: do we still want to differentiate? or can we get rid of t?
         String text = context.getString(R.string.ForgetIntroucerDialog__Forget_Introducer_ALL, introducerName, introduceeName, INTRODUCTION_DATE_PATTERN.format(date));

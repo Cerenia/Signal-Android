@@ -7,9 +7,7 @@ import androidx.core.util.Pair;
 import org.signal.core.util.concurrent.SignalExecutors;
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
-import org.thoughtcrime.securesms.jobs.TrustedIntroductionsReceiveJob;
 import org.thoughtcrime.securesms.recipients.Recipient;
-import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
 
@@ -24,15 +22,11 @@ public class ManageManager {
 
   private static final String TAG =  String.format(TI_Utils.TI_LOG_TAG, Log.tag(ManageManager.class));
 
-  // Introducer ID, or unknown iff all.
-  private final RecipientId recipientId;
-
   @NonNull private final String forgottenPlaceholder;
   // Dependency injection
   private final TrustedIntroductionsDatabase tdb;
 
-  ManageManager(@NonNull RecipientId rid, @NonNull TrustedIntroductionsDatabase tdb, @NonNull String forgottenPlaceholder){
-    recipientId = rid;
+  ManageManager(@NonNull TrustedIntroductionsDatabase tdb, @NonNull String forgottenPlaceholder){
     this.tdb = tdb;
     this.forgottenPlaceholder = forgottenPlaceholder;
   }
@@ -40,22 +34,8 @@ public class ManageManager {
   void getIntroductions(@NonNull Consumer<List<Pair<TI_Data, ManageViewModel.IntroducerInformation>>> listConsumer){
     SignalExecutors.BOUNDED.execute(() -> {
 
-      String introducerServiceId;
-      if(recipientId.equals(RecipientId.UNKNOWN)){
-        introducerServiceId = null;
-      } else {
-        try {
-          introducerServiceId = Recipient.live(recipientId).resolve().requireServiceId().toString();
-        } catch (Error e){
-          // Iff the specific introducer does not have a serviceId, the introduction should most likely not have happened (no secure channel)
-          // We simply return in this case without posting anything
-          Log.e(TAG, "Service Id for recipient " + recipientId + " did not resolve. Returning without results.");
-          return;
-        }
-      }
-
       // Pull introductions out of the database
-      TrustedIntroductionsDatabase.IntroductionReader reader = tdb.getIntroductions(introducerServiceId);
+      TrustedIntroductionsDatabase.IntroductionReader reader = tdb.getAllIntroductions();
       ArrayList<TI_Data> introductions = new ArrayList<>();
       while(reader.hasNext()){
         introductions.add(reader.getNext());
