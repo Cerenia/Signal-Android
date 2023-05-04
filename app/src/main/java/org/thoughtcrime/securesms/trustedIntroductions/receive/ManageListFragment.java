@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
-public class ManageListFragment extends Fragment implements ContactFilterView.OnFilterChangedListener, DeleteIntroductionDialog.DeleteIntroduction, ForgetIntroducerDialog.ForgetIntroducer, ManageListItem.SwitchClickListener {
+public class ManageListFragment extends Fragment implements DeleteIntroductionDialog.DeleteIntroduction, ForgetIntroducerDialog.ForgetIntroducer, ManageListItem.SwitchClickListener {
 
   private static final String TAG = String.format(TI_Utils.TI_LOG_TAG, Log.tag(ManageListFragment.class));
 
@@ -47,11 +47,6 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
 
   static String FORGOTTEN_INTRODUCER;
 
-  public ManageListFragment(){
-    super(R.layout.ti_manage_fragment);
-    tab = ALL;
-  }
-
   public ManageListFragment(@NonNull ViewModelStoreOwner owner, @NonNull ManageActivity.ActiveTab type){
     this.tab = type;
     ManageViewModel.Factory factory = new ManageViewModel.Factory(FORGOTTEN_INTRODUCER);
@@ -65,16 +60,12 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
       throw new AssertionError("ManageFragment cannot be created without Args!");
     }
     FORGOTTEN_INTRODUCER = getString(R.string.ManageIntroductionsListItem__Forgotten_Introducer);
-    setViewModel(args, this);
     super.onCreate(b);
   }
 
   @Override
   public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState){
     super.onViewCreated(view, savedInstanceState);
-    if(viewModel == null){
-      setViewModel(getArguments(), this);
-    }
     if(!viewModel.introductionsLoaded()){
       viewModel.loadIntroductions();
     }
@@ -135,7 +126,7 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
     }
   }
 
-  @Override public void onFilterChanged(String filter) {
+  public void onFilterChanged(String filter) {
     if(adapter != null){
       viewModel.setQueryFilter(filter);
       adapter.submitList(getFiltered(viewModel.getIntroductions().getValue(), filter));

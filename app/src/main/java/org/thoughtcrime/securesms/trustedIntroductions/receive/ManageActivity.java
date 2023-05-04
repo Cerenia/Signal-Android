@@ -7,29 +7,33 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
-import androidx.fragment.app.FragmentTransaction;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.lifecycle.ViewModelStoreOwner;
+import androidx.viewpager2.adapter.FragmentStateAdapter;
+import androidx.viewpager2.widget.ViewPager2;
 
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.PassphraseRequiredActivity;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.components.ContactFilterView;
-import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
 import org.thoughtcrime.securesms.util.DynamicNoActionBarTheme;
 import org.thoughtcrime.securesms.util.DynamicTheme;
 
-import static org.thoughtcrime.securesms.trustedIntroductions.receive.ManageListFragment.TYPE_KEY;
+import java.util.ArrayList;
 
 /**
  * Opens an Activity for Managing Trusted Introductions.
  * Will either open just the Introductions made by a specific contact
  * or all Introductions depending on how you navigated to that screen.
  */
-public class ManageActivity extends PassphraseRequiredActivity implements ManageListFragment.onAllNavigationClicked {
+public class ManageActivity extends PassphraseRequiredActivity {
 
   private static final String TAG = String.format(TI_Utils.TI_LOG_TAG, Log.tag(ManageActivity.class));
 
-  private long introducerId;
+  private ActiveTab           activeTab;
+  private static final String ACTIVE_TAB = "initial_active";
 
   public enum ActiveTab {
     NEW,
@@ -73,37 +77,26 @@ public class ManageActivity extends PassphraseRequiredActivity implements Manage
 
   }
 
-  // String
-  public static final String INTRODUCER_ID                 = "recipient_id";
-  // Instead of passing the RecipientID of the introducer as a string.
-  public static final long ALL_INTRODUCTIONS = RecipientId.UNKNOWN.toLong();
-
   private Toolbar            toolbar;
   private ContactFilterView contactFilterView;
-
-
+  private ViewPager2        pager;
 
   private final DynamicTheme dynamicTheme = new DynamicNoActionBarTheme();
 
   /**
-   * @param id Pass unknown to get the view for all introductions.
+   * @param initialActive Which tab to focus initially.
    */
-  public static @NonNull Intent createIntent(@NonNull Context context, @NonNull RecipientId id){
+  public static @NonNull Intent createIntent(@NonNull Context context, @NonNull ActiveTab initialActive){
     Intent intent = new Intent(context, ManageActivity.class);
-    intent.putExtra(INTRODUCER_ID, id.toLong());
+    intent.putExtra(ACTIVE_TAB, initialActive.toString());
     return intent;
   }
 
 
   // TODO: You are probably overriding the wrong function... onCreate(Bundle savedInstanceState) is final..
   @Override protected void onCreate(Bundle savedInstanceState, boolean ready){
-    //Decide what kind of screen must be instantiated
-    RecipientId introducerId = setIntroducerId(savedInstanceState);
-    ActiveTab   t;
-    // TODO: Differentiation from savedInstanceState?
-    t = ActiveTab.ALL;
     super.onCreate(savedInstanceState, ready);
-
+    setActiveTab(savedInstanceState);
     dynamicTheme.onCreate(this);
     setContentView(R.layout.ti_manage_activity);
 
@@ -111,65 +104,29 @@ public class ManageActivity extends PassphraseRequiredActivity implements Manage
     toolbar = findViewById(R.id.toolbar);
     contactFilterView = findViewById(R.id.introduction_filter_edit_text);
 
-    // TODO: use ViewPager instead
-    // Initialize
-    ManageListFragment fragment;
-    if(savedInstanceState == null){
-      fragment = new ManageListFragment();
-      Bundle fragmentBundle = new Bundle();
-      fragmentBundle.putString(TYPE_KEY, t.toString());
-      fragment.setArguments(fragmentBundle);
-      FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-      fragmentTransaction.setReorderingAllowed(true);
-      fragmentTransaction.addToBackStack(t.toString());
-      fragmentTransaction.add(R.id.trusted_introduction_manage_fragment, fragment, t.toString());
-      fragmentTransaction.commit();
-    } else {
-      fragment = (ManageListFragment) getSupportFragmentManager().findFragmentByTag(t.toString());
-    }
+    // TODO: use ViewPager
+
     initializeToolbar();
 
-    // Observers
-    contactFilterView.setOnFilterChangedListener(fragment);
+    ManagePagerAdapter adapter = new ManagePagerAdapter(this, this);
+    pager = findViewById(R.id.pager);
+    pager.setAdapter(adapter);
     contactFilterView.setHint(R.string.ManageIntroductionsActivity__Filter_hint);
   }
 
   @Override public void onSaveInstanceState(@NonNull Bundle outState) {
-    outState.putLong(INTRODUCER_ID, introducerId);
+    outState.putString(ACTIVE_TAB, activeTab.toString());
     super.onSaveInstanceState(outState);
   }
 
-  @Override public void goToAll() {
-    // TODO: will no longer need to do this manually, remove
-    // New all Fragment
-    ActiveTab          t        = ActiveTab.ALL;
-    ManageListFragment fragment = new ManageListFragment();
-    Bundle fragmentBundle = new Bundle();
-    fragmentBundle.putString(TYPE_KEY, t.toString());
-    fragment.setArguments(fragmentBundle);
-    FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-    fragmentTransaction.setReorderingAllowed(true);
-    fragmentTransaction.addToBackStack(t.toString());
-    // TODO??
-    //fragmentTransaction.detach((ManageListFragment) getSupportFragmentManager().findFragmentByTag(ActiveTab.RECIPIENT_SPECIFIC.toString()));
-    fragmentTransaction.add(R.id.trusted_introduction_manage_fragment, fragment, t.toString());
-    fragmentTransaction.commit();
-    contactFilterView.setOnFilterChangedListener(fragment);
-    // clearing to avoid trailing text that does not filter
-    contactFilterView.clear();
-  }
-
   /**
-   * @param savedInstanceState bundle that may hold instance state.
-   * @return resolved introducerId
+   * Load active tab from bundle OR intent
+   * @param savedInstanceState bundle that MAY hold instance state.
    */
-  private RecipientId setIntroducerId(@Nullable Bundle savedInstanceState){
+  private void setActiveTab(@Nullable Bundle savedInstanceState){
     if(savedInstanceState == null){
-      introducerId = getIntent().getLongExtra(INTRODUCER_ID, ALL_INTRODUCTIONS);
-    } else{
-      introducerId = savedInstanceState.getLong(INTRODUCER_ID);
+      activeTab = ActiveTab.fromString(getIntent().getStringExtra(ACTIVE_TAB));
     }
-    return RecipientId.from(introducerId);
   }
 
   private void initializeToolbar() {
@@ -184,4 +141,33 @@ public class ManageActivity extends PassphraseRequiredActivity implements Manage
       finish();
     });
   }
+
+  private class ManagePagerAdapter extends FragmentStateAdapter implements ContactFilterView.OnFilterChangedListener {
+
+    private final ViewModelStoreOwner           owner;
+    private       ArrayList<ManageListFragment> listeners = new ArrayList<>();
+
+    public ManagePagerAdapter(@NonNull FragmentActivity fragmentActivity, ViewModelStoreOwner owner) {
+      super(fragmentActivity);
+      this.owner = owner;
+      // Observe
+      contactFilterView.setOnFilterChangedListener(this);
+    }
+
+    @NonNull @Override public Fragment createFragment(int position) {
+      ManageListFragment f = new ManageListFragment(owner, ActiveTab.fromInt(position));
+      return f;
+    }
+
+    @Override public int getItemCount() {
+      return 3;
+    }
+
+    @Override public void onFilterChanged(String filter) {
+      for (ManageListFragment f: listeners) {
+        f.onFilterChanged(filter);
+      }
+    }
+  }
 }
+

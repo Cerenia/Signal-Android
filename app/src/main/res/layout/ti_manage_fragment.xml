@@ -140,6 +140,7 @@
         android:id="@+id/filter_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@id/recycler_view">
 
@@ -162,24 +163,22 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="toggleButton"
         tools:text="Show:"/>
 
         <com.google.android.material.button.MaterialButtonToggleGroup
             android:id="@+id/toggleButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:orientation="horizontal"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toEndOf="show">
+            app:layout_constraintEnd_toEndOf="parent">
             <Button
                 style="?attr/materialButtonOutlinedStyle"
                 android:id="@+id/staleFilter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/ManageIntroductionsFragment__Stale"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toStartOf="conflictingFilter"
                 />
             <Button
                 style="?attr/materialButtonOutlinedStyle"
@@ -187,8 +186,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/ManageIntroductionsFragment__Stale"
-                app:layout_constraintStart_toStartOf="@id/staleFilter"
-                app:layout_constraintEnd_toStartOf="@id/acceptedFilter"
                 />
             <Button
                 style="?attr/materialButtonOutlinedStyle"
@@ -196,8 +193,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/ManageIntroductionsFragment__Stale"
-                app:layout_constraintStart_toStartOf="@id/conflictingFilter"
-                app:layout_constraintEnd_toEndOf="@id/rejectedFilter"
                 />
             <Button
                 style="?attr/materialButtonOutlinedStyle"
@@ -205,8 +200,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/ManageIntroductionsFragment__Stale"
-                app:layout_constraintStart_toStartOf="@id/acceptedFilter"
-                app:layout_constraintEnd_toEndOf="parent"
                 />
         </com.google.android.material.button.MaterialButtonToggleGroup>
 
