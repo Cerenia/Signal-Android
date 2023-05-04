@@ -31,7 +31,7 @@ public class ManageViewModel extends ViewModel {
   @NonNull      String                                                      forgottenPlaceholder;
   private boolean      introductionsLoaded;
 
-  ManageViewModel(ManageManager manager, @Nullable String introducerName, @NonNull String forgottenPlaceholder){
+  ManageViewModel(ManageManager manager, @NonNull String forgottenPlaceholder){
     this.manager = manager;
     filter = new MutableLiveData<>("");
     introductions = new MutableLiveData<>();
@@ -194,18 +194,16 @@ public class ManageViewModel extends ViewModel {
   static class Factory implements ViewModelProvider.Factory {
 
     private final ManageManager            manager;
-    private final String                   introducer;
     private final String forgottenPlaceholder;
 
-    Factory(@Nullable String introducerName, @NonNull String forgottenPlaceholder) {
+    Factory(@NonNull String forgottenPlaceholder) {
       this.manager = new ManageManager(SignalDatabase.trustedIntroductions(), forgottenPlaceholder);
-      introducer = introducerName;
       this.forgottenPlaceholder = forgottenPlaceholder;
     }
 
     @Override
     public @NonNull <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
-      return Objects.requireNonNull(modelClass.cast(new ManageViewModel(manager, introducer, forgottenPlaceholder)));
+      return Objects.requireNonNull(modelClass.cast(new ManageViewModel(manager, forgottenPlaceholder)));
     }
   }
 

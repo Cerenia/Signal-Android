@@ -50,17 +50,19 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
 
   static String FORGOTTEN_INTRODUCER;
 
-  // TODO: Because onCreate in AppCompatActivity is final, we must use a default constructor without args..
   public ManageListFragment(){
     super(R.layout.ti_manage_fragment);
   }
 
+  public ManageListFragment(@NonNull ViewModelStoreOwner owner){
+    ManageViewModel.Factory factory = new ManageViewModel.Factory(FORGOTTEN_INTRODUCER);
+    viewModel = new ViewModelProvider(owner, factory).get(ManageViewModel.class);
+  }
+
   private void setViewModel(@NonNull Bundle args, @NonNull ViewModelStoreOwner owner){
     long l = args.getLong(ID_KEY);
-    RecipientId              recipient = RecipientId.from(l);
-    ManageActivity.ActiveTab type      = fromString(args.getString(TYPE_KEY));
     String                   name      = args.getString(NAME_KEY);
-    ManageViewModel.Factory factory = new ManageViewModel.Factory(name, FORGOTTEN_INTRODUCER);
+    ManageViewModel.Factory factory = new ManageViewModel.Factory(FORGOTTEN_INTRODUCER);
     viewModel = new ViewModelProvider(owner, factory).get(ManageViewModel.class);
   }
 
