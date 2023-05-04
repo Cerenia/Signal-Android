@@ -20,6 +20,8 @@ import org.whispersystems.signalservice.internal.util.Util;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Optional;
 
 public class DeviceContactsInputStream extends ChunkedInputStream {
@@ -55,6 +57,7 @@ public class DeviceContactsInputStream extends ChunkedInputStream {
     Optional<Integer>                       expireTimer   = Optional.empty();
     Optional<Integer>                       inboxPosition = Optional.empty();
     boolean                                 archived      = false;
+    Optional<List<IntroducedMessage>>       introductions = Optional.empty();
 
     if (details.hasAvatar()) {
       long        avatarLength      = details.getAvatar().getLength();
@@ -110,7 +113,23 @@ public class DeviceContactsInputStream extends ChunkedInputStream {
     blocked  = details.getBlocked();
     archived = details.getArchived();
 
-    return new DeviceContact(address, name, avatar, color, verified, profileKey, blocked, expireTimer, inboxPosition, archived);
+    // todo: introduction
+    List<IntroducedMessage> introducedMessages = new LinkedList<>();
+    for(SignalServiceProtos.Introduced intro : details.getIntroductionsList()){
+      introducedMessages.add(new IntroducedMessage(
+          intro.getIntroductionId(),
+          intro.getIntroducerServiceId(),
+          intro.getServiceId(),
+          intro.getIdentityKey(),
+          intro.getName(),
+          intro.getNumber(),
+          intro.getPredictedFingerprint(),
+          intro.getState().getNumber(),
+          intro.getTimestamp()
+      ));
+    }
+    introductions = Optional.of(introducedMessages);
+    return new DeviceContact(address, name, avatar, color, verified, profileKey, blocked, expireTimer, inboxPosition, archived, introductions);
   }
 
 }

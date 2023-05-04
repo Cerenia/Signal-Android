@@ -9,7 +9,9 @@ package org.whispersystems.signalservice.api.messages.multidevice;
 import org.signal.libsignal.zkgroup.profiles.ProfileKey;
 import org.whispersystems.signalservice.api.messages.SignalServiceAttachmentStream;
 import org.whispersystems.signalservice.api.push.SignalServiceAddress;
+import org.whispersystems.signalservice.internal.push.SignalServiceProtos;
 
+import java.util.List;
 import java.util.Optional;
 
 public class DeviceContact {
@@ -24,6 +26,7 @@ public class DeviceContact {
   private final Optional<Integer>                       expirationTimer;
   private final Optional<Integer>                       inboxPosition;
   private final boolean                                 archived;
+  private final Optional<List<IntroducedMessage>>       introductions;
 
   public DeviceContact(SignalServiceAddress address,
                        Optional<String> name,
@@ -34,7 +37,8 @@ public class DeviceContact {
                        boolean blocked,
                        Optional<Integer> expirationTimer,
                        Optional<Integer> inboxPosition,
-                       boolean archived)
+                       boolean archived,
+                       Optional<List<IntroducedMessage>> introductions)
   {
     this.address         = address;
     this.name            = name;
@@ -46,6 +50,7 @@ public class DeviceContact {
     this.expirationTimer = expirationTimer;
     this.inboxPosition   = inboxPosition;
     this.archived        = archived;
+    this.introductions   = introductions;
   }
 
   public Optional<SignalServiceAttachmentStream> getAvatar() {
@@ -86,5 +91,9 @@ public class DeviceContact {
 
   public boolean isArchived() {
     return archived;
+  }
+
+  public Optional<List<IntroducedMessage>> getIntroductions() {
+    return introductions;
   }
 }

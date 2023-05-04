@@ -136,6 +136,9 @@ class MultiDeviceContactSyncJob(parameters: Parameters, private val attachmentPo
         }
       }
 
+      if (contact.introductions.isPresent){
+        TODO("handle introductions syncing")
+      }
       contact = deviceContacts.read()
     }
   }

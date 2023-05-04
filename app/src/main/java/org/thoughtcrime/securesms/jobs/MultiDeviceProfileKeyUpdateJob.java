@@ -86,7 +86,10 @@ public class MultiDeviceProfileKeyUpdateJob extends BaseJob {
                                 false,
                                 Optional.empty(),
                                 Optional.empty(),
-                                false));
+                                false,
+                                // todo: handle introductions
+                                Optional.empty())
+    );
 
     out.close();
 

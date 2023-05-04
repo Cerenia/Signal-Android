@@ -37,7 +37,8 @@ public class DeviceContactsInputStreamTest {
         false,
         Optional.of(0),
         Optional.of(0),
-        false
+        false,
+        Optional.empty()
     );
 
     DeviceContact second = new DeviceContact(
@@ -50,7 +51,8 @@ public class DeviceContactsInputStreamTest {
         false,
         Optional.of(0),
         Optional.of(0),
-        false
+        false,
+        Optional.empty()
     );
 
     output.write(first);

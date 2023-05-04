@@ -48,6 +48,9 @@ public class RequestMessage {
     return request.getType() == Request.Type.PNI_IDENTITY;
   }
 
+  public boolean isIntroductionRequest() {
+    return request.getType() == Request.Type.INTRODUCTION;
+  }
   public boolean isUrgent() {
     return isContactsRequest() || isKeysRequest() || isPniIdentityRequest();
   }

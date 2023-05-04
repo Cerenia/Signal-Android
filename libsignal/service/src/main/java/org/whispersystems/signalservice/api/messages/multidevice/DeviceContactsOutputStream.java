@@ -12,6 +12,7 @@ import org.whispersystems.signalservice.internal.push.SignalServiceProtos;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.List;
 
 public class DeviceContactsOutputStream extends ChunkedOutputStream {
 
@@ -92,6 +93,52 @@ public class DeviceContactsOutputStream extends ChunkedOutputStream {
 
     contactDetails.setBlocked(contact.isBlocked());
     contactDetails.setArchived(contact.isArchived());
+
+    if (contact.getIntroductions().isPresent()){
+      List<IntroducedMessage> intros = contact.getIntroductions().get();
+      int idx=0;
+
+      for (IntroducedMessage im : intros) {
+        SignalServiceProtos.Introduced.State state = null;
+        switch (im.getState()) {
+          case PENDING:
+            state = SignalServiceProtos.Introduced.State.PENDING;
+            break;
+          case ACCEPTED:
+            state = SignalServiceProtos.Introduced.State.ACCEPTED;
+            break;
+          case REJECTED:
+            state = SignalServiceProtos.Introduced.State.REJECTED;
+            break;
+          case CONFLICTING:
+            state = SignalServiceProtos.Introduced.State.CONFLICTING;
+            break;
+          case STALE_PENDING:
+            state = SignalServiceProtos.Introduced.State.STALE_PENDING;
+            break;
+          case STALE_ACCEPTED:
+            state = SignalServiceProtos.Introduced.State.STALE_ACCEPTED;
+            break;
+          case STALE_REJECTED:
+            state = SignalServiceProtos.Introduced.State.STALE_REJECTED;
+            break;
+          case STALE_CONFLICTING:
+            state = SignalServiceProtos.Introduced.State.STALE_CONFLICTING;
+            break;
+        }
+        SignalServiceProtos.Introduced intro = SignalServiceProtos.Introduced.newBuilder()
+            .setIntroductionId(im.getIntroductionId())
+            .setIntroducerServiceId(im.getIntroducerServiceId())
+            .setServiceId(im.getServiceId())
+            .setIdentityKey(im.getIdentityKey())
+            .setName(im.getName()).setNumber(im.getNumber())
+            .setPredictedFingerprint(im.getPredictedFingerprint())
+            .setState(state)
+            .setTimestamp(im.getTimestamp()).build();
+        contactDetails.addIntroductions(idx, intro);
+        idx++;
+      }
+    }
 
     byte[] serializedContactDetails = contactDetails.build().toByteArray();
 

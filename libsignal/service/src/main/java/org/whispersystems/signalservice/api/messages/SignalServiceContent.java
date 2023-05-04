@@ -33,6 +33,7 @@ import org.whispersystems.signalservice.api.messages.calls.SignalServiceCallMess
 import org.whispersystems.signalservice.api.messages.multidevice.BlockedListMessage;
 import org.whispersystems.signalservice.api.messages.multidevice.ConfigurationMessage;
 import org.whispersystems.signalservice.api.messages.multidevice.ContactsMessage;
+import org.whispersystems.signalservice.api.messages.multidevice.IntroducedMessage;
 import org.whispersystems.signalservice.api.messages.multidevice.KeysMessage;
 import org.whispersystems.signalservice.api.messages.multidevice.MessageRequestResponseMessage;
 import org.whispersystems.signalservice.api.messages.multidevice.OutgoingPaymentMessage;
@@ -755,19 +756,19 @@ import javax.annotation.Nullable;
       throws ProtocolInvalidKeyException, UnsupportedDataMessageException, InvalidMessageStructureException
   {
     if (content.hasSent()) {
-      Map<ServiceId, Boolean>                 unidentifiedStatuses = new HashMap<>();
-      SignalServiceProtos.SyncMessage.Sent    sentContent          = content.getSent();
-      Optional<SignalServiceDataMessage>      dataMessage          = sentContent.hasMessage() ? Optional.of(createSignalServiceMessage(metadata, sentContent.getMessage())) : Optional.empty();
-      Optional<SignalServiceStoryMessage>     storyMessage         = sentContent.hasStoryMessage() ? Optional.of(createStoryMessage(sentContent.getStoryMessage())) : Optional.empty();
-      Optional<SignalServiceAddress>          address              = SignalServiceAddress.isValidAddress(sentContent.getDestinationUuid())
-                                                                     ? Optional.of(new SignalServiceAddress(ServiceId.parseOrThrow(sentContent.getDestinationUuid()), sentContent.getDestinationE164()))
-                                                                     : Optional.empty();
-      Set<SignalServiceStoryMessageRecipient> recipientManifest    = sentContent.getStoryMessageRecipientsList()
-                                                                                .stream()
-                                                                                .map(SignalServiceContent::createSignalServiceStoryMessageRecipient)
-                                                                                .collect(Collectors.toSet());
+      Map<ServiceId, Boolean>              unidentifiedStatuses = new HashMap<>();
+      SignalServiceProtos.SyncMessage.Sent sentContent          = content.getSent();
+      Optional<SignalServiceDataMessage>   dataMessage          = sentContent.hasMessage() ? Optional.of(createSignalServiceMessage(metadata, sentContent.getMessage())) : Optional.empty();
+      Optional<SignalServiceStoryMessage>  storyMessage         = sentContent.hasStoryMessage() ? Optional.of(createStoryMessage(sentContent.getStoryMessage())) : Optional.empty();
+      Optional<SignalServiceAddress> address = SignalServiceAddress.isValidAddress(sentContent.getDestinationUuid())
+                                               ? Optional.of(new SignalServiceAddress(ServiceId.parseOrThrow(sentContent.getDestinationUuid()), sentContent.getDestinationE164()))
+                                               : Optional.empty();
+      Set<SignalServiceStoryMessageRecipient> recipientManifest = sentContent.getStoryMessageRecipientsList()
+                                                                             .stream()
+                                                                             .map(SignalServiceContent::createSignalServiceStoryMessageRecipient)
+                                                                             .collect(Collectors.toSet());
 
-      if (!address.isPresent()                                                        &&
+      if (!address.isPresent() &&
           !dataMessage.flatMap(SignalServiceDataMessage::getGroupContext).isPresent() &&
           !storyMessage.flatMap(SignalServiceStoryMessage::getGroupContext).isPresent() &&
           recipientManifest.isEmpty())
@@ -873,6 +874,22 @@ import javax.annotation.Nullable;
       }
     }
 
+    if (content.getIntroducedCount() > 0) {
+      List<IntroducedMessage> introductions = new LinkedList<>();
+      for (SignalServiceProtos.Introduced intro : content.getIntroducedList()) {
+        introductions.add(new IntroducedMessage(intro.getIntroductionId(),
+                                                intro.getIntroducerServiceId(),
+                                                intro.getServiceId(),
+                                                intro.getIdentityKey(),
+                                                intro.getName(),
+                                                intro.getNumber(),
+                                                intro.getPredictedFingerprint(),
+                                                intro.getState().getNumber(),
+                                                intro.getTimestamp()));
+      }
+      return SignalServiceSyncMessage.forIntroduced(introductions);
+    }
+
     if (content.getStickerPackOperationList().size() > 0) {
       List<StickerPackOperationMessage> operations = new LinkedList<>();
 
@@ -883,8 +900,10 @@ import javax.annotation.Nullable;
 
         if (operation.hasType()) {
           switch (operation.getType()) {
-            case INSTALL: type = StickerPackOperationMessage.Type.INSTALL; break;
-            case REMOVE:  type = StickerPackOperationMessage.Type.REMOVE; break;
+            case INSTALL:
+              type = StickerPackOperationMessage.Type.INSTALL; break;
+            case REMOVE:
+              type = StickerPackOperationMessage.Type.REMOVE; break;
           }
         }
         operations.add(new StickerPackOperationMessage(packId, packKey, type));
@@ -927,9 +946,12 @@ import javax.annotation.Nullable;
 
     if (content.hasFetchLatest() && content.getFetchLatest().hasType()) {
       switch (content.getFetchLatest().getType()) {
-        case LOCAL_PROFILE:       return SignalServiceSyncMessage.forFetchLatest(SignalServiceSyncMessage.FetchType.LOCAL_PROFILE);
-        case STORAGE_MANIFEST:    return SignalServiceSyncMessage.forFetchLatest(SignalServiceSyncMessage.FetchType.STORAGE_MANIFEST);
-        case SUBSCRIPTION_STATUS: return SignalServiceSyncMessage.forFetchLatest(SignalServiceSyncMessage.FetchType.SUBSCRIPTION_STATUS);
+        case LOCAL_PROFILE:
+          return SignalServiceSyncMessage.forFetchLatest(SignalServiceSyncMessage.FetchType.LOCAL_PROFILE);
+        case STORAGE_MANIFEST:
+          return SignalServiceSyncMessage.forFetchLatest(SignalServiceSyncMessage.FetchType.STORAGE_MANIFEST);
+        case SUBSCRIPTION_STATUS:
+          return SignalServiceSyncMessage.forFetchLatest(SignalServiceSyncMessage.FetchType.SUBSCRIPTION_STATUS);
       }
     }
 
@@ -950,8 +972,8 @@ import javax.annotation.Nullable;
           type = MessageRequestResponseMessage.Type.BLOCK_AND_DELETE;
           break;
         default:
-         type = MessageRequestResponseMessage.Type.UNKNOWN;
-         break;
+          type = MessageRequestResponseMessage.Type.UNKNOWN;
+          break;
       }
 
       MessageRequestResponseMessage responseMessage;
@@ -1027,10 +1049,12 @@ import javax.annotation.Nullable;
 
     if (content.hasOffer()) {
       SignalServiceProtos.CallMessage.Offer offerContent = content.getOffer();
-      return SignalServiceCallMessage.forOffer(new OfferMessage(offerContent.getId(), offerContent.hasSdp() ? offerContent.getSdp() : null, OfferMessage.Type.fromProto(offerContent.getType()), offerContent.hasOpaque() ? offerContent.getOpaque().toByteArray() : null), isMultiRing, destinationDeviceId);
+      return SignalServiceCallMessage.forOffer(new OfferMessage(offerContent.getId(), offerContent.hasSdp() ? offerContent.getSdp() : null, OfferMessage.Type.fromProto(offerContent.getType()), offerContent.hasOpaque() ? offerContent
+          .getOpaque().toByteArray() : null), isMultiRing, destinationDeviceId);
     } else if (content.hasAnswer()) {
       SignalServiceProtos.CallMessage.Answer answerContent = content.getAnswer();
-      return SignalServiceCallMessage.forAnswer(new AnswerMessage(answerContent.getId(), answerContent.hasSdp() ? answerContent.getSdp() : null, answerContent.hasOpaque() ? answerContent.getOpaque().toByteArray() : null), isMultiRing, destinationDeviceId);
+      return SignalServiceCallMessage.forAnswer(new AnswerMessage(answerContent.getId(), answerContent.hasSdp() ? answerContent.getSdp() : null, answerContent.hasOpaque() ? answerContent.getOpaque()
+                                                                                                                                                                                          .toByteArray() : null), isMultiRing, destinationDeviceId);
     } else if (content.getIceUpdateCount() > 0) {
       List<IceUpdateMessage> iceUpdates = new LinkedList<>();
 
@@ -1059,10 +1083,10 @@ import javax.annotation.Nullable;
   private static SignalServiceReceiptMessage createReceiptMessage(SignalServiceMetadata metadata, SignalServiceProtos.ReceiptMessage content) {
     SignalServiceReceiptMessage.Type type;
 
-    if      (content.getType() == SignalServiceProtos.ReceiptMessage.Type.DELIVERY) type = SignalServiceReceiptMessage.Type.DELIVERY;
-    else if (content.getType() == SignalServiceProtos.ReceiptMessage.Type.READ)     type = SignalServiceReceiptMessage.Type.READ;
-    else if (content.getType() == SignalServiceProtos.ReceiptMessage.Type.VIEWED)   type = SignalServiceReceiptMessage.Type.VIEWED;
-    else                                                        type = SignalServiceReceiptMessage.Type.UNKNOWN;
+    if (content.getType() == SignalServiceProtos.ReceiptMessage.Type.DELIVERY) type = SignalServiceReceiptMessage.Type.DELIVERY;
+    else if (content.getType() == SignalServiceProtos.ReceiptMessage.Type.READ) type = SignalServiceReceiptMessage.Type.READ;
+    else if (content.getType() == SignalServiceProtos.ReceiptMessage.Type.VIEWED) type = SignalServiceReceiptMessage.Type.VIEWED;
+    else type = SignalServiceReceiptMessage.Type.UNKNOWN;
 
     return new SignalServiceReceiptMessage(type, content.getTimestampList(), metadata.getTimestamp());
   }
@@ -1078,9 +1102,9 @@ import javax.annotation.Nullable;
   private static SignalServiceTypingMessage createTypingMessage(SignalServiceMetadata metadata, SignalServiceProtos.TypingMessage content) throws InvalidMessageStructureException {
     SignalServiceTypingMessage.Action action;
 
-    if      (content.getAction() == SignalServiceProtos.TypingMessage.Action.STARTED) action = SignalServiceTypingMessage.Action.STARTED;
+    if (content.getAction() == SignalServiceProtos.TypingMessage.Action.STARTED) action = SignalServiceTypingMessage.Action.STARTED;
     else if (content.getAction() == SignalServiceProtos.TypingMessage.Action.STOPPED) action = SignalServiceTypingMessage.Action.STOPPED;
-    else                                                          action = SignalServiceTypingMessage.Action.UNKNOWN;
+    else action = SignalServiceTypingMessage.Action.UNKNOWN;
 
     if (content.hasTimestamp() && content.getTimestamp() != metadata.getTimestamp()) {
       throw new InvalidMessageStructureException("Timestamps don't match: " + content.getTimestamp() + " vs " + metadata.getTimestamp(),
@@ -1090,7 +1114,7 @@ import javax.annotation.Nullable;
 
     return new SignalServiceTypingMessage(action, content.getTimestamp(),
                                           content.hasGroupId() ? Optional.of(content.getGroupId().toByteArray()) :
-                                                                 Optional.empty());
+                                          Optional.empty());
   }
 
   private static SignalServiceStoryMessage createStoryMessage(SignalServiceProtos.StoryMessage content) throws InvalidMessageStructureException {
@@ -1112,7 +1136,7 @@ import javax.annotation.Nullable;
   }
 
   private static @Nullable SignalServiceDataMessage.Quote createQuote(SignalServiceProtos.DataMessage content, boolean isGroupV2)
-      throws  InvalidMessageStructureException
+      throws InvalidMessageStructureException
   {
     if (!content.hasQuote()) return null;
 
@@ -1208,9 +1232,9 @@ import javax.annotation.Nullable;
   }
 
   private static @Nullable SignalServiceDataMessage.Sticker createSticker(SignalServiceProtos.DataMessage content) throws InvalidMessageStructureException {
-    if (!content.hasSticker()                ||
-        !content.getSticker().hasPackId()    ||
-        !content.getSticker().hasPackKey()   ||
+    if (!content.hasSticker() ||
+        !content.getSticker().hasPackId() ||
+        !content.getSticker().hasPackKey() ||
         !content.getSticker().hasStickerId() ||
         !content.getSticker().hasData())
     {
@@ -1227,9 +1251,9 @@ import javax.annotation.Nullable;
   }
 
   private static @Nullable SignalServiceDataMessage.Reaction createReaction(SignalServiceProtos.DataMessage content) {
-    if (!content.hasReaction()                           ||
-        !content.getReaction().hasEmoji()                ||
-        !content.getReaction().hasTargetAuthorUuid()     ||
+    if (!content.hasReaction() ||
+        !content.getReaction().hasEmoji() ||
+        !content.getReaction().hasTargetAuthorUuid() ||
         !content.getReaction().hasTargetSentTimestamp())
     {
       return null;
@@ -1366,9 +1390,12 @@ import javax.annotation.Nullable;
           SharedContact.PostalAddress.Type type = SharedContact.PostalAddress.Type.HOME;
 
           switch (address.getType()) {
-            case WORK:   type = SharedContact.PostalAddress.Type.WORK;   break;
-            case HOME:   type = SharedContact.PostalAddress.Type.HOME;   break;
-            case CUSTOM: type = SharedContact.PostalAddress.Type.CUSTOM; break;
+            case WORK:
+              type = SharedContact.PostalAddress.Type.WORK; break;
+            case HOME:
+              type = SharedContact.PostalAddress.Type.HOME; break;
+            case CUSTOM:
+              type = SharedContact.PostalAddress.Type.CUSTOM; break;
           }
 
           builder.withAddress(SharedContact.PostalAddress.newBuilder()
@@ -1390,10 +1417,14 @@ import javax.annotation.Nullable;
           SharedContact.Phone.Type type = SharedContact.Phone.Type.HOME;
 
           switch (phone.getType()) {
-            case HOME:   type = SharedContact.Phone.Type.HOME;   break;
-            case WORK:   type = SharedContact.Phone.Type.WORK;   break;
-            case MOBILE: type = SharedContact.Phone.Type.MOBILE; break;
-            case CUSTOM: type = SharedContact.Phone.Type.CUSTOM; break;
+            case HOME:
+              type = SharedContact.Phone.Type.HOME; break;
+            case WORK:
+              type = SharedContact.Phone.Type.WORK; break;
+            case MOBILE:
+              type = SharedContact.Phone.Type.MOBILE; break;
+            case CUSTOM:
+              type = SharedContact.Phone.Type.CUSTOM; break;
           }
 
           builder.withPhone(SharedContact.Phone.newBuilder()
@@ -1409,10 +1440,14 @@ import javax.annotation.Nullable;
           SharedContact.Email.Type type = SharedContact.Email.Type.HOME;
 
           switch (email.getType()) {
-            case HOME:   type = SharedContact.Email.Type.HOME;   break;
-            case WORK:   type = SharedContact.Email.Type.WORK;   break;
-            case MOBILE: type = SharedContact.Email.Type.MOBILE; break;
-            case CUSTOM: type = SharedContact.Email.Type.CUSTOM; break;
+            case HOME:
+              type = SharedContact.Email.Type.HOME; break;
+            case WORK:
+              type = SharedContact.Email.Type.WORK; break;
+            case MOBILE:
+              type = SharedContact.Email.Type.MOBILE; break;
+            case CUSTOM:
+              type = SharedContact.Email.Type.CUSTOM; break;
           }
 
           builder.withEmail(SharedContact.Email.newBuilder()
@@ -1477,20 +1512,20 @@ import javax.annotation.Nullable;
     if (attachment.hasGradient()) {
       SignalServiceProtos.TextAttachment.Gradient attachmentGradient = attachment.getGradient();
 
-      Integer                              startColor         = attachmentGradient.hasStartColor() ? attachmentGradient.getStartColor() : null;
-      Integer                              endColor           = attachmentGradient.hasEndColor() ? attachmentGradient.getEndColor() : null;
-      Integer                              angle              = attachmentGradient.hasAngle() ? attachmentGradient.getAngle() : null;
-      List<Integer>                        colors;
-      List<Float>                          positions;
+      Integer       startColor = attachmentGradient.hasStartColor() ? attachmentGradient.getStartColor() : null;
+      Integer       endColor   = attachmentGradient.hasEndColor() ? attachmentGradient.getEndColor() : null;
+      Integer       angle      = attachmentGradient.hasAngle() ? attachmentGradient.getAngle() : null;
+      List<Integer> colors;
+      List<Float>   positions;
 
       if (attachmentGradient.getColorsCount() > 0 && attachmentGradient.getColorsCount() == attachmentGradient.getPositionsCount()) {
-        colors = new ArrayList<>(attachmentGradient.getColorsList());
+        colors    = new ArrayList<>(attachmentGradient.getColorsList());
         positions = new ArrayList<>(attachmentGradient.getPositionsList());
       } else if (startColor != null && endColor != null) {
-        colors = Arrays.asList(startColor, endColor);
+        colors    = Arrays.asList(startColor, endColor);
         positions = Arrays.asList(0f, 1f);
       } else {
-        colors = Collections.emptyList();
+        colors    = Collections.emptyList();
         positions = Collections.emptyList();
       }
 

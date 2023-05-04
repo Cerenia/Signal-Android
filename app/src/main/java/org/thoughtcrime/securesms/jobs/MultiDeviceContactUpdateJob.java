@@ -19,6 +19,7 @@ import org.thoughtcrime.securesms.crypto.UnidentifiedAccessUtil;
 import org.thoughtcrime.securesms.database.IdentityTable;
 import org.thoughtcrime.securesms.database.RecipientTable;
 import org.thoughtcrime.securesms.database.SignalDatabase;
+import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
 import org.thoughtcrime.securesms.database.model.IdentityRecord;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.jobmanager.JsonJobData;
@@ -31,6 +32,7 @@ import org.thoughtcrime.securesms.providers.BlobProvider;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.recipients.RecipientUtil;
+import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.util.TextSecurePreferences;
 import org.whispersystems.signalservice.api.SignalServiceMessageSender;
 import org.whispersystems.signalservice.api.crypto.UntrustedIdentityException;
@@ -39,6 +41,7 @@ import org.whispersystems.signalservice.api.messages.SignalServiceAttachmentStre
 import org.whispersystems.signalservice.api.messages.multidevice.ContactsMessage;
 import org.whispersystems.signalservice.api.messages.multidevice.DeviceContact;
 import org.whispersystems.signalservice.api.messages.multidevice.DeviceContactsOutputStream;
+import org.whispersystems.signalservice.api.messages.multidevice.IntroducedMessage;
 import org.whispersystems.signalservice.api.messages.multidevice.SignalServiceSyncMessage;
 import org.whispersystems.signalservice.api.messages.multidevice.VerifiedMessage;
 import org.whispersystems.signalservice.api.push.SignalServiceAddress;
@@ -50,6 +53,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -154,6 +159,19 @@ public class MultiDeviceContactUpdateJob extends BaseJob {
       Map<RecipientId, Integer> inboxPositions  = SignalDatabase.threads().getInboxPositions();
       Set<RecipientId>          archived        = SignalDatabase.threads().getArchivedRecipients();
 
+      TrustedIntroductionsDatabase tdb = SignalDatabase.trustedIntroductions();
+      TrustedIntroductionsDatabase.IntroductionReader reader = tdb.getIntroductions(recipient.getServiceId().get().toString());
+      List<IntroducedMessage> introductions = new LinkedList<>();
+      while(reader.hasNext()){
+        TI_Data data = reader.getNext();
+        IntroducedMessage intro = new IntroducedMessage(
+            data.getId(),data.getIntroducerServiceId(), data.getIntroduceeServiceId(), data.getIntroduceeIdentityKey(),data.getIntroduceeName(),data.getIntroduceeNumber(),
+            data.getPredictedSecurityNumber(), data.getState().toInt(), data.getTimestamp()
+        );
+
+        introductions.add(intro);
+      }
+
       out.write(new DeviceContact(RecipientUtil.toSignalServiceAddress(context, recipient),
                                   Optional.ofNullable(recipient.isGroup() || recipient.isSystemContact() ? recipient.getDisplayName(context) : null),
                                   getSystemAvatar(recipient.getContactUri()),
@@ -164,7 +182,9 @@ public class MultiDeviceContactUpdateJob extends BaseJob {
                                   recipient.getExpiresInSeconds() > 0 ? Optional.of(recipient.getExpiresInSeconds())
                                                                       : Optional.empty(),
                                   Optional.ofNullable(inboxPositions.get(recipientId)),
-                                  archived.contains(recipientId)));
+                                  archived.contains(recipientId),
+                                  Optional.of(introductions) //todo: fixme
+                                  ));
 
       out.close();
 
@@ -216,6 +236,19 @@ public class MultiDeviceContactUpdateJob extends BaseJob {
         Optional<Integer>         expireTimer   = recipient.getExpiresInSeconds() > 0 ? Optional.of(recipient.getExpiresInSeconds()) : Optional.empty();
         Optional<Integer>         inboxPosition = Optional.ofNullable(inboxPositions.get(recipient.getId()));
 
+        TrustedIntroductionsDatabase tdb = SignalDatabase.trustedIntroductions();
+        TrustedIntroductionsDatabase.IntroductionReader reader = tdb.getIntroductions(recipient.getServiceId().get().toString());
+        List<IntroducedMessage> introductions = new LinkedList<>();
+        while(reader.hasNext()){
+          TI_Data data = reader.getNext();
+          IntroducedMessage intro = new IntroducedMessage(
+              data.getId(),data.getIntroducerServiceId(), data.getIntroduceeServiceId(), data.getIntroduceeIdentityKey(),data.getIntroduceeName(),data.getIntroduceeNumber(),
+              data.getPredictedSecurityNumber(), data.getState().toInt(), data.getTimestamp()
+          );
+
+          introductions.add(intro);
+        }
+
         out.write(new DeviceContact(RecipientUtil.toSignalServiceAddress(context, recipient),
                                     name,
                                     getSystemAvatar(recipient.getContactUri()),
@@ -225,7 +258,9 @@ public class MultiDeviceContactUpdateJob extends BaseJob {
                                     blocked,
                                     expireTimer,
                                     inboxPosition,
-                                    archived.contains(recipient.getId())));
+                                    archived.contains(recipient.getId()),
+                                    Optional.of(introductions) // todo - get introductions
+        ));
       }
 
 
@@ -242,7 +277,9 @@ public class MultiDeviceContactUpdateJob extends BaseJob {
                                     false,
                                     self.getExpiresInSeconds() > 0 ? Optional.of(self.getExpiresInSeconds()) : Optional.empty(),
                                     Optional.ofNullable(inboxPositions.get(self.getId())),
-                                    archived.contains(self.getId())));
+                                    archived.contains(self.getId()),
+                                    Optional.empty() // todo: introductions
+        ));
       }
 
       out.close();
