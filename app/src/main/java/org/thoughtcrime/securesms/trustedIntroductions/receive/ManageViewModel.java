@@ -28,17 +28,13 @@ public class ManageViewModel extends ViewModel {
   private final ManageManager             manager;
   private final MutableLiveData<String>   filter;
   private final MutableLiveData<List<Pair<TI_Data, IntroducerInformation>>> introductions;
-  private final ManageActivity.ActiveTab                                    type;
   @NonNull      String                                                      forgottenPlaceholder;
-  private final String introducerName;
   private boolean      introductionsLoaded;
 
-  ManageViewModel(ManageManager manager, ManageActivity.ActiveTab t, @Nullable String introducerName, @NonNull String forgottenPlaceholder){
+  ManageViewModel(ManageManager manager, @Nullable String introducerName, @NonNull String forgottenPlaceholder){
     this.manager = manager;
     filter = new MutableLiveData<>("");
     introductions = new MutableLiveData<>();
-    type                = t;
-    this.introducerName = introducerName;
     introductionsLoaded = false;
     this.forgottenPlaceholder = forgottenPlaceholder;
   }
@@ -50,14 +46,6 @@ public class ManageViewModel extends ViewModel {
 
   public boolean introductionsLoaded(){
     return introductionsLoaded;
-  }
-
-  public @Nullable String getIntroducerName(){
-    return introducerName;
-  }
-
-  public @NonNull ManageActivity.ActiveTab getScreenType(){
-    return type;
   }
 
   void deleteIntroduction(@NonNull Long introductionId){
@@ -206,12 +194,10 @@ public class ManageViewModel extends ViewModel {
   static class Factory implements ViewModelProvider.Factory {
 
     private final ManageManager            manager;
-    private final ManageActivity.ActiveTab t;
     private final String                   introducer;
     private final String forgottenPlaceholder;
 
-    Factory(RecipientId id, ManageActivity.ActiveTab t, @Nullable String introducerName, @NonNull String forgottenPlaceholder) {
-      this.t = t;
+    Factory(RecipientId id, @Nullable String introducerName, @NonNull String forgottenPlaceholder) {
       this.manager = new ManageManager(id, SignalDatabase.trustedIntroductions(), forgottenPlaceholder);
       introducer = introducerName;
       this.forgottenPlaceholder = forgottenPlaceholder;
@@ -219,7 +205,7 @@ public class ManageViewModel extends ViewModel {
 
     @Override
     public @NonNull <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
-      return Objects.requireNonNull(modelClass.cast(new ManageViewModel(manager, t, introducer, forgottenPlaceholder)));
+      return Objects.requireNonNull(modelClass.cast(new ManageViewModel(manager, introducer, forgottenPlaceholder)));
     }
   }
 
