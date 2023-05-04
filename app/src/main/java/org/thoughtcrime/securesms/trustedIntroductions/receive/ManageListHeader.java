@@ -6,13 +6,13 @@ import android.util.AttributeSet;
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
-public class ManageAllListHeader extends ConstraintLayout {
+public class ManageListHeader extends ConstraintLayout {
 
-  public ManageAllListHeader(Context context, AttributeSet attrs) {
+  public ManageListHeader(Context context, AttributeSet attrs) {
     super(context, attrs);
   }
 
-  public ManageAllListHeader(@NonNull Context context) {
+  public ManageListHeader(@NonNull Context context) {
     super(context);
   }
 }
