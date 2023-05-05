@@ -28,6 +28,7 @@ import org.thoughtcrime.securesms.util.DynamicTheme;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import static org.thoughtcrime.securesms.trustedIntroductions.receive.ManageListFragment.FORGOTTEN_INTRODUCER;
 
@@ -125,7 +126,7 @@ public class ManageActivity extends PassphraseRequiredActivity {
     initializeToolbar();
 
     ManagePagerAdapter adapter = new ManagePagerAdapter(getSupportFragmentManager(), getLifecycle());
-    adapter.initializeFragments(this);
+    adapter.initializeViewModelOwner(this);
     pager = findViewById(R.id.pager);
     pager.setAdapter(adapter);
     contactFilterView.setHint(R.string.ManageIntroductionsActivity__Filter_hint);
@@ -171,7 +172,6 @@ public class ManageActivity extends PassphraseRequiredActivity {
 
     private final int PAGES_NUM = 3;
     private ViewModelStoreOwner           owner;
-    private       ArrayList<ManageListFragment> fragments = new ArrayList<>();
 
     public ManagePagerAdapter(@NonNull FragmentManager fragmentManager, @NonNull Lifecycle lifecycle) {
       super(fragmentManager, lifecycle);
@@ -179,15 +179,12 @@ public class ManageActivity extends PassphraseRequiredActivity {
       contactFilterView.setOnFilterChangedListener(this);
     }
 
-    void initializeFragments(ViewModelStoreOwner owner){
+    void initializeViewModelOwner(ViewModelStoreOwner owner){
       this.owner = owner;
-      for(int i = 0; i < PAGES_NUM; i++){
-        fragments.add(new ManageListFragment(owner, ActiveTab.fromInt(i)));
-      }
     }
 
     @NonNull @Override public Fragment createFragment(int position) {
-      return fragments.get(position);
+      return new ManageListFragment(owner, ActiveTab.fromInt(position));
     }
 
     @Override public int getItemCount() {
@@ -195,8 +192,11 @@ public class ManageActivity extends PassphraseRequiredActivity {
     }
 
     @Override public void onFilterChanged(String filter) {
-      for (ManageListFragment f: fragments) {
-        f.onFilterChanged(filter);
+      List<Fragment> allFragments = getSupportFragmentManager().getFragments();
+      for (Fragment f: allFragments) {
+        if(f instanceof ManageListFragment){
+          ((ManageListFragment)f).onFilterChanged(filter);
+        }
       }
     }
   }

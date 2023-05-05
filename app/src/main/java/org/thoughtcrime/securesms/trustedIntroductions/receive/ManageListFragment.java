@@ -38,12 +38,16 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
   private RecyclerView introductionList;
   private TextView no_introductions;
   private View                           all_header;
-  private final ManageActivity.ActiveTab tab;
+  private ManageActivity.ActiveTab tab;
 
   // Because final onCreate in AppCompat dissalows me from using a Fragment Factory, I need to use a Bundle for Arguments.
   static String TYPE_KEY = "type_key";
 
   static String FORGOTTEN_INTRODUCER;
+
+  public ManageListFragment(){
+    super();
+  }
 
   public ManageListFragment(@NonNull ViewModelStoreOwner owner, @NonNull ManageActivity.ActiveTab type){
     this.tab = type;
