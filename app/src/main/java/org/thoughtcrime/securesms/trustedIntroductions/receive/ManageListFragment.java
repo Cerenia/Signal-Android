@@ -53,13 +53,10 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
 
   public ManageListFragment(@NonNull ViewModelStoreOwner owner, @NonNull ManageActivity.ActiveTab type){
     this.tab = type;
-    ManageViewModel.Factory factory = new ManageViewModel.Factory(FORGOTTEN_INTRODUCER);
-    viewModel = new ViewModelProvider(owner, factory).get(ManageViewModel.class);
   }
 
   @Override
   public void onCreate(Bundle b){
-    FORGOTTEN_INTRODUCER = getString(R.string.ManageIntroductionsListItem__Forgotten_Introducer);
     super.onCreate(b);
   }
 
@@ -73,6 +70,8 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
   @Override
   public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState){
     super.onViewCreated(view, savedInstanceState);
+    ManageViewModel.Factory factory = new ManageViewModel.Factory(FORGOTTEN_INTRODUCER);
+    viewModel = new ViewModelProvider(getActivity(), factory).get(ManageViewModel.class);
     if(!viewModel.introductionsLoaded()){
       viewModel.loadIntroductions();
     }

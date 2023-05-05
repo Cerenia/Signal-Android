@@ -109,6 +109,7 @@ public class ManageActivity extends PassphraseRequiredActivity {
   // TODO: You are probably overriding the wrong function... onCreate(Bundle savedInstanceState) is final..
   @Override protected void onCreate(Bundle savedInstanceState, boolean ready){
     super.onCreate(savedInstanceState, ready);
+    FORGOTTEN_INTRODUCER = getString(R.string.ManageIntroductionsListItem__Forgotten_Introducer);
     // Initialize navigation titles
     tabTitles.put(0, getString(R.string.ManageIntroductionsActivity__Navigation_Tab_new));
     tabTitles.put(1, getString(R.string.ManageIntroductionsActivity__Navigation_Tab_library));
