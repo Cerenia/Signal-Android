@@ -14,12 +14,10 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelStoreOwner;
 import androidx.recyclerview.widget.RecyclerView;
 import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.splitIntroductionDate;
-import static org.thoughtcrime.securesms.trustedIntroductions.receive.ManageActivity.ActiveTab.ALL;
 
 import com.pnikosis.materialishprogress.ProgressWheel;
 
 import org.signal.core.util.logging.Log;
-import org.thoughtcrime.securesms.components.ContactFilterView;
 import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.R;
@@ -55,11 +53,6 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
 
   @Override
   public void onCreate(Bundle b){
-    /*
-    Bundle args = getArguments();
-    if(args == null){
-      throw new AssertionError("ManageFragment cannot be created without Args!");
-    }*/
     FORGOTTEN_INTRODUCER = getString(R.string.ManageIntroductionsListItem__Forgotten_Introducer);
     super.onCreate(b);
   }
@@ -91,10 +84,44 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
     });
   }
 
-  // TODO: Move to asynchroneous background thread eventually if performance becomes a problem
-  // TODO: Do I need a differentiation between all screen?
+  /**
+   * Decides if this datum must be displayed in the fragment. Depends on tabtype and active filters.
+   * @param p the datum to be evaluated.
+   * @return true if displayed, false if not.
+   */
+  private boolean isDisplayed(Pair<TI_Data, ManageViewModel.IntroducerInformation> p){
+    TrustedIntroductionsDatabase.State s = p.first.getState();
+    switch(tab){
+      case NEW:
+        // TODO: How should conflicting introductions be handled exactly?
+        if(!(s == TrustedIntroductionsDatabase.State.PENDING || s == TrustedIntroductionsDatabase.State.STALE_PENDING || s == TrustedIntroductionsDatabase.State.CONFLICTING || s == TrustedIntroductionsDatabase.State.STALE_CONFLICTING)){
+          return false;
+        }
+      case LIBRARY:
+        if((s == TrustedIntroductionsDatabase.State.PENDING || s == TrustedIntroductionsDatabase.State.STALE_PENDING)){
+          return false;
+      }
+      case ALL:
+      default:
+        break;
+    }
+    // TODO: Filter by active selection buttons (inside switch...)
+    return true;
+  }
+
+  /**
+   * Filters complete introduction list by Tab type, search filter and button selectors
+   * @param introductions All introductions returned by ViewModel.
+   * @param filter The user provided filter.
+   * @return the filtered list appropriate for the fragment depending on tab, button selectors and filter.
+   */
   private List<Pair<TI_Data, ManageViewModel.IntroducerInformation>> getFiltered(List<Pair<TI_Data, ManageViewModel.IntroducerInformation>> introductions, @Nullable String filter){
-    List<Pair<TI_Data, ManageViewModel.IntroducerInformation>> filtered = introductions != null ? new ArrayList<>(introductions) : new ArrayList<>();
+    List<Pair<TI_Data, ManageViewModel.IntroducerInformation>> filtered = new ArrayList<>();
+    for (Pair<TI_Data, ManageViewModel.IntroducerInformation> p: introductions) {
+      if(isDisplayed(p)){
+        filtered.add(p);
+      }
+    }
     if(filter != null){
       if(!filter.isEmpty() && filter.compareTo("") != 0){
         Pattern filterPattern = Pattern.compile("\\A" + filter + ".*", Pattern.CASE_INSENSITIVE);

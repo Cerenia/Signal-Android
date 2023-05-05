@@ -3,13 +3,14 @@ package org.thoughtcrime.securesms.trustedIntroductions.receive;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelStoreOwner;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
@@ -27,6 +28,8 @@ import org.thoughtcrime.securesms.util.DynamicTheme;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import static org.thoughtcrime.securesms.trustedIntroductions.receive.ManageListFragment.FORGOTTEN_INTRODUCER;
 
 /**
  * Opens an Activity for Managing Trusted Introductions.
@@ -87,6 +90,7 @@ public class ManageActivity extends PassphraseRequiredActivity {
   private Toolbar            toolbar;
   private ContactFilterView contactFilterView;
   private ViewPager2        pager;
+  private ManageViewModel viewModel;
 
   private final DynamicTheme dynamicTheme = new DynamicNoActionBarTheme();
 
@@ -107,6 +111,9 @@ public class ManageActivity extends PassphraseRequiredActivity {
     tabTitles.put(0, getString(R.string.ManageIntroductionsActivity__Navigation_Tab_new));
     tabTitles.put(1, getString(R.string.ManageIntroductionsActivity__Navigation_Tab_library));
     tabTitles.put(2, getString(R.string.ManageIntroductionsActivity__Navigation_Tab_all));
+    ManageViewModel.Factory factory = new ManageViewModel.Factory(FORGOTTEN_INTRODUCER);
+    viewModel = new ViewModelProvider(this, factory).get(ManageViewModel.class);
+    viewModel.loadIntroductions();
     // TODO: also add icons?
     dynamicTheme.onCreate(this);
     setContentView(R.layout.ti_manage_activity);
@@ -117,7 +124,8 @@ public class ManageActivity extends PassphraseRequiredActivity {
 
     initializeToolbar();
 
-    ManagePagerAdapter adapter = new ManagePagerAdapter(this, this);
+    ManagePagerAdapter adapter = new ManagePagerAdapter(getSupportFragmentManager(), getLifecycle());
+    adapter.initializeFragments(this);
     pager = findViewById(R.id.pager);
     pager.setAdapter(adapter);
     contactFilterView.setHint(R.string.ManageIntroductionsActivity__Filter_hint);
@@ -161,29 +169,33 @@ public class ManageActivity extends PassphraseRequiredActivity {
 
   private class ManagePagerAdapter extends FragmentStateAdapter implements ContactFilterView.OnFilterChangedListener {
 
-    private final ViewModelStoreOwner           owner;
-    private       ArrayList<ManageListFragment> listeners = new ArrayList<>();
+    private final int PAGES_NUM = 3;
+    private ViewModelStoreOwner           owner;
+    private       ArrayList<ManageListFragment> fragments = new ArrayList<>();
 
-    public ManagePagerAdapter(@NonNull FragmentActivity fragmentActivity, ViewModelStoreOwner owner) {
-      super(fragmentActivity);
-      this.owner = owner;
+    public ManagePagerAdapter(@NonNull FragmentManager fragmentManager, @NonNull Lifecycle lifecycle) {
+      super(fragmentManager, lifecycle);
       // Observe
       contactFilterView.setOnFilterChangedListener(this);
     }
 
+    void initializeFragments(ViewModelStoreOwner owner){
+      this.owner = owner;
+      for(int i = 0; i < PAGES_NUM; i++){
+        fragments.add(new ManageListFragment(owner, ActiveTab.fromInt(i)));
+      }
+    }
+
     @NonNull @Override public Fragment createFragment(int position) {
-      ManageListFragment f = new ManageListFragment(owner, ActiveTab.fromInt(position));
-      // TODO: is this problematic on orientation change?
-      listeners.add(f);
-      return f;
+      return fragments.get(position);
     }
 
     @Override public int getItemCount() {
-      return 3;
+      return PAGES_NUM;
     }
 
     @Override public void onFilterChanged(String filter) {
-      for (ManageListFragment f: listeners) {
+      for (ManageListFragment f: fragments) {
         f.onFilterChanged(filter);
       }
     }
