@@ -132,77 +132,56 @@
         android:scrollbarThumbVertical="@drawable/contact_selection_scrollbar_thumb"
         android:scrollbars="vertical"
         app:layout_constraintTop_toBottomOf="@id/barrier_recycle"
-        app:layout_constraintBottom_toTopOf="@id/filter_container"
+        app:layout_constraintBottom_toTopOf="@id/toggleButton"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         tools:listitem="@layout/ti_manage_list_item" />
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/filter_container"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/recycler_view">
-
-    <org.thoughtcrime.securesms.components.FromTextView
-        android:id="@+id/show"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="2dp"
-        android:drawablePadding="4dp"
-        android:ellipsize="marquee"
-        android:singleLine="true"
-        android:text="@string/ManageIntroductionsFragment__filter"
-        android:textAppearance="@style/Signal.Text.BodyMedium"
-        android:textColor="@color/signal_text_primary"
-        android:textStyle="bold"
-        android:gravity="start"
-        app:layout_constraintHorizontal_bias="0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        tools:text="Show:"/>
-
         <com.google.android.material.button.MaterialButtonToggleGroup
             android:id="@+id/toggleButton"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/recycler_view"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
-            <Button
-                style="?attr/materialButtonOutlinedStyle"
+            <com.google.android.material.button.MaterialButton
+                style="@style/Widget.MaterialComponents.Button.TextButton.Dialog"
                 android:id="@+id/staleFilter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/ManageIntroductionsFragment__Stale"
+                android:checked="true"
+                android:enabled="true"
+                android:text="@string/ManageIntroductionsFragment__Conflicting"
                 />
-            <Button
-                style="?attr/materialButtonOutlinedStyle"
+            <com.google.android.material.button.MaterialButton
+                style="@style/Widget.MaterialComponents.Button.TextButton.Dialog"
                 android:id="@+id/conflictingFilter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:checked="true"
+                android:enabled="true"
                 android:text="@string/ManageIntroductionsFragment__Stale"
                 />
-            <Button
-                style="?attr/materialButtonOutlinedStyle"
+            <com.google.android.material.button.MaterialButton
+                style="@style/Widget.MaterialComponents.Button.TextButton.Dialog"
                 android:id="@+id/acceptedFilter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/ManageIntroductionsFragment__Stale"
+                android:checked="true"
+                android:enabled="true"
+                android:text="@string/ManageIntroductionsFragment__Accepted"
                 />
-            <Button
-                style="?attr/materialButtonOutlinedStyle"
+            <com.google.android.material.button.MaterialButton
+                style="@style/Widget.MaterialComponents.Button.TextButton.Dialog"
                 android:id="@+id/rejectedFilter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/ManageIntroductionsFragment__Stale"
+                android:checked="true"
+                android:enabled="true"
+                android:text="@string/ManageIntroductionsFragment__Rejected"
                 />
         </com.google.android.material.button.MaterialButtonToggleGroup>
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
