@@ -2,7 +2,9 @@ package org.thoughtcrime.securesms.trustedIntroductions.receive;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -59,6 +61,13 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
   public void onCreate(Bundle b){
     FORGOTTEN_INTRODUCER = getString(R.string.ManageIntroductionsListItem__Forgotten_Introducer);
     super.onCreate(b);
+  }
+
+  @Nullable
+  @Override
+  public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                           @Nullable Bundle savedInstanceState) {
+    return inflater.inflate(R.layout.ti_manage_fragment, container, false);
   }
 
   @Override
