@@ -4018,7 +4018,7 @@
 
     <!-- Trusted Introductions -->
     <!-- ManageIntroductionsActivity -->
-    <string name="ManageIntroductionsActivity__Toolbar_Title_Recipient">Introductions:</string>
+    <string name="ManageIntroductionsActivity__Toolbar_Title">Trusted Introductions:</string>
     <string name="ManageIntroductionsActivity__Filter_hint">Search Introductions</string>
     <string name="ManageIntroductionsActivity__Navigation_Tab_new">New</string>
     <string name="ManageIntroductionsActivity__Navigation_Tab_library">Library</string>
