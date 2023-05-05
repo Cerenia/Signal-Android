@@ -16,6 +16,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelStoreOwner;
 import androidx.recyclerview.widget.RecyclerView;
 import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.splitIntroductionDate;
+import static org.thoughtcrime.securesms.trustedIntroductions.receive.ManageActivity.ActiveTab.NEW;
 
 import com.pnikosis.materialishprogress.ProgressWheel;
 
@@ -40,7 +41,7 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
   private RecyclerView introductionList;
   private TextView no_introductions;
   private View                           all_header;
-  private ManageActivity.ActiveTab tab;
+  private ManageActivity.ActiveTab tab = NEW;
 
   // Because final onCreate in AppCompat dissalows me from using a Fragment Factory, I need to use a Bundle for Arguments.
   static String TYPE_KEY = "type_key";

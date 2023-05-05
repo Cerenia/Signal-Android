@@ -47,7 +47,7 @@ public class ManageActivity extends PassphraseRequiredActivity {
 
   private final HashMap<Integer, String> tabTitles = new HashMap<Integer, String>();
 
-  public enum ActiveTab {
+  public static enum ActiveTab {
     NEW,
     LIBRARY,
     ALL;
