@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.ViewModelProvider;
@@ -23,10 +24,10 @@ import org.thoughtcrime.securesms.PassphraseRequiredActivity;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.components.ContactFilterView;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
+import org.thoughtcrime.securesms.util.DateUtils;
 import org.thoughtcrime.securesms.util.DynamicNoActionBarTheme;
 import org.thoughtcrime.securesms.util.DynamicTheme;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -125,7 +126,7 @@ public class ManageActivity extends PassphraseRequiredActivity {
 
     initializeToolbar();
 
-    ManagePagerAdapter adapter = new ManagePagerAdapter(getSupportFragmentManager(), getLifecycle());
+    ManagePagerAdapter adapter = new ManagePagerAdapter(this);
     adapter.initializeViewModelOwner(this);
     pager = findViewById(R.id.pager);
     pager.setAdapter(adapter);
@@ -173,6 +174,11 @@ public class ManageActivity extends PassphraseRequiredActivity {
     private final int PAGES_NUM = 3;
     private ViewModelStoreOwner           owner;
 
+    public ManagePagerAdapter(FragmentActivity activity){
+      super(activity);
+      contactFilterView.setOnFilterChangedListener(this);
+    }
+
     public ManagePagerAdapter(@NonNull FragmentManager fragmentManager, @NonNull Lifecycle lifecycle) {
       super(fragmentManager, lifecycle);
       // Observe
@@ -184,7 +190,12 @@ public class ManageActivity extends PassphraseRequiredActivity {
     }
 
     @NonNull @Override public Fragment createFragment(int position) {
-      return new ManageListFragment(owner, ActiveTab.fromInt(position));
+      //return new ManageListFragment(owner, ActiveTab.fromInt(position));
+      Fragment f = new DummyFragment();
+      Bundle args = new Bundle();
+      args.putInt(DummyFragment.ARG_OBJECT, position + 1);
+      f.setArguments(args);
+      return f;
     }
 
     @Override public int getItemCount() {
