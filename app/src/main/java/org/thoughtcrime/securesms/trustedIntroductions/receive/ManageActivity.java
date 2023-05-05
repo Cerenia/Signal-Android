@@ -3,6 +3,7 @@ package org.thoughtcrime.securesms.trustedIntroductions.receive;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -13,6 +14,9 @@ import androidx.lifecycle.ViewModelStoreOwner;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
+import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayoutMediator;
+
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.PassphraseRequiredActivity;
 import org.thoughtcrime.securesms.R;
@@ -22,6 +26,7 @@ import org.thoughtcrime.securesms.util.DynamicNoActionBarTheme;
 import org.thoughtcrime.securesms.util.DynamicTheme;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Opens an Activity for Managing Trusted Introductions.
@@ -32,8 +37,10 @@ public class ManageActivity extends PassphraseRequiredActivity {
 
   private static final String TAG = String.format(TI_Utils.TI_LOG_TAG, Log.tag(ManageActivity.class));
 
-  private ActiveTab           activeTab;
   private static final String ACTIVE_TAB = "initial_active";
+  private TabLayout tabLayout;
+
+  private final HashMap<Integer, String> tabTitles = new HashMap<Integer, String>();
 
   public enum ActiveTab {
     NEW,
@@ -88,7 +95,7 @@ public class ManageActivity extends PassphraseRequiredActivity {
    */
   public static @NonNull Intent createIntent(@NonNull Context context, @NonNull ActiveTab initialActive){
     Intent intent = new Intent(context, ManageActivity.class);
-    intent.putExtra(ACTIVE_TAB, initialActive.toString());
+    intent.putExtra(ACTIVE_TAB, ActiveTab.toInt(initialActive));
     return intent;
   }
 
@@ -96,7 +103,11 @@ public class ManageActivity extends PassphraseRequiredActivity {
   // TODO: You are probably overriding the wrong function... onCreate(Bundle savedInstanceState) is final..
   @Override protected void onCreate(Bundle savedInstanceState, boolean ready){
     super.onCreate(savedInstanceState, ready);
-    setActiveTab(savedInstanceState);
+    // Initialize navigation titles
+    tabTitles.put(0, getString(R.string.ManageIntroductionsActivity__Navigation_Tab_new));
+    tabTitles.put(1, getString(R.string.ManageIntroductionsActivity__Navigation_Tab_library));
+    tabTitles.put(2, getString(R.string.ManageIntroductionsActivity__Navigation_Tab_all));
+    // TODO: also add icons?
     dynamicTheme.onCreate(this);
     setContentView(R.layout.ti_manage_activity);
 
@@ -110,12 +121,16 @@ public class ManageActivity extends PassphraseRequiredActivity {
     pager = findViewById(R.id.pager);
     pager.setAdapter(adapter);
     contactFilterView.setHint(R.string.ManageIntroductionsActivity__Filter_hint);
-
-    // TODO: TabLayout and TabMediator
+    tabLayout = this.findViewById(R.id.tab_navigation);
+    setActiveTab(savedInstanceState);
+    new TabLayoutMediator(tabLayout, pager,
+                          (tab, position) -> tab.setText(tabTitles.get(position))
+    ).attach();
   }
 
+
   @Override public void onSaveInstanceState(@NonNull Bundle outState) {
-    outState.putString(ACTIVE_TAB, activeTab.toString());
+    outState.putInt(ACTIVE_TAB, tabLayout.getSelectedTabPosition());
     super.onSaveInstanceState(outState);
   }
 
@@ -125,13 +140,15 @@ public class ManageActivity extends PassphraseRequiredActivity {
    */
   private void setActiveTab(@Nullable Bundle savedInstanceState){
     if(savedInstanceState == null){
-      activeTab = ActiveTab.fromString(getIntent().getStringExtra(ACTIVE_TAB));
+      tabLayout.selectTab(tabLayout.getTabAt(getIntent().getIntExtra(ACTIVE_TAB, 0)));
+    } else{
+      tabLayout.selectTab(tabLayout.getTabAt(savedInstanceState.getInt(ACTIVE_TAB)));
     }
   }
 
   private void initializeToolbar() {
     setSupportActionBar(toolbar);
-    toolbar.setTitle(R.string.ManageIntroductionsActivity__Toolbar_Title_Recipient);
+    toolbar.setTitle(R.string.ManageIntroductionsActivity__Toolbar_Title);
     getSupportActionBar().setDisplayHomeAsUpEnabled(false);
     getSupportActionBar().setIcon(null);
     getSupportActionBar().setLogo(null);

@@ -55,10 +55,11 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
 
   @Override
   public void onCreate(Bundle b){
+    /*
     Bundle args = getArguments();
     if(args == null){
       throw new AssertionError("ManageFragment cannot be created without Args!");
-    }
+    }*/
     FORGOTTEN_INTRODUCER = getString(R.string.ManageIntroductionsListItem__Forgotten_Introducer);
     super.onCreate(b);
   }
