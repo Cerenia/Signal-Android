@@ -173,6 +173,8 @@ public class ManageActivity extends PassphraseRequiredActivity {
 
     @NonNull @Override public Fragment createFragment(int position) {
       ManageListFragment f = new ManageListFragment(owner, ActiveTab.fromInt(position));
+      // TODO: is this problematic on orientation change?
+      listeners.add(f);
       return f;
     }
 
