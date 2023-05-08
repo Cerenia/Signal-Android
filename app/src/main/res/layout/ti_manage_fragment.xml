@@ -144,8 +144,8 @@
                 android:id="@+id/staleFilter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:checked="true"
                 android:enabled="true"
+                android:checkable="true"
                 android:text="@string/ManageIntroductionsFragment__Conflicting"
                 />
             <com.google.android.material.button.MaterialButton
@@ -153,8 +153,8 @@
                 android:id="@+id/conflictingFilter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:checked="true"
                 android:enabled="true"
+                android:checkable="true"
                 android:text="@string/ManageIntroductionsFragment__Stale"
                 />
             <com.google.android.material.button.MaterialButton
@@ -162,8 +162,8 @@
                 android:id="@+id/acceptedFilter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:checked="true"
                 android:enabled="true"
+                android:checkable="true"
                 android:text="@string/ManageIntroductionsFragment__Accepted"
                 />
             <com.google.android.material.button.MaterialButton
@@ -171,7 +171,7 @@
                 android:id="@+id/rejectedFilter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:checked="true"
+                android:checkable="true"
                 android:enabled="true"
                 android:text="@string/ManageIntroductionsFragment__Rejected"
                 />
