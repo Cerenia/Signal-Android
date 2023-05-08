@@ -199,6 +199,11 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
 
   void refreshList(){
     if(adapter != null){
+      List l = viewModel.getIntroductions().getValue();
+      if(l == null){
+        Log.e(TAG, "Introductions list not yet loaded when calling refreshList!");
+        return;
+      }
       adapter.submitList(getFiltered(viewModel.getIntroductions().getValue(), viewModel.getTextFilter().getValue()));
     }
   }
@@ -206,6 +211,11 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
   public void onFilterChanged(String filter) {
     if(adapter != null){
       viewModel.setTextFilter(filter);
+      List l = viewModel.getIntroductions().getValue();
+      if(l == null){
+        Log.e(TAG, "Introductions list not yet loaded when calling onFilterChanged!");
+        return;
+      }
       adapter.submitList(getFiltered(viewModel.getIntroductions().getValue(), filter));
     }
   }
@@ -260,9 +270,5 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
       }*/
       DeleteIntroductionDialog.show(c, item.getIntroductionId(), item.getIntroduceeName(), item.getIntroducerName(requireContext()), item.getDate(), deleteHandler);
     }
-  }
-
-  public interface onAllNavigationClicked{
-    public void goToAll();
   }
 }
