@@ -167,7 +167,7 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
 
   private void onFilterStateChanged(MaterialButton b, Boolean state){
     b.setChecked(state);
-    refreshList();
+    // don't refresh list again, covered by setCheckedListener
   }
 
   @Override public void onSaveInstanceState(@NonNull Bundle outState) {

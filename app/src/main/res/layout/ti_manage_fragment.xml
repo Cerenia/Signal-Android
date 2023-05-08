@@ -141,7 +141,7 @@
             app:layout_constraintEnd_toEndOf="parent">
             <com.google.android.material.button.MaterialButton
                 style="@style/Widget.MaterialComponents.Button.TextButton.Dialog"
-                android:id="@+id/staleFilter"
+                android:id="@+id/conflictingFilter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:enabled="true"
@@ -150,7 +150,7 @@
                 />
             <com.google.android.material.button.MaterialButton
                 style="@style/Widget.MaterialComponents.Button.TextButton.Dialog"
-                android:id="@+id/conflictingFilter"
+                android:id="@+id/staleFilter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:enabled="true"
