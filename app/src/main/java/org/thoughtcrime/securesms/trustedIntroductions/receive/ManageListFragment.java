@@ -106,11 +106,9 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
     }
     showConflicting.addOnCheckedChangeListener((button, isChecked) ->  {
       viewModel.setShowConflicting(isChecked);
-      refreshList();
     });
     showStale.addOnCheckedChangeListener((button, isChecked) ->{
       viewModel.setShowStale(isChecked);
-      refreshList();
     });
     switch(tab){
       case NEW:
@@ -130,11 +128,9 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
         }
         showAccepted.addOnCheckedChangeListener((button, isChecked) ->{
           viewModel.setShowAccepted(isChecked);
-          refreshList();
         });
         showRejected.addOnCheckedChangeListener((button, isChecked) ->{
           viewModel.setShowRejected(isChecked);
-          refreshList();
         });
     }
     // Filter state Obvservers
@@ -167,7 +163,7 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
 
   private void onFilterStateChanged(MaterialButton b, Boolean state){
     b.setChecked(state);
-    // don't refresh list again, covered by setCheckedListener
+    refreshList();
   }
 
   @Override public void onSaveInstanceState(@NonNull Bundle outState) {
