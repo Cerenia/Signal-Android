@@ -43,6 +43,10 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
   private TextView no_introductions;
   private View                           all_header;
   private ManageActivity.ActiveTab tab = NEW;
+  private MaterialButton showConflicting;
+  private MaterialButton showAccepted;
+  private MaterialButton showRejected;
+  private MaterialButton showStale;
 
   // Because final onCreate in AppCompat dissalows me from using a Fragment Factory, I need to use a Bundle for Arguments.
   static String TYPE_KEY = "type_key";
@@ -84,10 +88,10 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
     no_introductions = view.findViewById(R.id.no_introductions_found);
     all_header = view.findViewById(R.id.manage_fragment_header);
     // Filter state
-    MaterialButton showConflicting = view.findViewById(R.id.conflictingFilter);
-    MaterialButton showStale = view.findViewById(R.id.staleFilter);
-    MaterialButton showAccepted = view.findViewById(R.id.acceptedFilter);
-    MaterialButton showRejected = view.findViewById(R.id.rejectedFilter);
+    showConflicting = view.findViewById(R.id.conflictingFilter);
+    showStale = view.findViewById(R.id.staleFilter);
+    showAccepted = view.findViewById(R.id.acceptedFilter);
+    showRejected = view.findViewById(R.id.rejectedFilter);
     if(savedInstanceState != null && savedInstanceState.getString(TYPE_KEY)!=null){
       tab = ManageActivity.ActiveTab.fromString(savedInstanceState.getString(TYPE_KEY));
     }
@@ -101,11 +105,11 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
       showConflicting.setChecked(true);
       showStale.setChecked(true);
     }
-    showConflicting.setOnClickListener(c ->{
+    showConflicting.addOnCheckedChangeListener((button, isChecked) ->  {
       viewModel.toggleShowConflicting();
       refreshList();
     });
-    showStale.setOnClickListener(c ->{
+    showStale.addOnCheckedChangeListener((button, isChecked) ->{
       viewModel.toggleShowStale();
       refreshList();
     });
@@ -122,14 +126,14 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
           showAccepted.setChecked(viewModel.showAccepted().getValue());
           showRejected.setChecked(viewModel.showRejected().getValue());
         } else {
-          showConflicting.setChecked(true);
-          showStale.setChecked(true);
+          showAccepted.setChecked(true);
+          showRejected.setChecked(true);
         }
-        showAccepted.setOnClickListener(c ->{
+        showAccepted.addOnCheckedChangeListener((button, isChecked) ->{
           viewModel.toggleShowAccepted();
           refreshList();
         });
-        showRejected.setOnClickListener(c ->{
+        showRejected.addOnCheckedChangeListener((button, isChecked) ->{
           viewModel.toggleShowRejected();
           refreshList();
         });
