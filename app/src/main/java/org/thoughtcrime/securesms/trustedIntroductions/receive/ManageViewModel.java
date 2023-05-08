@@ -30,61 +30,51 @@ public class ManageViewModel extends ViewModel {
   private final MutableLiveData<List<Pair<TI_Data, IntroducerInformation>>> introductions;
   @NonNull      String                                                      forgottenPlaceholder;
   private boolean      introductionsLoaded;
-  private HashMap<String, Boolean> show;
-  private final String                              conflictingKey = "conflicting";
-  private final String                              staleKey    = "stale";
-  private final String acceptedKey = "accepted";
-  private final String rejectedKey = "rejected";
+  // Filters
+  private MutableLiveData<Boolean> showAccepted = new MutableLiveData<>(true);
+  private MutableLiveData<Boolean> showRejected = new MutableLiveData<>(true);
+  private MutableLiveData<Boolean> showStale = new MutableLiveData<>(true);
+  private MutableLiveData<Boolean> showConflicting = new MutableLiveData<>(true);
 
   ManageViewModel(ManageManager manager, @NonNull String forgottenPlaceholder){
     this.manager = manager;
     filter = new MutableLiveData<>("");
     introductions = new MutableLiveData<>();
     introductionsLoaded = false;
-    // Show everything
-    show = new HashMap<>();
-    show.put(conflictingKey, true);
-    show.put(staleKey, true);
-    show.put(acceptedKey, true);
-    show.put(rejectedKey, true);
     this.forgottenPlaceholder = forgottenPlaceholder;
   }
 
   // UI filters
   public void toggleShowAccepted(){
-    show.put(acceptedKey, !show.get(acceptedKey));
+    showAccepted.postValue(showAccepted.getValue());
   }
 
   public void toggleShowRejected(){
-    show.put(rejectedKey, !show.get(rejectedKey));
+    showRejected.postValue(showRejected.getValue());
   }
 
   public void toggleShowStale(){
-    show.put(staleKey, !show.get(staleKey));
+    showStale.postValue(showStale.getValue());
   }
 
   public void toggleShowConflicting(){
-    show.put(conflictingKey, !show.get(conflictingKey));
+    showConflicting.postValue(showConflicting.getValue());
   }
 
-  public Boolean showConflicting() {
-    if(show == null) return true;
-    return show.get(conflictingKey);
+  public LiveData<Boolean> showConflicting() {
+    return showConflicting;
   }
 
-  public Boolean showStale(){
-    if(show == null) return true;
-    return show.get(staleKey);
+  public LiveData<Boolean> showStale(){
+    return showStale;
   }
 
-  public Boolean showAccepted(){
-    if(show == null) return true;
-    return show.get(acceptedKey);
+  public LiveData<Boolean> showAccepted(){
+    return showAccepted;
   }
 
-  public Boolean showRejected(){
-    if(show == null) return true;
-    return show.get(rejectedKey);
+  public LiveData<Boolean> showRejected(){
+    return showRejected;
   }
 
   public void setTextFilter(String filter) {

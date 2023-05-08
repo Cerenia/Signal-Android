@@ -94,8 +94,9 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
     showConflicting.setVisibility(View.VISIBLE);
     showStale.setVisibility(View.VISIBLE);
     if(viewModel != null){
-      showConflicting.setChecked(viewModel.showConflicting());
-      showStale.setChecked(viewModel.showStale());
+      // viewModel has default values.
+      showConflicting.setChecked(viewModel.showConflicting().getValue());
+      showStale.setChecked(viewModel.showStale().getValue());
     } else {
       showConflicting.setChecked(true);
       showStale.setChecked(true);
@@ -118,8 +119,8 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
         showAccepted.setVisibility(View.VISIBLE);
         showRejected.setVisibility(View.VISIBLE);
         if(viewModel != null){
-          showAccepted.setChecked(viewModel.showAccepted());
-          showRejected.setChecked(viewModel.showRejected());
+          showAccepted.setChecked(viewModel.showAccepted().getValue());
+          showRejected.setChecked(viewModel.showRejected().getValue());
         } else {
           showConflicting.setChecked(true);
           showStale.setChecked(true);
@@ -133,6 +134,19 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
           refreshList();
         });
     }
+    // Filter state Obvservers
+    viewModel.showConflicting().observe(getViewLifecycleOwner(), state ->{
+      onFilterStateChanged(showConflicting, state);
+    });
+    viewModel.showStale().observe(getViewLifecycleOwner(), state ->{
+      onFilterStateChanged(showStale, state);
+    });
+    viewModel.showAccepted().observe(getViewLifecycleOwner(), state ->{
+      onFilterStateChanged(showAccepted, state);
+    });
+    viewModel.showRejected().observe(getViewLifecycleOwner(), state->{
+      onFilterStateChanged(showRejected, state);
+    });
     // Introduction Observer
     this.viewModel.getIntroductions().observe(getViewLifecycleOwner(), introductions -> {
       // Screen layout
@@ -146,6 +160,10 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
       }
       refreshList();
     });
+  }
+
+  private void onFilterStateChanged(MaterialButton b, Boolean state){
+    b.setChecked(state);
   }
 
   @Override public void onSaveInstanceState(@NonNull Bundle outState) {
@@ -195,19 +213,19 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
       case STALE_CONFLICTING:
       case STALE_PENDING:
       case STALE_REJECTED:
-        if(!viewModel.showStale()){
+        if(!viewModel.showStale().getValue()){
           return true;
         }
       case ACCEPTED:
-        if(!viewModel.showAccepted()){
+        if(!viewModel.showAccepted().getValue()){
           return true;
         }
       case REJECTED:
-        if(!viewModel.showRejected()){
+        if(!viewModel.showRejected().getValue()){
           return true;
         }
       case CONFLICTING:
-        if(!viewModel.showConflicting()){
+        if(!viewModel.showConflicting().getValue()){
           return true;
         }
       default:
