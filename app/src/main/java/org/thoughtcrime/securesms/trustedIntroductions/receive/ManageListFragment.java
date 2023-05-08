@@ -163,13 +163,13 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
 
   void refreshList(){
     if(adapter != null){
-      adapter.submitList(getFiltered(viewModel.getIntroductions().getValue(), viewModel.getFilter().getValue()));
+      adapter.submitList(getFiltered(viewModel.getIntroductions().getValue(), viewModel.getTextFilter().getValue()));
     }
   }
 
   public void onFilterChanged(String filter) {
     if(adapter != null){
-      viewModel.setQueryFilter(filter);
+      viewModel.setTextFilter(filter);
       adapter.submitList(getFiltered(viewModel.getIntroductions().getValue(), filter));
     }
   }

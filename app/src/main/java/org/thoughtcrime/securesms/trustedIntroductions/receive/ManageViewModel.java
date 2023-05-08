@@ -13,10 +13,10 @@ import org.signal.core.util.concurrent.SignalExecutors;
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
-import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
@@ -30,15 +30,68 @@ public class ManageViewModel extends ViewModel {
   private final MutableLiveData<List<Pair<TI_Data, IntroducerInformation>>> introductions;
   @NonNull      String                                                      forgottenPlaceholder;
   private boolean      introductionsLoaded;
+  private HashMap<String, Boolean> show;
+  private final String                              conflictingKey = "conflicting";
+  private final String                              staleKey    = "stale";
+  private final String acceptedKey = "accepted";
+  private final String rejectedKey = "rejected";
 
   ManageViewModel(ManageManager manager, @NonNull String forgottenPlaceholder){
     this.manager = manager;
     filter = new MutableLiveData<>("");
     introductions = new MutableLiveData<>();
     introductionsLoaded = false;
+    // Show everything
+    HashMap<String, Boolean> show = new HashMap<>();
+    show.put(conflictingKey, true);
+    show.put(staleKey, true);
+    show.put(acceptedKey, true);
+    show.put(rejectedKey, true);
     this.forgottenPlaceholder = forgottenPlaceholder;
   }
 
+  // UI filters
+  public void toggleShowAccepted(){
+    show.put(acceptedKey, show.get(acceptedKey));
+  }
+
+  public void toggleShowRejected(){
+    show.put(rejectedKey, show.get(rejectedKey));
+  }
+
+  public void toggleShowStale(){
+    show.put(staleKey, show.get(staleKey));
+  }
+
+  public void toggleShowConflicting(){
+    show.put(conflictingKey, show.get(conflictingKey));
+  }
+
+  public Boolean showConflicting() {
+    return show.get(conflictingKey);
+  }
+
+  public Boolean showStale(){
+    return show.get(staleKey);
+  }
+
+  public Boolean showAccepted(){
+    return show.get(acceptedKey);
+  }
+
+  public Boolean showRejected(){
+    return show.get(rejectedKey);
+  }
+
+  public void setTextFilter(String filter) {
+    this.filter.setValue(filter);
+  }
+
+  public LiveData<String> getTextFilter(){
+    return this.filter;
+  }
+
+  // Introductions
   public void loadIntroductions(){
     manager.getIntroductions(introductions::postValue);
     introductionsLoaded = true;
@@ -167,14 +220,6 @@ public class ManageViewModel extends ViewModel {
     @Nullable Pair<TI_Data, IntroducerInformation> modifiedIntroductionItem(Pair<TI_Data, IntroducerInformation> introductionItem);
     @WorkerThread boolean databaseCall(TI_Data introduction);
     @NonNull String errorMessage(Long introductionId);
-  }
-
-  public void setQueryFilter(String filter) {
-    this.filter.setValue(filter);
-  }
-
-  public LiveData<String> getFilter(){
-    return this.filter;
   }
 
   public LiveData<List<Pair<TI_Data, IntroducerInformation>>> getIntroductions() {
