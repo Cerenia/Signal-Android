@@ -52,19 +52,19 @@ public class ManageViewModel extends ViewModel {
 
   // UI filters
   public void toggleShowAccepted(){
-    show.put(acceptedKey, show.get(acceptedKey));
+    show.put(acceptedKey, !show.get(acceptedKey));
   }
 
   public void toggleShowRejected(){
-    show.put(rejectedKey, show.get(rejectedKey));
+    show.put(rejectedKey, !show.get(rejectedKey));
   }
 
   public void toggleShowStale(){
-    show.put(staleKey, show.get(staleKey));
+    show.put(staleKey, !show.get(staleKey));
   }
 
   public void toggleShowConflicting(){
-    show.put(conflictingKey, show.get(conflictingKey));
+    show.put(conflictingKey, !show.get(conflictingKey));
   }
 
   public Boolean showConflicting() {
