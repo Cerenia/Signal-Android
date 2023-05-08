@@ -42,7 +42,7 @@ public class ManageViewModel extends ViewModel {
     introductions = new MutableLiveData<>();
     introductionsLoaded = false;
     // Show everything
-    HashMap<String, Boolean> show = new HashMap<>();
+    show = new HashMap<>();
     show.put(conflictingKey, true);
     show.put(staleKey, true);
     show.put(acceptedKey, true);
