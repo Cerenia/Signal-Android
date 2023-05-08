@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.splitIntroductionDate;
 import static org.thoughtcrime.securesms.trustedIntroductions.receive.ManageActivity.ActiveTab.NEW;
 
+import com.google.android.material.button.MaterialButton;
 import com.pnikosis.materialishprogress.ProgressWheel;
 
 import org.signal.core.util.logging.Log;
@@ -39,7 +40,6 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
   private ProgressWheel showIntroductionsProgress;
   private ManageViewModel viewModel;
   private ManageAdapter adapter;
-  private RecyclerView introductionList;
   private TextView no_introductions;
   private View                           all_header;
   private ManageActivity.ActiveTab tab = NEW;
@@ -78,12 +78,58 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
       viewModel.loadIntroductions();
     }
     adapter = new ManageAdapter(requireContext(), new IntroductionClickListener(this, this), this);
-    introductionList = view.findViewById(R.id.recycler_view);
+    RecyclerView introductionList = view.findViewById(R.id.recycler_view);
     introductionList.setClipToPadding(true);
     introductionList.setAdapter(adapter);
     no_introductions = view.findViewById(R.id.no_introductions_found);
     all_header = view.findViewById(R.id.manage_fragment_header);
-    // Observer
+    // Filter state
+    MaterialButton showConflicting = view.findViewById(R.id.conflictingFilter);
+    MaterialButton showStale = view.findViewById(R.id.staleFilter);
+    MaterialButton showAccepted = view.findViewById(R.id.acceptedFilter);
+    MaterialButton showRejected = view.findViewById(R.id.rejectedFilter);
+    if(savedInstanceState != null && savedInstanceState.getString(TYPE_KEY)!=null){
+      tab = ManageActivity.ActiveTab.fromString(savedInstanceState.getString(TYPE_KEY));
+    }
+    showConflicting.setVisibility(View.VISIBLE);
+    showStale.setVisibility(View.VISIBLE);
+    if(viewModel != null){
+      showConflicting.setChecked(viewModel.showConflicting());
+      showStale.setChecked(viewModel.showStale());
+    } else {
+      showConflicting.setChecked(true);
+      showStale.setChecked(true);
+    }
+    showConflicting.setOnClickListener(c ->{
+      viewModel.toggleShowConflicting();
+    });
+    showStale.setOnClickListener(c ->{
+      viewModel.toggleShowStale();
+    });
+    switch(tab){
+      case NEW:
+        // Accepted and Rejected not yet useful
+        showAccepted.setVisibility(View.GONE);
+        showRejected.setVisibility(View.GONE);
+      case LIBRARY:
+      case ALL:
+        showAccepted.setVisibility(View.VISIBLE);
+        showRejected.setVisibility(View.VISIBLE);
+        if(viewModel != null){
+          showAccepted.setChecked(viewModel.showAccepted());
+          showRejected.setChecked(viewModel.showRejected());
+        } else {
+          showConflicting.setChecked(true);
+          showStale.setChecked(true);
+        }
+        showAccepted.setOnClickListener(c ->{
+          viewModel.toggleShowAccepted();
+        });
+        showRejected.setOnClickListener(c ->{
+          viewModel.toggleShowRejected();
+        });
+    }
+    // Introduction Observer
     this.viewModel.getIntroductions().observe(getViewLifecycleOwner(), introductions -> {
       // Screen layout
       if(introductions.size() > 0){
@@ -96,6 +142,11 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
       }
       refreshList();
     });
+  }
+
+  @Override public void onSaveInstanceState(@NonNull Bundle outState) {
+    outState.putString(TYPE_KEY, tab.toString());
+    super.onSaveInstanceState(outState);
   }
 
   /**
