@@ -28,7 +28,6 @@ import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -106,11 +105,11 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
       showStale.setChecked(true);
     }
     showConflicting.addOnCheckedChangeListener((button, isChecked) ->  {
-      viewModel.toggleShowConflicting();
+      viewModel.setShowConflicting(isChecked);
       refreshList();
     });
     showStale.addOnCheckedChangeListener((button, isChecked) ->{
-      viewModel.toggleShowStale();
+      viewModel.setShowStale(isChecked);
       refreshList();
     });
     switch(tab){
@@ -130,11 +129,11 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
           showRejected.setChecked(true);
         }
         showAccepted.addOnCheckedChangeListener((button, isChecked) ->{
-          viewModel.toggleShowAccepted();
+          viewModel.setShowAccepted(isChecked);
           refreshList();
         });
         showRejected.addOnCheckedChangeListener((button, isChecked) ->{
-          viewModel.toggleShowRejected();
+          viewModel.setShowRejected(isChecked);
           refreshList();
         });
     }
@@ -168,6 +167,7 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
 
   private void onFilterStateChanged(MaterialButton b, Boolean state){
     b.setChecked(state);
+    refreshList();
   }
 
   @Override public void onSaveInstanceState(@NonNull Bundle outState) {

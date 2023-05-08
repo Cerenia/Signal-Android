@@ -16,7 +16,6 @@ import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
@@ -45,20 +44,20 @@ public class ManageViewModel extends ViewModel {
   }
 
   // UI filters
-  public void toggleShowAccepted(){
-    showAccepted.postValue(showAccepted.getValue());
+  public void setShowAccepted(Boolean state){
+    showAccepted.postValue(state);
   }
 
-  public void toggleShowRejected(){
-    showRejected.postValue(showRejected.getValue());
+  public void setShowRejected(Boolean state){
+    showRejected.postValue(state);
   }
 
-  public void toggleShowStale(){
-    showStale.postValue(showStale.getValue());
+  public void setShowStale(Boolean state){
+    showStale.postValue(state);
   }
 
-  public void toggleShowConflicting(){
-    showConflicting.postValue(showConflicting.getValue());
+  public void setShowConflicting(Boolean state){
+    showConflicting.postValue(state);
   }
 
   public LiveData<Boolean> showConflicting() {
