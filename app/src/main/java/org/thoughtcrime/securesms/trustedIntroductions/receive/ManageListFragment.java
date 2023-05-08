@@ -27,6 +27,7 @@ import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -34,7 +35,7 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
 
   private static final String TAG = String.format(TI_Utils.TI_LOG_TAG, Log.tag(ManageListFragment.class));
 
-  // TODO: Will probably need that for all screen
+  // TODO: Needed?
   private ProgressWheel showIntroductionsProgress;
   private ManageViewModel viewModel;
   private ManageAdapter adapter;
@@ -106,20 +107,57 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
     TrustedIntroductionsDatabase.State s = p.first.getState();
     switch(tab){
       case NEW:
-        // TODO: How should conflicting introductions be handled exactly?
         if(!(s == TrustedIntroductionsDatabase.State.PENDING || s == TrustedIntroductionsDatabase.State.STALE_PENDING || s == TrustedIntroductionsDatabase.State.CONFLICTING || s == TrustedIntroductionsDatabase.State.STALE_CONFLICTING)){
+          return false;
+        }
+        if(userFiltered(s)){
           return false;
         }
       case LIBRARY:
         if((s == TrustedIntroductionsDatabase.State.PENDING || s == TrustedIntroductionsDatabase.State.STALE_PENDING)){
           return false;
-      }
+        }
+        if(userFiltered(s)){
+          return false;
+        }
       case ALL:
+        if(userFiltered(s)){
+          return false;
+        }
       default:
-        break;
+        // fail open
+        return true;
     }
-    // TODO: Filter by active selection buttons (inside switch...)
-    return true;
+  }
+
+  /**
+   * Checks the state of the introduction against the user filters.
+   * @return true if filtered, false otherwise
+   */
+  private boolean userFiltered(TrustedIntroductionsDatabase.State s){
+    switch(s){
+      case STALE_ACCEPTED:
+      case STALE_CONFLICTING:
+      case STALE_PENDING:
+      case STALE_REJECTED:
+        if(!viewModel.showStale()){
+          return true;
+        }
+      case ACCEPTED:
+        if(!viewModel.showAccepted()){
+          return true;
+        }
+      case REJECTED:
+        if(!viewModel.showRejected()){
+          return true;
+        }
+      case CONFLICTING:
+        if(!viewModel.showConflicting()){
+          return true;
+        }
+      default:
+        return false;
+    }
   }
 
   /**
@@ -150,9 +188,7 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
           boolean matchSeconds = filterPattern.matcher(timestampParts.seconds).find();
           boolean matchIntroduceeName = filterPattern.matcher(d.getIntroduceeName()).find();
           boolean matchIntroduceeNumber = filterPattern.matcher(d.getIntroduceeNumber()).find();
-          String stateString = d.getState().toString();
-          boolean matchState = filterPattern.matcher(stateString).find();
-          if (!matchYear && !matchMonth && !matchDay && !matchHours && !matchMinutes && !matchSeconds && !matchIntroduceeName && !matchIntroduceeNumber && !matchState){
+          if (!matchYear && !matchMonth && !matchDay && !matchHours && !matchMinutes && !matchSeconds && !matchIntroduceeName && !matchIntroduceeNumber){
             filtered.remove(p);
           }
         }
