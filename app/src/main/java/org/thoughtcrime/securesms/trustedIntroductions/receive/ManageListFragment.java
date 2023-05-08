@@ -102,9 +102,11 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
     }
     showConflicting.setOnClickListener(c ->{
       viewModel.toggleShowConflicting();
+      refreshList();
     });
     showStale.setOnClickListener(c ->{
       viewModel.toggleShowStale();
+      refreshList();
     });
     switch(tab){
       case NEW:
@@ -124,9 +126,11 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
         }
         showAccepted.setOnClickListener(c ->{
           viewModel.toggleShowAccepted();
+          refreshList();
         });
         showRejected.setOnClickListener(c ->{
           viewModel.toggleShowRejected();
+          refreshList();
         });
     }
     // Introduction Observer
