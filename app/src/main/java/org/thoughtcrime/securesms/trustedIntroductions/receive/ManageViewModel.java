@@ -68,18 +68,22 @@ public class ManageViewModel extends ViewModel {
   }
 
   public Boolean showConflicting() {
+    if(show == null) return true;
     return show.get(conflictingKey);
   }
 
   public Boolean showStale(){
+    if(show == null) return true;
     return show.get(staleKey);
   }
 
   public Boolean showAccepted(){
+    if(show == null) return true;
     return show.get(acceptedKey);
   }
 
   public Boolean showRejected(){
+    if(show == null) return true;
     return show.get(rejectedKey);
   }
 
