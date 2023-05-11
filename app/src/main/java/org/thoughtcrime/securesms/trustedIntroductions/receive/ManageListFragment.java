@@ -43,9 +43,17 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
   private View                           all_header;
   private ManageActivity.ActiveTab tab = NEW;
   private MaterialButton showConflicting;
+  // Don't refresh list 5 times on setup.
+  private boolean sCisFirstInit = true;
+
   private MaterialButton showAccepted;
+  private boolean sAisFirstInit = true;
+
   private MaterialButton showRejected;
+  private boolean sRisFirstInit = true;
+
   private MaterialButton showStale;
+  private boolean sSisFirstInit = true;
 
   // Because final onCreate in AppCompat dissalows me from using a Fragment Factory, I need to use a Bundle for Arguments.
   static String TYPE_KEY = "type_key";
@@ -135,16 +143,16 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
     }
     // Filter state Obvservers
     viewModel.showConflicting().observe(getViewLifecycleOwner(), state ->{
-      onFilterStateChanged(showConflicting, state);
+      sCisFirstInit = onFilterStateChanged(showConflicting, state, sCisFirstInit);
     });
     viewModel.showStale().observe(getViewLifecycleOwner(), state ->{
-      onFilterStateChanged(showStale, state);
+      sSisFirstInit = onFilterStateChanged(showStale, state, sSisFirstInit);
     });
     viewModel.showAccepted().observe(getViewLifecycleOwner(), state ->{
-      onFilterStateChanged(showAccepted, state);
+      sAisFirstInit = onFilterStateChanged(showAccepted, state, sAisFirstInit);
     });
     viewModel.showRejected().observe(getViewLifecycleOwner(), state->{
-      onFilterStateChanged(showRejected, state);
+      sRisFirstInit = onFilterStateChanged(showRejected, state, sRisFirstInit);
     });
     // Introduction Observer
     this.viewModel.getIntroductions().observe(getViewLifecycleOwner(), introductions -> {
@@ -161,9 +169,21 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
     });
   }
 
-  private void onFilterStateChanged(MaterialButton b, Boolean state){
-    b.setChecked(state);
-    refreshList();
+  /**
+   *
+   * @param b which button to set.
+   * @param newCheckState the new newCheckState.
+   * @param isFirstInit global indicating if the button was ever set before.
+   * @return false, the value to be assigned to the global xXisFirstInit of the button if the method succeeds.
+   */
+  private boolean onFilterStateChanged(MaterialButton b, Boolean newCheckState, Boolean isFirstInit){
+    if(b.isChecked() != newCheckState){
+      b.setChecked(newCheckState);
+    }
+    if(!isFirstInit){
+      refreshList();
+    }
+    return false;
   }
 
   @Override public void onSaveInstanceState(@NonNull Bundle outState) {
