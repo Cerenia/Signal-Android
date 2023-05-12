@@ -70,6 +70,11 @@ public class ManageListItem extends ConstraintLayout {
     this.reject = findViewById(R.id.reject);
     this.buttonGroupLabel = findViewById(R.id.radio_group_label);
     this.guideline        = findViewById(R.id.half_guide);
+  }
+
+  public void set(@Nullable TI_Data data, @Nullable ManageViewModel.IntroducerInformation introducerInformation, SwitchClickListener l){
+    this.listener = l;
+    this.data = data;
     switch(data.getState()){
       case PENDING:
       case ACCEPTED:
@@ -82,11 +87,6 @@ public class ManageListItem extends ConstraintLayout {
         this.accept.setEnabled(false);
         this.reject.setEnabled(false);
     }
-  }
-
-  public void set(@Nullable TI_Data data, @Nullable ManageViewModel.IntroducerInformation introducerInformation, SwitchClickListener l){
-    this.listener = l;
-    this.data = data;
     Date d = new Date(data.getTimestamp());
     String dString = INTRODUCTION_DATE_PATTERN.format(d);
 
