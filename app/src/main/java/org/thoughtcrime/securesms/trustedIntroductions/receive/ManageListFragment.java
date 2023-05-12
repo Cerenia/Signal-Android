@@ -209,6 +209,7 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
         if(userFiltered(s)){
           return false;
         }
+        break;
       case LIBRARY:
         // Display everything but pending
         if((s == TrustedIntroductionsDatabase.State.PENDING)){
@@ -217,14 +218,17 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
         if(userFiltered(s)){
           return false;
         }
+        break;
       case ALL:
         if(userFiltered(s)){
           return false;
         }
+        break;
       default:
         // fail open
         return true;
     }
+    return true;
   }
 
   /**
