@@ -4033,12 +4033,12 @@
     <string name="ManageIntroductionsFragment__Conflicting">Conflicting</string>
     <string name="ManageIntroductionsFragment__Stale">Stale</string>
     <!-- ManageIntroductionsListItem -->
-    <string name="ManageIntroductionsListItem__Pending">Pending</string>
-    <string name="ManageIntroductionsListItem__Rejected">Rejected</string>
-    <string name="ManageIntroductionsListItem__Accepted">Accepted</string>
+    <string name="ManageIntroductionsListItem__Pending">Trust?</string>
+    <string name="ManageIntroductionsListItem__Rejected">Misstrusted</string>
+    <string name="ManageIntroductionsListItem__Accepted">Trusted</string>
     <string name="ManageIntroductionsListItem__Conflicting">Conflicting</string>
     <string name="ManageIntroductionsListItem__Stale">Stale</string>
-    <string name="ManageIntroductionsListItem__Forgotten_Introducer">erased</string>
+    <string name="ManageIntroductionsListItem__Forgotten_Introducer">Masked</string>
     <!-- ManageIntroductionsListItemHeader -->
     <string name="ManageIntroductionsListItemHeader__Date">Date:</string>
     <string name="ManageIntroductionsListItemHeader__Introducee">Introduced:</string>

@@ -359,9 +359,7 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
       default:
         throw new AssertionError(TAG +"Unknown tab type!");
     }
-
   }
-
 
   void refreshList(){
     if(adapter != null){

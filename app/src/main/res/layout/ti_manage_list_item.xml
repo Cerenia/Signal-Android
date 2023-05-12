@@ -110,7 +110,7 @@
         android:gravity="start|top"
         android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@id/introduceeNumber"
-        app:layout_constraintEnd_toStartOf="@id/switch_label"
+        app:layout_constraintEnd_toStartOf="@id/radio_group_label"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_chainStyle="packed"
         app:layout_constraintStart_toStartOf="@id/half_guide"
@@ -134,7 +134,7 @@
         app:layout_constrainedWidth="true"
         app:layout_constraintTop_toBottomOf="@id/introduceeName"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/switch_label"
+        app:layout_constraintEnd_toStartOf="@id/radio_group_label"
         app:layout_constraintStart_toEndOf="@id/half_guide"
         app:layout_constraintVertical_chainStyle="packed"
         app:layout_constraintHorizontal_bias="0"
@@ -142,7 +142,7 @@
 
 
     <org.thoughtcrime.securesms.components.FromTextView
-        android:id="@+id/switch_label"
+        android:id="@+id/radio_group_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
@@ -154,20 +154,33 @@
         android:textColor="@color/signal_text_primary"
         android:gravity="top|end"
         app:layout_constraintHorizontal_bias="1"
-        app:layout_constraintBottom_toTopOf="@id/switch_yn"
+        app:layout_constraintBottom_toTopOf="@id/trust_distrust"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <com.google.android.material.switchmaterial.SwitchMaterial
-        android:id="@+id/switch_yn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="@style/Signal.Text.BodyLarge"
-        android:textColor="@color/signal_text_primary"
-        android:gravity="bottom|end"
-        app:layout_constraintHorizontal_bias="1"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/switch_label"
-        app:layout_constraintBottom_toBottomOf="parent" />
+    <RadioGroup
+        android:id="@+id/trust_distrust"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:orientation="horizontal"
+        tools:text="Trusted"
+        >
+        <TextView
+            android:id="@+id/buttonGroupLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            />
+        <RadioButton
+            android:id="@+id/accept"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:button="@drawable/ic_check_circle_solid_ultramarine_24"/>
+        <RadioButton
+            android:id="@+id/reject"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:button="@drawable/ic_x_20"
+            />
+    </RadioGroup>
 
 </org.thoughtcrime.securesms.trustedIntroductions.receive.ManageListItem>
