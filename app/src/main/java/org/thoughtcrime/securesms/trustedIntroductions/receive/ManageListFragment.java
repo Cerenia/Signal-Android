@@ -28,6 +28,8 @@ import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -254,7 +256,7 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
   }
 
   /**
-   * Filters complete introduction list by Tab type, search filter and button selectors
+   * Filters complete introduction list by Tab type, search filter, button selectors and finally sorts.
    * @param introductions All introductions returned by ViewModel.
    * @param filter The user provided filter.
    * @return the filtered list appropriate for the fragment depending on tab, button selectors and filter.
@@ -287,8 +289,44 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
         }
       }
     }
-    return filtered;
+    return sortIntroductions(filtered);
   }
+
+  /**
+   * Sorts introductions depending on the tab type.
+   * NEW: by date
+   * LIBRARY: by introducee
+   * ALL: by introducer
+   * The sorted list.
+   */
+  private List<Pair<TI_Data, ManageViewModel.IntroducerInformation>> sortIntroductions(List<Pair<TI_Data, ManageViewModel.IntroducerInformation>> filtered){
+    switch(tab){
+      case NEW:
+        filtered.sort(Comparator.comparingLong(p -> p.first.getTimestamp()));
+        return filtered;
+      case LIBRARY:
+        filtered.sort((p1, p2) -> p1.first.getIntroduceeName().compareToIgnoreCase(p2.first.getIntroduceeName()));
+        return filtered;
+      case ALL:
+        // I want the masked ones at the bottom, sorted by introducee so this needs a bit more logic
+        List<Pair<TI_Data, ManageViewModel.IntroducerInformation>> result = new ArrayList<>(filtered);
+        List<Pair<TI_Data, ManageViewModel.IntroducerInformation>> masked = new ArrayList<>();
+        for(Pair<TI_Data, ManageViewModel.IntroducerInformation> p: filtered){
+          if(p.second.name.equals(FORGOTTEN_INTRODUCER)){
+            masked.add(p);
+            result.remove(p);
+          }
+        }
+        masked.sort((p1, p2) -> p1.first.getIntroduceeName().compareToIgnoreCase(p2.first.getIntroduceeName()));
+        result.sort((p1, p2) -> p1.second.name.compareToIgnoreCase(p2.second.name));
+        result.addAll(masked);
+        return result;
+      default:
+        throw new AssertionError(TAG +"Unknown tab type!");
+    }
+
+  }
+
 
   void refreshList(){
     if(adapter != null){
