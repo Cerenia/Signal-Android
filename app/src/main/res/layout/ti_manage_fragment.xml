@@ -135,6 +135,7 @@
             android:orientation="horizontal"
             android:insetTop="0dp"
             android:insetBottom="0dp"
+            android:gravity="center_horizontal"
             app:layout_constraintTop_toBottomOf="@id/recycler_view"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -146,7 +147,6 @@
                 android:layout_height="wrap_content"
                 android:enabled="true"
                 android:checkable="true"
-                android:layout_gravity="center_horizontal"
                 android:text="@string/ManageIntroductionsFragment__Conflicting"
                 />
             <com.google.android.material.button.MaterialButton
@@ -156,7 +156,6 @@
                 android:layout_height="wrap_content"
                 android:enabled="true"
                 android:checkable="true"
-                android:layout_gravity="center_horizontal"
                 android:text="@string/ManageIntroductionsFragment__Stale"
                 />
             <com.google.android.material.button.MaterialButton
@@ -166,7 +165,6 @@
                 android:layout_height="wrap_content"
                 android:enabled="true"
                 android:checkable="true"
-                android:layout_gravity="center_horizontal"
                 android:text="@string/ManageIntroductionsFragment__Accepted"
                 />
             <com.google.android.material.button.MaterialButton
@@ -176,7 +174,6 @@
                 android:layout_height="wrap_content"
                 android:checkable="true"
                 android:enabled="true"
-                android:layout_gravity="center_horizontal"
                 android:text="@string/ManageIntroductionsFragment__Rejected"
                 />
         </com.google.android.material.button.MaterialButtonToggleGroup>
