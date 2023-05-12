@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 
 public class ManageListFragment extends Fragment implements DeleteIntroductionDialog.DeleteIntroduction, ForgetIntroducerDialog.ForgetIntroducer, ManageListItem.SwitchClickListener {
@@ -323,12 +324,15 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
    * The sorted list.
    */
   private List<Pair<TI_Data, ManageViewModel.IntroducerInformation>> sortIntroductions(List<Pair<TI_Data, ManageViewModel.IntroducerInformation>> filtered){
+    Function<Pair<TI_Data, ManageViewModel.IntroducerInformation>, Long> dateExtractor = p -> p.first.getTimestamp();
+    Function<Pair<TI_Data, ManageViewModel.IntroducerInformation>, String> introduceeNameExtractor = p -> p.first.getIntroduceeName();
     switch(tab){
       case NEW:
         filtered.sort(Comparator.comparingLong(p -> p.first.getTimestamp()));
         return filtered;
       case LIBRARY:
-        filtered.sort((p1, p2) -> p1.first.getIntroduceeName().compareToIgnoreCase(p2.first.getIntroduceeName()));
+        // First by introducee, if equal by date
+        filtered.sort(Comparator.comparing(introduceeNameExtractor).thenComparing(dateExtractor));
         return filtered;
       case ALL:
         // I want the masked ones at the bottom, sorted by introducee so this needs a bit more logic
@@ -340,8 +344,9 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
             result.remove(p);
           }
         }
-        masked.sort((p1, p2) -> p1.first.getIntroduceeName().compareToIgnoreCase(p2.first.getIntroduceeName()));
-        result.sort((p1, p2) -> p1.second.name.compareToIgnoreCase(p2.second.name));
+        masked.sort(Comparator.comparing(introduceeNameExtractor));
+        Function<Pair<TI_Data, ManageViewModel.IntroducerInformation>, String> introducerNameExtractor = p -> p.second.name;
+        result.sort(Comparator.comparing(introducerNameExtractor).thenComparing(dateExtractor));
         result.addAll(masked);
         return result;
       default:
