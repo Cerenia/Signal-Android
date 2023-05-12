@@ -241,33 +241,41 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
         if(!viewModel.showAccepted().getValue()){
           return true;
         }
+        break;
       case REJECTED:
         if(!viewModel.showRejected().getValue()){
           return true;
         }
+        break;
       case CONFLICTING:
         if(!viewModel.showConflicting().getValue()){
           return true;
         }
+        break;
       case STALE_PENDING:
         if(!viewModel.showStale().getValue()){
           return true;
         }
+        break;
       case STALE_REJECTED:
         if(!viewModel.showStale().getValue() && !viewModel.showStale().getValue()){
           return true;
         }
+        break;
       case STALE_ACCEPTED:
         if(!viewModel.showAccepted().getValue() && !viewModel.showStale().getValue()){
           return true;
         }
+        break;
       case STALE_CONFLICTING:
         if(!viewModel.showConflicting().getValue() && !viewModel.showStale().getValue()){
           return true;
         }
+        break;
       default: // fail open
         return false;
     }
+    return false;
   }
 
   /**
