@@ -123,9 +123,11 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
     });
     switch(tab){
       case NEW:
-        // Accepted and Rejected not yet useful
+        // Accepted, Rejected and stale don't show up
         showAccepted.setVisibility(View.GONE);
         showRejected.setVisibility(View.GONE);
+        showStale.setVisibility(View.GONE);
+        break;
       case LIBRARY:
       case ALL:
         showAccepted.setVisibility(View.VISIBLE);
@@ -346,7 +348,9 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
         }
         masked.sort(Comparator.comparing(introduceeNameExtractor));
         Function<Pair<TI_Data, ManageViewModel.IntroducerInformation>, String> introducerNameExtractor = p -> p.second.name;
+        // First by introducer, then by date
         result.sort(Comparator.comparing(introducerNameExtractor).thenComparing(dateExtractor));
+        // Add masked ones at the end
         result.addAll(masked);
         return result;
       default:
