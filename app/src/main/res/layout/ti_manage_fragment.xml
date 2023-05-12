@@ -130,7 +130,7 @@
 
         <com.google.android.material.button.MaterialButtonToggleGroup
             android:id="@+id/toggleButton"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:insetTop="0dp"
@@ -146,6 +146,7 @@
                 android:layout_height="wrap_content"
                 android:enabled="true"
                 android:checkable="true"
+                android:layout_gravity="center_horizontal"
                 android:text="@string/ManageIntroductionsFragment__Conflicting"
                 />
             <com.google.android.material.button.MaterialButton
@@ -155,6 +156,7 @@
                 android:layout_height="wrap_content"
                 android:enabled="true"
                 android:checkable="true"
+                android:layout_gravity="center_horizontal"
                 android:text="@string/ManageIntroductionsFragment__Stale"
                 />
             <com.google.android.material.button.MaterialButton
@@ -164,6 +166,7 @@
                 android:layout_height="wrap_content"
                 android:enabled="true"
                 android:checkable="true"
+                android:layout_gravity="center_horizontal"
                 android:text="@string/ManageIntroductionsFragment__Accepted"
                 />
             <com.google.android.material.button.MaterialButton
@@ -173,6 +176,7 @@
                 android:layout_height="wrap_content"
                 android:checkable="true"
                 android:enabled="true"
+                android:layout_gravity="center_horizontal"
                 android:text="@string/ManageIntroductionsFragment__Rejected"
                 />
         </com.google.android.material.button.MaterialButtonToggleGroup>

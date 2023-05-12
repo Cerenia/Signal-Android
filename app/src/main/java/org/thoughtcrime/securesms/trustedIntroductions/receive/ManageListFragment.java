@@ -309,7 +309,10 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
           boolean matchSeconds = filterPattern.matcher(timestampParts.seconds).find();
           boolean matchIntroduceeName = filterPattern.matcher(d.getIntroduceeName()).find();
           boolean matchIntroduceeNumber = filterPattern.matcher(d.getIntroduceeNumber()).find();
-          if (!matchYear && !matchMonth && !matchDay && !matchHours && !matchMinutes && !matchSeconds && !matchIntroduceeName && !matchIntroduceeNumber){
+          boolean matchIntroducerName = filterPattern.matcher(p.second.name).find();
+          boolean matchIntroducerNumber = filterPattern.matcher(p.second.number).find();
+          if (!(matchYear || matchMonth || matchDay || matchHours || !matchMinutes || matchSeconds || matchIntroduceeName || matchIntroduceeNumber
+                || matchIntroducerName || matchIntroducerNumber)){
             filtered.remove(p);
           }
         }
