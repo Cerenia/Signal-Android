@@ -232,7 +232,6 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
   private boolean userFiltered(TrustedIntroductionsDatabase.State s){
     switch(s){
       case STALE_ACCEPTED:
-      case STALE_CONFLICTING:
       case STALE_PENDING:
       case STALE_REJECTED:
         if(!viewModel.showStale().getValue()){
@@ -250,7 +249,11 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
         if(!viewModel.showConflicting().getValue()){
           return true;
         }
-      default:
+      case STALE_CONFLICTING:
+        if(!viewModel.showConflicting().getValue() && !viewModel.showStale().getValue()){
+          return true;
+        }
+      default: // fail open
         return false;
     }
   }
