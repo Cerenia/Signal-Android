@@ -202,14 +202,16 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
     TrustedIntroductionsDatabase.State s = p.first.getState();
     switch(tab){
       case NEW:
-        if(!(s == TrustedIntroductionsDatabase.State.PENDING || s == TrustedIntroductionsDatabase.State.STALE_PENDING || s == TrustedIntroductionsDatabase.State.CONFLICTING || s == TrustedIntroductionsDatabase.State.STALE_CONFLICTING)){
+        // Only display pending and conflicting
+        if(!(s == TrustedIntroductionsDatabase.State.PENDING || s == TrustedIntroductionsDatabase.State.CONFLICTING)){
           return false;
         }
         if(userFiltered(s)){
           return false;
         }
       case LIBRARY:
-        if((s == TrustedIntroductionsDatabase.State.PENDING || s == TrustedIntroductionsDatabase.State.STALE_PENDING)){
+        // Display everything but pending
+        if((s == TrustedIntroductionsDatabase.State.PENDING)){
           return false;
         }
         if(userFiltered(s)){
