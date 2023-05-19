@@ -168,34 +168,39 @@ public class ManageListItem extends ConstraintLayout {
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_default));
         break;
       case ACCEPTED:
-        radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Accepted);
+        radioGroupLabel.setVisibility(View.GONE);
         accept.setVisibility(VISIBLE);
         accept.setEnabled(true);
+        accept.setChecked(true);
         reject.setVisibility(VISIBLE);
         reject.setEnabled(true);
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_default));
         break;
       case REJECTED:
-        radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Rejected);
+        radioGroupLabel.setVisibility(View.GONE);
         accept.setVisibility(VISIBLE);
         accept.setEnabled(true);
         reject.setVisibility(VISIBLE);
         reject.setEnabled(true);
+        reject.setChecked(true);
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_default));
         break;
       case CONFLICTING:
         radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Conflicting);
-        accept.setVisibility(INVISIBLE);
+        accept.setVisibility(GONE);
         accept.setEnabled(false);
-        reject.setVisibility(INVISIBLE);
+        accept.setClickable(false);
+        reject.setVisibility(GONE);
         reject.setEnabled(false);
+        accept.setClickable(false);
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_conflicting));
         break;
       case STALE_ACCEPTED: // Keep the visible state of the switch in these cases
-        radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Stale);
+        radioGroupLabel.setVisibility(View.GONE);
         accept.setVisibility(VISIBLE);
         accept.setEnabled(false);
         accept.setClickable(false);
+        accept.setChecked(true);
         reject.setVisibility(VISIBLE);
         reject.setEnabled(false);
         reject.setClickable(false);
@@ -203,14 +208,14 @@ public class ManageListItem extends ConstraintLayout {
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_stale));
         break;
       case STALE_REJECTED:
-        radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Stale);
+        radioGroupLabel.setVisibility(View.GONE);
         accept.setVisibility(VISIBLE);
         accept.setEnabled(false);
         accept.setClickable(false);
         reject.setVisibility(VISIBLE);
         reject.setEnabled(false);
         reject.setClickable(false);
-        accept.setChecked(true);
+        reject.setChecked(true);
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_stale));
         break;
       case STALE_PENDING:
@@ -221,18 +226,16 @@ public class ManageListItem extends ConstraintLayout {
         reject.setVisibility(VISIBLE);
         reject.setEnabled(false);
         reject.setClickable(false);
-        accept.setChecked(true);
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_stale));
         break;
       case STALE_CONFLICTING:
         radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Conflicting);
-        accept.setVisibility(VISIBLE);
+        accept.setVisibility(GONE);
         accept.setEnabled(false);
         accept.setClickable(false);
-        reject.setVisibility(VISIBLE);
+        reject.setVisibility(GONE);
         reject.setEnabled(false);
         reject.setClickable(false);
-        accept.setChecked(true);
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_stale_conflicting));
         break;
     }
