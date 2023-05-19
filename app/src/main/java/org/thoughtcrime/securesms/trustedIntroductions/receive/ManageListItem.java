@@ -150,7 +150,7 @@ public class ManageListItem extends ConstraintLayout {
       listener.reject(data.getId());
     }
     newIntro = changeState(data, newState);
-    changeListitemAppearanceByState(newState, true);
+    changeListitemAppearanceByState(newState, false);
     data = newIntro;
   }
 
