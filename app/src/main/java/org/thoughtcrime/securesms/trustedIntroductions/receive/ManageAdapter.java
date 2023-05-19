@@ -31,8 +31,9 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
       @Override public boolean areContentsTheSame(@NonNull Pair<TI_Data, ManageViewModel.IntroducerInformation> oldPair, @NonNull Pair<TI_Data, ManageViewModel.IntroducerInformation> newPair) {
         TI_Data oldItem = oldPair.first;
         TI_Data newItem = newPair.first;
-        // Ignoring Identity key, since this is already covered by public Key
-        return oldItem.getId().equals(newItem.getId()) &&
+        // This list is not loaded live.. The only things that will differ are the state, depending on what the user chooses to do.
+        return oldItem.getState().equals(newItem.getState()) &&
+              oldItem.getId().equals(newItem.getId()) &&
                (oldItem.getIntroducerServiceId() == null || newItem.getIntroducerServiceId() == null || oldItem.getIntroducerServiceId().equals(newItem.getIntroducerServiceId())) &&
                oldItem.getIntroduceeServiceId().equals(newItem.getIntroduceeServiceId()) &&
                oldItem.getIntroduceeName().equals(newItem.getIntroduceeName()) &&

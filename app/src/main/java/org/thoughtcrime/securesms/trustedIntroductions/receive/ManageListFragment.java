@@ -321,6 +321,10 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
     return sortIntroductions(filtered);
   }
 
+  private static Function<Pair<TI_Data, ManageViewModel.IntroducerInformation>, Long> dateExtractor = p -> p.first.getTimestamp();
+  private static Function<Pair<TI_Data, ManageViewModel.IntroducerInformation>, String> introduceeNameExtractor = p -> p.first.getIntroduceeName();
+  private static Function<Pair<TI_Data, ManageViewModel.IntroducerInformation>, Long> stateExtractor = p -> (long)p.first.getState().toInt();
+
   /**
    * Sorts introductions depending on the tab type.
    * NEW: by date
@@ -329,33 +333,15 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
    * The sorted list.
    */
   private List<Pair<TI_Data, ManageViewModel.IntroducerInformation>> sortIntroductions(List<Pair<TI_Data, ManageViewModel.IntroducerInformation>> filtered){
-    Function<Pair<TI_Data, ManageViewModel.IntroducerInformation>, Long> dateExtractor = p -> p.first.getTimestamp();
-    Function<Pair<TI_Data, ManageViewModel.IntroducerInformation>, String> introduceeNameExtractor = p -> p.first.getIntroduceeName();
     switch(tab){
       case NEW:
-        filtered.sort(Comparator.comparingLong(p -> p.first.getTimestamp()));
+        filtered.sort(Comparator.comparing(dateExtractor));
         return filtered;
       case LIBRARY:
-        // First by introducee, if equal by date
-        filtered.sort(Comparator.comparing(introduceeNameExtractor).thenComparing(dateExtractor));
-        return filtered;
       case ALL:
-        // I want the masked ones at the bottom, sorted by introducee so this needs a bit more logic
-        List<Pair<TI_Data, ManageViewModel.IntroducerInformation>> result = new ArrayList<>(filtered);
-        List<Pair<TI_Data, ManageViewModel.IntroducerInformation>> masked = new ArrayList<>();
-        for(Pair<TI_Data, ManageViewModel.IntroducerInformation> p: filtered){
-          if(p.second.name.equals(FORGOTTEN_INTRODUCER)){
-            masked.add(p);
-            result.remove(p);
-          }
-        }
-        masked.sort(Comparator.comparing(introduceeNameExtractor));
-        Function<Pair<TI_Data, ManageViewModel.IntroducerInformation>, String> introducerNameExtractor = p -> p.second.name;
-        // First by introducer, then by date
-        result.sort(Comparator.comparing(introducerNameExtractor).thenComparing(dateExtractor));
-        // Add masked ones at the end
-        result.addAll(masked);
-        return result;
+        // First by state, then introducee, then date
+        filtered.sort(Comparator.comparing(stateExtractor).thenComparing(introduceeNameExtractor).thenComparing(dateExtractor));
+        return filtered;
       default:
         throw new AssertionError(TAG +"Unknown tab type!");
     }
