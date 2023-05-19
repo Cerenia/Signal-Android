@@ -3,6 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
     android:layout_gravity="center"
     android:orientation="vertical">
 
@@ -27,6 +29,8 @@
 
     <org.thoughtcrime.securesms.components.ContactFilterView
         android:id="@+id/introduction_filter_edit_text"
+        android:nextFocusUp="@id/introduction_filter_edit_text"
+        android:nextFocusLeft="@id/introduction_filter_edit_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="4dp"
