@@ -93,9 +93,13 @@ public class ManageListItem extends ConstraintLayout {
     introducerName.setVisibility(View.VISIBLE);
     guideline.setGuidelinePercent(0.5f);
     changeListitemAppearanceByState(data.getState(), true);
-    this.accept.setOnCheckedChangeListener((b, isChecked) -> changeTrust(isChecked));
+    this.accept.setOnCheckedChangeListener((b, isChecked) -> {
+      if(isChecked) changeTrust(true);
+    });
     // race condition?
-    this.reject.setOnCheckedChangeListener((b, isChecked) -> changeTrust(isChecked));
+    this.reject.setOnCheckedChangeListener((b, isChecked) -> {
+      if(isChecked) changeTrust(false);
+    });
   }
 
   /**
@@ -140,12 +144,13 @@ public class ManageListItem extends ConstraintLayout {
     TrustedIntroductionsDatabase.State newState;
     if(trust){
       newState = State.ACCEPTED;
+      listener.accept(data.getId());
     } else {
       newState =  State.REJECTED;
+      listener.reject(data.getId());
     }
     newIntro = changeState(data, newState);
-    changeListitemAppearanceByState(newState, false);
-    listener.accept(data.getId());
+    changeListitemAppearanceByState(newState, true);
     data = newIntro;
   }
 
@@ -163,8 +168,10 @@ public class ManageListItem extends ConstraintLayout {
         radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Pending);
         accept.setVisibility(VISIBLE);
         accept.setEnabled(true);
+        accept.setClickable(true);
         reject.setVisibility(VISIBLE);
         reject.setEnabled(true);
+        reject.setClickable(true);
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_default));
         break;
       case ACCEPTED:
@@ -176,6 +183,8 @@ public class ManageListItem extends ConstraintLayout {
         if(setChecks){
           accept.setChecked(true);
         }
+        reject.setClickable(true);
+        accept.setClickable(true);
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_default));
         break;
       case REJECTED:
@@ -187,6 +196,8 @@ public class ManageListItem extends ConstraintLayout {
         if(setChecks){
           reject.setChecked(true);
         }
+        reject.setClickable(true);
+        accept.setClickable(true);
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_default));
         break;
       case CONFLICTING:
