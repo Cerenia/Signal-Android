@@ -47,6 +47,7 @@ public class ManageListItem extends ConstraintLayout {
   private RadioButton accept;
   private RadioButton reject;
   private RadioGroup  radioGroup;
+  private TextView radioGroupLabel;
   private Guideline   guideline;
 
   public ManageListItem(Context context, AttributeSet attrs) {
@@ -66,27 +67,16 @@ public class ManageListItem extends ConstraintLayout {
     this.introducerNumber = findViewById(R.id.introducerNumber);
     this.introduceeName   = findViewById(R.id.introduceeName);
     this.introduceeNumber = findViewById(R.id.introduceeNumber);
-    //this.accept     = findViewById(R.id.accept);
-    //this.reject     = findViewById(R.id.reject);
+    this.accept     = findViewById(R.id.accept);
+    this.reject     = findViewById(R.id.reject);
     this.radioGroup = findViewById(R.id.trust_distrust);
+    this.radioGroupLabel = findViewById(R.id.radio_group_label);
     this.guideline  = findViewById(R.id.half_guide);
   }
 
   public void set(@Nullable TI_Data data, @Nullable ManageViewModel.IntroducerInformation introducerInformation, SwitchClickListener l){
     this.listener = l;
     this.data = data;
-    switch(data.getState()){
-      case PENDING:
-      case ACCEPTED:
-      case REJECTED:
-        return; // keep everything visible and enabled
-      default:
-        // cannot check/uncheck
-        //this.accept.setVisibility(INVISIBLE);
-        //this.reject.setVisibility(INVISIBLE);
-        //this.accept.setEnabled(false);
-        //this.reject.setEnabled(false);
-    }
     Date d = new Date(data.getTimestamp());
     String dString = INTRODUCTION_DATE_PATTERN.format(d);
 
@@ -170,71 +160,79 @@ public class ManageListItem extends ConstraintLayout {
   private void changeByState(TrustedIntroductionsDatabase.State s){
     switch(s){
       case PENDING:
-        //radioGroup.setText(R.string.ManageIntroductionsListItem__Pending);
-        //accept.setVisibility(VISIBLE);
-        //accept.setEnabled(true);
-        //reject.setVisibility(VISIBLE);
-        //reject.setEnabled(true);
+        radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Pending);
+        accept.setVisibility(VISIBLE);
+        accept.setEnabled(true);
+        reject.setVisibility(VISIBLE);
+        reject.setEnabled(true);
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_default));
         break;
       case ACCEPTED:
-        //radioGroup.setText(R.string.ManageIntroductionsListItem__Accepted);
-        //accept.setVisibility(VISIBLE);
-        //accept.setEnabled(true);
-        //reject.setVisibility(VISIBLE);
-        //reject.setEnabled(true);
+        radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Accepted);
+        accept.setVisibility(VISIBLE);
+        accept.setEnabled(true);
+        reject.setVisibility(VISIBLE);
+        reject.setEnabled(true);
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_default));
         break;
       case REJECTED:
-        //radioGroup.setText(R.string.ManageIntroductionsListItem__Rejected);
-        //accept.setVisibility(VISIBLE);
-        //accept.setEnabled(true);
-        //reject.setVisibility(VISIBLE);
-        //reject.setEnabled(true);
+        radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Rejected);
+        accept.setVisibility(VISIBLE);
+        accept.setEnabled(true);
+        reject.setVisibility(VISIBLE);
+        reject.setEnabled(true);
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_default));
         break;
       case CONFLICTING:
-        //radioGroup.setText(R.string.ManageIntroductionsListItem__Conflicting);
-        //accept.setVisibility(INVISIBLE);
-        //accept.setEnabled(false);
-        //reject.setVisibility(INVISIBLE);
-        //reject.setEnabled(false);
+        radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Conflicting);
+        accept.setVisibility(INVISIBLE);
+        accept.setEnabled(false);
+        reject.setVisibility(INVISIBLE);
+        reject.setEnabled(false);
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_conflicting));
         break;
       case STALE_ACCEPTED: // Keep the visible state of the switch in these cases
-        //radioGroup.setText(R.string.ManageIntroductionsListItem__Stale);
-        //accept.setVisibility(VISIBLE);
-        //accept.setClickable(false);
-        //reject.setVisibility(VISIBLE);
-        //reject.setClickable(false);
+        radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Stale);
+        accept.setVisibility(VISIBLE);
+        accept.setEnabled(false);
+        accept.setClickable(false);
+        reject.setVisibility(VISIBLE);
+        reject.setEnabled(false);
+        reject.setClickable(false);
         accept.setChecked(true);
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_stale));
         break;
       case STALE_REJECTED:
-        //radioGroup.setText(R.string.ManageIntroductionsListItem__Stale);
-        //accept.setVisibility(VISIBLE);
-        //accept.setClickable(false);
-        //reject.setVisibility(VISIBLE);
-        //reject.setClickable(false);
-        //reject.setChecked(true);
+        radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Stale);
+        accept.setVisibility(VISIBLE);
+        accept.setEnabled(false);
+        accept.setClickable(false);
+        reject.setVisibility(VISIBLE);
+        reject.setEnabled(false);
+        reject.setClickable(false);
+        accept.setChecked(true);
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_stale));
         break;
       case STALE_PENDING:
-        //radioGroup.setText(R.string.ManageIntroductionsListItem__Stale);
-        //accept.setVisibility(VISIBLE);
-        //accept.setClickable(false);
-        //reject.setVisibility(VISIBLE);
-        //reject.setClickable(false);
-        //reject.setChecked(false);
-        //accept.setChecked(false);
+        radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Stale);
+        accept.setVisibility(VISIBLE);
+        accept.setEnabled(false);
+        accept.setClickable(false);
+        reject.setVisibility(VISIBLE);
+        reject.setEnabled(false);
+        reject.setClickable(false);
+        accept.setChecked(true);
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_stale));
         break;
       case STALE_CONFLICTING:
-        //radioGroup.setText(R.string.ManageIntroductionsListItem__Conflicting);
-        //accept.setVisibility(INVISIBLE);
-        //accept.setEnabled(false);
-        //reject.setVisibility(INVISIBLE);
-        //eject.setEnabled(false);
+        radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Conflicting);
+        accept.setVisibility(VISIBLE);
+        accept.setEnabled(false);
+        accept.setClickable(false);
+        reject.setVisibility(VISIBLE);
+        reject.setEnabled(false);
+        reject.setClickable(false);
+        accept.setChecked(true);
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_stale_conflicting));
         break;
     }
