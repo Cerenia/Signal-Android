@@ -180,13 +180,13 @@
         android:id="@+id/accept"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:button="@drawable/ic_check_circle_solid_ultramarine_24" />
+        android:button="@drawable/ic_ti_selector_accepted_24" />
 
     <RadioButton
         android:id="@+id/reject"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:button="@drawable/ic_x_24" />
+        android:button="@drawable/ic_ti_selector_rejected_24" />
 </RadioGroup>
 
 </org.thoughtcrime.securesms.trustedIntroductions.receive.ManageListItem>
