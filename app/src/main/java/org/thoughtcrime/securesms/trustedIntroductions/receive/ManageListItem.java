@@ -46,7 +46,7 @@ public class ManageListItem extends ConstraintLayout {
   private TextView    introduceeNumber;
   private RadioButton accept;
   private RadioButton reject;
-  private TextView  radioGroup;
+  private RadioGroup  radioGroup;
   private Guideline   guideline;
 
   public ManageListItem(Context context, AttributeSet attrs) {
