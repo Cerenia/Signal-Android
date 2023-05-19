@@ -3,6 +3,7 @@ package org.thoughtcrime.securesms.trustedIntroductions.receive;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -137,6 +138,8 @@ public class ManageActivity extends PassphraseRequiredActivity {
     new TabLayoutMediator(tabLayout, pager,
                           (tab, position) -> tab.setText(tabTitles.get(position))
     ).attach();
+    getWindow().setSoftInputMode(
+        WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
   }
 
 
