@@ -338,9 +338,11 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
         filtered.sort(Comparator.comparing(dateExtractor));
         return filtered;
       case LIBRARY:
-      case ALL:
         // First by state, then introducee, then date
         filtered.sort(Comparator.comparing(stateExtractor).thenComparing(introduceeNameExtractor).thenComparing(dateExtractor));
+        return filtered;
+      case ALL:
+        filtered.sort(Comparator.comparing(introduceeNameExtractor).thenComparing(stateExtractor).thenComparing(dateExtractor));
         return filtered;
       default:
         throw new AssertionError(TAG +"Unknown tab type!");
