@@ -43,18 +43,25 @@ public class ManageManager {
       // sort by date
       Collections.sort(introductions, Comparator.comparing(TI_Data::getTimestamp));
       ArrayList<Pair<TI_Data, ManageViewModel.IntroducerInformation>> result = new ArrayList<>();
+      ManageViewModel.IntroducerInformation i = null;
       for (TI_Data d: introductions) {
-        ManageViewModel.IntroducerInformation i;
         if(d.getIntroducerServiceId() == null){
           i = new ManageViewModel.IntroducerInformation(forgottenPlaceholder, forgottenPlaceholder);
         } else {
-          Recipient r = Recipient.live(TI_Utils.getRecipientIdOrUnknown(d.getIntroducerServiceId())).resolve();
-          String number = r.getE164().orElse("");
-          // TODO: using getApplication context because the context doesn't matter... (22-10-06)
-          // It just circularly gets passed around between methods in the Recipient but is never used for anything.
-          i = new ManageViewModel.IntroducerInformation(r.getDisplayNameOrUsername(getApplicationContext()), number);
+          try {
+            Recipient r      = Recipient.live(TI_Utils.getRecipientIdOrUnknown(d.getIntroducerServiceId())).resolve();
+            String    number = r.getE164().orElse("");
+            // TODO: using getApplication context because the context doesn't matter... (22-10-06)
+            // It just circularly gets passed around between methods in the Recipient but is never used for anything.
+            i = new ManageViewModel.IntroducerInformation(r.getDisplayNameOrUsername(getApplicationContext()), number);
+          } catch (Exception e) {
+            e.printStackTrace();
+            Log.e(TAG, e.getMessage());
+          }
+        } // TODO: this should not happen
+        if (i != null) {
+          result.add(new Pair<>(d, i));
         }
-        result.add(new Pair<>(d, i));
       }
       listConsumer.accept(result);
     });
