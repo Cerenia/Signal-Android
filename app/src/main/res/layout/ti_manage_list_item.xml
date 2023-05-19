@@ -27,7 +27,8 @@
         app:layout_constraintHorizontal_bias="0"
         app:layout_constraintBottom_toBottomOf="@id/timestamp_time"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="01.01.2001"/>
 
     <org.thoughtcrime.securesms.components.FromTextView
         android:id="@+id/timestamp_time"
@@ -45,7 +46,8 @@
         app:layout_constraintHorizontal_bias="0"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/timestamp_date" />
+        app:layout_constraintTop_toTopOf="@id/timestamp_date"
+        tools:text="16:32"/>
 
 
     <org.thoughtcrime.securesms.components.FromTextView
@@ -79,7 +81,6 @@
         android:singleLine="true"
         android:textAppearance="@style/Signal.Text.BodyMedium"
         android:textColor="@color/signal_text_secondary"
-        android:textDirection="ltr"
         android:gravity="start|bottom"
         app:layout_constraintTop_toBottomOf="@id/introducerName"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -152,35 +153,41 @@
         android:singleLine="true"
         android:textAppearance="@style/Signal.Text.BodyMedium"
         android:textColor="@color/signal_text_primary"
-        android:gravity="top|end"
+        android:gravity="end"
         app:layout_constraintHorizontal_bias="1"
+        app:layout_constraintStart_toEndOf="@id/introduceeName"
         app:layout_constraintBottom_toTopOf="@id/trust_distrust"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:text="Stale"/>
 
     <RadioGroup
         android:id="@+id/trust_distrust"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:orientation="horizontal"
+        app:layout_constraintStart_toEndOf="@id/introduceeNumber"
+        app:layout_constraintTop_toBottomOf="@id/radio_group_label"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         tools:text="Trusted"
         >
-        <TextView
-            android:id="@+id/buttonGroupLabel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            />
         <RadioButton
             android:id="@+id/accept"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:button="@drawable/ic_check_circle_solid_ultramarine_24"/>
-        <RadioButton
-            android:id="@+id/reject"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:button="@drawable/ic_x_20"
-            />
-    </RadioGroup>
+            android:text="@string/ManageIntroductionsListItem__Accepted"
+            tools:text="Trusted"/>
+        <!--android:button="@drawable/ic_check_circle_solid_ultramarine_24"-->
+
+    <RadioButton
+        android:id="@+id/reject"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/ManageIntroductionsListItem__Rejected"
+        tools:text="Distrusted"/>
+    <!--android:button="@drawable/ic_x_20"-->
+
+</RadioGroup>
 
 </org.thoughtcrime.securesms.trustedIntroductions.receive.ManageListItem>

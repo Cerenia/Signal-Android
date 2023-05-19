@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -25,7 +26,6 @@ import java.util.Date;
 
 import static org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase.State.ACCEPTED;
 import static org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase.State.CONFLICTING;
-import static org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase.State.PENDING;
 import static org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase.State.REJECTED;
 import static org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase.State.STALE_ACCEPTED;
 import static org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase.State.STALE_CONFLICTING;
@@ -46,7 +46,7 @@ public class ManageListItem extends ConstraintLayout {
   private TextView    introduceeNumber;
   private RadioButton accept;
   private RadioButton reject;
-  private TextView    buttonGroupLabel;
+  private RadioGroup  radioGroup;
   private Guideline   guideline;
 
   public ManageListItem(Context context, AttributeSet attrs) {
@@ -67,9 +67,9 @@ public class ManageListItem extends ConstraintLayout {
     this.introduceeName   = findViewById(R.id.introduceeName);
     this.introduceeNumber = findViewById(R.id.introduceeNumber);
     this.accept     = findViewById(R.id.accept);
-    this.reject = findViewById(R.id.reject);
-    this.buttonGroupLabel = findViewById(R.id.radio_group_label);
-    this.guideline        = findViewById(R.id.half_guide);
+    this.reject     = findViewById(R.id.reject);
+    this.radioGroup = findViewById(R.id.trust_distrust);
+    this.guideline  = findViewById(R.id.half_guide);
   }
 
   public void set(@Nullable TI_Data data, @Nullable ManageViewModel.IntroducerInformation introducerInformation, SwitchClickListener l){
@@ -168,7 +168,7 @@ public class ManageListItem extends ConstraintLayout {
   private void changeByState(TrustedIntroductionsDatabase.State s){
     switch(s){
       case PENDING:
-        buttonGroupLabel.setText(R.string.ManageIntroductionsListItem__Pending);
+        //radioGroup.setText(R.string.ManageIntroductionsListItem__Pending);
         accept.setVisibility(VISIBLE);
         accept.setEnabled(true);
         reject.setVisibility(VISIBLE);
@@ -176,7 +176,7 @@ public class ManageListItem extends ConstraintLayout {
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_default));
         break;
       case ACCEPTED:
-        buttonGroupLabel.setText(R.string.ManageIntroductionsListItem__Accepted);
+        //radioGroup.setText(R.string.ManageIntroductionsListItem__Accepted);
         accept.setVisibility(VISIBLE);
         accept.setEnabled(true);
         reject.setVisibility(VISIBLE);
@@ -184,7 +184,7 @@ public class ManageListItem extends ConstraintLayout {
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_default));
         break;
       case REJECTED:
-        buttonGroupLabel.setText(R.string.ManageIntroductionsListItem__Rejected);
+        //radioGroup.setText(R.string.ManageIntroductionsListItem__Rejected);
         accept.setVisibility(VISIBLE);
         accept.setEnabled(true);
         reject.setVisibility(VISIBLE);
@@ -192,7 +192,7 @@ public class ManageListItem extends ConstraintLayout {
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_default));
         break;
       case CONFLICTING:
-        buttonGroupLabel.setText(R.string.ManageIntroductionsListItem__Conflicting);
+        //radioGroup.setText(R.string.ManageIntroductionsListItem__Conflicting);
         accept.setVisibility(INVISIBLE);
         accept.setEnabled(false);
         reject.setVisibility(INVISIBLE);
@@ -200,7 +200,7 @@ public class ManageListItem extends ConstraintLayout {
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_conflicting));
         break;
       case STALE_ACCEPTED: // Keep the visible state of the switch in these cases
-        buttonGroupLabel.setText(R.string.ManageIntroductionsListItem__Stale);
+        //radioGroup.setText(R.string.ManageIntroductionsListItem__Stale);
         accept.setVisibility(VISIBLE);
         accept.setClickable(false);
         reject.setVisibility(VISIBLE);
@@ -209,7 +209,7 @@ public class ManageListItem extends ConstraintLayout {
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_stale));
         break;
       case STALE_REJECTED:
-        buttonGroupLabel.setText(R.string.ManageIntroductionsListItem__Stale);
+        //radioGroup.setText(R.string.ManageIntroductionsListItem__Stale);
         accept.setVisibility(VISIBLE);
         accept.setClickable(false);
         reject.setVisibility(VISIBLE);
@@ -218,6 +218,7 @@ public class ManageListItem extends ConstraintLayout {
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_stale));
         break;
       case STALE_PENDING:
+        //radioGroup.setText(R.string.ManageIntroductionsListItem__Stale);
         accept.setVisibility(VISIBLE);
         accept.setClickable(false);
         reject.setVisibility(VISIBLE);
@@ -227,7 +228,7 @@ public class ManageListItem extends ConstraintLayout {
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_stale));
         break;
       case STALE_CONFLICTING:
-        buttonGroupLabel.setText(R.string.ManageIntroductionsListItem__Conflicting);
+        //radioGroup.setText(R.string.ManageIntroductionsListItem__Conflicting);
         accept.setVisibility(INVISIBLE);
         accept.setEnabled(false);
         reject.setVisibility(INVISIBLE);

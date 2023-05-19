@@ -61,15 +61,6 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
 
     public IntroductionViewHolder(@NonNull View itemView, @NonNull final ManageAdapter.ItemClickListener clickListener) {
       super(itemView);
-      itemView.setOnClickListener(v -> {
-        clickListener.onItemClick(getView());
-      });
-      itemView.setOnLongClickListener(v -> {
-        clickListener.onItemLongClick(getView());
-        return true; // TODO: what does it mean, 'has consumed the long click'? does it need to be a boolean return? Not sure what would go wrong..
-        // TODO: Possibly because of decorator items that are not supposed to be responsive?
-        // https://developer.android.com/reference/android/view/View.OnLongClickListener
-      });
     }
 
     ManageListItem getView() {
