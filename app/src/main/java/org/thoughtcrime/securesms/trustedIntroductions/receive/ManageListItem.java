@@ -95,7 +95,7 @@ public class ManageListItem extends ConstraintLayout {
     changeListitemAppearanceByState(data.getState(), true);
     this.accept.setOnCheckedChangeListener((b, isChecked) -> changeTrust(isChecked));
     // race condition?
-    this.reject.setOnCheckedChangeListener((b, isChecked) -> changeTrust(!isChecked));
+    this.reject.setOnCheckedChangeListener((b, isChecked) -> changeTrust(isChecked));
   }
 
   /**
