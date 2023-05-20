@@ -169,9 +169,9 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         android:clipToPadding="false"
-        android:paddingBottom="?android:attr/actionBarSize"
         android:scrollbarThumbVertical="@drawable/contact_selection_scrollbar_thumb"
         android:scrollbars="vertical"
         app:layout_constraintTop_toBottomOf="@id/barrier_recycle"
