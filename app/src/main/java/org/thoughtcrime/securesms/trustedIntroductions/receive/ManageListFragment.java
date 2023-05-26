@@ -131,7 +131,6 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
         showStale.setVisibility(View.GONE);
         break;
       case LIBRARY:
-      case ALL:
         showAccepted.setVisibility(View.VISIBLE);
         showRejected.setVisibility(View.VISIBLE);
         if(viewModel != null){
@@ -220,11 +219,6 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
         if((s == TrustedIntroductionsDatabase.State.PENDING)){
           return false;
         }
-        if(userFiltered(s)){
-          return false;
-        }
-        break;
-      case ALL:
         if(userFiltered(s)){
           return false;
         }
@@ -342,9 +336,6 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
       case LIBRARY:
         // First by state, then introducee, then date
         filtered.sort(Comparator.comparing(stateExtractor).thenComparing(introduceeNameExtractor).thenComparing(dateExtractor));
-        return filtered;
-      case ALL:
-        filtered.sort(Comparator.comparing(introduceeNameExtractor).thenComparing(stateExtractor).thenComparing(dateExtractor));
         return filtered;
       default:
         throw new AssertionError(TAG +"Unknown tab type!");

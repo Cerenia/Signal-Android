@@ -50,11 +50,9 @@ public class ManageActivity extends PassphraseRequiredActivity {
 
   public static enum ActiveTab {
     NEW,
-    LIBRARY,
-    ALL;
+    LIBRARY;
 
     public static ActiveTab fromString(String state) {
-      if(state.equals(ALL.toString())) return ALL;
       if(state.equals(LIBRARY.toString())) return LIBRARY;
       if(state.equals(NEW.toString())) return NEW;
       else{
@@ -68,8 +66,6 @@ public class ManageActivity extends PassphraseRequiredActivity {
           return NEW;
         case 1:
           return LIBRARY;
-        case 2:
-          return ALL;
         default:
           throw new AssertionError("Invalid Tab position!");
       }
@@ -81,8 +77,6 @@ public class ManageActivity extends PassphraseRequiredActivity {
           return 0;
         case LIBRARY:
           return 1;
-        case ALL:
-          return 2;
         default:
           throw new AssertionError("Unknown Tab!");
       }
@@ -175,7 +169,7 @@ public class ManageActivity extends PassphraseRequiredActivity {
 
   private class ManagePagerAdapter extends FragmentStateAdapter implements ContactFilterView.OnFilterChangedListener {
 
-    private final int PAGES_NUM = 3;
+    private final int PAGES_NUM = 2;
     private ViewModelStoreOwner           owner;
 
     public ManagePagerAdapter(FragmentActivity activity){
