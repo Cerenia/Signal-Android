@@ -90,9 +90,9 @@ public class ManageListItem extends ConstraintLayout {
     introducerName.setVisibility(View.VISIBLE);
     guideline.setGuidelinePercent(0.5f);
     changeListitemAppearanceByState(data.getState());
-    /*this.trustSwitch.setOnCheckedChangeListener((b, trust) -> {
+    this.trustSwitch.setOnCheckedChangeListener((b, trust) -> {
        changeTrust(trust);
-    });*/
+    });
   }
 
   /**

@@ -50,7 +50,8 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
 
   // TODO: in case you want to fancify this by adding header list items, add int viewType here
   @NonNull @Override public IntroductionViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-    return new IntroductionViewHolder(layoutInflater.inflate(R.layout.ti_manage_list_item, parent, false), clickListener);
+    View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.ti_manage_list_item, parent, false);
+    return new IntroductionViewHolder(v, clickListener);
   }
 
   @Override public void onBindViewHolder(@NonNull IntroductionViewHolder holder, int position) {
@@ -68,11 +69,6 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
       return (ManageListItem) itemView;
     }
 
-    /**
-     *
-     * @param d introduction information, iff null, a header will be drawn.
-     * @param i introducer information, iff null, a header will be drawn.
-     */
     @SuppressLint("RestrictedApi") public void bind(@Nullable TI_Data d, @Nullable ManageViewModel.IntroducerInformation i, @NonNull ManageListItem.SwitchClickListener switchListener){
       //Preconditions.checkArgument((d == null && i == null && t.equals(ALL))
         //                          | (d != null && i != null && t.equals(ManageActivity.ActiveTab.RECIPIENT_SPECIFIC)));
