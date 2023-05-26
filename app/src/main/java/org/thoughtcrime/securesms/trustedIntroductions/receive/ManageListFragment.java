@@ -186,7 +186,7 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
    * @return false, the value to be assigned to the global xXisFirstInit of the button if the method succeeds.
    */
   private boolean onFilterStateChanged(MaterialButton b, Boolean newCheckState, Boolean isFirstInit){
-    Trace.beginSection(TAG + "onFilterStateChanged:" + tab.toString());
+    Trace.beginSection("onFilterStateChanged:" + tab.toString());
     if(b.isChecked() != newCheckState){
       b.setChecked(newCheckState);
     }
@@ -356,7 +356,7 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
   }
 
   void refreshList(){
-    Trace.beginSection(TAG + "refreshList:" + tab.toString());
+    Trace.beginSection("refreshList:" + tab.toString());
       if(adapter != null){
         List l = viewModel.getIntroductions().getValue();
         if(l == null){

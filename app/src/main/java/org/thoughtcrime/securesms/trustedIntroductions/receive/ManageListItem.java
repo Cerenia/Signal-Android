@@ -12,9 +12,7 @@ import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.Guideline;
 import androidx.core.content.ContextCompat;
-import androidx.tracing.Trace;
 
-import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
 import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase.State;
 import org.thoughtcrime.securesms.recipients.Recipient;
@@ -37,7 +35,6 @@ import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.INTRODUCT
 
 public class ManageListItem extends ConstraintLayout {
 
-  private static final String TAG = String.format(TI_Utils.TI_LOG_TAG, Log.tag(ManageListItem.class));
   private SwitchClickListener listener;
 
   private TI_Data        data;
@@ -78,7 +75,6 @@ public class ManageListItem extends ConstraintLayout {
   }
 
   public void set(@Nullable TI_Data data, @Nullable ManageViewModel.IntroducerInformation introducerInformation, SwitchClickListener l){
-    Trace.beginSection(TAG + "set");
     this.listener = l;
     this.data = data;
     Date d = new Date(data.getTimestamp());
@@ -104,7 +100,6 @@ public class ManageListItem extends ConstraintLayout {
     this.reject.setOnCheckedChangeListener((b, isChecked) -> {
       if(isChecked) changeTrust(false);
     });
-    Trace.endSection();
   }
 
   /**
