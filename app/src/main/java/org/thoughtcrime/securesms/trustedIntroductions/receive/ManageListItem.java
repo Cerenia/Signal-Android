@@ -92,7 +92,7 @@ public class ManageListItem extends ConstraintLayout {
     introducerNumber.setVisibility(View.VISIBLE);
     introducerName.setVisibility(View.VISIBLE);
     guideline.setGuidelinePercent(0.5f);
-    changeListitemAppearanceByState(data.getState(), true);
+    changeListitemAppearanceByState(data.getState());
     this.accept.setOnCheckedChangeListener((b, isChecked) -> {
       if(isChecked) changeTrust(true);
     });
@@ -150,8 +150,7 @@ public class ManageListItem extends ConstraintLayout {
       listener.reject(data.getId());
     }
     newIntro = changeState(data, newState);
-    changeListitemAppearanceByState(newState, false);
-    data = newIntro;
+    data = newIntro; // the only thing that will change based on user interactions is check/uncheck or masking...
   }
 
   private TI_Data changeState(TI_Data d, TrustedIntroductionsDatabase.State s){
@@ -162,7 +161,7 @@ public class ManageListItem extends ConstraintLayout {
    * Also changes the border/background colour and positioning accordingly.
    * @return
    */
-  private void changeListitemAppearanceByState(TrustedIntroductionsDatabase.State s, boolean setChecks){
+  private void changeListitemAppearanceByState(TrustedIntroductionsDatabase.State s){
     switch(s){
       case PENDING:
         radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Pending);
@@ -180,7 +179,7 @@ public class ManageListItem extends ConstraintLayout {
         accept.setEnabled(true);
         reject.setVisibility(VISIBLE);
         reject.setEnabled(true);
-        if(setChecks){
+        if (!accept.isChecked()) {
           accept.setChecked(true);
         }
         reject.setClickable(true);
@@ -193,7 +192,7 @@ public class ManageListItem extends ConstraintLayout {
         accept.setEnabled(true);
         reject.setVisibility(VISIBLE);
         reject.setEnabled(true);
-        if(setChecks){
+        if (!reject.isChecked()){
           reject.setChecked(true);
         }
         reject.setClickable(true);
@@ -215,13 +214,12 @@ public class ManageListItem extends ConstraintLayout {
         accept.setVisibility(VISIBLE);
         accept.setEnabled(false);
         accept.setClickable(false);
-        accept.setChecked(true);
+        if (!accept.isChecked()){
+          accept.setChecked(true);
+        }
         reject.setVisibility(VISIBLE);
         reject.setEnabled(false);
         reject.setClickable(false);
-        if(setChecks){
-          accept.setChecked(true);
-        }
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_stale));
         break;
       case STALE_REJECTED:
@@ -232,7 +230,7 @@ public class ManageListItem extends ConstraintLayout {
         reject.setVisibility(VISIBLE);
         reject.setEnabled(false);
         reject.setClickable(false);
-        if(setChecks){
+        if (!reject.isChecked()) {
           reject.setChecked(true);
         }
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_stale));

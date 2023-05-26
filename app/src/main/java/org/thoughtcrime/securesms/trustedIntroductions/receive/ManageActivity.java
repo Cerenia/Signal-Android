@@ -195,11 +195,6 @@ public class ManageActivity extends PassphraseRequiredActivity {
 
     @NonNull @Override public Fragment createFragment(int position) {
       return new ManageListFragment(owner, ActiveTab.fromInt(position));
-      /*Fragment f = new DummyFragment();
-      Bundle args = new Bundle();
-      args.putInt(DummyFragment.ARG_OBJECT, position + 1);
-      f.setArguments(args);
-      return f;*/
     }
 
     @Override public int getItemCount() {

@@ -314,9 +314,10 @@ android {
             isDefault false
             debuggable false
             minifyEnabled true
-            matchingFallbacks = ['debug']
+            matchingFallbacks = ['debug', 'release']
             buildConfigField "String", "BUILD_VARIANT_TYPE", "\"Benchmark\""
             buildConfigField "boolean", "TRACING_ENABLED", "true"
+            signingConfig signingConfigs.debug
         }
     }
 

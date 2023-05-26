@@ -34,6 +34,8 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
+import androidx.tracing.Trace;
+
 public class ManageListFragment extends Fragment implements DeleteIntroductionDialog.DeleteIntroduction, ForgetIntroducerDialog.ForgetIntroducer, ManageListItem.SwitchClickListener {
 
   private static final String TAG = String.format(TI_Utils.TI_LOG_TAG, Log.tag(ManageListFragment.class));
@@ -350,14 +352,16 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
   }
 
   void refreshList(){
-    if(adapter != null){
-      List l = viewModel.getIntroductions().getValue();
-      if(l == null){
-        Log.e(TAG, "Introductions list not yet loaded when calling refreshList!");
-        return;
+    Trace.beginSection("refreshList:" + tab.toString());
+      if(adapter != null){
+        List l = viewModel.getIntroductions().getValue();
+        if(l == null){
+          Log.e(TAG, "Introductions list not yet loaded when calling refreshList!");
+          return;
+        }
+        adapter.submitList(getFiltered(viewModel.getIntroductions().getValue(), viewModel.getTextFilter().getValue()));
       }
-      adapter.submitList(getFiltered(viewModel.getIntroductions().getValue(), viewModel.getTextFilter().getValue()));
-    }
+    Trace.endSection();
   }
 
   public void onFilterChanged(String filter) {
