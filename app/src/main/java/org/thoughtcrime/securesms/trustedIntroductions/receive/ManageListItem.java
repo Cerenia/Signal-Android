@@ -93,12 +93,13 @@ public class ManageListItem extends ConstraintLayout {
     introducerName.setVisibility(View.VISIBLE);
     guideline.setGuidelinePercent(0.5f);
     changeListitemAppearanceByState(data.getState());
-    this.accept.setOnCheckedChangeListener((b, isChecked) -> {
-      if(isChecked) changeTrust(true);
-    });
-    // race condition?
-    this.reject.setOnCheckedChangeListener((b, isChecked) -> {
-      if(isChecked) changeTrust(false);
+    this.radioGroup.setOnCheckedChangeListener((b, id) -> {
+      if(id == accept.getId()){
+        changeTrust(true);
+      }
+      else if(id == reject.getId()){
+        changeTrust(false);
+      }
     });
   }
 
