@@ -14,7 +14,6 @@ import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelStoreOwner;
-import androidx.tracing.Trace;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
@@ -111,7 +110,6 @@ public class ManageActivity extends PassphraseRequiredActivity {
   // TODO: You are probably overriding the wrong function... onCreate(Bundle savedInstanceState) is final..
   @Override protected void onCreate(Bundle savedInstanceState, boolean ready){
     super.onCreate(savedInstanceState, ready);
-    Trace.beginSection("ManageActivityOnCreate");
     FORGOTTEN_INTRODUCER = getString(R.string.ManageIntroductionsListItem__Forgotten_Introducer);
     // Initialize navigation titles
     tabTitles.put(0, getString(R.string.ManageIntroductionsActivity__Navigation_Tab_new));
@@ -142,8 +140,6 @@ public class ManageActivity extends PassphraseRequiredActivity {
     ).attach();
     getWindow().setSoftInputMode(
         WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
-
-    Trace.endSection();
   }
 
 
