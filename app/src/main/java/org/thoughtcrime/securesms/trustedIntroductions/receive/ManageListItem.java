@@ -3,8 +3,6 @@ package org.thoughtcrime.securesms.trustedIntroductions.receive;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -12,6 +10,8 @@ import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.Guideline;
 import androidx.core.content.ContextCompat;
+
+import com.google.android.material.materialswitch.MaterialSwitch;
 
 import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
 import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase.State;
@@ -43,11 +43,9 @@ public class ManageListItem extends ConstraintLayout {
   private TextView introducerName;
   private TextView introducerNumber;
   private TextView                                         introduceeName;
-  private TextView    introduceeNumber;
-  private RadioButton accept;
-  private RadioButton reject;
-  private RadioGroup  radioGroup;
-  private TextView radioGroupLabel;
+  private TextView       introduceeNumber;
+  private MaterialSwitch trustSwitch;
+  private TextView       radioGroupLabel;
   private Guideline   guideline;
 
   public ManageListItem(Context context, AttributeSet attrs) {
@@ -67,9 +65,7 @@ public class ManageListItem extends ConstraintLayout {
     this.introducerNumber = findViewById(R.id.introducerNumber);
     this.introduceeName   = findViewById(R.id.introduceeName);
     this.introduceeNumber = findViewById(R.id.introduceeNumber);
-    this.accept     = findViewById(R.id.accept);
-    this.reject     = findViewById(R.id.reject);
-    this.radioGroup = findViewById(R.id.trust_distrust);
+    this.trustSwitch     = findViewById(R.id.trust_distrust);
     this.radioGroupLabel = findViewById(R.id.radio_group_label);
     this.guideline  = findViewById(R.id.half_guide);
   }
@@ -93,13 +89,8 @@ public class ManageListItem extends ConstraintLayout {
     introducerName.setVisibility(View.VISIBLE);
     guideline.setGuidelinePercent(0.5f);
     changeListitemAppearanceByState(data.getState());
-    this.radioGroup.setOnCheckedChangeListener((b, id) -> {
-      if(id == accept.getId()){
-        changeTrust(true);
-      }
-      else if(id == reject.getId()){
-        changeTrust(false);
-      }
+    this.trustSwitch.setOnCheckedChangeListener((b, trust) -> {
+       changeTrust(trust);
     });
   }
 
@@ -166,94 +157,63 @@ public class ManageListItem extends ConstraintLayout {
     switch(s){
       case PENDING:
         radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Pending);
-        accept.setVisibility(VISIBLE);
-        accept.setEnabled(true);
-        accept.setClickable(true);
-        reject.setVisibility(VISIBLE);
-        reject.setEnabled(true);
-        reject.setClickable(true);
+        trustSwitch.setVisibility(VISIBLE);
+        trustSwitch.setEnabled(true);
+        trustSwitch.setClickable(true);
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_default));
         break;
       case ACCEPTED:
         radioGroupLabel.setVisibility(View.GONE);
-        accept.setVisibility(VISIBLE);
-        accept.setEnabled(true);
-        reject.setVisibility(VISIBLE);
-        reject.setEnabled(true);
-        if (!accept.isChecked()) {
-          accept.setChecked(true);
-        }
-        reject.setClickable(true);
-        accept.setClickable(true);
+        trustSwitch.setVisibility(VISIBLE);
+        trustSwitch.setEnabled(true);
+        trustSwitch.setClickable(true);
+        trustSwitch.setChecked(true);
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_default));
         break;
       case REJECTED:
         radioGroupLabel.setVisibility(View.GONE);
-        accept.setVisibility(VISIBLE);
-        accept.setEnabled(true);
-        reject.setVisibility(VISIBLE);
-        reject.setEnabled(true);
-        if (!reject.isChecked()){
-          reject.setChecked(true);
-        }
-        reject.setClickable(true);
-        accept.setClickable(true);
+        trustSwitch.setVisibility(VISIBLE);
+        trustSwitch.setEnabled(true);
+        trustSwitch.setClickable(true);
+        trustSwitch.setChecked(false);
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_default));
         break;
       case CONFLICTING:
         radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Conflicting);
-        accept.setVisibility(GONE);
-        accept.setEnabled(false);
-        accept.setClickable(false);
-        reject.setVisibility(GONE);
-        reject.setEnabled(false);
-        accept.setClickable(false);
+        trustSwitch.setVisibility(GONE);
+        trustSwitch.setEnabled(false);
+        trustSwitch.setClickable(false);
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_conflicting));
         break;
       case STALE_ACCEPTED: // Keep the visible state of the switch in these cases
         radioGroupLabel.setVisibility(View.GONE);
-        accept.setVisibility(VISIBLE);
-        accept.setEnabled(false);
-        accept.setClickable(false);
-        if (!accept.isChecked()){
-          accept.setChecked(true);
-        }
-        reject.setVisibility(VISIBLE);
-        reject.setEnabled(false);
-        reject.setClickable(false);
+        trustSwitch.setVisibility(VISIBLE);
+        trustSwitch.setEnabled(false);
+        trustSwitch.setClickable(false);
+        trustSwitch.setChecked(true);
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_stale));
         break;
       case STALE_REJECTED:
         radioGroupLabel.setVisibility(View.GONE);
-        accept.setVisibility(VISIBLE);
-        accept.setEnabled(false);
-        accept.setClickable(false);
-        reject.setVisibility(VISIBLE);
-        reject.setEnabled(false);
-        reject.setClickable(false);
-        if (!reject.isChecked()) {
-          reject.setChecked(true);
-        }
+        trustSwitch.setVisibility(VISIBLE);
+        trustSwitch.setEnabled(false);
+        trustSwitch.setClickable(false);
+        trustSwitch.setChecked(false);
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_stale));
         break;
       case STALE_PENDING:
         radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Stale);
-        accept.setVisibility(VISIBLE);
-        accept.setEnabled(false);
-        accept.setClickable(false);
-        reject.setVisibility(VISIBLE);
-        reject.setEnabled(false);
-        reject.setClickable(false);
+        trustSwitch.setVisibility(VISIBLE);
+        trustSwitch.setEnabled(false);
+        trustSwitch.setClickable(false);
+        trustSwitch.setChecked(false);
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_stale));
         break;
       case STALE_CONFLICTING:
         radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Conflicting);
-        accept.setVisibility(GONE);
-        accept.setEnabled(false);
-        accept.setClickable(false);
-        reject.setVisibility(GONE);
-        reject.setEnabled(false);
-        reject.setClickable(false);
+        trustSwitch.setVisibility(GONE);
+        trustSwitch.setEnabled(false);
+        trustSwitch.setClickable(false);
         this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_stale_conflicting));
         break;
     }
