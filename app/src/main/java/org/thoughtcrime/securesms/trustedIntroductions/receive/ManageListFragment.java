@@ -88,7 +88,6 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
   @Override
   public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState){
     super.onViewCreated(view, savedInstanceState);
-    Trace.beginSection("onViewCreated: " + tab.toString());
     ManageViewModel.Factory factory = new ManageViewModel.Factory(FORGOTTEN_INTRODUCER);
     viewModel = new ViewModelProvider(getActivity(), factory).get(ManageViewModel.class);
     if(!viewModel.introductionsLoaded()){
@@ -175,7 +174,6 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
       }
       refreshList();
     });
-    Trace.endSection();
   }
 
   /**
@@ -186,14 +184,12 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
    * @return false, the value to be assigned to the global xXisFirstInit of the button if the method succeeds.
    */
   private boolean onFilterStateChanged(MaterialButton b, Boolean newCheckState, Boolean isFirstInit){
-    Trace.beginSection("onFilterStateChanged:" + tab.toString());
     if(b.isChecked() != newCheckState){
       b.setChecked(newCheckState);
     }
     if(!isFirstInit){
       refreshList();
     }
-    Trace.endSection();
     return false;
   }
 
