@@ -36,7 +36,7 @@ import java.util.regex.Pattern;
 
 import androidx.tracing.Trace;
 
-public class ManageListFragment extends Fragment implements DeleteIntroductionDialog.DeleteIntroduction, ForgetIntroducerDialog.ForgetIntroducer, ManageListItem.SwitchClickListener {
+public class ManageListFragment extends Fragment implements DeleteIntroductionDialog.DeleteIntroduction, ForgetIntroducerDialog.ForgetIntroducer, ManageAdapter.InteractionListener {
 
   private static final String TAG = String.format(TI_Utils.TI_LOG_TAG, Log.tag(ManageListFragment.class));
 

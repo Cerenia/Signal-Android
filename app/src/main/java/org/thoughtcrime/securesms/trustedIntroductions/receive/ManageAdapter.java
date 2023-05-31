@@ -40,10 +40,9 @@ import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.INTRODUCT
 public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.IntroducerInformation>, ManageAdapter.IntroductionViewHolder> {
 
   private final LayoutInflater layoutInflater;
-  private final ManageAdapter.ItemClickListener clickListener;
-  private final ManageListItem.SwitchClickListener switchListener;
+  private final ManageAdapter.InteractionListener listener;
 
-  ManageAdapter(@NonNull Context context, @NonNull ManageAdapter.ItemClickListener clickListener, @NonNull ManageListItem.SwitchClickListener switchListener){
+  ManageAdapter(@NonNull Context context, @NonNull ManageAdapter.InteractionListener listener){
     super(new DiffUtil.ItemCallback<Pair<TI_Data, ManageViewModel.IntroducerInformation>>() {
       @Override public boolean areItemsTheSame(@NonNull Pair<TI_Data, ManageViewModel.IntroducerInformation> oldItem, @NonNull Pair<TI_Data, ManageViewModel.IntroducerInformation> newItem) {
         return oldItem.first.getId().compareTo(newItem.first.getId()) == 0;
@@ -65,23 +64,23 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
       }
     });
     this.layoutInflater = LayoutInflater.from(context);
-    this.clickListener = clickListener;
-    this.switchListener = switchListener;
+    this.listener = listener;
   }
 
   @NonNull @Override public IntroductionViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
     View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.ti_manage_list_item, parent, false);
-    return new IntroductionViewHolder(v, clickListener);
+    return new IntroductionViewHolder(v, listener, parent.getContext());
   }
 
   @Override public void onBindViewHolder(@NonNull IntroductionViewHolder holder, int position) {
     Pair<TI_Data, ManageViewModel.IntroducerInformation> current = getItem(position);
-    holder.bind(current.first, current.second, switchListener);
+    holder.bind(current.first, current.second);
   }
 
   static class IntroductionViewHolder extends RecyclerView.ViewHolder {
 
-    private ManageListItem.SwitchClickListener listener;
+    private final Context context;
+    private ManageAdapter.InteractionListener listener;
 
     private TI_Data     data;
     private final TextView    timestampDate = itemView.findViewById(R.id.timestamp_date);
@@ -96,17 +95,13 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
     private final TextView    radioGroupLabel = itemView.findViewById(R.id.radio_group_label);
     private final Guideline   guideline = itemView.findViewById(R.id.half_guide);
 
-    public IntroductionViewHolder(@NonNull View itemView, @NonNull final ManageAdapter.ItemClickListener clickListener) {
+    public IntroductionViewHolder(@NonNull View itemView, ManageAdapter.InteractionListener listener, Context c) {
       super(itemView);
+      this.listener = listener;
+      context = c;
     }
 
-
-    ManageListItem getView() {
-      return (ManageListItem) itemView;
-    }
-
-    @SuppressLint("RestrictedApi") public void bind(@Nullable TI_Data d, @Nullable ManageViewModel.IntroducerInformation introducerInformation, @NonNull ManageListItem.SwitchClickListener switchListener){
-      this.listener = switchListener;
+    @SuppressLint("RestrictedApi") public void bind(@Nullable TI_Data d, @Nullable ManageViewModel.IntroducerInformation introducerInformation){
       this.data = d;
       Date   date       = new Date(data.getTimestamp());
       String dString = INTRODUCTION_DATE_PATTERN.format(d);
@@ -196,95 +191,95 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
       switch(s){
         case PENDING:
           radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Pending);
-          accept.setVisibility(VISIBLE);
+          accept.setVisibility(View.VISIBLE);
           accept.setEnabled(true);
           accept.setClickable(true);
-          reject.setVisibility(VISIBLE);
+          reject.setVisibility(View.VISIBLE);
           reject.setEnabled(true);
           reject.setClickable(true);
-          this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_default));
+          this.itemView.setBackground(ContextCompat.getDrawable(context, R.drawable.ti_manage_listview_background_default));
           break;
         case ACCEPTED:
           radioGroupLabel.setVisibility(View.GONE);
-          accept.setVisibility(VISIBLE);
+          accept.setVisibility(View.VISIBLE);
           accept.setEnabled(true);
-          reject.setVisibility(VISIBLE);
+          reject.setVisibility(View.VISIBLE);
           reject.setEnabled(true);
           if (!accept.isChecked()) {
             accept.setChecked(true);
           }
           reject.setClickable(true);
           accept.setClickable(true);
-          this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_default));
+          this.itemView.setBackground(ContextCompat.getDrawable(context, R.drawable.ti_manage_listview_background_default));
           break;
         case REJECTED:
           radioGroupLabel.setVisibility(View.GONE);
-          accept.setVisibility(VISIBLE);
+          accept.setVisibility(View.VISIBLE);
           accept.setEnabled(true);
-          reject.setVisibility(VISIBLE);
+          reject.setVisibility(View.VISIBLE);
           reject.setEnabled(true);
           if (!reject.isChecked()){
             reject.setChecked(true);
           }
           reject.setClickable(true);
           accept.setClickable(true);
-          this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_default));
+          this.itemView.setBackground(ContextCompat.getDrawable(context, R.drawable.ti_manage_listview_background_default));
           break;
         case CONFLICTING:
           radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Conflicting);
-          accept.setVisibility(GONE);
+          accept.setVisibility(View.GONE);
           accept.setEnabled(false);
           accept.setClickable(false);
-          reject.setVisibility(GONE);
+          reject.setVisibility(View.GONE);
           reject.setEnabled(false);
           accept.setClickable(false);
-          this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_conflicting));
+          this.itemView.setBackground(ContextCompat.getDrawable(context, R.drawable.ti_manage_listview_background_conflicting));
           break;
         case STALE_ACCEPTED: // Keep the visible state of the switch in these cases
           radioGroupLabel.setVisibility(View.GONE);
-          accept.setVisibility(VISIBLE);
+          accept.setVisibility(View.VISIBLE);
           accept.setEnabled(false);
           accept.setClickable(false);
           if (!accept.isChecked()){
             accept.setChecked(true);
           }
-          reject.setVisibility(VISIBLE);
+          reject.setVisibility(View.VISIBLE);
           reject.setEnabled(false);
           reject.setClickable(false);
-          this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_stale));
+          this.itemView.setBackground(ContextCompat.getDrawable(context, R.drawable.ti_manage_listview_background_stale));
           break;
         case STALE_REJECTED:
           radioGroupLabel.setVisibility(View.GONE);
-          accept.setVisibility(VISIBLE);
+          accept.setVisibility(View.VISIBLE);
           accept.setEnabled(false);
           accept.setClickable(false);
-          reject.setVisibility(VISIBLE);
+          reject.setVisibility(View.VISIBLE);
           reject.setEnabled(false);
           reject.setClickable(false);
           if (!reject.isChecked()) {
             reject.setChecked(true);
           }
-          this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_stale));
+          this.itemView.setBackground(ContextCompat.getDrawable(context, R.drawable.ti_manage_listview_background_stale));
           break;
         case STALE_PENDING:
           radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Stale);
-          accept.setVisibility(VISIBLE);
+          accept.setVisibility(View.VISIBLE);
           accept.setEnabled(false);
           accept.setClickable(false);
-          reject.setVisibility(VISIBLE);
+          reject.setVisibility(View.VISIBLE);
           reject.setEnabled(false);
           reject.setClickable(false);
-          this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_stale));
+          this.itemView.setBackground(ContextCompat.getDrawable(context, R.drawable.ti_manage_listview_background_stale));
           break;
         case STALE_CONFLICTING:
           radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Conflicting);
-          accept.setVisibility(GONE);
+          accept.setVisibility(View.GONE);
           accept.setEnabled(false);
           accept.setClickable(false);
-          reject.setVisibility(GONE);
+          reject.setVisibility(View.GONE);
           reject.setEnabled(false);
           reject.setClickable(false);
-          this.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.ti_manage_listview_background_stale_conflicting));
+          this.itemView.setBackground(ContextCompat.getDrawable(context, R.drawable.ti_manage_listview_background_stale_conflicting));
           break;
       }
     }
@@ -295,43 +290,34 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
     }
 
     public void setEnabled(boolean enabled){
-      getView().setEnabled(enabled);
+      itemView.setEnabled(enabled);
     }
 
     // Sticky header helpers
     public void measure(int makeMeasureSpec, int makeMeasureSpec1) {
-      getView().measure(makeMeasureSpec, makeMeasureSpec1);
+      itemView.measure(makeMeasureSpec, makeMeasureSpec1);
     }
 
     public int getMeasuredHeight() {
-      return getView().getMeasuredHeight();
+      return itemView.getMeasuredHeight();
     }
 
     public void layout(int left, int i, int right, int measuredHeight) {
-      getView().layout(left, i, right, measuredHeight);
+      itemView.layout(left, i, right, measuredHeight);
     }
 
     public float getBottom() {
-      return getView().getBottom();
+      return itemView.getBottom();
     }
 
-    public View getRootView() {
-      return getView().getRootView();
-    }
 
   }
 
-  // TODO: Unify => should be the same listener for whatever operation.
-  public interface ItemClickListener {
-    // Show predicted security nr?
-    void onItemClick(ManageListItem item);
-    // Delete Introduction?
-    void onItemLongClick(ManageListItem item);
-  }
-
-  interface SwitchClickListener{
+  interface InteractionListener{
     void accept(@NonNull Long introductionID);
     void reject(@NonNull Long introductionID);
+    void mask(@NonNull Long introductionID);
+    void delete(@NonNull Long introductionID);
   }
 
 }
