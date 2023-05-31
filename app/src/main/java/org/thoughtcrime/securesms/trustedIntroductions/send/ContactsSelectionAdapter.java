@@ -4,17 +4,23 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import org.thoughtcrime.securesms.R;
+import org.thoughtcrime.securesms.components.AvatarImageView;
 import org.thoughtcrime.securesms.mms.GlideRequests;
 import org.thoughtcrime.securesms.recipients.Recipient;
+import org.thoughtcrime.securesms.recipients.RecipientId;
+import org.thoughtcrime.securesms.util.ViewUtil;
 
 public class ContactsSelectionAdapter extends ListAdapter<Recipient, ContactsSelectionAdapter.TIContactViewHolder> {
 
@@ -73,29 +79,49 @@ public class ContactsSelectionAdapter extends ListAdapter<Recipient, ContactsSel
 
   static class TIContactViewHolder extends RecyclerView.ViewHolder {
 
+    private final AvatarImageView contactPhotoImage = itemView.findViewById(R.id.contact_photo_image);
+    private final    TextView        nameView  = itemView.findViewById(R.id.name);
+    private  final   TextView        numberView  = itemView.findViewById(R.id.number);
+    private final    CheckBox        checkbox  = itemView.findViewById(R.id.check_box);
+    private    Recipient       recipient;
+
+
     TIContactViewHolder(@NonNull final View itemView,
                         @Nullable final ContactsSelectionAdapter.ItemClickListener clickListener)
     {
       super(itemView);
       itemView.setOnClickListener(v -> {
-        if (clickListener != null) clickListener.onItemClick(getView());
+        if (clickListener != null) clickListener.onItemClick(this);
       });
+      ViewUtil.setTextViewGravityStart(this.nameView, itemView.getContext());
     }
-
-    ContactsSelectionListItem getView() {
-      return (ContactsSelectionListItem) itemView;
-    }
-
     public void bind(@NonNull GlideRequests glideRequests, Recipient recipient){
-      getView().set(glideRequests, recipient);
+
+      this.recipient = recipient;
+      this.nameView.setText(recipient.getDisplayName(itemView.getContext()));
+      this.contactPhotoImage.setAvatar(glideRequests, recipient, false);
+      this.numberView.setText(recipient.getE164().orElse(""));;
     }
 
     public void setEnabled(boolean enabled){
-      getView().setEnabled(enabled);
+      itemView.setEnabled(enabled);
     }
+
+    public RecipientId getRecipientId(){
+      return this.recipient.getId();
+    }
+
+    public Recipient getRecipient() {
+      return this.recipient;
+    }
+
+    public void setCheckboxChecked(boolean checked){
+      checkbox.setChecked(checked);
+    }
+
   }
 
   public interface ItemClickListener {
-    void onItemClick(ContactsSelectionListItem item);
+    void onItemClick(TIContactViewHolder item);
   }
 }

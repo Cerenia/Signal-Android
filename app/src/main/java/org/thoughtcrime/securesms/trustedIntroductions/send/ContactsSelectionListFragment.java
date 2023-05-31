@@ -127,7 +127,7 @@ public class ContactsSelectionListFragment extends Fragment implements ContactFi
     for (SelectedTIContacts.Model model : this.viewModel.listSelectedContactModels()) {
       RecipientId selected = model.getRecipientId();
       for (int i = 0; i < TIContactsRecycler.getChildCount(); i++) {
-        ContactsSelectionListItem item = ((ContactsSelectionAdapter.TIContactViewHolder) TIContactsRecycler.getChildViewHolder(TIContactsRecycler.getChildAt(i))).getView();
+        ContactsSelectionAdapter.TIContactViewHolder item = ((ContactsSelectionAdapter.TIContactViewHolder) TIContactsRecycler.getChildViewHolder(TIContactsRecycler.getChildAt(i)));
         if (item.getRecipientId().equals(selected)) {
           item.setCheckboxChecked(true);
           break;
@@ -160,7 +160,7 @@ public class ContactsSelectionListFragment extends Fragment implements ContactFi
 
   private class ContactClickListener implements ContactsSelectionAdapter.ItemClickListener {
 
-    @Override public void onItemClick(ContactsSelectionListItem item) {
+    @Override public void onItemClick(ContactsSelectionAdapter.TIContactViewHolder item) {
       if (viewModel.isSelectedContact(item.getRecipient())) {
         markContactUnselected(item.getRecipient());
         item.setCheckboxChecked(false);
