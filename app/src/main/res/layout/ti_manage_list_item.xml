@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<org.thoughtcrime.securesms.trustedIntroductions.receive.ManageListItem
+<androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -189,4 +189,4 @@
         android:button="@drawable/ic_ti_selector_rejected_24" />
 </RadioGroup>
 
-</org.thoughtcrime.securesms.trustedIntroductions.receive.ManageListItem>
+</androidx.constraintlayout.widget.ConstraintLayout>

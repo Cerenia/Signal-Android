@@ -104,7 +104,7 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
     @SuppressLint("RestrictedApi") public void bind(@Nullable TI_Data d, @Nullable ManageViewModel.IntroducerInformation introducerInformation){
       this.data = d;
       Date   date       = new Date(data.getTimestamp());
-      String dString = INTRODUCTION_DATE_PATTERN.format(d);
+      String dString = INTRODUCTION_DATE_PATTERN.format(date);
 
       timestampDate.setText(dString.split(" ")[0]);
       timestampTime.setText(dString.split(" ")[1]);
@@ -119,13 +119,8 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
       introducerName.setVisibility(View.VISIBLE);
       guideline.setGuidelinePercent(0.5f);
       changeListitemAppearanceByState(data.getState());
-      // TODO: Listen on radiogroup instead of buttons?
-      this.accept.setOnCheckedChangeListener((b, isChecked) -> {
-        if(isChecked) changeTrust(true);
-      });
-      // race condition?
-      this.reject.setOnCheckedChangeListener((b, isChecked) -> {
-        if(isChecked) changeTrust(false);
+      this.radioGroup.setOnCheckedChangeListener((b, id) -> {
+        changeTrust(id == this.accept.getId());
       });
     }
 
