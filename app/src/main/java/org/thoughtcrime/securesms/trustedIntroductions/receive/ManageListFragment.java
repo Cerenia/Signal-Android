@@ -36,7 +36,7 @@ import java.util.regex.Pattern;
 
 import androidx.tracing.Trace;
 
-public class ManageListFragment extends Fragment implements DeleteIntroductionDialog.DeleteIntroduction, ForgetIntroducerDialog.ForgetIntroducer, ManageAdapter.InteractionListener {
+public class ManageListFragment extends Fragment implements DeleteIntroductionDialog.DeleteIntroduction, ForgetIntroducerDialog.ForgetIntroducer{
 
   private static final String TAG = String.format(TI_Utils.TI_LOG_TAG, Log.tag(ManageListFragment.class));
 
@@ -93,7 +93,7 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
     if(!viewModel.introductionsLoaded()){
       viewModel.loadIntroductions();
     }
-    adapter = new ManageAdapter(requireContext(), new IntroductionClickListener(this, this), this);
+    adapter = new ManageAdapter(requireContext(), new IntroductionClickListener(this, this));
     RecyclerView introductionList = view.findViewById(R.id.recycler_view);
     introductionList.setClipToPadding(true);
     introductionList.setAdapter(adapter);
@@ -367,24 +367,23 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
     }
   }
 
+  /**
+   * Callback if user decides to proceeds with deletion from dialogue.
+   * @param introductionId the introduction to delete.
+   */
   @Override public void deleteIntroduction(@NonNull Long introductionId) {
     viewModel.deleteIntroduction(introductionId);
   }
 
+  /**
+   * Callback if user decides to mask introducer
+   * @param introductionId the introduction for which to mask the introducer.
+   */
   @Override public void forgetIntroducer(@NonNull Long introductionId) {
     viewModel.forgetIntroducer(introductionId);
   }
 
-
-  @Override public void accept(@NonNull Long introductionId) {
-    viewModel.acceptIntroduction(introductionId);
-  }
-
-  @Override public void reject(@NonNull Long introductionId) {
-    viewModel.rejectIntroduction(introductionId);
-  }
-
-  private class IntroductionClickListener implements ManageAdapter.ItemClickListener {
+  private class IntroductionClickListener implements ManageAdapter.InteractionListener  {
 
     DeleteIntroductionDialog.DeleteIntroduction deleteHandler;
     ForgetIntroducerDialog.ForgetIntroducer     forgetHandler;
@@ -396,26 +395,23 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
       c = requireContext();
     }
 
+    @Override public void accept(@NonNull Long introductionId) {
+      viewModel.acceptIntroduction(introductionId);
+    }
 
-    // TODO
-    @Override public void onItemClick(ManageListItem item) {
-      String name = item.getIntroducerName(requireContext());
-      if(!name.equals(getString(R.string.ManageIntroductionsListItem__Forgotten_Introducer))){
+    @Override public void reject(@NonNull Long introductionId) {
+      viewModel.rejectIntroduction(introductionId);
+    }
+
+    @Override public void mask(@NonNull ManageAdapter.IntroductionViewHolder item, String introducerName) {
+      if(!introducerName.equals(getString(R.string.ManageIntroductionsListItem__Forgotten_Introducer))){
         ForgetIntroducerDialog.show(c, item.getIntroductionId(), item.getIntroduceeName(), item.getIntroducerName(requireContext()), item.getDate(), forgetHandler);
-        return;
       }
-      // All screen
-      Toast.makeText(c, R.string.ManageIntroductionsFragment__already_erased_toast, Toast.LENGTH_LONG).show();
     }
 
-    @Override public void onItemLongClick(ManageListItem item) {
-      TrustedIntroductionsDatabase.State s = item.getState();
-      /*
-      if(s.equals(TrustedIntroductionsDatabase.State.CONFLICTING)){
-        // TODO: Proper go through managing conflicts path, to implement later.
-        Toast.makeText(c, R.string.ManageIntroductionsFragment__conflict_resolution_todo, Toast.LENGTH_LONG).show();
-      }*/
-      DeleteIntroductionDialog.show(c, item.getIntroductionId(), item.getIntroduceeName(), item.getIntroducerName(requireContext()), item.getDate(), deleteHandler);
+    @Override public void delete(@NonNull ManageAdapter.IntroductionViewHolder item, String introducerName) {
+      DeleteIntroductionDialog.show(c, item.getIntroductionId(), item.getIntroduceeName(), introducerName, item.getDate(), deleteHandler);
     }
+
   }
 }

@@ -316,8 +316,8 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
   interface InteractionListener{
     void accept(@NonNull Long introductionID);
     void reject(@NonNull Long introductionID);
-    void mask(@NonNull Long introductionID);
-    void delete(@NonNull Long introductionID);
+    void mask(@NonNull ManageAdapter.IntroductionViewHolder item, String introducerName);
+    void delete(@NonNull ManageAdapter.IntroductionViewHolder item, String introducerName);
   }
 
 }
