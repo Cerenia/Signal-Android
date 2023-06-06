@@ -24,7 +24,7 @@
         android:textAppearance="@style/Signal.Text.BodyMedium"
         android:textColor="@color/signal_text_primary"
         android:gravity="start|top"
-        app:layout_constraintVertical_chainStyle="packed"
+        app:layout_constraintVertical_chainStyle="spread_inside"
         app:layout_constraintHorizontal_bias="0"
         app:layout_constraintEnd_toStartOf="@id/date_guide"
         app:layout_constraintBottom_toTopOf="@id/timestamp_time"
@@ -45,9 +45,9 @@
         android:textAppearance="@style/Signal.Text.BodyMedium"
         android:textColor="@color/signal_text_primary"
         android:gravity="start"
-        app:layout_constraintVertical_chainStyle="packed"
+        app:layout_constraintVertical_chainStyle="spread_inside"
         app:layout_constraintHorizontal_bias="0"
-        app:layout_constraintBottom_toBottomOf="@id/delete"
+        app:layout_constraintBottom_toTopOf="@id/buttonBarrier"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/timestamp_date"
         app:layout_constraintEnd_toStartOf="@id/date_guide"
@@ -63,11 +63,11 @@
         app:icon="@drawable/ic_trash_24"
         app:iconGravity="textStart"
         app:iconPadding="0dp"
-        app:layout_constraintTop_toBottomOf="@id/timestamp_time"
+        app:layout_constraintTop_toBottomOf="@id/buttonBarrier"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/date_guide"
-        app:layout_constraintVertical_chainStyle="packed"
+        app:layout_constraintVertical_chainStyle="spread_inside"
         app:layout_constraintHorizontal_bias="0"
         />
 
@@ -81,7 +81,7 @@
 
     <org.thoughtcrime.securesms.components.FromTextView
         android:id="@+id/introducerName"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
@@ -95,13 +95,13 @@
         app:layout_constraintStart_toEndOf="@id/date_guide"
         app:layout_constraintEnd_toStartOf="@id/introduced_guide"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_chainStyle="packed"
+        app:layout_constraintVertical_chainStyle="spread_inside"
         app:layout_constraintBottom_toTopOf="@id/introducerNumber"
         tools:text="@sample/contacts.json/data/name" />
 
     <org.thoughtcrime.securesms.components.FromTextView
         android:id="@+id/introducerNumber"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
@@ -111,12 +111,12 @@
         android:textAppearance="@style/Signal.Text.BodyMedium"
         android:textColor="@color/signal_text_secondary"
         android:gravity="start"
-        app:layout_constraintVertical_chainStyle="packed"
+        app:layout_constraintVertical_chainStyle="spread_inside"
         app:layout_constraintHorizontal_bias="0"
         app:layout_constraintStart_toEndOf="@id/date_guide"
         app:layout_constraintEnd_toStartOf="@id/introduced_guide"
         app:layout_constraintTop_toBottomOf="@id/introducerName"
-        app:layout_constraintBottom_toTopOf="@id/mask"
+        app:layout_constraintBottom_toTopOf="@id/buttonBarrier"
         tools:text="@sample/contacts.json/data/number" />
 
     <com.google.android.material.button.MaterialButton
@@ -125,14 +125,15 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:gravity="center|bottom"
+        android:ellipsize="end"
         app:icon="@drawable/domino_mask_24px"
         app:iconGravity="textStart"
         app:iconPadding="0dp"
-        app:layout_constraintVertical_chainStyle="packed"
+        app:layout_constraintVertical_chainStyle="spread_inside"
         app:layout_constraintHorizontal_bias="0"
         app:layout_constraintStart_toEndOf="@id/date_guide"
         app:layout_constraintEnd_toStartOf="@id/introduced_guide"
-        app:layout_constraintTop_toBottomOf="@id/introducerNumber"
+        app:layout_constraintTop_toBottomOf="@id/buttonBarrier"
         app:layout_constraintBottom_toBottomOf="parent"
         />
 
@@ -141,11 +142,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            app:layout_constraintGuide_percent="0.8" />
+            app:layout_constraintGuide_percent="0.85" />
 
     <org.thoughtcrime.securesms.components.FromTextView
         android:id="@+id/introduceeName"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
@@ -155,7 +156,7 @@
         android:textAppearance="@style/Signal.Text.BodyLarge"
         android:textColor="@color/signal_text_primary"
         android:gravity="start|top"
-        app:layout_constraintVertical_chainStyle="packed"
+        app:layout_constraintVertical_chainStyle="spread_inside"
         app:layout_constraintHorizontal_bias="0"
         app:layout_constraintStart_toStartOf="@id/introduced_guide"
         app:layout_constraintEnd_toEndOf="parent"
@@ -165,7 +166,7 @@
 
     <org.thoughtcrime.securesms.components.FromTextView
         android:id="@+id/introduceeNumber"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
@@ -175,22 +176,29 @@
         android:textAppearance="@style/Signal.Text.BodyMedium"
         android:textColor="@color/signal_text_secondary"
         android:textDirection="ltr"
+        android:gravity="start|top"
         app:layout_constrainedWidth="true"
-        app:layout_constraintVertical_chainStyle="packed"
+        app:layout_constraintVertical_chainStyle="spread_inside"
         app:layout_constraintHorizontal_bias="0"
-        app:layout_constraintStart_toEndOf="@id/introduced_guide"
+        app:layout_constraintStart_toStartOf="@id/introduced_guide"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/introduceeName"
-        app:layout_constraintBottom_toTopOf="@id/trust_distrust"
+        app:layout_constraintBottom_toTopOf="@id/buttonBarrier"
         tools:text="@sample/contacts.json/data/number" />
 
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/buttonBarrier"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:barrierDirection="top"
+        app:constraint_referenced_ids="radio_group_label, trust_distrust, mask, delete"
+        />
 
     <org.thoughtcrime.securesms.components.FromTextView
         android:id="@+id/radio_group_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginEnd="8dp"
         android:drawablePadding="4dp"
         android:ellipsize="marquee"
         android:singleLine="true"
@@ -198,28 +206,36 @@
         android:textColor="@color/signal_text_primary"
         android:text="@string/ManageIntroductionsListItem__Conflicting"
         app:layout_constraintHorizontal_bias="0"
-        app:layout_constraintVertical_chainStyle="packed"
-        app:layout_constraintStart_toEndOf="@id/introduced_guide"
+        app:layout_constraintVertical_chainStyle="spread_inside"
+        app:layout_constraintStart_toStartOf="@id/introduced_guide"
         app:layout_constraintEnd_toStartOf="@id/trust_distrust"
-        app:layout_constraintTop_toBottomOf="@id/introduceeNumber"
+        app:layout_constraintTop_toBottomOf="@id/buttonBarrier"
         app:layout_constraintBottom_toBottomOf="parent"
         tools:text="Stale"/>
+
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/radioGroupBarrier"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:barrierDirection="end"
+        app:constraint_referenced_ids="introduced_guide, radio_group_label"
+        />
 
 <RadioGroup
     android:id="@+id/trust_distrust"
     style="@style/Signal.Widget.Button.Small.Primary"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:layout_marginStart="16dp"
-    android:layout_marginEnd="8dp"
-    android:drawablePadding="4dp"
     android:background="@drawable/radio_group_border"
     android:orientation="horizontal"
+    android:layout_marginStart="16dp"
     app:layout_constraintHorizontal_bias="0"
-    app:layout_constraintVertical_chainStyle="packed"
-    app:layout_constraintStart_toEndOf="@id/radio_group_label"
+    app:layout_gravity="bottom|left"
+    app:layout_constraintVertical_chainStyle="spread_inside"
+    app:layout_constraintStart_toStartOf="@id/radioGroupBarrier"
     app:layout_constraintEnd_toEndOf="parent"
-    app:layout_constraintTop_toBottomOf="@id/introduceeNumber"
+    app:layout_constraintTop_toBottomOf="@id/buttonBarrier"
     app:layout_constraintBottom_toBottomOf="parent"
     >
     <RadioButton
