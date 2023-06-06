@@ -5,6 +5,7 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
@@ -17,6 +18,8 @@ import androidx.core.util.Pair;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.button.MaterialButton;
 
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
@@ -93,12 +96,18 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
     private final RadioButton reject = itemView.findViewById(R.id.reject);
     private final RadioGroup  radioGroup = itemView.findViewById(R.id.trust_distrust);
     private final TextView    radioGroupLabel = itemView.findViewById(R.id.radio_group_label);
-    private final Guideline   guideline = itemView.findViewById(R.id.introduced_guide);
+    private final Guideline guideline = itemView.findViewById(R.id.introduced_guide);
+    private final ImageView      mask           = itemView.findViewById(R.id.maskedImage);
+    private final MaterialButton maskIntroducer = itemView.findViewById(R.id.mask);
+    private final MaterialButton delete = itemView.findViewById(R.id.delete);
 
     public IntroductionViewHolder(@NonNull View itemView, ManageAdapter.InteractionListener listener, Context c) {
       super(itemView);
       this.listener = listener;
       context = c;
+      radioGroup.setOnCheckedChangeListener((b, id) -> {
+        changeTrust(id == this.accept.getId());
+      });
     }
 
     @SuppressLint("RestrictedApi") public void bind(@Nullable TI_Data d, @Nullable ManageViewModel.IntroducerInformation introducerInformation){
@@ -119,9 +128,8 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
       introducerName.setVisibility(View.VISIBLE);
       guideline.setGuidelinePercent(0.5f);
       changeListitemAppearanceByState(data.getState());
-      this.radioGroup.setOnCheckedChangeListener((b, id) -> {
-        changeTrust(id == this.accept.getId());
-      });
+      maskIntroducer.setOnClickListener((b) -> listener.mask(this, data.getIntroducerServiceId()));
+      delete.setOnClickListener((b) -> listener.delete(this, data.getIntroducerServiceId()));
     }
 
     String getIntroduceeName(){
@@ -311,8 +319,8 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
   interface InteractionListener{
     void accept(@NonNull Long introductionID);
     void reject(@NonNull Long introductionID);
-    void mask(@NonNull ManageAdapter.IntroductionViewHolder item, String introducerName);
-    void delete(@NonNull ManageAdapter.IntroductionViewHolder item, String introducerName);
+    void mask(@NonNull ManageAdapter.IntroductionViewHolder item, String introducerServiceID);
+    void delete(@NonNull ManageAdapter.IntroductionViewHolder item, String introducerServiceID);
   }
 
 }

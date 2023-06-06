@@ -57,6 +57,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
   private static final String TIMESTAMP             = "timestamp";
   private static final String STATE                          = "state";
   public static final long UNKNOWN_INTRODUCEE_RECIPIENT_ID = -1; //TODO: need to search through database for serviceID when new recipient is added in order to initialize.
+  public static final String UNKNOWN_INTRODUCER_SERVICE_ID = "-1";
 
   // Service ID was an Integer mistakenly + had a nonnull constraint, ignore and execute correct statement instead
   public static final String PREVIOUS_PARTIAL_CREATE_TABLE = "CREATE TABLE " + TABLE_NAME + " (" + ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +

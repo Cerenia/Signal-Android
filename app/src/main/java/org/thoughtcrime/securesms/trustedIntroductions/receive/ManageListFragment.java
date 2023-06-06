@@ -23,6 +23,7 @@ import com.pnikosis.materialishprogress.ProgressWheel;
 
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
+import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
@@ -403,13 +404,14 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
       viewModel.rejectIntroduction(introductionId);
     }
 
-    @Override public void mask(@NonNull ManageAdapter.IntroductionViewHolder item, String introducerName) {
-      if(!introducerName.equals(getString(R.string.ManageIntroductionsListItem__Forgotten_Introducer))){
+    @Override public void mask(@NonNull ManageAdapter.IntroductionViewHolder item, String introducerServiceId) {
+      if(!introducerServiceId.equals(TrustedIntroductionsDatabase.UNKNOWN_INTRODUCER_SERVICE_ID)){
         ForgetIntroducerDialog.show(c, item.getIntroductionId(), item.getIntroduceeName(), item.getIntroducerName(requireContext()), item.getDate(), forgetHandler);
       }
     }
 
-    @Override public void delete(@NonNull ManageAdapter.IntroductionViewHolder item, String introducerName) {
+    @Override public void delete(@NonNull ManageAdapter.IntroductionViewHolder item, String introducerServiceId) {
+      String introducerName = introducerServiceId.equals(TrustedIntroductionsDatabase.UNKNOWN_INTRODUCER_SERVICE_ID) ? getString(R.string.ManageIntroductionsListItem__Forgotten_Introducer) : Recipient.resolved(TI_Utils.getRecipientIdOrUnknown(introducerServiceId)).getDisplayName(requireContext());
       DeleteIntroductionDialog.show(c, item.getIntroductionId(), item.getIntroduceeName(), introducerName, item.getDate(), deleteHandler);
     }
 
