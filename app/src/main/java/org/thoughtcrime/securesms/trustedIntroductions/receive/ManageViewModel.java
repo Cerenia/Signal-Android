@@ -96,7 +96,7 @@ public class ManageViewModel extends ViewModel {
 
   void deleteIntroduction(@NonNull Long introductionId){
     iterateAndModify(introductionId, new Modify() {
-      @Nullable @Override public Pair<TI_Data, IntroducerInformation> modifiedIntroductionItem(Pair<TI_Data, IntroducerInformation> introductionItem) {
+      @Nullable @Override public Pair<TI_Data, IntroducerInformation> modifyIntroductionItem(Pair<TI_Data, IntroducerInformation> introductionItem) {
         return null;
       }
 
@@ -112,9 +112,9 @@ public class ManageViewModel extends ViewModel {
 
   void forgetIntroducer(@NonNull Long introductionId){
     iterateAndModify(introductionId, new Modify() {
-      @Nullable @Override public Pair<TI_Data, IntroducerInformation> modifiedIntroductionItem(Pair<TI_Data, IntroducerInformation> introductionItem) {
+      @Nullable @Override public Pair<TI_Data, IntroducerInformation> modifyIntroductionItem(Pair<TI_Data, IntroducerInformation> introductionItem) {
         TI_Data oldIntro = introductionItem.first;
-        TI_Data newIntroduction = new TI_Data(oldIntro.getId(), oldIntro.getState(), TrustedIntroductionsDatabase.INTRODUCER_SERVICE_ID, oldIntro.getIntroduceeServiceId(), oldIntro.getIntroduceeName(), oldIntro.getIntroduceeNumber(), oldIntro.getIntroduceeIdentityKey(), oldIntro.getPredictedSecurityNumber(), oldIntro.getTimestamp());
+        TI_Data newIntroduction = new TI_Data(oldIntro.getId(), oldIntro.getState(), TrustedIntroductionsDatabase.UNKNOWN_INTRODUCER_SERVICE_ID, oldIntro.getIntroduceeServiceId(), oldIntro.getIntroduceeName(), oldIntro.getIntroduceeNumber(), oldIntro.getIntroduceeIdentityKey(), oldIntro.getPredictedSecurityNumber(), oldIntro.getTimestamp());
         return new Pair<>(newIntroduction, new IntroducerInformation(forgottenPlaceholder, forgottenPlaceholder));
       }
 
@@ -130,7 +130,7 @@ public class ManageViewModel extends ViewModel {
 
   void acceptIntroduction(@NonNull Long introductionId){
       iterateAndModify(introductionId, new Modify() {
-        @Nullable @Override public Pair<TI_Data, IntroducerInformation> modifiedIntroductionItem(Pair<TI_Data, IntroducerInformation> introductionItem) {
+        @Nullable @Override public Pair<TI_Data, IntroducerInformation> modifyIntroductionItem(Pair<TI_Data, IntroducerInformation> introductionItem) {
           TI_Data oldIntroduction = introductionItem.first;
           TI_Data newIntroduction = new TI_Data(oldIntroduction.getId(), TrustedIntroductionsDatabase.State.ACCEPTED, oldIntroduction.getIntroducerServiceId(), oldIntroduction.getIntroduceeServiceId(), oldIntroduction
               .getIntroduceeName(), oldIntroduction.getIntroduceeNumber(), oldIntroduction.getIntroduceeIdentityKey(), oldIntroduction.getPredictedSecurityNumber(), oldIntroduction.getTimestamp());
@@ -149,7 +149,7 @@ public class ManageViewModel extends ViewModel {
 
   void rejectIntroduction(@NonNull Long introductionId){
     iterateAndModify(introductionId, new Modify() {
-      @Nullable @Override public Pair<TI_Data, IntroducerInformation> modifiedIntroductionItem(Pair<TI_Data, IntroducerInformation> introductionItem) {
+      @Nullable @Override public Pair<TI_Data, IntroducerInformation> modifyIntroductionItem(Pair<TI_Data, IntroducerInformation> introductionItem) {
         TI_Data oldIntroduction = introductionItem.first;
         TI_Data newIntroduction = new TI_Data(oldIntroduction.getId(), TrustedIntroductionsDatabase.State.REJECTED, oldIntroduction.getIntroducerServiceId(), oldIntroduction.getIntroduceeServiceId(), oldIntroduction
             .getIntroduceeName(), oldIntroduction.getIntroduceeNumber(), oldIntroduction.getIntroduceeIdentityKey(), oldIntroduction.getPredictedSecurityNumber(), oldIntroduction.getTimestamp());
@@ -186,7 +186,7 @@ public class ManageViewModel extends ViewModel {
     all.remove(i);
     // This needs to happen before current is potentially deleted
     TI_Data modifiedIntroduction = current.first;
-    current = m.modifiedIntroductionItem(current);
+    current = m.modifyIntroductionItem(current);
     if(current != null){
       // only reassign if current was not deleted
       modifiedIntroduction = current.first;
@@ -210,7 +210,7 @@ public class ManageViewModel extends ViewModel {
      * @param introductionItem the item to be modified. Implementations must return a modified copy and leave the original item untouched.
      * @return a modified introduction list item
      */
-    @Nullable Pair<TI_Data, IntroducerInformation> modifiedIntroductionItem(Pair<TI_Data, IntroducerInformation> introductionItem);
+    @Nullable Pair<TI_Data, IntroducerInformation> modifyIntroductionItem(Pair<TI_Data, IntroducerInformation> introductionItem);
     @WorkerThread boolean databaseCall(TI_Data introduction);
     @NonNull String errorMessage(Long introductionId);
   }
