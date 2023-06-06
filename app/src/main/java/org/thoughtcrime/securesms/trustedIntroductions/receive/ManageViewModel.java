@@ -114,7 +114,7 @@ public class ManageViewModel extends ViewModel {
     iterateAndModify(introductionId, new Modify() {
       @Nullable @Override public Pair<TI_Data, IntroducerInformation> modifiedIntroductionItem(Pair<TI_Data, IntroducerInformation> introductionItem) {
         TI_Data oldIntro = introductionItem.first;
-        TI_Data newIntroduction = new TI_Data(oldIntro.getId(), oldIntro.getState(), null, oldIntro.getIntroduceeServiceId(), oldIntro.getIntroduceeName(), oldIntro.getIntroduceeNumber(), oldIntro.getIntroduceeIdentityKey(), oldIntro.getPredictedSecurityNumber(), oldIntro.getTimestamp());
+        TI_Data newIntroduction = new TI_Data(oldIntro.getId(), oldIntro.getState(), TrustedIntroductionsDatabase.INTRODUCER_SERVICE_ID, oldIntro.getIntroduceeServiceId(), oldIntro.getIntroduceeName(), oldIntro.getIntroduceeNumber(), oldIntro.getIntroduceeIdentityKey(), oldIntro.getPredictedSecurityNumber(), oldIntro.getTimestamp());
         return new Pair<>(newIntroduction, new IntroducerInformation(forgottenPlaceholder, forgottenPlaceholder));
       }
 
