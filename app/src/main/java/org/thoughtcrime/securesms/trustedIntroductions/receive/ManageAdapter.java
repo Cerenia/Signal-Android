@@ -31,6 +31,8 @@ import org.whispersystems.signalservice.api.util.Preconditions;
 
 import java.util.Date;
 
+import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
 import static org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase.State.ACCEPTED;
 import static org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase.State.CONFLICTING;
 import static org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase.State.REJECTED;
@@ -120,12 +122,12 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
       // This will duplicate number in case there is no name, but that's just cosmetics.
       introduceeName.setText(data.getIntroduceeName());
       introduceeNumber.setText(data.getIntroduceeNumber());
-      introduceeName.setVisibility(View.VISIBLE);
-      introduceeNumber.setVisibility(View.VISIBLE);
+      introduceeName.setVisibility(VISIBLE);
+      introduceeNumber.setVisibility(VISIBLE);
       introducerNumber.setText(introducerInformation.number);
       introducerName.setText(introducerInformation.name);
-      introducerNumber.setVisibility(View.VISIBLE);
-      introducerName.setVisibility(View.VISIBLE);
+      introducerNumber.setVisibility(VISIBLE);
+      introducerName.setVisibility(VISIBLE);
       guideline.setGuidelinePercent(0.5f);
       changeListitemAppearanceByState(data.getState());
       maskIntroducer.setOnClickListener((b) -> listener.mask(this, data.getIntroducerServiceId()));
@@ -187,6 +189,20 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
 
 
     /**
+     * Introducer service ID may not be null. (No incomplete intro should be displayed in receive screen).
+     */
+    private void setForgetIntroducerComponentVisibility(){
+      Preconditions.checkArgument(data.getIntroducerServiceId() != null);
+      if(data.getIntroducerServiceId().equals(TrustedIntroductionsDatabase.UNKNOWN_INTRODUCER_SERVICE_ID)){
+        maskIntroducer.setVisibility(GONE);
+        mask.setVisibility(VISIBLE);
+      } else {
+        maskIntroducer.setVisibility(VISIBLE);
+        mask.setVisibility(GONE);
+      }
+    }
+
+    /**
      * Also changes the border/background colour and positioning accordingly.
      * @return
      */
@@ -194,94 +210,103 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
       switch(s){
         case PENDING:
           radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Pending);
-          accept.setVisibility(View.VISIBLE);
+          radioGroupLabel.setVisibility(VISIBLE);
+          accept.setVisibility(VISIBLE);
           accept.setEnabled(true);
           accept.setClickable(true);
-          reject.setVisibility(View.VISIBLE);
+          reject.setVisibility(VISIBLE);
           reject.setEnabled(true);
           reject.setClickable(true);
+          maskIntroducer.setVisibility(GONE);
           this.itemView.setBackground(ContextCompat.getDrawable(context, R.drawable.ti_manage_listview_background_default));
           break;
         case ACCEPTED:
-          radioGroupLabel.setVisibility(View.GONE);
-          accept.setVisibility(View.VISIBLE);
+          radioGroupLabel.setVisibility(GONE);
+          accept.setVisibility(VISIBLE);
           accept.setEnabled(true);
-          reject.setVisibility(View.VISIBLE);
+          reject.setVisibility(VISIBLE);
           reject.setEnabled(true);
           if (!accept.isChecked()) {
             accept.setChecked(true);
           }
+          setForgetIntroducerComponentVisibility();
           reject.setClickable(true);
           accept.setClickable(true);
           this.itemView.setBackground(ContextCompat.getDrawable(context, R.drawable.ti_manage_listview_background_default));
           break;
         case REJECTED:
-          radioGroupLabel.setVisibility(View.GONE);
-          accept.setVisibility(View.VISIBLE);
+          radioGroupLabel.setVisibility(GONE);
+          accept.setVisibility(VISIBLE);
           accept.setEnabled(true);
-          reject.setVisibility(View.VISIBLE);
+          reject.setVisibility(VISIBLE);
           reject.setEnabled(true);
           if (!reject.isChecked()){
             reject.setChecked(true);
           }
+          setForgetIntroducerComponentVisibility();
           reject.setClickable(true);
           accept.setClickable(true);
           this.itemView.setBackground(ContextCompat.getDrawable(context, R.drawable.ti_manage_listview_background_default));
           break;
         case CONFLICTING:
           radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Conflicting);
-          accept.setVisibility(View.GONE);
+          accept.setVisibility(GONE);
           accept.setEnabled(false);
           accept.setClickable(false);
-          reject.setVisibility(View.GONE);
+          reject.setVisibility(GONE);
           reject.setEnabled(false);
           accept.setClickable(false);
+          setForgetIntroducerComponentVisibility();
           this.itemView.setBackground(ContextCompat.getDrawable(context, R.drawable.ti_manage_listview_background_conflicting));
           break;
         case STALE_ACCEPTED: // Keep the visible state of the switch in these cases
-          radioGroupLabel.setVisibility(View.GONE);
-          accept.setVisibility(View.VISIBLE);
+          radioGroupLabel.setVisibility(GONE);
+          accept.setVisibility(VISIBLE);
           accept.setEnabled(false);
           accept.setClickable(false);
           if (!accept.isChecked()){
             accept.setChecked(true);
           }
-          reject.setVisibility(View.VISIBLE);
+          reject.setVisibility(VISIBLE);
           reject.setEnabled(false);
           reject.setClickable(false);
+          setForgetIntroducerComponentVisibility();
           this.itemView.setBackground(ContextCompat.getDrawable(context, R.drawable.ti_manage_listview_background_stale));
           break;
         case STALE_REJECTED:
-          radioGroupLabel.setVisibility(View.GONE);
-          accept.setVisibility(View.VISIBLE);
+          radioGroupLabel.setVisibility(GONE);
+          accept.setVisibility(VISIBLE);
           accept.setEnabled(false);
           accept.setClickable(false);
-          reject.setVisibility(View.VISIBLE);
+          reject.setVisibility(VISIBLE);
           reject.setEnabled(false);
           reject.setClickable(false);
           if (!reject.isChecked()) {
             reject.setChecked(true);
           }
+          setForgetIntroducerComponentVisibility();
           this.itemView.setBackground(ContextCompat.getDrawable(context, R.drawable.ti_manage_listview_background_stale));
           break;
         case STALE_PENDING:
           radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Stale);
-          accept.setVisibility(View.VISIBLE);
+          accept.setVisibility(VISIBLE);
           accept.setEnabled(false);
           accept.setClickable(false);
-          reject.setVisibility(View.VISIBLE);
+          reject.setVisibility(VISIBLE);
           reject.setEnabled(false);
           reject.setClickable(false);
+          setForgetIntroducerComponentVisibility();
           this.itemView.setBackground(ContextCompat.getDrawable(context, R.drawable.ti_manage_listview_background_stale));
           break;
         case STALE_CONFLICTING:
           radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Conflicting);
-          accept.setVisibility(View.GONE);
+          accept.setVisibility(GONE);
           accept.setEnabled(false);
           accept.setClickable(false);
-          reject.setVisibility(View.GONE);
+          reject.setVisibility(GONE);
           reject.setEnabled(false);
           reject.setClickable(false);
+          setForgetIntroducerComponentVisibility();
           this.itemView.setBackground(ContextCompat.getDrawable(context, R.drawable.ti_manage_listview_background_stale_conflicting));
           break;
       }
