@@ -137,6 +137,19 @@
         app:layout_constraintBottom_toBottomOf="parent"
         />
 
+    <ImageView
+        android:id="@+id/maskedImage"
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent"
+        android:layout_gravity="center|center_vertical"
+        android:src="@drawable/domino_mask_active_48"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@id/date_guide"
+        app:layout_constraintEnd_toStartOf="@id/introduced_guide"
+        />
+
         <androidx.constraintlayout.widget.Guideline
             android:id="@+id/introduced_guide"
             android:layout_width="wrap_content"
