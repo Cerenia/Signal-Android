@@ -604,11 +604,12 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
 
   @WorkerThread
   /**
-   * Fetches All Introduction data.
+   * Fetches All displayable Introduction data.
+   * Introductions with null introducerServiceId are omitted
    * @return IntroductionReader which can be used as an iterator.
    */
-  public IntroductionReader getAllIntroductions() {
-    String query = "SELECT  * FROM " + TABLE_NAME;
+  public IntroductionReader getAllDisplayableIntroductions() {
+    String query = "SELECT * FROM " + TABLE_NAME + " WHERE " + INTRODUCER_SERVICE_ID + " IS NOT NULL";
     SQLiteDatabase db = databaseHelper.getSignalReadableDatabase();
     return new IntroductionReader(db.rawQuery(query, null));
   }
@@ -622,7 +623,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
   * @return true if success, false otherwise
   */
  public boolean clearIntroducer(TI_Data introduction){
-   Preconditions.checkArgument(introduction.getIntroducerServiceId() == null);
+   Preconditions.checkArgument(introduction.getIntroducerServiceId().equals(UNKNOWN_INTRODUCER_SERVICE_ID));
    Preconditions.checkArgument(introduction.getId() != null);
    SQLiteDatabase database = databaseHelper.getSignalWritableDatabase();
    String query = ID + " = ?";

@@ -35,7 +35,7 @@ public class ManageManager {
     SignalExecutors.BOUNDED.execute(() -> {
 
       // Pull introductions out of the database
-      TrustedIntroductionsDatabase.IntroductionReader reader = tdb.getAllIntroductions();
+      TrustedIntroductionsDatabase.IntroductionReader reader = tdb.getAllDisplayableIntroductions();
       ArrayList<TI_Data> introductions = new ArrayList<>();
       while(reader.hasNext()){
         introductions.add(reader.getNext());
