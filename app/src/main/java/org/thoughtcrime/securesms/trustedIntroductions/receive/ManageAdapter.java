@@ -93,7 +93,7 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
     private final RadioButton reject = itemView.findViewById(R.id.reject);
     private final RadioGroup  radioGroup = itemView.findViewById(R.id.trust_distrust);
     private final TextView    radioGroupLabel = itemView.findViewById(R.id.radio_group_label);
-    private final Guideline   guideline = itemView.findViewById(R.id.half_guide);
+    private final Guideline   guideline = itemView.findViewById(R.id.introduced_guide);
 
     public IntroductionViewHolder(@NonNull View itemView, ManageAdapter.InteractionListener listener, Context c) {
       super(itemView);

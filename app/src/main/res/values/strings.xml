@@ -4039,6 +4039,7 @@
     <string name="ManageIntroductionsListItem__Conflicting">Conflict</string>
     <string name="ManageIntroductionsListItem__Stale">Stale</string>
     <string name="ManageIntroductionsListItem__Forgotten_Introducer">Masked</string>
+    <string name="ManageIntroductionsListItem__Forget_Introducer">Mask</string>
     <!-- ManageIntroductionsListItemHeader -->
     <string name="ManageIntroductionsListItemHeader__Date">Date:</string>
     <string name="ManageIntroductionsListItemHeader__Introducee">Introduced:</string>
