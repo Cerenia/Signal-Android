@@ -195,6 +195,8 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
       Preconditions.checkArgument(data.getIntroducerServiceId() != null);
       if(data.getIntroducerServiceId().equals(TrustedIntroductionsDatabase.UNKNOWN_INTRODUCER_SERVICE_ID)){
         maskIntroducer.setVisibility(GONE);
+        introducerNumber.setVisibility(GONE);
+        introducerName.setVisibility(GONE);
         mask.setVisibility(VISIBLE);
       } else {
         maskIntroducer.setVisibility(VISIBLE);
