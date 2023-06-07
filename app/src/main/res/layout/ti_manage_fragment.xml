@@ -24,6 +24,13 @@
         app:titleTextAppearance="@style/TextSecure.TitleTextStyle"
         />
 
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/barrier_recycle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:barrierDirection="bottom"
+        app:constraint_referenced_ids="manage_fragment_header,no_introductions_found"/>
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/manage_fragment_header"
         android:layout_width="match_parent"
@@ -40,7 +47,7 @@
             android:id="@+id/date_header"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
+            android:layout_marginStart="32dp"
             android:layout_marginEnd="16dp"
             android:layout_marginBottom="2dp"
             android:drawablePadding="4dp"
@@ -50,19 +57,25 @@
             android:textAppearance="@style/Signal.Text.BodyMedium"
             android:textColor="@color/signal_text_primary"
             android:textStyle="bold"
-            android:gravity="start"
             app:layout_constraintHorizontal_bias="0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/from_header"
+            app:layout_constraintEnd_toStartOf="@id/introducer_guideline"
             tools:text="Date"/>
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/introducer_guideline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.3" />
 
         <org.thoughtcrime.securesms.components.FromTextView
             android:id="@+id/from_header"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
+            android:layout_marginStart="32dp"
             android:layout_marginEnd="16dp"
             android:layout_marginBottom="2dp"
             android:drawablePadding="4dp"
@@ -72,26 +85,25 @@
             android:textAppearance="@style/Signal.Text.BodyMedium"
             android:textColor="@color/signal_text_primary"
             android:textStyle="bold"
-            android:gravity="start"
             app:layout_constraintHorizontal_bias="0"
-            app:layout_constraintStart_toEndOf="@id/date_header"
+            app:layout_constraintStart_toEndOf="@id/introducer_guideline"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/half_guide_header"
+            app:layout_constraintEnd_toStartOf="@id/introducee_guideline"
             tools:text="From"/>
 
         <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/half_guide_header"
+            android:id="@+id/introducee_guideline"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            app:layout_constraintGuide_percent="0.66" />
+            app:layout_constraintGuide_percent="0.65" />
 
         <org.thoughtcrime.securesms.components.FromTextView
             android:id="@+id/introducee_header"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
+            android:layout_marginStart="32dp"
             android:layout_marginEnd="16dp"
             android:drawablePadding="4dp"
             android:ellipsize="marquee"
@@ -100,21 +112,13 @@
             android:textAppearance="@style/Signal.Text.BodyMedium"
             android:textColor="@color/signal_text_primary"
             android:textStyle="bold"
-            android:gravity="start"
-            app:layout_constraintStart_toStartOf="@id/half_guide_header"
             app:layout_constraintHorizontal_bias="0"
+            app:layout_constraintStart_toEndOf="@id/introducee_guideline"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             tools:text="Introducee"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <androidx.constraintlayout.widget.Barrier
-        android:id="@+id/barrier_recycle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:barrierDirection="bottom"
-        app:constraint_referenced_ids="manage_fragment_header,no_introductions_found"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view"
