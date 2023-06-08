@@ -9,7 +9,8 @@
     android:focusable="true"
     android:minHeight="@dimen/contact_selection_item_height"
     android:paddingStart="@dimen/dsl_settings_gutter"
-    android:paddingEnd="@dimen/dsl_settings_gutter">
+    android:paddingEnd="@dimen/dsl_settings_gutter"
+    app:layout_optimizationLevel="none">
 
     <org.thoughtcrime.securesms.components.FromTextView
         android:id="@+id/timestamp_date"
@@ -52,8 +53,10 @@
     <com.google.android.material.button.MaterialButton
         android:id="@+id/delete"
         style="@style/Signal.Widget.Button.Small.Primary"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
+        layout_constraintWidth_max="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
         android:maxLines="1"
         app:layout_constraintHorizontal_bias="0"
         app:icon="@drawable/ic_trash_24"
@@ -85,7 +88,7 @@
         android:textColor="@color/signal_text_primary"
         android:maxLines="1"
         android:ellipsize="marquee"
-        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintHorizontal_bias="0"
         app:layout_constraintStart_toEndOf="@id/date_guide"
         app:layout_constraintEnd_toStartOf="@id/introduced_guide"
         app:layout_constraintTop_toTopOf="parent"
@@ -104,7 +107,7 @@
         android:textColor="@color/signal_text_secondary"
         android:maxLines="1"
         android:ellipsize="marquee"
-        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintHorizontal_bias="0"
         app:layout_constraintVertical_chainStyle="spread_inside"
         app:layout_constraintStart_toEndOf="@id/date_guide"
         app:layout_constraintEnd_toStartOf="@id/introduced_guide"
@@ -115,11 +118,11 @@
     <com.google.android.material.button.MaterialButton
         android:id="@+id/mask"
         style="@style/Signal.Widget.Button.Small.Primary"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
+        layout_constraintWidth_max="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:ellipsize="marquee"
-        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintHorizontal_bias="0"
         app:icon="@drawable/domino_mask_24px"
         app:iconGravity="textStart"
         app:iconPadding="0dp"
@@ -139,7 +142,7 @@
         android:visibility="gone"
         android:layout_marginStart="16dp"
         android:ellipsize="marquee"
-        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintHorizontal_bias="0"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@id/date_guide"

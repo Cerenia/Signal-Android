@@ -219,7 +219,9 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
           reject.setVisibility(VISIBLE);
           reject.setEnabled(true);
           reject.setClickable(true);
-          maskIntroducer.setVisibility(GONE);
+          maskIntroducer.setVisibility(VISIBLE);
+          maskIntroducer.setEnabled(false);
+          maskIntroducer.setClickable(false);
           this.itemView.setBackground(ContextCompat.getDrawable(context, R.drawable.ti_manage_listview_background_default));
           break;
         case ACCEPTED:
