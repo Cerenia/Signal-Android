@@ -85,7 +85,7 @@
             android:textAppearance="@style/Signal.Text.BodyMedium"
             android:textColor="@color/signal_text_primary"
             android:textStyle="bold"
-            app:layout_constraintHorizontal_bias="0"
+            app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@id/introducer_guideline"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -97,7 +97,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            app:layout_constraintGuide_percent="0.65" />
+            app:layout_constraintGuide_percent="0.55" />
 
         <org.thoughtcrime.securesms.components.FromTextView
             android:id="@+id/introducee_header"
@@ -112,7 +112,7 @@
             android:textAppearance="@style/Signal.Text.BodyMedium"
             android:textColor="@color/signal_text_primary"
             android:textStyle="bold"
-            app:layout_constraintHorizontal_bias="0"
+            app:layout_constraintHorizontal_bias="1"
             app:layout_constraintStart_toEndOf="@id/introducee_guideline"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
