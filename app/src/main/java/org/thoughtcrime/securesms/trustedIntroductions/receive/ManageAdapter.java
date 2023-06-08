@@ -98,7 +98,7 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
     private final RadioButton reject = itemView.findViewById(R.id.reject);
     private final RadioGroup  radioGroup = itemView.findViewById(R.id.trust_distrust);
     private final TextView    radioGroupLabel = itemView.findViewById(R.id.radio_group_label);
-    private final Guideline guideline = itemView.findViewById(R.id.introduced_guide);
+    private final Guideline guideline = itemView.findViewById(R.id.guideline_right);
     private final ImageView      mask           = itemView.findViewById(R.id.maskedImage);
     private final MaterialButton maskIntroducer = itemView.findViewById(R.id.mask);
     private final MaterialButton delete = itemView.findViewById(R.id.delete);
@@ -213,6 +213,7 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
         case PENDING:
           radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Pending);
           radioGroupLabel.setVisibility(VISIBLE);
+          radioGroup.setVisibility(VISIBLE);
           accept.setVisibility(VISIBLE);
           accept.setEnabled(true);
           accept.setClickable(true);
@@ -226,6 +227,7 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
           break;
         case ACCEPTED:
           radioGroupLabel.setVisibility(GONE);
+          radioGroup.setVisibility(VISIBLE);
           accept.setVisibility(VISIBLE);
           accept.setEnabled(true);
           reject.setVisibility(VISIBLE);
@@ -240,6 +242,7 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
           break;
         case REJECTED:
           radioGroupLabel.setVisibility(GONE);
+          radioGroup.setVisibility(VISIBLE);
           accept.setVisibility(VISIBLE);
           accept.setEnabled(true);
           reject.setVisibility(VISIBLE);
@@ -254,17 +257,17 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
           break;
         case CONFLICTING:
           radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Conflicting);
-          accept.setVisibility(GONE);
           accept.setEnabled(false);
           accept.setClickable(false);
-          reject.setVisibility(GONE);
           reject.setEnabled(false);
           accept.setClickable(false);
+          radioGroup.setVisibility(GONE);
           setForgetIntroducerComponentVisibility();
           this.itemView.setBackground(ContextCompat.getDrawable(context, R.drawable.ti_manage_listview_background_conflicting));
           break;
         case STALE_ACCEPTED: // Keep the visible state of the switch in these cases
           radioGroupLabel.setVisibility(GONE);
+          radioGroup.setVisibility(VISIBLE);
           accept.setVisibility(VISIBLE);
           accept.setEnabled(false);
           accept.setClickable(false);
@@ -279,6 +282,7 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
           break;
         case STALE_REJECTED:
           radioGroupLabel.setVisibility(GONE);
+          radioGroup.setVisibility(VISIBLE);
           accept.setVisibility(VISIBLE);
           accept.setEnabled(false);
           accept.setClickable(false);
@@ -293,6 +297,7 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
           break;
         case STALE_PENDING:
           radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Stale);
+          radioGroup.setVisibility(VISIBLE);
           accept.setVisibility(VISIBLE);
           accept.setEnabled(false);
           accept.setClickable(false);
@@ -304,6 +309,7 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
           break;
         case STALE_CONFLICTING:
           radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Conflicting);
+          radioGroup.setVisibility(GONE);
           accept.setVisibility(GONE);
           accept.setEnabled(false);
           accept.setClickable(false);

@@ -61,15 +61,15 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/introducer_guideline"
+            app:layout_constraintEnd_toStartOf="@id/guideline_left"
             tools:text="Date"/>
 
         <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/introducer_guideline"
+            android:id="@+id/guideline_left"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            app:layout_constraintGuide_percent="0.3" />
+            app:layout_constraintGuide_percent="0.25" />
 
         <org.thoughtcrime.securesms.components.FromTextView
             android:id="@+id/from_header"
@@ -85,19 +85,19 @@
             android:textAppearance="@style/Signal.Text.BodyMedium"
             android:textColor="@color/signal_text_primary"
             android:textStyle="bold"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toEndOf="@id/introducer_guideline"
+            app:layout_constraintHorizontal_bias="0"
+            app:layout_constraintStart_toEndOf="@id/guideline_left"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/introducee_guideline"
+            app:layout_constraintEnd_toStartOf="@id/guideline_right"
             tools:text="From"/>
 
         <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/introducee_guideline"
+            android:id="@+id/guideline_right"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            app:layout_constraintGuide_percent="0.55" />
+            app:layout_constraintGuide_percent="0.7" />
 
         <org.thoughtcrime.securesms.components.FromTextView
             android:id="@+id/introducee_header"
@@ -113,7 +113,7 @@
             android:textColor="@color/signal_text_primary"
             android:textStyle="bold"
             app:layout_constraintHorizontal_bias="1"
-            app:layout_constraintStart_toEndOf="@id/introducee_guideline"
+            app:layout_constraintStart_toEndOf="@id/guideline_right"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
