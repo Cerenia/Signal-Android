@@ -135,13 +135,12 @@
 
     <ImageView
         android:id="@+id/maskedImage"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
         android:src="@drawable/domino_mask_active_64"
-        android:gravity="center_vertical|center_horizontal"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
-        android:scaleType="fitCenter"
+        android:paddingLeft="8dp"
+        android:gravity="center"
+        android:scaleType="centerInside"
         android:visibility="gone"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
