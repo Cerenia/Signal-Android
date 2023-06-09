@@ -158,17 +158,22 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.8" />
+        app:layout_constraintGuide_percent="0.65" />
+    <!--The following views are not correctly constraining to the right guideline
+    and the previous ones are ellipsizing too soon... I have not yet figured out why and
+    am countering with larger margins, but it's not quite clean on orientation change.-->
+
 
     <org.thoughtcrime.securesms.components.FromTextView
         android:id="@+id/introduceeName"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
+        android:layout_marginStart="24dp"
         android:drawablePadding="4dp"
         android:textAppearance="@style/Signal.Text.BodyLarge"
         android:textColor="@color/signal_text_primary"
-        android:maxLines="1"
+        android:singleLine="true"
+        android:ellipsize="marquee"
         app:layout_constraintWidth_min="wrap"
         app:layout_constraintHorizontal_bias="0"
         app:layout_constraintVertical_chainStyle="spread_inside"
@@ -180,14 +185,16 @@
 
     <org.thoughtcrime.securesms.components.FromTextView
         android:id="@+id/introduceeNumber"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
+        android:layout_marginStart="24dp"
         android:drawablePadding="4dp"
         android:textAppearance="@style/Signal.Text.BodyMedium"
         android:textColor="@color/signal_text_secondary"
-        android:maxLines="1"
-        app:layout_constraintHorizontal_bias="1"
+        android:singleLine="true"
+        android:ellipsize="marquee"
+        app:layout_constraintWidth_min="wrap"
+        app:layout_constraintHorizontal_bias="0"
         app:layout_constraintVertical_chainStyle="spread_inside"
         app:layout_constraintStart_toEndOf="@id/guideline_right"
         app:layout_constraintEnd_toEndOf="parent"
@@ -208,13 +215,13 @@
         android:id="@+id/radio_group_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
+        android:layout_marginStart="24dp"
         android:layout_marginEnd="8dp"
         android:drawablePadding="4dp"
         android:textAppearance="@style/Signal.Text.BodyMedium"
         android:textColor="@color/signal_text_primary"
         android:text="@string/ManageIntroductionsListItem__Conflicting"
-        app:layout_constraintHorizontal_bias="1"
+        app:layout_constraintHorizontal_bias="0"
         app:layout_constraintVertical_chainStyle="spread_inside"
         app:layout_constraintStart_toEndOf="@id/guideline_right"
         app:layout_constraintTop_toBottomOf="@id/buttonBarrier"
@@ -240,8 +247,7 @@
     android:orientation="horizontal"
     android:layout_marginStart="8dp"
     android:layout_marginEnd="16dp"
-    app:layout_goneMarginStart="16dp"
-    app:layout_constraintHorizontal_bias="1"
+    app:layout_constraintHorizontal_bias="0"
     app:layout_constraintVertical_chainStyle="spread_inside"
     app:layout_constraintStart_toEndOf="@id/radioGroupBarrier"
     app:layout_constraintTop_toBottomOf="@id/buttonBarrier"

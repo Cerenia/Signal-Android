@@ -32,6 +32,7 @@ import org.whispersystems.signalservice.api.util.Preconditions;
 import java.util.Date;
 
 import static android.view.View.GONE;
+import static android.view.View.INVISIBLE;
 import static android.view.View.VISIBLE;
 import static org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase.State.ACCEPTED;
 import static org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase.State.CONFLICTING;
@@ -226,7 +227,7 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
           this.itemView.setBackground(ContextCompat.getDrawable(context, R.drawable.ti_manage_listview_background_default));
           break;
         case ACCEPTED:
-          radioGroupLabel.setVisibility(GONE);
+          radioGroupLabel.setVisibility(INVISIBLE);
           radioGroup.setVisibility(VISIBLE);
           accept.setVisibility(VISIBLE);
           accept.setEnabled(true);
@@ -241,7 +242,7 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
           this.itemView.setBackground(ContextCompat.getDrawable(context, R.drawable.ti_manage_listview_background_default));
           break;
         case REJECTED:
-          radioGroupLabel.setVisibility(GONE);
+          radioGroupLabel.setVisibility(INVISIBLE);
           radioGroup.setVisibility(VISIBLE);
           accept.setVisibility(VISIBLE);
           accept.setEnabled(true);
@@ -257,6 +258,7 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
           break;
         case CONFLICTING:
           radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Conflicting);
+          radioGroupLabel.setVisibility(VISIBLE);
           accept.setEnabled(false);
           accept.setClickable(false);
           reject.setEnabled(false);
@@ -266,7 +268,7 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
           this.itemView.setBackground(ContextCompat.getDrawable(context, R.drawable.ti_manage_listview_background_conflicting));
           break;
         case STALE_ACCEPTED: // Keep the visible state of the switch in these cases
-          radioGroupLabel.setVisibility(GONE);
+          radioGroupLabel.setVisibility(INVISIBLE);
           radioGroup.setVisibility(VISIBLE);
           accept.setVisibility(VISIBLE);
           accept.setEnabled(false);
@@ -281,7 +283,7 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
           this.itemView.setBackground(ContextCompat.getDrawable(context, R.drawable.ti_manage_listview_background_stale));
           break;
         case STALE_REJECTED:
-          radioGroupLabel.setVisibility(GONE);
+          radioGroupLabel.setVisibility(INVISIBLE);
           radioGroup.setVisibility(VISIBLE);
           accept.setVisibility(VISIBLE);
           accept.setEnabled(false);
@@ -297,6 +299,7 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
           break;
         case STALE_PENDING:
           radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Stale);
+          radioGroupLabel.setVisibility(VISIBLE);
           radioGroup.setVisibility(VISIBLE);
           accept.setVisibility(VISIBLE);
           accept.setEnabled(false);
@@ -309,6 +312,7 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
           break;
         case STALE_CONFLICTING:
           radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Conflicting);
+          radioGroupLabel.setVisibility(VISIBLE);
           radioGroup.setVisibility(GONE);
           accept.setVisibility(GONE);
           accept.setEnabled(false);
