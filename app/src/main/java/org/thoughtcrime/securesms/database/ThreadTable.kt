@@ -17,13 +17,11 @@ import org.signal.core.util.exists
 import org.signal.core.util.logging.Log
 import org.signal.core.util.or
 import org.signal.core.util.readToList
-import org.signal.core.util.readToSingleLong
 import org.signal.core.util.requireBoolean
 import org.signal.core.util.requireInt
 import org.signal.core.util.requireLong
 import org.signal.core.util.requireString
 import org.signal.core.util.select
-import org.signal.core.util.toSingleLine
 import org.signal.core.util.update
 import org.signal.core.util.withinTransaction
 import org.signal.libsignal.zkgroup.InvalidInputException
@@ -61,6 +59,7 @@ import org.thoughtcrime.securesms.storage.StorageSyncHelper
 import org.thoughtcrime.securesms.util.ConversationUtil
 import org.thoughtcrime.securesms.util.JsonUtils
 import org.thoughtcrime.securesms.util.JsonUtils.SaneJSONObject
+import org.thoughtcrime.securesms.util.LRUCache
 import org.thoughtcrime.securesms.util.TextSecurePreferences
 import org.thoughtcrime.securesms.util.isScheduled
 import org.whispersystems.signalservice.api.push.ServiceId
@@ -108,6 +107,8 @@ class ThreadTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTa
     const val PINNED = "pinned"
     const val UNREAD_SELF_MENTION_COUNT = "unread_self_mention_count"
 
+    const val MAX_CACHE_SIZE = 1000
+
     @JvmField
     val CREATE_TABLE = """
       CREATE TABLE $TABLE_NAME (
@@ -135,7 +136,7 @@ class ThreadTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTa
         $PINNED INTEGER DEFAULT 0, 
         $UNREAD_SELF_MENTION_COUNT INTEGER DEFAULT 0
       )
-    """.trimIndent()
+    """
 
     @JvmField
     val CREATE_INDEXS = arrayOf(
@@ -179,6 +180,8 @@ class ThreadTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTa
     const val NO_TRIM_BEFORE_DATE_SET: Long = 0
     const val NO_TRIM_MESSAGE_COUNT_SET = Int.MAX_VALUE
   }
+
+  private val threadIdCache = LRUCache<RecipientId, Long>(MAX_CACHE_SIZE)
 
   private fun createThreadForRecipient(recipientId: RecipientId, group: Boolean, distributionType: Int): Long {
     if (recipientId.isUnknown) {
@@ -607,7 +610,7 @@ class ThreadTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTa
           $UNREAD_SELF_MENTION_COUNT = $UNREAD_SELF_MENTION_COUNT + ?, 
           $LAST_SCROLLED = ? 
       WHERE $ID = ?
-      """.toSingleLine(),
+      """,
       SqlUtil.buildArgs(unreadAmount, unreadSelfMentionAmount, 0, threadId)
     )
   }
@@ -1058,6 +1061,9 @@ class ThreadTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTa
       db.delete(TABLE_NAME)
         .where("$ID = ?", threadId)
         .run()
+      synchronized(threadIdCache) {
+        threadIdCache.remove(recipientIdForThreadId)
+      }
     }
 
     notifyConversationListListeners()
@@ -1081,6 +1087,11 @@ class ThreadTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTa
       mentions.deleteAbandonedMentions()
       drafts.clearDrafts(selectedConversations)
       attachments.deleteAbandonedAttachmentFiles()
+      synchronized(threadIdCache) {
+        for (recipientId in recipientIds) {
+          threadIdCache.remove(recipientId)
+        }
+      }
     }
 
     notifyConversationListListeners()
@@ -1097,6 +1108,9 @@ class ThreadTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTa
       drafts.clearAllDrafts()
       db.delete(TABLE_NAME, null, null)
       calls.deleteAllCalls()
+      synchronized(threadIdCache) {
+        threadIdCache.clear()
+      }
     }
 
     notifyConversationListListeners()
@@ -1104,12 +1118,7 @@ class ThreadTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTa
   }
 
   fun getThreadIdIfExistsFor(recipientId: RecipientId): Long {
-    return readableDatabase
-      .select(ID)
-      .from(TABLE_NAME)
-      .where("$RECIPIENT_ID = ?", recipientId)
-      .run()
-      .readToSingleLong(-1)
+    return getThreadIdFor(recipientId) ?: -1
   }
 
   fun getOrCreateValidThreadId(recipient: Recipient, candidateId: Long): Long {
@@ -1143,6 +1152,11 @@ class ThreadTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTa
     return threadId ?: createThreadForRecipient(recipient.id, recipient.isGroup, distributionType)
   }
 
+  fun getOrCreateThreadIdFor(recipientId: RecipientId, isGroup: Boolean, distributionType: Int = DistributionTypes.DEFAULT): Long {
+    val threadId = getThreadIdFor(recipientId)
+    return threadId ?: createThreadForRecipient(recipientId, isGroup, distributionType)
+  }
+
   fun areThreadIdAndRecipientAssociated(threadId: Long, recipient: Recipient): Boolean {
     return readableDatabase
       .exists(TABLE_NAME)
@@ -1151,18 +1165,29 @@ class ThreadTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTa
   }
 
   fun getThreadIdFor(recipientId: RecipientId): Long? {
-    return readableDatabase
-      .select(ID)
-      .from(TABLE_NAME)
-      .where("$RECIPIENT_ID = ?", recipientId)
-      .run()
-      .use { cursor ->
-        if (cursor.moveToFirst()) {
-          cursor.requireLong(ID)
-        } else {
-          null
+    var threadId: Long? = synchronized(threadIdCache) {
+      threadIdCache[recipientId]
+    }
+    if (threadId == null) {
+      threadId = readableDatabase
+        .select(ID)
+        .from(TABLE_NAME)
+        .where("$RECIPIENT_ID = ?", recipientId)
+        .run()
+        .use { cursor ->
+          if (cursor.moveToFirst()) {
+            cursor.requireLong(ID)
+          } else {
+            null
+          }
+        }
+      if (threadId != null) {
+        synchronized(threadIdCache) {
+          threadIdCache[recipientId] = threadId
         }
       }
+    }
+    return threadId
   }
 
   fun getRecipientIdForThreadId(threadId: Long): RecipientId? {
@@ -1359,90 +1384,94 @@ class ThreadTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTa
   }
 
   private fun update(threadId: Long, unarchive: Boolean, allowDeletion: Boolean, notifyListeners: Boolean): Boolean {
-    val meaningfulMessages = messages.hasMeaningfulMessage(threadId)
-
-    val isPinned = getPinnedThreadIds().contains(threadId)
-    val shouldDelete = allowDeletion && !isPinned && !messages.containsStories(threadId)
-
-    if (!meaningfulMessages) {
-      if (shouldDelete) {
-        Log.d(TAG, "Deleting thread $threadId because it has no meaningful messages.")
-        deleteConversation(threadId)
-        return true
-      } else if (!isPinned) {
-        return false
-      }
+    if (threadId == -1L) {
+      Log.d(TAG, "Skipping update for threadId -1")
+      return false
     }
 
-    val record: MessageRecord = try {
-      messages.getConversationSnippet(threadId)
-    } catch (e: NoSuchMessageException) {
-      val scheduledMessage: MessageRecord? = messages.getScheduledMessagesInThread(threadId).lastOrNull()
+    return writableDatabase.withinTransaction {
+      val meaningfulMessages = messages.hasMeaningfulMessage(threadId)
 
-      if (scheduledMessage == null) {
-        Log.w(TAG, "Failed to get a conversation snippet for thread $threadId")
+      val isPinned by lazy { getPinnedThreadIds().contains(threadId) }
+      val shouldDelete by lazy { allowDeletion && !isPinned && !messages.containsStories(threadId) }
+
+      if (!meaningfulMessages) {
         if (shouldDelete) {
+          Log.d(TAG, "Deleting thread $threadId because it has no meaningful messages.")
           deleteConversation(threadId)
+          return@withinTransaction true
+        } else if (!isPinned) {
+          return@withinTransaction false
         }
+      }
 
-        if (isPinned) {
-          updateThread(
-            threadId = threadId,
-            meaningfulMessages = meaningfulMessages,
-            body = null,
-            attachment = null,
-            contentType = null,
-            extra = null,
-            date = 0,
-            status = 0,
-            deliveryReceiptCount = 0,
-            type = 0,
-            unarchive = unarchive,
-            expiresIn = 0,
-            readReceiptCount = 0
-          )
+      val record: MessageRecord = try {
+        messages.getConversationSnippet(threadId)
+      } catch (e: NoSuchMessageException) {
+        val scheduledMessage: MessageRecord? = messages.getScheduledMessagesInThread(threadId).lastOrNull()
+
+        if (scheduledMessage == null) {
+          Log.w(TAG, "Failed to get a conversation snippet for thread $threadId")
+          if (shouldDelete) {
+            deleteConversation(threadId)
+          } else if (isPinned) {
+            updateThread(
+              threadId = threadId,
+              meaningfulMessages = meaningfulMessages,
+              body = null,
+              attachment = null,
+              contentType = null,
+              extra = null,
+              date = 0,
+              status = 0,
+              deliveryReceiptCount = 0,
+              type = 0,
+              unarchive = unarchive,
+              expiresIn = 0,
+              readReceiptCount = 0
+            )
+          }
+          return@withinTransaction true
+        } else {
+          Log.i(TAG, "Using scheduled message for conversation snippet")
+          scheduledMessage
         }
-        return true
-      } else {
-        Log.i(TAG, "Using scheduled message for conversation snippet")
-        scheduledMessage
       }
-    }
 
-    val drafts: DraftTable.Drafts = SignalDatabase.drafts.getDrafts(threadId)
-    if (drafts.isNotEmpty()) {
-      val threadRecord: ThreadRecord? = getThreadRecord(threadId)
-      if (threadRecord != null &&
-        threadRecord.type == MessageTypes.BASE_DRAFT_TYPE &&
-        threadRecord.date > record.timestamp
-      ) {
-        return false
+      val drafts: DraftTable.Drafts = SignalDatabase.drafts.getDrafts(threadId)
+      if (drafts.isNotEmpty()) {
+        val threadRecord: ThreadRecord? = getThreadRecord(threadId)
+        if (threadRecord != null &&
+          threadRecord.type == MessageTypes.BASE_DRAFT_TYPE &&
+          threadRecord.date > record.timestamp
+        ) {
+          return@withinTransaction false
+        }
       }
+
+      val threadBody: ThreadBody = ThreadBodyUtil.getFormattedBodyFor(context, record)
+
+      updateThread(
+        threadId = threadId,
+        meaningfulMessages = meaningfulMessages,
+        body = threadBody.body.toString(),
+        attachment = getAttachmentUriFor(record),
+        contentType = getContentTypeFor(record),
+        extra = getExtrasFor(record, threadBody),
+        date = record.timestamp,
+        status = record.deliveryStatus,
+        deliveryReceiptCount = record.deliveryReceiptCount,
+        type = record.type,
+        unarchive = unarchive,
+        expiresIn = record.expiresIn,
+        readReceiptCount = record.readReceiptCount
+      )
+
+      if (notifyListeners) {
+        notifyConversationListListeners()
+      }
+      return@withinTransaction false
     }
-
-    val threadBody: ThreadBody = ThreadBodyUtil.getFormattedBodyFor(context, record)
-
-    updateThread(
-      threadId = threadId,
-      meaningfulMessages = meaningfulMessages,
-      body = threadBody.body.toString(),
-      attachment = getAttachmentUriFor(record),
-      contentType = getContentTypeFor(record),
-      extra = getExtrasFor(record, threadBody),
-      date = record.timestamp,
-      status = record.deliveryStatus,
-      deliveryReceiptCount = record.deliveryReceiptCount,
-      type = record.type,
-      unarchive = unarchive,
-      expiresIn = record.expiresIn,
-      readReceiptCount = record.readReceiptCount
-    )
-
-    if (notifyListeners) {
-      notifyConversationListListeners()
-    }
-
-    return false
   }
 
   fun updateSnippetTypeSilently(threadId: Long) {
@@ -1496,6 +1525,9 @@ class ThreadTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTa
         .values(RECIPIENT_ID to primaryRecipientId.serialize())
         .where("$ID = ?", secondary.threadId)
         .run()
+      synchronized(threadIdCache) {
+        threadIdCache.remove(secondaryRecipientId)
+      }
       MergeResult(threadId = secondary.threadId, previousThreadId = -1, neededMerge = false)
     } else if (primary == null && secondary == null) {
       Log.w(TAG, "[merge] No thread for either.")
@@ -1513,6 +1545,10 @@ class ThreadTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTa
         .delete(TABLE_NAME)
         .where("$ID = ?", secondary.threadId)
         .run()
+
+      synchronized(threadIdCache) {
+        threadIdCache.remove(secondaryRecipientId)
+      }
 
       if (primary.expiresIn != secondary.expiresIn) {
         val values = ContentValues()
@@ -1581,9 +1617,10 @@ class ThreadTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTa
   }
 
   private fun getExtrasFor(record: MessageRecord, body: ThreadBody): Extra? {
-    val threadRecipient = if (record.isOutgoing) record.recipient else getRecipientForThreadId(record.threadId)
+    val threadRecipient = getRecipientForThreadId(record.threadId)
     val messageRequestAccepted = RecipientUtil.isMessageRequestAccepted(record.threadId, threadRecipient)
-    val individualRecipientId = record.individualRecipient.id
+    val isHidden = threadRecipient?.isHidden ?: false
+    val authorId = record.fromRecipient.id
 
     if (!messageRequestAccepted && threadRecipient != null) {
       if (threadRecipient.isPushGroup) {
@@ -1593,46 +1630,46 @@ class ThreadTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTa
             val from = RecipientId.from(ServiceId.from(inviteAddState.addedOrInvitedBy))
             return if (inviteAddState.isInvited) {
               Log.i(TAG, "GV2 invite message request from $from")
-              Extra.forGroupV2invite(from, individualRecipientId)
+              Extra.forGroupV2invite(from, authorId)
             } else {
               Log.i(TAG, "GV2 message request from $from")
-              Extra.forGroupMessageRequest(from, individualRecipientId)
+              Extra.forGroupMessageRequest(from, authorId)
             }
           }
 
           Log.w(TAG, "Falling back to unknown message request state for GV2 message")
-          return Extra.forMessageRequest(individualRecipientId)
+          return Extra.forMessageRequest(authorId)
         } else {
           val recipientId = messages.getGroupAddedBy(record.threadId)
           if (recipientId != null) {
-            return Extra.forGroupMessageRequest(recipientId, individualRecipientId)
+            return Extra.forGroupMessageRequest(recipientId, authorId)
           }
         }
       } else {
-        return Extra.forMessageRequest(individualRecipientId)
+        return Extra.forMessageRequest(authorId, isHidden)
       }
     }
 
     val extras: Extra? = if (record.isScheduled()) {
-      Extra.forScheduledMessage(individualRecipientId)
+      Extra.forScheduledMessage(authorId)
     } else if (record.isRemoteDelete) {
-      Extra.forRemoteDelete(individualRecipientId)
+      Extra.forRemoteDelete(authorId)
     } else if (record.isViewOnce) {
-      Extra.forViewOnce(individualRecipientId)
+      Extra.forViewOnce(authorId)
     } else if (record.isMms && (record as MmsMessageRecord).slideDeck.stickerSlide != null) {
       val slide: StickerSlide = record.slideDeck.stickerSlide!!
-      Extra.forSticker(slide.emoji, individualRecipientId)
+      Extra.forSticker(slide.emoji, authorId)
     } else if (record.isMms && (record as MmsMessageRecord).slideDeck.slides.size > 1) {
-      Extra.forAlbum(individualRecipientId)
+      Extra.forAlbum(authorId)
     } else if (threadRecipient != null && threadRecipient.isGroup) {
-      Extra.forDefault(individualRecipientId)
+      Extra.forDefault(authorId)
     } else {
       null
     }
 
     return if (record.messageRanges != null) {
       val bodyRanges = record.requireMessageRanges().adjustBodyRanges(body.bodyAdjustments)!!
-      extras?.copy(bodyRanges = bodyRanges.serialize()) ?: Extra.forBodyRanges(bodyRanges, individualRecipientId)
+      extras?.copy(bodyRanges = bodyRanges.serialize()) ?: Extra.forBodyRanges(bodyRanges, authorId)
     } else {
       extras
     }
@@ -1677,7 +1714,7 @@ class ThreadTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTa
         ) as MembershipAlias ON MembershipAlias.${GroupTable.MembershipTable.GROUP_ID} = ${GroupTable.TABLE_NAME}.${GroupTable.GROUP_ID}
       WHERE $where
       ORDER BY $orderBy
-    """.trimIndent()
+    """
 
     if (limit > 0) {
       query += " LIMIT $limit"
@@ -1687,7 +1724,7 @@ class ThreadTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTa
       query += " OFFSET $offset"
     }
 
-    return query.toSingleLine()
+    return query
   }
 
   private fun isSilentType(type: Long): Boolean {
@@ -1747,7 +1784,8 @@ class ThreadTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTa
             recipientSettings.registered,
             recipientSettings,
             null,
-            false
+            false,
+            group.isActive
           )
           Recipient(recipientId, details, false)
         } ?: Recipient.live(recipientId).get()
@@ -1772,7 +1810,8 @@ class ThreadTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTa
             groupAddedBy = jsonObject.getString("groupAddedBy"),
             individualRecipientId = jsonObject.getString("individualRecipientId")!!,
             bodyRanges = jsonObject.getString("bodyRanges"),
-            isScheduled = jsonObject.getBoolean("isScheduled")
+            isScheduled = jsonObject.getBoolean("isScheduled"),
+            isRecipientHidden = jsonObject.getBoolean("isRecipientHidden")
           )
         } catch (exception: Exception) {
           null
@@ -1855,7 +1894,10 @@ class ThreadTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTa
     val bodyRanges: String? = null,
     @field:JsonProperty
     @param:JsonProperty("isScheduled")
-    val isScheduled: Boolean = false
+    val isScheduled: Boolean = false,
+    @field:JsonProperty
+    @param:JsonProperty("isRecipientHidden")
+    val isRecipientHidden: Boolean = false
   ) {
 
     fun getIndividualRecipientId(): String {
@@ -1879,8 +1921,8 @@ class ThreadTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTa
         return Extra(isRemoteDelete = true, individualRecipientId = individualRecipient.serialize())
       }
 
-      fun forMessageRequest(individualRecipient: RecipientId): Extra {
-        return Extra(isMessageRequestAccepted = false, individualRecipientId = individualRecipient.serialize())
+      fun forMessageRequest(individualRecipient: RecipientId, isHidden: Boolean = false): Extra {
+        return Extra(isMessageRequestAccepted = false, individualRecipientId = individualRecipient.serialize(), isRecipientHidden = isHidden)
       }
 
       fun forGroupMessageRequest(recipientId: RecipientId, individualRecipient: RecipientId): Extra {

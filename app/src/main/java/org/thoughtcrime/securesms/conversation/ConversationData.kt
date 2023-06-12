@@ -1,9 +1,12 @@
 package org.thoughtcrime.securesms.conversation
 
+import org.thoughtcrime.securesms.recipients.Recipient
+
 /**
  * Represents metadata about a conversation.
  */
 data class ConversationData(
+  val threadRecipient: Recipient,
   val threadId: Long,
   val lastSeen: Long,
   val lastSeenPosition: Int,
@@ -20,6 +23,15 @@ data class ConversationData(
 
   fun shouldScrollToLastSeen(): Boolean {
     return lastSeenPosition > 0
+  }
+
+  fun getStartPosition(): Int {
+    return when {
+      shouldJumpToMessage() -> jumpToPosition
+      messageRequestData.isMessageRequestAccepted && shouldScrollToLastSeen() -> lastSeenPosition
+      messageRequestData.isMessageRequestAccepted -> lastScrolledPosition
+      else -> threadSize
+    }
   }
 
   data class MessageRequestData @JvmOverloads constructor(

@@ -60,6 +60,7 @@ import org.thoughtcrime.securesms.components.DeliveryStatusView;
 import org.thoughtcrime.securesms.components.FromTextView;
 import org.thoughtcrime.securesms.components.TypingIndicatorView;
 import org.thoughtcrime.securesms.components.emoji.EmojiStrings;
+import org.thoughtcrime.securesms.components.emoji.SimpleEmojiTextView;
 import org.thoughtcrime.securesms.contacts.paged.ContactSearchData;
 import org.thoughtcrime.securesms.conversation.MessageStyler;
 import org.thoughtcrime.securesms.conversationlist.model.ConversationSet;
@@ -113,7 +114,7 @@ public final class ConversationListItem extends ConstraintLayout implements Bind
   private LiveRecipient       recipient;
   private long                threadId;
   private GlideRequests       glideRequests;
-  private TextView            subjectView;
+  private SimpleEmojiTextView subjectView;
   private TypingIndicatorView typingView;
   private FromTextView        fromView;
   private TextView            dateView;

@@ -64,6 +64,7 @@ abstract class PreferenceViewHolder<T : PreferenceModel<T>>(itemView: View) : Ma
     val icon = model.icon?.resolve(context)
     iconView.setImageDrawable(icon)
     iconView.visible = icon != null
+    iconView.alpha = if (model.isEnabled) 1f else 0.5f
 
     val iconEnd = model.iconEnd?.resolve(context)
     iconEndView?.setImageDrawable(iconEnd)
@@ -208,11 +209,10 @@ class SwitchPreferenceViewHolder(itemView: View) : PreferenceViewHolder<SwitchPr
   private val switchWidget: MaterialSwitch = itemView.findViewById(R.id.switch_widget)
 
   override fun bind(model: SwitchPreference) {
-    super.bind(model)
     switchWidget.setOnCheckedChangeListener(null)
 
-    switchWidget.isEnabled = model.isEnabled
     switchWidget.isChecked = model.isChecked
+    switchWidget.isEnabled = model.isEnabled
 
     switchWidget.setOnCheckedChangeListener { _, _ ->
       model.onClick()
@@ -221,6 +221,12 @@ class SwitchPreferenceViewHolder(itemView: View) : PreferenceViewHolder<SwitchPr
     itemView.setOnClickListener {
       model.onClick()
     }
+
+    if (payload.contains(SwitchPreference.PAYLOAD_CHECKED)) {
+      return
+    }
+
+    super.bind(model)
   }
 }
 

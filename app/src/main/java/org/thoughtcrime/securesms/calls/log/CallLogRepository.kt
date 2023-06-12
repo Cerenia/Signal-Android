@@ -17,6 +17,20 @@ class CallLogRepository : CallLogPagedDataSource.CallRepository {
     return SignalDatabase.calls.getCalls(start, length, query, filter)
   }
 
+  override fun getCallLinksCount(query: String?, filter: CallLogFilter): Int {
+    return when (filter) {
+      CallLogFilter.MISSED -> 0
+      CallLogFilter.ALL -> SignalDatabase.callLinks.getCallLinksCount(query)
+    }
+  }
+
+  override fun getCallLinks(query: String?, filter: CallLogFilter, start: Int, length: Int): List<CallLogRow> {
+    return when (filter) {
+      CallLogFilter.MISSED -> emptyList()
+      CallLogFilter.ALL -> SignalDatabase.callLinks.getCallLinks(query, start, length)
+    }
+  }
+
   fun markAllCallEventsRead() {
     SignalExecutors.BOUNDED_IO.execute {
       SignalDatabase.messages.markAllCallEventsRead()
@@ -51,10 +65,11 @@ class CallLogRepository : CallLogPagedDataSource.CallRepository {
   }
 
   fun deleteAllCallLogsExcept(
-    selectedCallIds: Set<Long>
+    selectedCallRowIds: Set<Long>,
+    missedOnly: Boolean
   ): Completable {
     return Completable.fromAction {
-      SignalDatabase.calls.deleteAllCallEventsExcept(selectedCallIds)
+      SignalDatabase.calls.deleteAllCallEventsExcept(selectedCallRowIds, missedOnly)
     }.observeOn(Schedulers.io())
   }
 }

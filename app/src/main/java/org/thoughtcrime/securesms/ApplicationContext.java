@@ -48,6 +48,7 @@ import org.thoughtcrime.securesms.dependencies.ApplicationDependencyProvider;
 import org.thoughtcrime.securesms.emoji.EmojiSource;
 import org.thoughtcrime.securesms.emoji.JumboEmoji;
 import org.thoughtcrime.securesms.gcm.FcmJobService;
+import org.thoughtcrime.securesms.jobs.AccountConsistencyWorkerJob;
 import org.thoughtcrime.securesms.jobs.CheckServiceReachabilityJob;
 import org.thoughtcrime.securesms.jobs.DownloadLatestEmojiDataJob;
 import org.thoughtcrime.securesms.jobs.EmojiSearchIndexDownloadJob;
@@ -143,8 +144,7 @@ public class ApplicationContext extends MultiDexApplication implements AppForegr
 
     super.onCreate();
 
-    AppStartup.getInstance().addBlocking("security-provider", this::initializeSecurityProvider)
-                            .addBlocking("sqlcipher-init", () -> {
+    AppStartup.getInstance().addBlocking("sqlcipher-init", () -> {
                               SqlCipherLibraryLoader.load();
                               SignalDatabase.init(this,
                                                   DatabaseSecretProvider.getOrCreateDatabaseSecret(this),
@@ -154,6 +154,7 @@ public class ApplicationContext extends MultiDexApplication implements AppForegr
                               initializeLogging();
                               Log.i(TAG, "onCreate()");
                             })
+                            .addBlocking("security-provider", this::initializeSecurityProvider)
                             .addBlocking("crash-handling", this::initializeCrashHandling)
                             .addBlocking("rx-init", this::initializeRx)
                             .addBlocking("event-bus", () -> EventBus.builder().logNoSubscriberMessages(false).installDefaultEventBus())
@@ -211,6 +212,7 @@ public class ApplicationContext extends MultiDexApplication implements AppForegr
                             .addPostRender(PnpInitializeDevicesJob::enqueueIfNecessary)
                             .addPostRender(() -> ApplicationDependencies.getExoPlayerPool().getPoolStats().getMaxUnreserved())
                             .addPostRender(() -> ApplicationDependencies.getRecipientCache().warmUp())
+                            .addPostRender(AccountConsistencyWorkerJob::enqueueIfNecessary)
                             .execute();
 
     Log.d(TAG, "onCreate() took " + (System.currentTimeMillis() - startTime) + " ms");
@@ -272,13 +274,6 @@ public class ApplicationContext extends MultiDexApplication implements AppForegr
   }
 
   private void initializeSecurityProvider() {
-    try {
-      Class.forName("org.signal.aesgcmprovider.AesGcmCipher");
-    } catch (ClassNotFoundException e) {
-      Log.e(TAG, "Failed to find AesGcmCipher class");
-      throw new ProviderInitializationException();
-    }
-
     int aesPosition = Security.insertProviderAt(new AesGcmProvider(), 1);
     Log.i(TAG, "Installed AesGcmProvider: " + aesPosition);
 

@@ -1,6 +1,7 @@
 package org.thoughtcrime.securesms.messages
 
 import com.google.protobuf.ByteString
+import com.google.protobuf.GeneratedMessageLite
 import org.signal.core.util.orNull
 import org.signal.libsignal.protocol.message.DecryptionErrorMessage
 import org.signal.libsignal.zkgroup.groups.GroupMasterKey
@@ -8,8 +9,8 @@ import org.thoughtcrime.securesms.attachments.Attachment
 import org.thoughtcrime.securesms.attachments.PointerAttachment
 import org.thoughtcrime.securesms.database.model.StoryType
 import org.thoughtcrime.securesms.groups.GroupId
-import org.thoughtcrime.securesms.messages.SignalServiceProtoUtil.toPointer
 import org.thoughtcrime.securesms.stickers.StickerLocator
+import org.thoughtcrime.securesms.util.FeatureFlags
 import org.thoughtcrime.securesms.util.MediaUtil
 import org.whispersystems.signalservice.api.InvalidMessageStructureException
 import org.whispersystems.signalservice.api.crypto.EnvelopeMetadata
@@ -158,8 +159,8 @@ object SignalServiceProtoUtil {
     }
   }
 
-  fun List<AttachmentPointer>.toPointers(): List<Attachment> {
-    return mapNotNull { it.toPointer() }
+  fun List<AttachmentPointer>.toPointersWithinLimit(): List<Attachment> {
+    return mapNotNull { it.toPointer() }.take(FeatureFlags.maxAttachmentCount())
   }
 
   fun AttachmentPointer.toPointer(stickerLocator: StickerLocator? = null): Attachment? {
@@ -176,5 +177,11 @@ object SignalServiceProtoUtil {
 
   fun Long.toMobileCoinMoney(): Money {
     return Money.picoMobileCoin(this)
+  }
+
+  @Suppress("UNCHECKED_CAST")
+  inline fun <reified MessageType : GeneratedMessageLite<MessageType, BuilderType>, BuilderType : GeneratedMessageLite.Builder<MessageType, BuilderType>> GeneratedMessageLite.Builder<MessageType, BuilderType>.buildWith(block: BuilderType.() -> Unit): MessageType {
+    block(this as BuilderType)
+    return build()
   }
 }

@@ -17,6 +17,7 @@ import org.signal.core.util.requireLong
 import org.signal.core.util.requireObject
 import org.signal.core.util.requireString
 import org.signal.core.util.select
+import org.signal.core.util.toSingleLine
 import org.signal.core.util.update
 import org.signal.core.util.withinTransaction
 import org.signal.ringrtc.CallId
@@ -41,14 +42,14 @@ class CallTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTabl
   companion object {
     private val TAG = Log.tag(CallTable::class.java)
 
-    private const val TABLE_NAME = "call"
+    const val TABLE_NAME = "call"
     private const val ID = "_id"
     private const val CALL_ID = "call_id"
     private const val MESSAGE_ID = "message_id"
-    private const val PEER = "peer"
-    private const val TYPE = "type"
+    const val PEER = "peer"
+    const val TYPE = "type"
     private const val DIRECTION = "direction"
-    private const val EVENT = "event"
+    const val EVENT = "event"
     private const val TIMESTAMP = "timestamp"
     private const val RINGER = "ringer"
     private const val DELETION_TIMESTAMP = "deletion_timestamp"
@@ -59,19 +60,21 @@ class CallTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTabl
         $ID INTEGER PRIMARY KEY,
         $CALL_ID INTEGER NOT NULL UNIQUE,
         $MESSAGE_ID INTEGER DEFAULT NULL REFERENCES ${MessageTable.TABLE_NAME} (${MessageTable.ID}) ON DELETE SET NULL,
-        $PEER INTEGER DEFAULT NULL REFERENCES ${RecipientTable.TABLE_NAME} (${RecipientTable.ID}) ON DELETE CASCADE,
+        $PEER INTEGER NOT NULL REFERENCES ${RecipientTable.TABLE_NAME} (${RecipientTable.ID}) ON DELETE CASCADE,
         $TYPE INTEGER NOT NULL,
         $DIRECTION INTEGER NOT NULL,
         $EVENT INTEGER NOT NULL,
         $TIMESTAMP INTEGER NOT NULL,
         $RINGER INTEGER DEFAULT NULL,
-        $DELETION_TIMESTAMP INTEGER DEFAULT 0
+        $DELETION_TIMESTAMP INTEGER DEFAULT 0,
+        UNIQUE ($CALL_ID, $PEER) ON CONFLICT FAIL
       )
-    """.trimIndent()
+    """
 
     val CREATE_INDEXES = arrayOf(
       "CREATE INDEX call_call_id_index ON $TABLE_NAME ($CALL_ID)",
-      "CREATE INDEX call_message_id_index ON $TABLE_NAME ($MESSAGE_ID)"
+      "CREATE INDEX call_message_id_index ON $TABLE_NAME ($MESSAGE_ID)",
+      "CREATE INDEX call_peer_index ON $TABLE_NAME ($PEER)"
     )
   }
 
@@ -79,7 +82,7 @@ class CallTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTabl
     val messageType: Long = Call.getMessageType(type, direction, event)
 
     writableDatabase.withinTransaction {
-      val result = SignalDatabase.messages.insertCallLog(peer, messageType, timestamp)
+      val result = SignalDatabase.messages.insertCallLog(peer, messageType, timestamp, direction == Direction.OUTGOING)
 
       val values = contentValuesOf(
         CALL_ID to callId,
@@ -127,7 +130,9 @@ class CallTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTabl
     }
   }
 
-  fun getCallById(callId: Long): Call? {
+  fun getCallById(callId: Long, recipientId: RecipientId): Call? {
+    val query = getCallSelectionQuery(callId, recipientId)
+
     return readableDatabase
       .select()
       .from(TABLE_NAME)
@@ -216,9 +221,10 @@ class CallTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTabl
   }
 
   // region Group / Ad-Hoc Calling
-
   fun deleteGroupCall(call: Call) {
     checkIsGroupOrAdHocCall(call)
+
+    val filter: SqlUtil.Query = getCallSelectionQuery(call.callId, call.peer)
 
     writableDatabase.withinTransaction { db ->
       db
@@ -227,7 +233,7 @@ class CallTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTabl
           EVENT to Event.serialize(Event.DELETE),
           DELETION_TIMESTAMP to System.currentTimeMillis()
         )
-        .where("$CALL_ID = ? AND $PEER = ?", call.callId, call.peer)
+        .where(filter.where, filter.whereArgs)
         .run()
 
       if (call.messageId != null) {
@@ -242,25 +248,26 @@ class CallTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTabl
 
   fun insertDeletedGroupCallFromSyncEvent(
     callId: Long,
-    recipientId: RecipientId?,
+    recipientId: RecipientId,
     direction: Direction,
     timestamp: Long
   ) {
-    val type = if (recipientId != null) Type.GROUP_CALL else Type.AD_HOC_CALL
+    val recipient = Recipient.resolved(recipientId)
+    val type = if (recipient.isCallLink) Type.AD_HOC_CALL else Type.GROUP_CALL
 
     writableDatabase
       .insertInto(TABLE_NAME)
       .values(
         CALL_ID to callId,
         MESSAGE_ID to null,
-        PEER to recipientId?.toLong(),
+        PEER to recipientId.toLong(),
         EVENT to Event.serialize(Event.DELETE),
         TYPE to Type.serialize(type),
         DIRECTION to Direction.serialize(direction),
         TIMESTAMP to timestamp,
         DELETION_TIMESTAMP to System.currentTimeMillis()
       )
-      .run()
+      .run(SQLiteDatabase.CONFLICT_ABORT)
 
     ApplicationDependencies.getDeletedCallEventManager().scheduleIfNecessary()
   }
@@ -290,16 +297,17 @@ class CallTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTabl
 
   fun insertAcceptedGroupCall(
     callId: Long,
-    recipientId: RecipientId?,
+    recipientId: RecipientId,
     direction: Direction,
     timestamp: Long
   ) {
-    val type = if (recipientId != null) Type.GROUP_CALL else Type.AD_HOC_CALL
+    val recipient = Recipient.resolved(recipientId)
+    val type = if (recipient.isCallLink) Type.AD_HOC_CALL else Type.GROUP_CALL
     val event = if (direction == Direction.OUTGOING) Event.OUTGOING_RING else Event.JOINED
     val ringer = if (direction == Direction.OUTGOING) Recipient.self().id.toLong() else null
 
     writableDatabase.withinTransaction { db ->
-      val messageId: MessageId? = if (recipientId != null) {
+      val messageId: MessageId? = if (type == Type.GROUP_CALL) {
         SignalDatabase.messages.insertGroupCall(
           groupRecipientId = recipientId,
           sender = Recipient.self().id,
@@ -317,14 +325,14 @@ class CallTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTabl
         .values(
           CALL_ID to callId,
           MESSAGE_ID to messageId?.id,
-          PEER to recipientId?.toLong(),
+          PEER to recipientId.toLong(),
           EVENT to Event.serialize(event),
           TYPE to Type.serialize(type),
           DIRECTION to Direction.serialize(direction),
           TIMESTAMP to timestamp,
           RINGER to ringer
         )
-        .run()
+        .run(SQLiteDatabase.CONFLICT_ABORT)
     }
 
     ApplicationDependencies.getDatabaseObserver().notifyCallUpdateObservers()
@@ -361,7 +369,7 @@ class CallTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTabl
       }
 
       val callId = CallId.fromEra(peekGroupCallEraId).longValue()
-      val call = getCallById(callId)
+      val call = getCallById(callId, groupRecipientId)
       val messageId: MessageId = if (call != null) {
         if (call.event == Event.DELETE) {
           Log.d(TAG, "Dropping group call update for deleted call.")
@@ -413,7 +421,7 @@ class CallTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTabl
     timestamp: Long
   ) {
     if (messageId != null) {
-      val call = getCallById(callId)
+      val call = getCallById(callId, groupRecipientId)
       if (call == null) {
         val direction = if (sender == Recipient.self().id) Direction.OUTGOING else Direction.INCOMING
 
@@ -429,12 +437,12 @@ class CallTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTabl
             TIMESTAMP to timestamp,
             RINGER to null
           )
-          .run()
+          .run(SQLiteDatabase.CONFLICT_ABORT)
 
         Log.d(TAG, "Inserted new call event from group call update message. Call Id: $callId")
       } else {
         if (timestamp < call.timestamp) {
-          setTimestamp(callId, timestamp)
+          setTimestamp(callId, groupRecipientId, timestamp)
           Log.d(TAG, "Updated call event timestamp for call id $callId")
         }
 
@@ -485,9 +493,9 @@ class CallTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTabl
     handleGroupRingState(ringId, groupRecipientId, ringerRecipient.id, dateReceived, ringState)
   }
 
-  fun isRingCancelled(ringId: Long): Boolean {
-    val call = getCallById(ringId) ?: return false
-    return call.event != Event.RINGING
+  fun isRingCancelled(ringId: Long, groupRecipientId: RecipientId): Boolean {
+    val call = getCallById(ringId, groupRecipientId) ?: return false
+    return call.event != Event.RINGING && call.event != Event.GENERIC_GROUP_CALL
   }
 
   private fun handleGroupRingState(
@@ -499,7 +507,7 @@ class CallTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTabl
   ) {
     Log.d(TAG, "Processing group ring state update for $ringId in state $ringState")
 
-    val call = getCallById(ringId)
+    val call = getCallById(ringId, groupRecipientId)
     if (call != null) {
       if (call.event == Event.DELETE) {
         Log.d(TAG, "Ignoring ring request for $ringId since its event has been deleted.")
@@ -514,6 +522,7 @@ class CallTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTabl
             else -> Log.w(TAG, "Received a REQUESTED ring event while in ${call.event}. Ignoring.")
           }
         }
+
         RingUpdate.EXPIRED_REQUEST, RingUpdate.CANCELLED_BY_RINGER -> {
           when (call.event) {
             Event.GENERIC_GROUP_CALL, Event.RINGING -> updateEventFromRingState(ringId, Event.MISSED, ringerRecipient)
@@ -521,6 +530,7 @@ class CallTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTabl
             else -> Unit
           }
         }
+
         RingUpdate.BUSY_LOCALLY, RingUpdate.BUSY_ON_ANOTHER_DEVICE -> {
           when (call.event) {
             Event.JOINED -> updateEventFromRingState(ringId, Event.ACCEPTED)
@@ -528,9 +538,11 @@ class CallTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTabl
             else -> Log.w(TAG, "Received a busy event we can't process. Ignoring.")
           }
         }
+
         RingUpdate.ACCEPTED_ON_ANOTHER_DEVICE -> {
           updateEventFromRingState(ringId, Event.ACCEPTED)
         }
+
         RingUpdate.DECLINED_ON_ANOTHER_DEVICE -> {
           when (call.event) {
             Event.RINGING, Event.MISSED -> updateEventFromRingState(ringId, Event.DECLINED)
@@ -547,14 +559,17 @@ class CallTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTabl
           Log.w(TAG, "Missed original ring request for $ringId")
           Event.ACCEPTED
         }
+
         RingUpdate.DECLINED_ON_ANOTHER_DEVICE -> {
           Log.w(TAG, "Missed original ring request for $ringId")
           Event.DECLINED
         }
+
         RingUpdate.BUSY_LOCALLY, RingUpdate.BUSY_ON_ANOTHER_DEVICE -> {
           Log.w(TAG, "Missed original ring request for $ringId")
           Event.MISSED
         }
+
         RingUpdate.CANCELLED_BY_RINGER -> {
           Log.w(TAG, "Missed original ring request for $ringId")
           Event.MISSED
@@ -630,15 +645,15 @@ class CallTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTabl
           TIMESTAMP to timestamp,
           RINGER to ringerRecipient.toLong()
         )
-        .run()
+        .run(SQLiteDatabase.CONFLICT_ABORT)
     }
 
     Log.d(TAG, "Inserted a new group ring event for $callId with event $event")
   }
 
-  fun setTimestamp(callId: Long, timestamp: Long) {
+  fun setTimestamp(callId: Long, recipientId: RecipientId, timestamp: Long) {
     writableDatabase.withinTransaction { db ->
-      val call = getCallById(callId)
+      val call = getCallById(callId, recipientId)
       if (call == null || call.event == Event.DELETE) {
         Log.d(TAG, "Refusing to update deleted call event.")
         return@withinTransaction
@@ -672,10 +687,72 @@ class CallTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTabl
     updateCallEventDeletionTimestamps()
   }
 
-  fun deleteAllCallEventsExcept(callIds: Set<Long>) {
-    val messageIds = getMessageIds(callIds)
-    SignalDatabase.messages.deleteAllCallUpdatesExcept(messageIds)
-    updateCallEventDeletionTimestamps()
+  fun deleteAllCallEventsExcept(callRowIds: Set<Long>, missedOnly: Boolean) {
+    val callFilter = if (missedOnly) {
+      "$EVENT = ${Event.serialize(Event.MISSED)} AND $DELETION_TIMESTAMP = 0"
+    } else {
+      "$DELETION_TIMESTAMP = 0"
+    }
+
+    if (callRowIds.isEmpty()) {
+      val threadIds = writableDatabase.withinTransaction { db ->
+        val ids = db.select(MessageTable.THREAD_ID)
+          .from(MessageTable.TABLE_NAME)
+          .where(
+            """
+            ${MessageTable.ID} IN (
+              SELECT $MESSAGE_ID FROM $TABLE_NAME
+              WHERE $callFilter
+            )
+          """.toSingleLine()
+          )
+          .run()
+          .readToList { it.requireLong(MessageTable.THREAD_ID) }
+
+        db.delete(MessageTable.TABLE_NAME)
+          .where(
+            """
+            ${MessageTable.ID} IN (
+              SELECT $MESSAGE_ID FROM $TABLE_NAME
+              WHERE $callFilter
+            )
+          """.toSingleLine()
+          )
+          .run()
+
+        ids.toSet()
+      }
+
+      threadIds.forEach {
+        SignalDatabase.threads.update(
+          threadId = it,
+          unarchive = false,
+          allowDeletion = true
+        )
+      }
+
+      notifyConversationListeners(threadIds)
+      notifyConversationListListeners()
+      updateCallEventDeletionTimestamps()
+    } else {
+      writableDatabase.withinTransaction { db ->
+        SqlUtil.buildCollectionQuery(
+          column = ID,
+          values = callRowIds,
+          prefix = "$callFilter AND",
+          collectionOperator = SqlUtil.CollectionOperator.NOT_IN
+        ).forEach { query ->
+          val messageIds = db.select(MESSAGE_ID)
+            .from(TABLE_NAME)
+            .where(query.where, query.whereArgs)
+            .run()
+            .readToList { it.requireLong(MESSAGE_ID) }
+            .toSet()
+          SignalDatabase.messages.deleteCallUpdates(messageIds)
+          updateCallEventDeletionTimestamps()
+        }
+      }
+    }
   }
 
   @Discouraged("Using this method is generally considered an error. Utilize other deletion methods instead of this.")
@@ -686,7 +763,11 @@ class CallTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTabl
       .run()
   }
 
-  private fun getMessageIds(callIds: Set<Long>): Set<Long> {
+  private fun getCallSelectionQuery(callId: Long, recipientId: RecipientId): SqlUtil.Query {
+    return SqlUtil.Query("$CALL_ID = ? AND $PEER = ?", SqlUtil.buildArgs(callId, recipientId))
+  }
+
+  private fun getMessageIds(callRowIds: Set<Long>): Set<Long> {
     val queries = SqlUtil.buildCollectionQuery(
       CALL_ID,
       callIds,
@@ -723,10 +804,16 @@ class CallTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTabl
           ${RecipientTable.TABLE_NAME}.${RecipientTable.PHONE} GLOB ? OR 
           ${RecipientTable.TABLE_NAME}.${RecipientTable.EMAIL} GLOB ?
         )
-        """.trimIndent()
+        """
       SqlUtil.buildQuery(selection, 0, 0, glob, glob, glob, glob)
     } else {
-      SqlUtil.buildQuery("")
+      SqlUtil.buildQuery(
+        """
+        ${RecipientTable.TABLE_NAME}.${RecipientTable.BLOCKED} = ? AND ${RecipientTable.TABLE_NAME}.${RecipientTable.HIDDEN} = ?
+      """,
+        0,
+        0
+      )
     }
 
     val whereClause = filterClause and queryClause
@@ -745,7 +832,7 @@ class CallTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTabl
     val projection = if (isCount) {
       "COUNT(*),"
     } else {
-      "p.$ID, $TIMESTAMP, $EVENT, $DIRECTION, $PEER, p.$TYPE, $CALL_ID, $MESSAGE_ID, $RINGER, children, in_period, ${MessageTable.DATE_RECEIVED}, ${MessageTable.BODY},"
+      "p.$ID, p.$TIMESTAMP, $EVENT, $DIRECTION, $PEER, p.$TYPE, $CALL_ID, $MESSAGE_ID, $RINGER, children, in_period, ${MessageTable.BODY},"
     }
 
     //language=sql
@@ -753,6 +840,7 @@ class CallTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTabl
       SELECT $projection
         LOWER(
           COALESCE(
+            NULLIF(${GroupTable.TABLE_NAME}.${GroupTable.TITLE}, ''),
             NULLIF(${RecipientTable.TABLE_NAME}.${RecipientTable.SYSTEM_JOINED_NAME}, ''),
             NULLIF(${RecipientTable.TABLE_NAME}.${RecipientTable.SYSTEM_GIVEN_NAME}, ''),
             NULLIF(${RecipientTable.TABLE_NAME}.${RecipientTable.PROFILE_JOINED_NAME}, ''),
@@ -774,6 +862,10 @@ class CallTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTabl
                 AND $TABLE_NAME.$PEER = c.$PEER
                 AND $TABLE_NAME.$TIMESTAMP - $TIME_WINDOW <= c.$TIMESTAMP
                 AND $TABLE_NAME.$TIMESTAMP >= c.$TIMESTAMP
+                AND (
+                  ($TABLE_NAME.$EVENT = c.$EVENT AND $TABLE_NAME.$EVENT = ${Event.serialize(Event.MISSED)}) OR
+                  ($TABLE_NAME.$EVENT != ${Event.serialize(Event.MISSED)} AND c.$EVENT != ${Event.serialize(Event.MISSED)})
+                )
                 AND ${filterClause.where}
               ORDER BY
                 $TIMESTAMP DESC
@@ -788,6 +880,10 @@ class CallTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTabl
                 AND $TABLE_NAME.$PEER = c.$PEER
                 AND c.$TIMESTAMP - $TIME_WINDOW <= $TABLE_NAME.$TIMESTAMP
                 AND c.$TIMESTAMP >= $TABLE_NAME.$TIMESTAMP
+                AND (
+                  ($TABLE_NAME.$EVENT = c.$EVENT AND $TABLE_NAME.$EVENT = ${Event.serialize(Event.MISSED)}) OR
+                  ($TABLE_NAME.$EVENT != ${Event.serialize(Event.MISSED)} AND c.$EVENT != ${Event.serialize(Event.MISSED)})
+                )
                 AND ${filterClause.where}
             ) as children,
             (
@@ -806,14 +902,25 @@ class CallTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTabl
           ORDER BY
             $TIMESTAMP DESC
         )
-      ) AS sort_name
-      FROM $TABLE_NAME
-      INNER JOIN ${RecipientTable.TABLE_NAME} ON ${RecipientTable.TABLE_NAME}.${RecipientTable.ID} = $TABLE_NAME.$PEER
-      INNER JOIN ${MessageTable.TABLE_NAME} ON ${MessageTable.TABLE_NAME}.${MessageTable.ID} = $TABLE_NAME.$MESSAGE_ID
-      $where
-      ORDER BY ${MessageTable.TABLE_NAME}.${MessageTable.DATE_RECEIVED} DESC
+        SELECT
+          *,
+          CASE
+            WHEN LAG (parent, 1, 0) OVER (
+              ORDER BY
+                $TIMESTAMP DESC
+            ) != parent THEN $ID
+            ELSE parent
+          END true_parent
+        FROM
+          cte
+      ) p
+      INNER JOIN ${RecipientTable.TABLE_NAME} ON ${RecipientTable.TABLE_NAME}.${RecipientTable.ID} = $PEER
+      INNER JOIN ${MessageTable.TABLE_NAME} ON ${MessageTable.TABLE_NAME}.${MessageTable.ID} = $MESSAGE_ID
+      LEFT JOIN ${GroupTable.TABLE_NAME} ON ${GroupTable.TABLE_NAME}.${GroupTable.RECIPIENT_ID} = ${RecipientTable.TABLE_NAME}.${RecipientTable.ID}
+      WHERE true_parent = p.$ID ${if (queryClause.where.isNotEmpty()) "AND ${queryClause.where}" else ""}
+      ORDER BY p.$TIMESTAMP DESC
       $offsetLimit
-    """.trimIndent()
+    """
 
     return readableDatabase.query(statement, whereClause.whereArgs)
   }
@@ -826,13 +933,9 @@ class CallTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTabl
   }
 
   fun getCalls(offset: Int, limit: Int, searchTerm: String?, filter: CallLogFilter): List<CallLogRow.Call> {
-    return getCallsCursor(false, offset, limit, searchTerm, filter).readToList {
-      val call = Call.deserialize(it)
-      val recipient = Recipient.resolved(call.peer)
-      val date = it.requireLong(MessageTable.DATE_RECEIVED)
-      val groupCallDetails = GroupCallUpdateDetailsUtil.parse(it.requireString(MessageTable.BODY))
-
-      Log.d(TAG, "${cursor.requireNonNullString("in_period")}")
+    return getCallsCursor(false, offset, limit, searchTerm, filter).readToList { cursor ->
+      val call = Call.deserialize(cursor)
+      val groupCallDetails = GroupCallUpdateDetailsUtil.parse(cursor.requireString(MessageTable.BODY))
 
       val children = cursor.requireNonNullString("children")
         .split(',')
@@ -848,11 +951,12 @@ class CallTable(context: Context, databaseHelper: SignalDatabase) : DatabaseTabl
       val actualChildren = inPeriod.takeWhile { children.contains(it) }
 
       CallLogRow.Call(
-        call = call,
-        peer = recipient,
-        date = date,
+        record = call,
+        date = call.timestamp,
+        peer = Recipient.resolved(call.peer),
         groupCallState = CallLogRow.GroupCallState.fromDetails(groupCallDetails),
-        children = actualChildren.toSet()
+        children = actualChildren.toSet(),
+        searchQuery = searchTerm
       )
     }
   }

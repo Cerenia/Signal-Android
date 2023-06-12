@@ -26,15 +26,15 @@ public class InMemoryMessageRecord extends MessageRecord {
 
   private InMemoryMessageRecord(long id,
                                 String body,
-                                Recipient conversationRecipient,
+                                Recipient author,
                                 long threadId,
                                 long type)
   {
     super(id,
           body,
-          conversationRecipient,
-          conversationRecipient,
+          author,
           1,
+          author,
           System.currentTimeMillis(),
           System.currentTimeMillis(),
           System.currentTimeMillis(),
@@ -53,7 +53,9 @@ public class InMemoryMessageRecord extends MessageRecord {
           false,
           0,
           0,
-          -1);
+          -1,
+          null,
+          0);
   }
 
   @Override
@@ -146,8 +148,8 @@ public class InMemoryMessageRecord extends MessageRecord {
    * Useful for create an empty message record when one is needed.
    */
   public static final class ForceConversationBubble extends InMemoryMessageRecord {
-    public ForceConversationBubble(Recipient conversationRecipient, long threadId) {
-      super(FORCE_BUBBLE_ID, "", conversationRecipient, threadId, 0);
+    public ForceConversationBubble(Recipient author, long threadId) {
+      super(FORCE_BUBBLE_ID, "", author, threadId, 0);
     }
   }
 }

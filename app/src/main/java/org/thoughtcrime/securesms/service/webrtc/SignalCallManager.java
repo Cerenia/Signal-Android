@@ -9,7 +9,6 @@ import android.os.ResultReceiver;
 import androidx.annotation.AnyThread;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 
 import com.annimon.stream.Stream;
 
@@ -53,6 +52,7 @@ import org.thoughtcrime.securesms.recipients.RecipientUtil;
 import org.thoughtcrime.securesms.ringrtc.CameraEventListener;
 import org.thoughtcrime.securesms.ringrtc.CameraState;
 import org.thoughtcrime.securesms.ringrtc.RemotePeer;
+import org.thoughtcrime.securesms.service.webrtc.links.SignalCallLinkManager;
 import org.thoughtcrime.securesms.service.webrtc.state.WebRtcEphemeralState;
 import org.thoughtcrime.securesms.service.webrtc.state.WebRtcServiceState;
 import org.thoughtcrime.securesms.util.AppForegroundObserver;
@@ -61,6 +61,7 @@ import org.thoughtcrime.securesms.util.RecipientAccessList;
 import org.thoughtcrime.securesms.util.TextSecurePreferences;
 import org.thoughtcrime.securesms.util.Util;
 import org.thoughtcrime.securesms.util.rx.RxStore;
+import org.thoughtcrime.securesms.webrtc.CallNotificationBuilder;
 import org.thoughtcrime.securesms.webrtc.audio.SignalAudioManager;
 import org.thoughtcrime.securesms.webrtc.locks.LockManager;
 import org.webrtc.PeerConnection;
@@ -81,6 +82,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -226,7 +228,7 @@ private void processStateless(@NonNull Function1<WebRtcEphemeralState, WebRtcEph
     process((s, p) -> p.handleSetMuteAudio(s, enabled));
   }
 
-  public void setMuteVideo(boolean enabled) {
+  public void setEnableVideo(boolean enabled) {
     process((s, p) -> p.handleSetEnableVideo(s, enabled));
   }
 
@@ -413,7 +415,7 @@ private void processStateless(@NonNull Function1<WebRtcEphemeralState, WebRtcEph
   }
 
   public boolean startCallCardActivityIfPossible() {
-    if (Build.VERSION.SDK_INT >= 29 && !ApplicationDependencies.getAppForegroundObserver().isForegrounded()) {
+    if (Build.VERSION.SDK_INT >= CallNotificationBuilder.API_LEVEL_CALL_STYLE) {
       return false;
     }
 
@@ -818,6 +820,12 @@ private void processStateless(@NonNull Function1<WebRtcEphemeralState, WebRtcEph
   }
 
   @Override
+  public void onCameraStopped() {
+    Log.i(TAG, "Camera error. Muting video.");
+    setEnableVideo(false);
+  }
+
+  @Override
   public void onForeground() {
     process((s, p) -> {
       WebRtcViewModel.State          callState      = s.getCallInfoState().getCallState();
@@ -857,11 +865,12 @@ private void processStateless(@NonNull Function1<WebRtcEphemeralState, WebRtcEph
   }
 
   public void retrieveTurnServers(@NonNull RemotePeer remotePeer) {
+    List<PeerConnection.IceServer> iceServers = new LinkedList<>();
+
     networkExecutor.execute(() -> {
       try {
         TurnServerInfo turnServerInfo = ApplicationDependencies.getSignalServiceAccountManager().getTurnServerInfo();
 
-        List<PeerConnection.IceServer> iceServers = new LinkedList<>();
         for (String url : turnServerInfo.getUrls()) {
           if (url.startsWith("turn")) {
             iceServers.add(PeerConnection.IceServer.builder(url)
@@ -872,6 +881,10 @@ private void processStateless(@NonNull Function1<WebRtcEphemeralState, WebRtcEph
             iceServers.add(PeerConnection.IceServer.builder(url).createIceServer());
           }
         }
+      } catch (IOException e) {
+        Log.w(TAG, "Using fallback. Unable to retrieve turn servers: " + e);
+      } finally {
+        // Append fallback stun server
         iceServers.add(PeerConnection.IceServer.builder("stun:stun1.l.google.com:19302").createIceServer());
 
         process((s, p) -> {
@@ -883,9 +896,6 @@ private void processStateless(@NonNull Function1<WebRtcEphemeralState, WebRtcEph
           Log.w(TAG, "Ignoring received turn servers for incorrect call id. requesting_call_id: " + remotePeer.getCallId() + " current_call_id: " + (activePeer != null ? activePeer.getCallId() : "null"));
           return s;
         });
-      } catch (IOException e) {
-        Log.w(TAG, "Unable to retrieve turn servers: ", e);
-        process((s, p) -> p.handleSetupFailure(s, remotePeer.getCallId()));
       }
     });
   }
@@ -982,6 +992,10 @@ private void processStateless(@NonNull Function1<WebRtcEphemeralState, WebRtcEph
         }
       });
     }
+  }
+
+  public @NonNull SignalCallLinkManager getCallLinkManager() {
+    return new SignalCallLinkManager(Objects.requireNonNull(callManager));
   }
 
   private void processSendMessageFailureWithChangeDetection(@NonNull RemotePeer remotePeer,

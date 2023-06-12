@@ -29,8 +29,8 @@ class CallTableTest {
       now
     )
 
-    SignalDatabase.calls.setTimestamp(callId, -1L)
-    val call = SignalDatabase.calls.getCallById(callId)
+    SignalDatabase.calls.setTimestamp(callId, harness.others[0], -1L)
+    val call = SignalDatabase.calls.getCallById(callId, harness.others[0])
     assertNotNull(call)
     assertEquals(-1L, call?.timestamp)
 
@@ -50,10 +50,10 @@ class CallTableTest {
       now
     )
 
-    val call = SignalDatabase.calls.getCallById(callId)
+    val call = SignalDatabase.calls.getCallById(callId, harness.others[0])
     SignalDatabase.calls.deleteGroupCall(call!!)
 
-    val deletedCall = SignalDatabase.calls.getCallById(callId)
+    val deletedCall = SignalDatabase.calls.getCallById(callId, harness.others[0])
     val oldestDeletionTimestamp = SignalDatabase.calls.getOldestDeletionTimestamp()
 
     assertEquals(CallTable.Event.DELETE, deletedCall?.event)
@@ -71,7 +71,7 @@ class CallTableTest {
       System.currentTimeMillis()
     )
 
-    val call = SignalDatabase.calls.getCallById(callId)
+    val call = SignalDatabase.calls.getCallById(callId, harness.others[0])
     assertNotNull(call)
 
     val oldestDeletionTimestamp = SignalDatabase.calls.getOldestDeletionTimestamp()
@@ -91,7 +91,7 @@ class CallTableTest {
       System.currentTimeMillis()
     )
 
-    val call = SignalDatabase.calls.getCallById(callId)
+    val call = SignalDatabase.calls.getCallById(callId, harness.others[0])
     assertNotNull(call)
     assertEquals(CallTable.Event.OUTGOING_RING, call?.event)
     assertEquals(harness.self.id, call?.ringerRecipient)
@@ -108,7 +108,7 @@ class CallTableTest {
       System.currentTimeMillis()
     )
 
-    val call = SignalDatabase.calls.getCallById(callId)
+    val call = SignalDatabase.calls.getCallById(callId, harness.others[0])
     assertNotNull(call)
     assertEquals(CallTable.Event.JOINED, call?.event)
     assertNull(call?.ringerRecipient)
@@ -126,7 +126,7 @@ class CallTableTest {
       ringState = CallManager.RingUpdate.REQUESTED
     )
 
-    val call = SignalDatabase.calls.getCallById(callId)
+    val call = SignalDatabase.calls.getCallById(callId, harness.others[0])
     assertNotNull(call)
     assertEquals(CallTable.Event.RINGING, call?.event)
 
@@ -134,7 +134,7 @@ class CallTableTest {
       call!!
     )
 
-    val acceptedCall = SignalDatabase.calls.getCallById(callId)
+    val acceptedCall = SignalDatabase.calls.getCallById(callId, harness.others[0])
     assertEquals(CallTable.Event.ACCEPTED, acceptedCall?.event)
   }
 
@@ -149,7 +149,7 @@ class CallTableTest {
       ringState = CallManager.RingUpdate.EXPIRED_REQUEST
     )
 
-    val call = SignalDatabase.calls.getCallById(callId)
+    val call = SignalDatabase.calls.getCallById(callId, harness.others[0])
     assertNotNull(call)
     assertEquals(CallTable.Event.MISSED, call?.event)
 
@@ -157,7 +157,7 @@ class CallTableTest {
       call!!
     )
 
-    val acceptedCall = SignalDatabase.calls.getCallById(callId)
+    val acceptedCall = SignalDatabase.calls.getCallById(callId, harness.others[0])
     assertEquals(CallTable.Event.ACCEPTED, acceptedCall?.event)
   }
 
@@ -172,7 +172,7 @@ class CallTableTest {
       ringState = CallManager.RingUpdate.DECLINED_ON_ANOTHER_DEVICE
     )
 
-    val call = SignalDatabase.calls.getCallById(callId)
+    val call = SignalDatabase.calls.getCallById(callId, harness.others[0])
     assertNotNull(call)
     assertEquals(CallTable.Event.DECLINED, call?.event)
 
@@ -180,7 +180,7 @@ class CallTableTest {
       call!!
     )
 
-    val acceptedCall = SignalDatabase.calls.getCallById(callId)
+    val acceptedCall = SignalDatabase.calls.getCallById(callId, harness.others[0])
     assertEquals(CallTable.Event.ACCEPTED, acceptedCall?.event)
   }
 
@@ -197,7 +197,7 @@ class CallTableTest {
       isCallFull = false
     )
 
-    val call = SignalDatabase.calls.getCallById(callId)
+    val call = SignalDatabase.calls.getCallById(callId, harness.others[0])
     assertNotNull(call)
     assertEquals(CallTable.Event.GENERIC_GROUP_CALL, call?.event)
 
@@ -205,7 +205,7 @@ class CallTableTest {
       call!!
     )
 
-    val acceptedCall = SignalDatabase.calls.getCallById(callId)
+    val acceptedCall = SignalDatabase.calls.getCallById(callId, harness.others[0])
     assertEquals(CallTable.Event.JOINED, acceptedCall?.event)
   }
 
@@ -222,7 +222,7 @@ class CallTableTest {
       isCallFull = false
     )
 
-    val call = SignalDatabase.calls.getCallById(callId)
+    val call = SignalDatabase.calls.getCallById(callId, harness.others[0])
     assertNotNull(call)
     assertEquals(CallTable.Event.GENERIC_GROUP_CALL, call?.event)
   }
@@ -241,7 +241,7 @@ class CallTableTest {
       isCallFull = false
     )
 
-    SignalDatabase.calls.getCallById(callId).let {
+    SignalDatabase.calls.getCallById(callId, harness.others[0]).let {
       assertNotNull(it)
       assertEquals(now, it?.timestamp)
     }
@@ -255,7 +255,7 @@ class CallTableTest {
       isCallFull = false
     )
 
-    val call = SignalDatabase.calls.getCallById(callId)
+    val call = SignalDatabase.calls.getCallById(callId, harness.others[0])
     assertNotNull(call)
     assertEquals(CallTable.Event.GENERIC_GROUP_CALL, call?.event)
     assertEquals(1L, call?.timestamp)
@@ -279,7 +279,7 @@ class CallTableTest {
       ringState = CallManager.RingUpdate.REQUESTED
     )
 
-    val call = SignalDatabase.calls.getCallById(callId)
+    val call = SignalDatabase.calls.getCallById(callId, harness.others[0])
     assertNotNull(call)
     assertEquals(CallTable.Event.DELETE, call?.event)
   }
@@ -306,7 +306,7 @@ class CallTableTest {
       CallManager.RingUpdate.REQUESTED
     )
 
-    val call = SignalDatabase.calls.getCallById(callId)
+    val call = SignalDatabase.calls.getCallById(callId, harness.others[0])
     assertNotNull(call)
     assertEquals(CallTable.Event.RINGING, call?.event)
     assertEquals(harness.others[1], call?.ringerRecipient)
@@ -332,7 +332,7 @@ class CallTableTest {
       CallManager.RingUpdate.REQUESTED
     )
 
-    val call = SignalDatabase.calls.getCallById(callId)
+    val call = SignalDatabase.calls.getCallById(callId, harness.others[0])
     assertNotNull(call)
     assertEquals(CallTable.Event.ACCEPTED, call?.event)
     assertEquals(harness.others[1], call?.ringerRecipient)
@@ -360,7 +360,7 @@ class CallTableTest {
       CallManager.RingUpdate.EXPIRED_REQUEST
     )
 
-    val call = SignalDatabase.calls.getCallById(callId)
+    val call = SignalDatabase.calls.getCallById(callId, harness.others[0])
     assertNotNull(call)
     assertEquals(CallTable.Event.MISSED, call?.event)
     assertEquals(harness.others[1], call?.ringerRecipient)
@@ -396,7 +396,7 @@ class CallTableTest {
       CallManager.RingUpdate.EXPIRED_REQUEST
     )
 
-    val call = SignalDatabase.calls.getCallById(callId)
+    val call = SignalDatabase.calls.getCallById(callId, harness.others[0])
     assertNotNull(call)
     assertEquals(CallTable.Event.MISSED, call?.event)
     assertEquals(harness.others[1], call?.ringerRecipient)
@@ -422,7 +422,7 @@ class CallTableTest {
       CallManager.RingUpdate.BUSY_LOCALLY
     )
 
-    val call = SignalDatabase.calls.getCallById(callId)
+    val call = SignalDatabase.calls.getCallById(callId, harness.others[0])
     assertNotNull(call)
     assertEquals(CallTable.Event.ACCEPTED, call?.event)
   }
@@ -447,7 +447,7 @@ class CallTableTest {
       CallManager.RingUpdate.BUSY_ON_ANOTHER_DEVICE
     )
 
-    val call = SignalDatabase.calls.getCallById(callId)
+    val call = SignalDatabase.calls.getCallById(callId, harness.others[0])
     assertNotNull(call)
     assertEquals(CallTable.Event.ACCEPTED, call?.event)
   }
@@ -482,7 +482,7 @@ class CallTableTest {
       CallManager.RingUpdate.BUSY_LOCALLY
     )
 
-    val call = SignalDatabase.calls.getCallById(callId)
+    val call = SignalDatabase.calls.getCallById(callId, harness.others[0])
     assertNotNull(call)
     assertEquals(CallTable.Event.MISSED, call?.event)
   }
@@ -517,7 +517,7 @@ class CallTableTest {
       CallManager.RingUpdate.BUSY_ON_ANOTHER_DEVICE
     )
 
-    val call = SignalDatabase.calls.getCallById(callId)
+    val call = SignalDatabase.calls.getCallById(callId, harness.others[0])
     assertNotNull(call)
     assertEquals(CallTable.Event.MISSED, call?.event)
   }
@@ -544,7 +544,7 @@ class CallTableTest {
       CallManager.RingUpdate.ACCEPTED_ON_ANOTHER_DEVICE
     )
 
-    val call = SignalDatabase.calls.getCallById(callId)
+    val call = SignalDatabase.calls.getCallById(callId, harness.others[0])
     assertNotNull(call)
     assertEquals(CallTable.Event.ACCEPTED, call?.event)
   }
@@ -570,7 +570,7 @@ class CallTableTest {
       CallManager.RingUpdate.DECLINED_ON_ANOTHER_DEVICE
     )
 
-    val call = SignalDatabase.calls.getCallById(callId)
+    val call = SignalDatabase.calls.getCallById(callId, harness.others[0])
     assertNotNull(call)
     assertEquals(CallTable.Event.DECLINED, call?.event)
   }
@@ -596,7 +596,7 @@ class CallTableTest {
       CallManager.RingUpdate.DECLINED_ON_ANOTHER_DEVICE
     )
 
-    val call = SignalDatabase.calls.getCallById(callId)
+    val call = SignalDatabase.calls.getCallById(callId, harness.others[0])
     assertNotNull(call)
     assertEquals(CallTable.Event.DECLINED, call?.event)
   }
@@ -621,7 +621,7 @@ class CallTableTest {
       CallManager.RingUpdate.DECLINED_ON_ANOTHER_DEVICE
     )
 
-    val call = SignalDatabase.calls.getCallById(callId)
+    val call = SignalDatabase.calls.getCallById(callId, harness.others[0])
     assertNotNull(call)
     assertEquals(CallTable.Event.OUTGOING_RING, call?.event)
   }
@@ -637,7 +637,7 @@ class CallTableTest {
       CallManager.RingUpdate.REQUESTED
     )
 
-    val call = SignalDatabase.calls.getCallById(callId)
+    val call = SignalDatabase.calls.getCallById(callId, harness.others[0])
     assertNotNull(call)
     assertEquals(CallTable.Event.RINGING, call?.event)
     assertEquals(harness.others[1], call?.ringerRecipient)
@@ -655,7 +655,7 @@ class CallTableTest {
       CallManager.RingUpdate.EXPIRED_REQUEST
     )
 
-    val call = SignalDatabase.calls.getCallById(callId)
+    val call = SignalDatabase.calls.getCallById(callId, harness.others[0])
     assertNotNull(call)
     assertEquals(CallTable.Event.MISSED, call?.event)
     assertEquals(harness.others[1], call?.ringerRecipient)
@@ -673,7 +673,7 @@ class CallTableTest {
       CallManager.RingUpdate.CANCELLED_BY_RINGER
     )
 
-    val call = SignalDatabase.calls.getCallById(callId)
+    val call = SignalDatabase.calls.getCallById(callId, harness.others[0])
     assertNotNull(call)
     assertEquals(CallTable.Event.MISSED, call?.event)
     assertEquals(harness.others[1], call?.ringerRecipient)
@@ -691,7 +691,7 @@ class CallTableTest {
       CallManager.RingUpdate.BUSY_LOCALLY
     )
 
-    val call = SignalDatabase.calls.getCallById(callId)
+    val call = SignalDatabase.calls.getCallById(callId, harness.others[0])
     assertNotNull(call)
     assertEquals(CallTable.Event.MISSED, call?.event)
     assertNotNull(call?.messageId)
@@ -708,7 +708,7 @@ class CallTableTest {
       CallManager.RingUpdate.BUSY_ON_ANOTHER_DEVICE
     )
 
-    val call = SignalDatabase.calls.getCallById(callId)
+    val call = SignalDatabase.calls.getCallById(callId, harness.others[0])
     assertNotNull(call)
     assertEquals(CallTable.Event.MISSED, call?.event)
     assertNotNull(call?.messageId)
@@ -725,7 +725,7 @@ class CallTableTest {
       CallManager.RingUpdate.ACCEPTED_ON_ANOTHER_DEVICE
     )
 
-    val call = SignalDatabase.calls.getCallById(callId)
+    val call = SignalDatabase.calls.getCallById(callId, harness.others[0])
     assertNotNull(call)
     assertEquals(CallTable.Event.ACCEPTED, call?.event)
     assertNotNull(call?.messageId)
@@ -742,7 +742,7 @@ class CallTableTest {
       CallManager.RingUpdate.DECLINED_ON_ANOTHER_DEVICE
     )
 
-    val call = SignalDatabase.calls.getCallById(callId)
+    val call = SignalDatabase.calls.getCallById(callId, harness.others[0])
     assertNotNull(call)
     assertEquals(CallTable.Event.DECLINED, call?.event)
     assertNotNull(call?.messageId)
