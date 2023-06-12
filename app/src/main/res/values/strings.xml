@@ -4028,7 +4028,7 @@
     <string name="ManageIntroductionsFragment__No_Introductions_all">Nobody has introduced anyone to you yet. Ask your contacts for introductions or initiate by introducing someone to them!</string>
     <string name="ManageIntroductionsFragment__already_erased_toast">You already erased the introducer information of this introduction.</string>
     <string name="ManageIntroductionsFragment__conflict_resolution_todo">The guided conflict resolution process is not yet implemented. TODO</string>
-    <string name="ManageIntroductionsFragment__Rejected">Mistrusted</string>
+    <string name="ManageIntroductionsFragment__Rejected">Distrusted</string>
     <string name="ManageIntroductionsFragment__Accepted">Trusted</string>
     <string name="ManageIntroductionsFragment__Conflicting">Conflicting</string>
     <string name="ManageIntroductionsFragment__Stale">Stale</string>
