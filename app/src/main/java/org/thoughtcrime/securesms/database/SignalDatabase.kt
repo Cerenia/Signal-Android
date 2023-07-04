@@ -23,6 +23,7 @@ import org.thoughtcrime.securesms.migrations.LegacyMigrationJob
 import org.thoughtcrime.securesms.migrations.LegacyMigrationJob.DatabaseUpgradeListener
 import org.thoughtcrime.securesms.service.KeyCachingService
 import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database
+import org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue
 import org.thoughtcrime.securesms.util.TextSecurePreferences
 import java.io.File
 
@@ -75,7 +76,9 @@ open class SignalDatabase(private val context: Application, databaseSecret: Data
   val remoteMegaphoneTable: RemoteMegaphoneTable = RemoteMegaphoneTable(context, this)
   val pendingPniSignatureMessageTable: PendingPniSignatureMessageTable = PendingPniSignatureMessageTable(context, this)
   val callTable: CallTable = CallTable(context, this)
-  val trustedIntroductionsDatabase: TI_Database = TI_Database(context, this)
+  // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
+  val trustedIntroductionsDatabase: TI_DatabaseGlue = TI_DatabaseGlue.createSingleton(context, this)
+  // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end"
 
   override fun onOpen(db: net.zetetic.database.sqlcipher.SQLiteDatabase) {
     db.setForeignKeyConstraintsEnabled(true)
@@ -111,7 +114,9 @@ open class SignalDatabase(private val context: Application, databaseSecret: Data
     db.execSQL(RemoteMegaphoneTable.CREATE_TABLE)
     db.execSQL(PendingPniSignatureMessageTable.CREATE_TABLE)
     db.execSQL(CallTable.CREATE_TABLE)
-    db.execSQL(TI_Database.CREATE_TABLE)
+    // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
+    TI_DatabaseGlue.executeCreateTable(db);
+    // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end"
     executeStatements(db, SearchTable.CREATE_TABLE)
     executeStatements(db, RemappedRecordTables.CREATE_TABLE)
     executeStatements(db, MessageSendLogTables.CREATE_TABLE)
@@ -527,7 +532,8 @@ open class SignalDatabase(private val context: Application, databaseSecret: Data
 
     @get:JvmStatic
     @get:JvmName("trustedIntroductions")
-    val trustedIntroductions: TI_Database
-      get() = instance!!.trustedIntroductionsDatabase
+    val trustedIntroductions: TI_DatabaseGlue
+      get() = TI_DatabaseGlue.getTIDatabase(instance)
+
   }
 }

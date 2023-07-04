@@ -70,6 +70,12 @@ public class TI_Utils {
 
   // Random String to mark a message as a trustedIntroduction, since I'm tunneling through normal messages
   static final String TI_IDENTIFYER = "QOikEX9PPGIuXfiejT9nC2SsDB8d9AG0dUPQ9gERBQ8qHF30Xj --- This message is part of an experimental feature and not meant to be read by humans --- Introduction Data:\n";
+  // This should be added as a comment above and below each executed glue line in the Signal codebase
+  // will aid in applying glue logic mechanically further down the line.
+  // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
+  // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end"
+  static final String TI_GLUE_START = "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start";
+  static final String TI_GLUE_END = "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end";
   static final String TI_SEPARATOR = "\n"; // marks start of JsonArray, human friendly
   static final int INDENT_SPACES = 1; // pretty printing for human readableness
 

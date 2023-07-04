@@ -20,6 +20,7 @@ import org.thoughtcrime.securesms.database.RecipientTable;
 import org.thoughtcrime.securesms.database.SQLiteDatabase;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
+import org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue;
 import org.thoughtcrime.securesms.trustedIntroductions.jobs.TrustedIntroductionsRetreiveIdentityJob;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
@@ -46,7 +47,7 @@ import java.util.Set;
  * This implementation currently does not support multidevice.
  *
  */
-public class TI_Database extends DatabaseTable {
+public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
 
   private static final String TAG = String.format(TI_Utils.TI_LOG_TAG, Log.tag(TI_Database.class));
 
@@ -99,6 +100,7 @@ public class TI_Database extends DatabaseTable {
       TIMESTAMP,
       STATE
   };
+
 
 
   /**
@@ -200,38 +202,8 @@ public class TI_Database extends DatabaseTable {
     super(context, databaseHelper);
   }
 
-  /**
-   * id not yet known, state either pending or conflicting
-   * @param state
-   * @param introducerServiceId
-   * @param serviceId
-   * @param name
-   * @param number
-   * @param identityKey
-   * @param predictedFingerprint
-   * @param timestamp
-   * @return populated content values ready for insertion
-   */
-  private @NonNull ContentValues buildContentValuesForInsert(@NonNull State state,
-                                                             @NonNull String introducerServiceId,
-                                                             @NonNull String serviceId,
-                                                             @NonNull String name,
-                                                             @NonNull String number,
-                                                             @NonNull String identityKey,
-                                                             @NonNull String predictedFingerprint,
-                                                             @NonNull Long timestamp){
-    Preconditions.checkArgument(state == State.PENDING || state == State.CONFLICTING);
-    ContentValues cv = new ContentValues();
-    cv.put(STATE, state.toInt());
-    cv.put(INTRODUCER_SERVICE_ID, introducerServiceId);
-    cv.put(INTRODUCEE_SERVICE_ID, serviceId);
-    cv.put(INTRODUCEE_NAME, name);
-    cv.put(INTRODUCEE_NUMBER, number);
-    cv.put(INTRODUCEE_PUBLIC_IDENTITY_KEY, identityKey);
-    cv.put(PREDICTED_FINGERPRINT, predictedFingerprint);
-    cv.put(TIMESTAMP, timestamp);
-    return cv;
-  }
+
+
 
   /**
    * Used to update a database entry. Pass all the data that should stay the same and change what needs to be updated.
@@ -281,11 +253,48 @@ public class TI_Database extends DatabaseTable {
    * @param s new state
    * @return Correctly populated ContentValues
    */
-  @SuppressLint("Range") private @NonNull ContentValues buildContentValuesForStateUpdate(TI_Data introduction, State s){
+  @SuppressLint("Range") public @NonNull ContentValues buildContentValuesForStateUpdate(TI_Data introduction, State s){
     ContentValues values = buildContentValuesForUpdate(introduction);
     values.remove(STATE);
     values.put(STATE, s.toInt());
     return values;
+  }
+
+  @Override public SQLiteDatabase getSignalWritableDatabase() {
+    return this.databaseHelper.getSignalWritableDatabase();
+  }
+
+  /**
+   * id not yet known, state either pending or conflicting
+   * @param state
+   * @param introducerServiceId
+   * @param introduceeServiceId
+   * @param introduceeName
+   * @param introduceeNumber
+   * @param introduceeIdentityKey
+   * @param predictedSecurityNumber
+   * @param timestamp
+   * @return populated content values ready for insertion
+   */
+  @Override public ContentValues buildContentValuesForInsert(@NonNull State state,
+                                                             @NonNull String introducerServiceId,
+                                                             @NonNull String introduceeServiceId,
+                                                             @NonNull String introduceeName,
+                                                             @NonNull String introduceeNumber,
+                                                             @NonNull String introduceeIdentityKey,
+                                                             @NonNull String predictedSecurityNumber,
+                                                             long timestamp) {
+    Preconditions.checkArgument(state == State.PENDING || state == State.CONFLICTING);
+    ContentValues cv = new ContentValues();
+    cv.put(STATE, state.toInt());
+    cv.put(INTRODUCER_SERVICE_ID, introducerServiceId);
+    cv.put(INTRODUCEE_SERVICE_ID, introduceeServiceId);
+    cv.put(INTRODUCEE_NAME, introduceeName);
+    cv.put(INTRODUCEE_NUMBER, introduceeNumber);
+    cv.put(INTRODUCEE_PUBLIC_IDENTITY_KEY, introduceeIdentityKey);
+    cv.put(PREDICTED_FINGERPRINT, predictedSecurityNumber);
+    cv.put(TIMESTAMP, timestamp);
+    return cv;
   }
 
 
@@ -512,8 +521,7 @@ public class TI_Database extends DatabaseTable {
    * @param newState PRE: !STALE (security number changes are handled in a seperate codepath)
    * @param logmessage what to print to logcat iff status was modified
    */
-  @WorkerThread
-  private void modifyIntroduceeVerification(@NonNull String introduceeServiceId, @NonNull IdentityTable.VerifiedStatus previousIntroduceeVerification, @NonNull State newState, @NonNull String logmessage){
+  @WorkerThread public void modifyIntroduceeVerification(@NonNull String introduceeServiceId, @NonNull IdentityTable.VerifiedStatus previousIntroduceeVerification, @NonNull State newState, @NonNull String logmessage){
     Preconditions.checkArgument(!newState.isStale());
     // Initialize with what it was
     IdentityTable.VerifiedStatus newIntroduceeVerification = previousIntroduceeVerification;
@@ -714,7 +722,7 @@ public class TI_Database extends DatabaseTable {
    * @return Cursor pointing to query result.
    */
   @WorkerThread
-  private Cursor fetchRecipientDBCursor(RecipientId introduceeId){
+  @Override public Cursor fetchRecipientDBCursor(RecipientId introduceeId){
     RecipientTable rdb = SignalDatabase.recipients();
     // TODO: Simplify if you see that you finally never query this cursor with more than 1 recipient...
     Set<RecipientId> s = new HashSet<>();
@@ -766,7 +774,7 @@ public class TI_Database extends DatabaseTable {
      */
     @WorkerThread
     boolean setStateCallback(@NonNull TI_Data introduction, @NonNull State newState, @NonNull String logMessage){
-      TI_Database db           = SignalDatabase.trustedIntroductions();
+      TI_DatabaseGlue db           = SignalDatabase.trustedIntroductions();
       RecipientId introduceeID = TI_Utils.getRecipientIdOrUnknown(introduction.getIntroduceeServiceId());
       try (Cursor rdc = db.fetchRecipientDBCursor(introduceeID)) {
         if (rdc.getCount() <= 0) {
@@ -791,7 +799,7 @@ public class TI_Database extends DatabaseTable {
 
       // Modify introduction
       ContentValues newValues = db.buildContentValuesForStateUpdate(introduction, newState);
-      SQLiteDatabase writeableDatabase = db.databaseHelper.getSignalWritableDatabase();
+      SQLiteDatabase writeableDatabase = db.getSignalWritableDatabase();
       long result = writeableDatabase.update(TABLE_NAME, newValues, ID + " = ?", SqlUtil.buildArgs(introduction.getId()));
 
       if ( result > 0 ){
@@ -930,7 +938,7 @@ public class TI_Database extends DatabaseTable {
       Preconditions.checkArgument(data.aci != null && data.TIData != null &&
                                   data.aci.equals(data.TIData.getIntroduceeServiceId()));
       Preconditions.checkArgument(data.TIData.getPredictedSecurityNumber() != null);
-      TI_Database db = SignalDatabase.trustedIntroductions();
+      TI_DatabaseGlue db = SignalDatabase.trustedIntroductions();
       ContentValues values = db.buildContentValuesForInsert(data.key.equals(data.TIData.getIntroduceeIdentityKey()) ? State.PENDING : State.CONFLICTING,
                                                          data.TIData.getIntroducerServiceId(),
                                                          data.TIData.getIntroduceeServiceId(),
@@ -939,7 +947,7 @@ public class TI_Database extends DatabaseTable {
                                                          data.TIData.getIntroduceeIdentityKey(),
                                                          data.TIData.getPredictedSecurityNumber(),
                                                          data.TIData.getTimestamp());
-      SQLiteDatabase writeableDatabase = db.databaseHelper.getSignalWritableDatabase();
+      SQLiteDatabase writeableDatabase = db.getSignalWritableDatabase();
       long id = writeableDatabase.insert(TABLE_NAME, null, values);
       Log.i(TAG, "Inserted new introduction for: " + data.TIData.getIntroduceeName() + ", with id: " + id);
       return id;
