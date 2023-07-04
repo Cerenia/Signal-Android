@@ -6,7 +6,7 @@ import androidx.core.util.Pair;
 
 import org.signal.core.util.concurrent.SignalExecutors;
 import org.signal.core.util.logging.Log;
-import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
+import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
@@ -22,11 +22,11 @@ public class ManageManager {
 
   private static final String TAG =  String.format(TI_Utils.TI_LOG_TAG, Log.tag(ManageManager.class));
 
-  @NonNull private final String forgottenPlaceholder;
+  @NonNull private final String      forgottenPlaceholder;
   // Dependency injection
-  private final TrustedIntroductionsDatabase tdb;
+  private final          TI_Database tdb;
 
-  ManageManager(@NonNull TrustedIntroductionsDatabase tdb, @NonNull String forgottenPlaceholder){
+  ManageManager(@NonNull TI_Database tdb, @NonNull String forgottenPlaceholder){
     this.tdb = tdb;
     this.forgottenPlaceholder = forgottenPlaceholder;
   }
@@ -35,8 +35,8 @@ public class ManageManager {
     SignalExecutors.BOUNDED.execute(() -> {
 
       // Pull introductions out of the database
-      TrustedIntroductionsDatabase.IntroductionReader reader = tdb.getAllDisplayableIntroductions();
-      ArrayList<TI_Data> introductions = new ArrayList<>();
+      TI_Database.IntroductionReader reader        = tdb.getAllDisplayableIntroductions();
+      ArrayList<TI_Data>             introductions = new ArrayList<>();
       while(reader.hasNext()){
         introductions.add(reader.getNext());
       }

@@ -17,12 +17,11 @@ import org.thoughtcrime.securesms.crypto.ReentrantSessionLock;
 import org.thoughtcrime.securesms.database.IdentityTable;
 import org.thoughtcrime.securesms.database.RecipientTable;
 import org.thoughtcrime.securesms.database.SignalDatabase;
-import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
+import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database;
 import org.thoughtcrime.securesms.database.model.IdentityRecord;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
-import org.thoughtcrime.securesms.jobmanager.Job;
 import org.thoughtcrime.securesms.jobs.MultiDeviceVerifiedUpdateJob;
-import org.thoughtcrime.securesms.jobs.TrustedIntroductionsReceiveJob;
+import org.thoughtcrime.securesms.trustedIntroductions.jobs.TrustedIntroductionsReceiveJob;
 import org.thoughtcrime.securesms.recipients.LiveRecipient;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
@@ -369,7 +368,7 @@ public class TI_Utils {
           // -> at some point, defer this intro, add background task that verifies number and reinsert.
           phone = phone == null? getPhone(introducees, introduceeServiceId) : phone;
           String identityKey = IdKeyPair.findCorrespondingKeyInList(introduceeServiceId, idKeyPairs);
-          TI_Data d = new TI_Data(null, TrustedIntroductionsDatabase.State.PENDING, introducerServiceId, introduceeServiceId, name, phone, identityKey, null, timestamp);
+          TI_Data d = new TI_Data(null, TI_Database.State.PENDING, introducerServiceId, introduceeServiceId, name, phone, identityKey, null, timestamp);
           result.add(d);
           cursor.moveToNext();
         }
@@ -388,7 +387,7 @@ public class TI_Utils {
           }
           result.get(j).setPredictedSecurityNumber(o.getString(PREDICTED_FINGERPRINT_J));
         } else {
-          TI_Data d = new TI_Data(null, TrustedIntroductionsDatabase.State.PENDING, introducerServiceId, o.getString(INTRODUCEE_SERVICE_ID_J), o.getString(NAME_J), o.getString(NUMBER_J),  o.getString(IDENTITY_J), o.getString(PREDICTED_FINGERPRINT_J), timestamp);
+          TI_Data d = new TI_Data(null, TI_Database.State.PENDING, introducerServiceId, o.getString(INTRODUCEE_SERVICE_ID_J), o.getString(NAME_J), o.getString(NUMBER_J), o.getString(IDENTITY_J), o.getString(PREDICTED_FINGERPRINT_J), timestamp);
           result.add(d);
         }
       }

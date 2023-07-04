@@ -6,7 +6,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -22,14 +21,13 @@ import com.google.android.material.button.MaterialButton;
 import com.pnikosis.materialishprogress.ProgressWheel;
 
 import org.signal.core.util.logging.Log;
-import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
+import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Function;
@@ -204,11 +202,11 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
    * @return true if displayed, false if not.
    */
   private boolean isDisplayed(Pair<TI_Data, ManageViewModel.IntroducerInformation> p){
-    TrustedIntroductionsDatabase.State s = p.first.getState();
+    TI_Database.State s = p.first.getState();
     switch(tab){
       case NEW:
         // Only display pending and conflicting
-        if(!(s == TrustedIntroductionsDatabase.State.PENDING || s == TrustedIntroductionsDatabase.State.CONFLICTING)){
+        if(!(s == TI_Database.State.PENDING || s == TI_Database.State.CONFLICTING)){
           return false;
         }
         if(userFiltered(s)){
@@ -217,7 +215,7 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
         break;
       case LIBRARY:
         // Display everything but pending
-        if((s == TrustedIntroductionsDatabase.State.PENDING)){
+        if((s == TI_Database.State.PENDING)){
           return false;
         }
         if(userFiltered(s)){
@@ -235,7 +233,7 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
    * Checks the state of the introduction against the user filters.
    * @return true if filtered, false otherwise
    */
-  private boolean userFiltered(TrustedIntroductionsDatabase.State s){
+  private boolean userFiltered(TI_Database.State s){
     switch(s){
       case ACCEPTED:
         if(!viewModel.showAccepted().getValue()){
@@ -405,13 +403,13 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
     }
 
     @Override public void mask(@NonNull ManageAdapter.IntroductionViewHolder item, String introducerServiceId) {
-      if(!introducerServiceId.equals(TrustedIntroductionsDatabase.UNKNOWN_INTRODUCER_SERVICE_ID)){
+      if(!introducerServiceId.equals(TI_Database.UNKNOWN_INTRODUCER_SERVICE_ID)){
         ForgetIntroducerDialog.show(c, item.getIntroductionId(), item.getIntroduceeName(), item.getIntroducerName(requireContext()), item.getDate(), forgetHandler);
       }
     }
 
     @Override public void delete(@NonNull ManageAdapter.IntroductionViewHolder item, String introducerServiceId) {
-      String introducerName = introducerServiceId.equals(TrustedIntroductionsDatabase.UNKNOWN_INTRODUCER_SERVICE_ID) ? getString(R.string.ManageIntroductionsListItem__Forgotten_Introducer) : Recipient.resolved(TI_Utils.getRecipientIdOrUnknown(introducerServiceId)).getDisplayName(requireContext());
+      String introducerName = introducerServiceId.equals(TI_Database.UNKNOWN_INTRODUCER_SERVICE_ID) ? getString(R.string.ManageIntroductionsListItem__Forgotten_Introducer) : Recipient.resolved(TI_Utils.getRecipientIdOrUnknown(introducerServiceId)).getDisplayName(requireContext());
       DeleteIntroductionDialog.show(c, item.getIntroductionId(), item.getIntroduceeName(), introducerName, item.getDate(), deleteHandler);
     }
 

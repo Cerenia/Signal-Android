@@ -53,7 +53,7 @@ import org.thoughtcrime.securesms.database.SenderKeySharedTable;
 import org.thoughtcrime.securesms.database.SessionTable;
 import org.thoughtcrime.securesms.database.SignedPreKeyTable;
 import org.thoughtcrime.securesms.database.StickerTable;
-import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
+import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database;
 import org.thoughtcrime.securesms.database.model.AvatarPickerDatabase;
 import org.thoughtcrime.securesms.database.model.MessageId;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
@@ -399,7 +399,7 @@ public class FullBackupExporter extends FullBackupBase {
         return true;
       }
 
-      if (table.equals(TrustedIntroductionsDatabase.TABLE_NAME)){
+      if (table.equals(TI_Database.TABLE_NAME)){
         return !this.isVanilla;
       }
 

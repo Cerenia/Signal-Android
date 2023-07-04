@@ -22,7 +22,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.button.MaterialButton;
 
 import org.thoughtcrime.securesms.R;
-import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
+import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
@@ -34,13 +34,13 @@ import java.util.Date;
 import static android.view.View.GONE;
 import static android.view.View.INVISIBLE;
 import static android.view.View.VISIBLE;
-import static org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase.State.ACCEPTED;
-import static org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase.State.CONFLICTING;
-import static org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase.State.REJECTED;
-import static org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase.State.STALE_ACCEPTED;
-import static org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase.State.STALE_CONFLICTING;
-import static org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase.State.STALE_PENDING;
-import static org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase.State.STALE_REJECTED;
+import static org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.ACCEPTED;
+import static org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.CONFLICTING;
+import static org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.REJECTED;
+import static org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.STALE_ACCEPTED;
+import static org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.STALE_CONFLICTING;
+import static org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.STALE_PENDING;
+import static org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.STALE_REJECTED;
 import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.INTRODUCTION_DATE_PATTERN;
 
 public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.IntroducerInformation>, ManageAdapter.IntroductionViewHolder> {
@@ -143,7 +143,7 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
       return new Date(data.getTimestamp());
     }
 
-    TrustedIntroductionsDatabase.State getState(){
+    TI_Database.State getState(){
       return data.getState();
     }
 
@@ -171,17 +171,17 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
      * @param trust true if the user accepts, false otherwise.
      */
     public void changeTrust(boolean trust){
-      TrustedIntroductionsDatabase.State s = data.getState();
+      TI_Database.State s = data.getState();
       Preconditions.checkArgument(s != CONFLICTING);
       if(s == STALE_ACCEPTED || s == STALE_PENDING || s == STALE_CONFLICTING || s == STALE_REJECTED) return; // may not interact with stale intros
       if (s == ACCEPTED && trust || s == REJECTED && !trust) return; // nothing to change
-      TI_Data newIntro;
-      TrustedIntroductionsDatabase.State newState;
+      TI_Data           newIntro;
+      TI_Database.State newState;
       if(trust){
-        newState = TrustedIntroductionsDatabase.State.ACCEPTED;
+        newState = TI_Database.State.ACCEPTED;
         listener.accept(data.getId());
       } else {
-        newState = TrustedIntroductionsDatabase.State.REJECTED;
+        newState = TI_Database.State.REJECTED;
         listener.reject(data.getId());
       }
       newIntro = changeState(data, newState);
@@ -194,7 +194,7 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
      */
     private void setForgetIntroducerComponentVisibility(){
       Preconditions.checkArgument(data.getIntroducerServiceId() != null);
-      if(data.getIntroducerServiceId().equals(TrustedIntroductionsDatabase.UNKNOWN_INTRODUCER_SERVICE_ID)){
+      if(data.getIntroducerServiceId().equals(TI_Database.UNKNOWN_INTRODUCER_SERVICE_ID)){
         maskIntroducer.setVisibility(GONE);
         introducerNumber.setVisibility(GONE);
         introducerName.setVisibility(GONE);
@@ -209,7 +209,7 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
      * Also changes the border/background colour and positioning accordingly.
      * @return
      */
-    private void changeListitemAppearanceByState(TrustedIntroductionsDatabase.State s){
+    private void changeListitemAppearanceByState(TI_Database.State s){
       switch(s){
         case PENDING:
           radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Pending);
@@ -327,7 +327,7 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
     }
 
 
-    private TI_Data changeState(TI_Data d, TrustedIntroductionsDatabase.State s){
+    private TI_Data changeState(TI_Data d, TI_Database.State s){
       return new TI_Data(d.getId(), s, d.getIntroducerServiceId(), d.getIntroduceeServiceId(), d.getIntroduceeName(), d.getIntroduceeNumber(), d.getIntroduceeIdentityKey(), d.getPredictedSecurityNumber(), d.getTimestamp());
     }
 

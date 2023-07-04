@@ -1,4 +1,4 @@
-package org.thoughtcrime.securesms.jobs;
+package org.thoughtcrime.securesms.trustedIntroductions.jobs;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -9,7 +9,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.database.SignalDatabase;
-import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
+import org.thoughtcrime.securesms.jobs.BaseJob;
+import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database;
 import org.thoughtcrime.securesms.jobmanager.JsonJobData;
 import org.thoughtcrime.securesms.jobmanager.Job;
 import org.thoughtcrime.securesms.jobmanager.impl.NetworkConstraint;
@@ -24,7 +25,7 @@ import java.util.Objects;
 
 import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.parseTIMessage;
 
-public class TrustedIntroductionsReceiveJob extends BaseJob  {
+public class TrustedIntroductionsReceiveJob extends BaseJob {
 
   private static final String TAG =  String.format(TI_Utils.TI_LOG_TAG, Log.tag(TrustedIntroductionsReceiveJob.class));
 
@@ -113,7 +114,7 @@ public class TrustedIntroductionsReceiveJob extends BaseJob  {
       introductions.addAll(tiData);
       bodyParsed = true;
     }
-    TrustedIntroductionsDatabase db = SignalDatabase.trustedIntroductions();
+    TI_Database db = SignalDatabase.trustedIntroductions();
     for(TI_Data introduction: introductions){
       long result = db.incomingIntroduction(introduction);
       if (result == -1){

@@ -12,7 +12,7 @@ import androidx.core.util.Pair;
 import org.signal.core.util.concurrent.SignalExecutors;
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.database.SignalDatabase;
-import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
+import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
 
@@ -114,7 +114,7 @@ public class ManageViewModel extends ViewModel {
     iterateAndModify(introductionId, new Modify() {
       @Nullable @Override public Pair<TI_Data, IntroducerInformation> modifyIntroductionItem(Pair<TI_Data, IntroducerInformation> introductionItem) {
         TI_Data oldIntro = introductionItem.first;
-        TI_Data newIntroduction = new TI_Data(oldIntro.getId(), oldIntro.getState(), TrustedIntroductionsDatabase.UNKNOWN_INTRODUCER_SERVICE_ID, oldIntro.getIntroduceeServiceId(), oldIntro.getIntroduceeName(), oldIntro.getIntroduceeNumber(), oldIntro.getIntroduceeIdentityKey(), oldIntro.getPredictedSecurityNumber(), oldIntro.getTimestamp());
+        TI_Data newIntroduction = new TI_Data(oldIntro.getId(), oldIntro.getState(), TI_Database.UNKNOWN_INTRODUCER_SERVICE_ID, oldIntro.getIntroduceeServiceId(), oldIntro.getIntroduceeName(), oldIntro.getIntroduceeNumber(), oldIntro.getIntroduceeIdentityKey(), oldIntro.getPredictedSecurityNumber(), oldIntro.getTimestamp());
         return new Pair<>(newIntroduction, new IntroducerInformation(forgottenPlaceholder, forgottenPlaceholder));
       }
 
@@ -132,7 +132,7 @@ public class ManageViewModel extends ViewModel {
       iterateAndModify(introductionId, new Modify() {
         @Nullable @Override public Pair<TI_Data, IntroducerInformation> modifyIntroductionItem(Pair<TI_Data, IntroducerInformation> introductionItem) {
           TI_Data oldIntroduction = introductionItem.first;
-          TI_Data newIntroduction = new TI_Data(oldIntroduction.getId(), TrustedIntroductionsDatabase.State.ACCEPTED, oldIntroduction.getIntroducerServiceId(), oldIntroduction.getIntroduceeServiceId(), oldIntroduction
+          TI_Data newIntroduction = new TI_Data(oldIntroduction.getId(), TI_Database.State.ACCEPTED, oldIntroduction.getIntroducerServiceId(), oldIntroduction.getIntroduceeServiceId(), oldIntroduction
               .getIntroduceeName(), oldIntroduction.getIntroduceeNumber(), oldIntroduction.getIntroduceeIdentityKey(), oldIntroduction.getPredictedSecurityNumber(), oldIntroduction.getTimestamp());
           return new Pair<>(newIntroduction, introductionItem.second);
         }
@@ -151,7 +151,7 @@ public class ManageViewModel extends ViewModel {
     iterateAndModify(introductionId, new Modify() {
       @Nullable @Override public Pair<TI_Data, IntroducerInformation> modifyIntroductionItem(Pair<TI_Data, IntroducerInformation> introductionItem) {
         TI_Data oldIntroduction = introductionItem.first;
-        TI_Data newIntroduction = new TI_Data(oldIntroduction.getId(), TrustedIntroductionsDatabase.State.REJECTED, oldIntroduction.getIntroducerServiceId(), oldIntroduction.getIntroduceeServiceId(), oldIntroduction
+        TI_Data newIntroduction = new TI_Data(oldIntroduction.getId(), TI_Database.State.REJECTED, oldIntroduction.getIntroducerServiceId(), oldIntroduction.getIntroduceeServiceId(), oldIntroduction
             .getIntroduceeName(), oldIntroduction.getIntroduceeNumber(), oldIntroduction.getIntroduceeIdentityKey(), oldIntroduction.getPredictedSecurityNumber(), oldIntroduction.getTimestamp());
         return new Pair<>(newIntroduction, introductionItem.second);
       }

@@ -1,10 +1,8 @@
-package org.thoughtcrime.securesms.trustedIntroductions.jobUtils;
+package org.thoughtcrime.securesms.trustedIntroductions.jobs;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
-
-import java.util.HashMap;
 
 // We are generally using json so working with Strings.
 // TODO: Not sure I need this anymore given it's a single callback now anyways?

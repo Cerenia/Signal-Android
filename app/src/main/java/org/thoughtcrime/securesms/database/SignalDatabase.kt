@@ -22,6 +22,7 @@ import org.thoughtcrime.securesms.jobs.PreKeysSyncJob
 import org.thoughtcrime.securesms.migrations.LegacyMigrationJob
 import org.thoughtcrime.securesms.migrations.LegacyMigrationJob.DatabaseUpgradeListener
 import org.thoughtcrime.securesms.service.KeyCachingService
+import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database
 import org.thoughtcrime.securesms.util.TextSecurePreferences
 import java.io.File
 
@@ -74,7 +75,7 @@ open class SignalDatabase(private val context: Application, databaseSecret: Data
   val remoteMegaphoneTable: RemoteMegaphoneTable = RemoteMegaphoneTable(context, this)
   val pendingPniSignatureMessageTable: PendingPniSignatureMessageTable = PendingPniSignatureMessageTable(context, this)
   val callTable: CallTable = CallTable(context, this)
-  val trustedIntroductionsDatabase: TrustedIntroductionsDatabase = TrustedIntroductionsDatabase(context, this)
+  val trustedIntroductionsDatabase: TI_Database = TI_Database(context, this)
 
   override fun onOpen(db: net.zetetic.database.sqlcipher.SQLiteDatabase) {
     db.setForeignKeyConstraintsEnabled(true)
@@ -110,7 +111,7 @@ open class SignalDatabase(private val context: Application, databaseSecret: Data
     db.execSQL(RemoteMegaphoneTable.CREATE_TABLE)
     db.execSQL(PendingPniSignatureMessageTable.CREATE_TABLE)
     db.execSQL(CallTable.CREATE_TABLE)
-    db.execSQL(TrustedIntroductionsDatabase.CREATE_TABLE)
+    db.execSQL(TI_Database.CREATE_TABLE)
     executeStatements(db, SearchTable.CREATE_TABLE)
     executeStatements(db, RemappedRecordTables.CREATE_TABLE)
     executeStatements(db, MessageSendLogTables.CREATE_TABLE)
@@ -526,7 +527,7 @@ open class SignalDatabase(private val context: Application, databaseSecret: Data
 
     @get:JvmStatic
     @get:JvmName("trustedIntroductions")
-    val trustedIntroductions: TrustedIntroductionsDatabase
+    val trustedIntroductions: TI_Database
       get() = instance!!.trustedIntroductionsDatabase
   }
 }

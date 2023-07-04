@@ -1,13 +1,13 @@
 package org.thoughtcrime.securesms.trustedIntroductions
 
 import org.json.JSONObject
-import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase
-import org.thoughtcrime.securesms.trustedIntroductions.jobUtils.TI_Serialize
+import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database
+import org.thoughtcrime.securesms.trustedIntroductions.jobs.TI_Serialize
 
 // TODO: predictedSecurityNumber only needs to be nullable because I parse the TI_Message somewhat awkardly... maybe change at some point? Not super critical...
 // IntroduceeRecipientId and Introducer
 // introduceeIdentityKey is encoded in Base64 (this is how it is currently stored in the Identity Database) @see TI_Utils.encodeIdentityKey
-data class TI_Data (val id: Long?, val state: TrustedIntroductionsDatabase.State,  val introducerServiceId: String?, val introduceeServiceId: String, val introduceeName: String, val introduceeNumber: String, val introduceeIdentityKey: String, var predictedSecurityNumber: String?, val timestamp: Long) : TI_Serialize {
+data class TI_Data (val id: Long?, val state: TI_Database.State, val introducerServiceId: String?, val introduceeServiceId: String, val introduceeName: String, val introduceeNumber: String, val introduceeIdentityKey: String, var predictedSecurityNumber: String?, val timestamp: Long) : TI_Serialize {
 
   override fun serialize() : JSONObject {
     // Absence of key signifies null
@@ -43,7 +43,7 @@ data class TI_Data (val id: Long?, val state: TrustedIntroductionsDatabase.State
       } else{
         id = null
       }
-      val  state = TrustedIntroductionsDatabase.State.forState(serialized.getInt("state"))
+      val  state = TI_Database.State.forState(serialized.getInt("state"))
       val introducerServiceId: String?
       if (serialized.has("introducerServiceId")){
         introducerServiceId = serialized.getString("introducerServiceId")

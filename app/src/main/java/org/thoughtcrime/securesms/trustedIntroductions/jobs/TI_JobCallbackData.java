@@ -1,6 +1,5 @@
-package org.thoughtcrime.securesms.trustedIntroductions.jobUtils;
+package org.thoughtcrime.securesms.trustedIntroductions.jobs;
 
-import org.thoughtcrime.securesms.jobs.TrustedIntroductionsRetreiveIdentityJob;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 
 public abstract class TI_JobCallbackData implements TI_Serialize {

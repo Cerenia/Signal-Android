@@ -1,4 +1,4 @@
-package org.thoughtcrime.securesms.database;
+package org.thoughtcrime.securesms.trustedIntroductions.database;
 
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
@@ -14,14 +14,19 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.signal.core.util.SqlUtil;
 import org.signal.core.util.logging.Log;
+import org.thoughtcrime.securesms.database.DatabaseTable;
+import org.thoughtcrime.securesms.database.IdentityTable;
+import org.thoughtcrime.securesms.database.RecipientTable;
+import org.thoughtcrime.securesms.database.SQLiteDatabase;
+import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
-import org.thoughtcrime.securesms.jobs.TrustedIntroductionsRetreiveIdentityJob;
+import org.thoughtcrime.securesms.trustedIntroductions.jobs.TrustedIntroductionsRetreiveIdentityJob;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.recipients.RecipientUtil;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
-import org.thoughtcrime.securesms.trustedIntroductions.jobUtils.TI_JobCallbackData;
-import org.thoughtcrime.securesms.trustedIntroductions.jobUtils.TI_JobCallback;
+import org.thoughtcrime.securesms.trustedIntroductions.jobs.TI_JobCallbackData;
+import org.thoughtcrime.securesms.trustedIntroductions.jobs.TI_JobCallback;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
 import org.whispersystems.signalservice.api.push.ServiceId;
 import org.whispersystems.signalservice.api.util.Preconditions;
@@ -41,9 +46,9 @@ import java.util.Set;
  * This implementation currently does not support multidevice.
  *
  */
-public class TrustedIntroductionsDatabase extends DatabaseTable {
+public class TI_Database extends DatabaseTable {
 
-  private static final String TAG = String.format(TI_Utils.TI_LOG_TAG, Log.tag(TrustedIntroductionsDatabase.class));
+  private static final String TAG = String.format(TI_Utils.TI_LOG_TAG, Log.tag(TI_Database.class));
 
   public static final String TABLE_NAME = "trusted_introductions";
 
@@ -79,8 +84,8 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
   @VisibleForTesting
   public void clearTable(){
     // Debugging
-    SQLiteDatabase db = databaseHelper.getSignalWritableDatabase();
-    int res = db.delete(TABLE_NAME, "", new String[]{});
+    SQLiteDatabase db  = databaseHelper.getSignalWritableDatabase();
+    int            res = db.delete(TABLE_NAME, "", new String[]{});
   }
 
   private static final String[] TI_ALL_PROJECTION = new String[]{
@@ -191,7 +196,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     }
   }
 
-  public TrustedIntroductionsDatabase(Context context, SignalDatabase databaseHelper) {
+  public TI_Database(Context context, SignalDatabase databaseHelper) {
     super(context, databaseHelper);
   }
 
@@ -761,7 +766,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
      */
     @WorkerThread
     boolean setStateCallback(@NonNull TI_Data introduction, @NonNull State newState, @NonNull String logMessage){
-      TrustedIntroductionsDatabase db = SignalDatabase.trustedIntroductions();
+      TI_Database db           = SignalDatabase.trustedIntroductions();
       RecipientId introduceeID = TI_Utils.getRecipientIdOrUnknown(introduction.getIntroduceeServiceId());
       try (Cursor rdc = db.fetchRecipientDBCursor(introduceeID)) {
         if (rdc.getCount() <= 0) {
@@ -925,7 +930,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
       Preconditions.checkArgument(data.aci != null && data.TIData != null &&
                                   data.aci.equals(data.TIData.getIntroduceeServiceId()));
       Preconditions.checkArgument(data.TIData.getPredictedSecurityNumber() != null);
-      TrustedIntroductionsDatabase db = SignalDatabase.trustedIntroductions();
+      TI_Database db = SignalDatabase.trustedIntroductions();
       ContentValues values = db.buildContentValuesForInsert(data.key.equals(data.TIData.getIntroduceeIdentityKey()) ? State.PENDING : State.CONFLICTING,
                                                          data.TIData.getIntroducerServiceId(),
                                                          data.TIData.getIntroduceeServiceId(),

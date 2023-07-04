@@ -1,4 +1,4 @@
-package org.thoughtcrime.securesms.jobs;
+package org.thoughtcrime.securesms.trustedIntroductions.jobs;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -7,15 +7,14 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.signal.core.util.logging.Log;
 import org.signal.libsignal.protocol.IdentityKey;
-import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
+import org.thoughtcrime.securesms.jobs.BaseJob;
+import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.jobmanager.Job;
 import org.thoughtcrime.securesms.jobmanager.JsonJobData;
 import org.thoughtcrime.securesms.jobmanager.impl.NetworkConstraint;
 import org.thoughtcrime.securesms.keyvalue.SignalStore;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
-import org.thoughtcrime.securesms.trustedIntroductions.jobUtils.TI_JobCallbackData;
-import org.thoughtcrime.securesms.trustedIntroductions.jobUtils.TI_JobCallback;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
 import org.thoughtcrime.securesms.util.Base64;
 import org.whispersystems.signalservice.api.profiles.ProfileAndCredential;
@@ -34,7 +33,7 @@ import java.util.Optional;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
-public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
+public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob {
 
   public static final String KEY = "TrustedIntroductionsRetreiveIdentityJob";
 
@@ -52,8 +51,8 @@ public class TrustedIntroductionsRetreiveIdentityJob extends BaseJob{
   public static HashMap<String, TI_JobCallback.Factory> instantiate = new HashMap<>();
 
   static {
-    instantiate.put(TrustedIntroductionsDatabase.InsertCallback.tag, new TrustedIntroductionsDatabase.InsertCallback.Factory());
-    instantiate.put(TrustedIntroductionsDatabase.SetStateCallback.tag, new TrustedIntroductionsDatabase.SetStateCallback.Factory());
+    instantiate.put(TI_Database.InsertCallback.tag, new TI_Database.InsertCallback.Factory());
+    instantiate.put(TI_Database.SetStateCallback.tag, new TI_Database.SetStateCallback.Factory());
   }
 
   public static class TI_RetrieveIDJobResult extends TI_JobCallbackData implements setRetreiveIdJobResult {

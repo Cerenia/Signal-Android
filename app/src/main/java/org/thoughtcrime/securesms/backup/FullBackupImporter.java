@@ -32,7 +32,7 @@ import org.thoughtcrime.securesms.database.EmojiSearchTable;
 import org.thoughtcrime.securesms.database.KeyValueDatabase;
 import org.thoughtcrime.securesms.database.SearchTable;
 import org.thoughtcrime.securesms.database.StickerTable;
-import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
+import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.keyvalue.KeyValueDataSet;
 import org.thoughtcrime.securesms.keyvalue.SignalStore;
@@ -59,8 +59,8 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase.CREATE_TABLE;
-import static org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase.PREVIOUS_PARTIAL_CREATE_TABLE;
+import static org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.CREATE_TABLE;
+import static org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.PREVIOUS_PARTIAL_CREATE_TABLE;
 
 public class FullBackupImporter extends FullBackupBase {
 
@@ -109,7 +109,7 @@ public class FullBackupImporter extends FullBackupBase {
 
       // Create TI table if necessary
       try {
-        db.execSQL(TrustedIntroductionsDatabase.CREATE_TABLE);
+        db.execSQL(TI_Database.CREATE_TABLE);
       } catch (net.zetetic.database.sqlcipher.SQLiteException e) {
         Log.i(TAG, "Trusted Introductions Table already exists!");
       }

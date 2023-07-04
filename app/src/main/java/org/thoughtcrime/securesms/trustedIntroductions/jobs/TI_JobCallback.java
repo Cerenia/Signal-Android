@@ -1,4 +1,4 @@
-package org.thoughtcrime.securesms.trustedIntroductions.jobUtils;
+package org.thoughtcrime.securesms.trustedIntroductions.jobs;
 
 //@see also TI_DB_Callback in TrustedIntroductionsDatabase
 public interface TI_JobCallback {
