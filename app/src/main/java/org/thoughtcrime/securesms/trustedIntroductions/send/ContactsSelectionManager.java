@@ -7,6 +7,7 @@ import org.thoughtcrime.securesms.database.IdentityTable;
 import org.thoughtcrime.securesms.database.RecipientTable;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
+import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,10 +23,10 @@ public class ContactsSelectionManager {
   private final RecipientId recipientId;
 
   // Dependency injection makes the class testable
-  private final IdentityTable  idb;
+  private final @NonNull IdentityTableGlue idb;
   private final RecipientTable rdb;
 
-  ContactsSelectionManager(@NonNull RecipientId recipientId, @NonNull IdentityTable idb, @NonNull RecipientTable rdb){
+  ContactsSelectionManager(@NonNull RecipientId recipientId, @NonNull IdentityTableGlue idb, @NonNull RecipientTable rdb){
     this.recipientId = recipientId;
     this.idb = idb;
     this.rdb = rdb;

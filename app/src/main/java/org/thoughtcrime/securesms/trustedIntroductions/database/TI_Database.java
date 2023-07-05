@@ -51,6 +51,22 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
 
   private static final String TAG = String.format(TI_Utils.TI_LOG_TAG, Log.tag(TI_Database.class));
 
+  private static TI_DatabaseGlue instance = null;
+
+  public static void setInstance(TI_DatabaseGlue inst) throws Exception {
+    if (instance != null){
+      throw new Exception("Attempted to reassign Singleton instance of TI_Database");
+    }
+    instance = inst;
+  }
+
+  public static TI_DatabaseGlue getInstance() {
+    if (instance == null){
+      throw new AssertionError("Attempted to fetch Singleton TI_Database before initializing it.");
+    }
+    return instance;
+  }
+
   public static final String TABLE_NAME = "trusted_introductions";
 
   private static final String ID                      = "_id";

@@ -40,6 +40,7 @@ import org.thoughtcrime.securesms.dependencies.ApplicationDependencies
 import org.thoughtcrime.securesms.recipients.Recipient
 import org.thoughtcrime.securesms.recipients.RecipientId
 import org.thoughtcrime.securesms.storage.StorageSyncHelper
+import org.thoughtcrime.securesms.trustedIntroductions.database.IdentityTableExports
 import org.thoughtcrime.securesms.util.Base64
 import org.thoughtcrime.securesms.util.IdentityUtil
 import org.whispersystems.signalservice.api.push.ServiceId
@@ -73,23 +74,22 @@ class IdentityTable internal constructor(context: Context?, databaseHelper: Sign
         $NONBLOCKING_APPROVAL INTEGER DEFAULT 0
       )
     """
-    const private val  TI_ADDRESS_PROJECTION    = ADDRESS;
-
-    /**
-     * Expose all keys of the database for Precondition check in @TI_Cursor.java
-     */
-    fun getAllDatabaseKeys(): ArrayList<String> {
-      val res = arrayListOf<String>();
-      res.add(ID)
-      res.add(ADDRESS)
-      res.add(IDENTITY_KEY)
-      res.add(FIRST_USE)
-      res.add(VERIFIED)
-      res.add(NONBLOCKING_APPROVAL)
-      res.add(TIMESTAMP)
-      return res
+    // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
+    fun TI_export(): IdentityTableExports{
+      val allDatabaseKeys = arrayListOf<String>()
+      allDatabaseKeys.add(ID)
+      allDatabaseKeys.add(ADDRESS)
+      allDatabaseKeys.add(IDENTITY_KEY)
+      allDatabaseKeys.add(FIRST_USE)
+      allDatabaseKeys.add(VERIFIED)
+      allDatabaseKeys.add(NONBLOCKING_APPROVAL)
+      allDatabaseKeys.add(TIMESTAMP)
+      return IdentityTableExports(FIRST_USE, TIMESTAMP, NONBLOCKING_APPROVAL, allDatabaseKeys)
     }
+    // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end"
   }
+
+
 
   fun getIdentityStoreRecord(addressName: String): IdentityStoreRecord? {
     readableDatabase
@@ -172,33 +172,6 @@ class IdentityTable internal constructor(context: Context?, databaseHelper: Sign
     }
   }
 
-  /**
-   *
-   * @return Returns a Cursor which iterates through all contacts that are unlocked for
-   * trusted introductions (for which @see VerifiedStatus.tiUnlocked returns true)
-   */
-  fun getCursorForTIUnlocked(): Cursor {
-    val validStates: ArrayList<String> = ArrayList()
-    // dynamically compute the valid states and query the Signal database for these contacts
-    for (e in VerifiedStatus.values()) {
-      if (VerifiedStatus.ti_forwardUnlocked(e)) {
-        validStates.add(e.toInt().toString())
-      }
-    }
-    assert(validStates.size > 0) { "No valid states defined for TI" }
-    val selectionBuilder = StringBuilder()
-    selectionBuilder.append(String.format("%s=?", VERIFIED))
-    if (validStates.size > 1) {
-      for (i in 0 until validStates.size - 1) {
-        selectionBuilder.append(String.format(" OR %s=?", VERIFIED))
-      }
-    }
-    // create the rest of the query
-    val readableDatabase = readableDatabase
-    val states = validStates.toArray(arrayOf<String>())
-    return readableDatabase.query(TABLE_NAME, arrayOf<String>(TI_ADDRESS_PROJECTION), selectionBuilder.toString(), states, null, null, null)
-  }
-
   fun updateIdentityAfterSync(addressName: String, recipientId: RecipientId, identityKey: IdentityKey, verifiedStatus: VerifiedStatus) {
     val existingRecord = getIdentityRecord(addressName)
     val hadEntry = existingRecord.isPresent
@@ -229,20 +202,6 @@ class IdentityTable internal constructor(context: Context?, databaseHelper: Sign
       .run()
   }
 
-  /**
-   * Publicly exposes verified status by recipient id.
-   * @param id: id of the recipient
-   * @return The VerifiedStatus of the recipient or default if the recipient is not in the database.
-   */
-  fun getVerifiedStatus(id: RecipientId?): VerifiedStatus? {
-    val recipient = Recipient.resolved(id!!)
-    if(recipient.hasServiceId()){
-      val ir = getIdentityRecord(recipient.requireServiceId().toString())
-      return ir.map(IdentityRecord::verifiedStatus).orElse(VerifiedStatus.UNVERIFIED) // fail closed
-    } else {
-      return VerifiedStatus.DEFAULT
-    }
-  }
 
   private fun getIdentityRecord(addressName: String): Optional<IdentityRecord> {
     return readableDatabase
@@ -298,13 +257,15 @@ class IdentityTable internal constructor(context: Context?, databaseHelper: Sign
     EventBus.getDefault().post(IdentityRecord(recipientId, identityKey, verifiedStatus, firstUse, timestamp, nonBlockingApproval))
   }
 
-
+  // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
   /**
    * Trusted Introductions: We differentiate between a direct verification <code>DIRECTLY_VERIFIED</code> (via. QR code)
    * and a weaker, manual verification <code>MANUALLY_VERIFIED</code>. Additionally, a user can become verified by the
    * trusted introductions mechanism <code>TRUSTINGLY_INTRODUCED</code>. A user that has been trustingly introduced and
    * directly verified is <code>DUPLEX_VERIFIED</code>, the strongest level.
    * A user can always manually reset the trust to be unverified.
+   *
+   * TODO: More decoupling by building an identity shadow table?
    *
    */
   enum class VerifiedStatus {

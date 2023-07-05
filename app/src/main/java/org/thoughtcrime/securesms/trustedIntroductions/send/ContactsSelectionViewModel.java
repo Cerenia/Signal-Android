@@ -11,6 +11,7 @@ import org.signal.core.util.concurrent.SimpleTask;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
+import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -117,7 +118,7 @@ public class ContactsSelectionViewModel extends ViewModel {
     private final ContactsSelectionManager manager;
 
     Factory(RecipientId id) {
-      this.manager = new ContactsSelectionManager(id, SignalDatabase.identities(), SignalDatabase.recipients());
+      this.manager = new ContactsSelectionManager(id, IdentityTableGlue.getInstance(), SignalDatabase.recipients());
     }
 
     @Override

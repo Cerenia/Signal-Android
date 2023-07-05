@@ -77,7 +77,7 @@ open class SignalDatabase(private val context: Application, databaseSecret: Data
   val pendingPniSignatureMessageTable: PendingPniSignatureMessageTable = PendingPniSignatureMessageTable(context, this)
   val callTable: CallTable = CallTable(context, this)
   // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
-  val trustedIntroductionsDatabase: TI_DatabaseGlue = TI_DatabaseGlue.createSingleton(context, this)
+  val tiDummy: TI_DatabaseGlue = TI_DatabaseGlue.createSingleton(context, this)
   // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end"
 
   override fun onOpen(db: net.zetetic.database.sqlcipher.SQLiteDatabase) {
