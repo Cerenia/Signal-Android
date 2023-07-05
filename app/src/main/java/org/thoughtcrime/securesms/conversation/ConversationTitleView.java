@@ -27,6 +27,7 @@ import org.thoughtcrime.securesms.database.model.StoryViewState;
 import org.thoughtcrime.securesms.mms.GlideRequests;
 import org.thoughtcrime.securesms.recipients.LiveRecipient;
 import org.thoughtcrime.securesms.recipients.Recipient;
+import org.thoughtcrime.securesms.trustedIntroductions.glue.ConversationTitleViewGlue;
 import org.thoughtcrime.securesms.util.ContextUtil;
 import org.thoughtcrime.securesms.util.DrawableUtil;
 import org.thoughtcrime.securesms.util.ExpirationUtil;
@@ -189,7 +190,11 @@ public class ConversationTitleView extends ConstraintLayout {
   private void setRecipientTitle(@NonNull Recipient recipient) {
     if      (recipient.isGroup()) setGroupRecipientTitle(recipient);
     else if (recipient.isSelf())  setSelfTitle();
-    else                          setIndividualRecipientTitle(recipient);
+    else {
+      // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
+      ConversationTitleViewGlue.setIndividualRecipientTitle(recipient, getContext(), title, subtitle, this::updateSubtitleVisibility);
+      // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end"
+    }
   }
 
   private void setGroupRecipientTitle(@NonNull Recipient recipient) {
@@ -207,33 +212,6 @@ public class ConversationTitleView extends ConstraintLayout {
 
   private void setSelfTitle() {
     this.title.setText(R.string.note_to_self);
-    updateSubtitleVisibility();
-  }
-
-  private void setIndividualRecipientTitle(@NonNull Recipient recipient) {
-    final String displayName = recipient.getDisplayNameOrUsername(getContext());
-    this.title.setText(displayName);
-    IdentityTable.VerifiedStatus verifiedStatus = SignalDatabase.identities().getVerifiedStatus(recipient.getId());
-    //IdentityRecord ide = SignalDatabase.identities().getIdentityRecord(recipient.getId().toString());
-    //Optional<IdentityRecord> identityRecord = ApplicationDependencies.getIdentityStore().getIdentityRecord(recipient.getId());
-    //IdentityTable.VerifiedStatus verifiedStatus = identityRecord.isPresent() ? identityRecord.get().getVerifiedStatus() : IdentityDatabase.VerifiedStatus.DEFAULT;
-    switch (verifiedStatus){
-      case MANUALLY_VERIFIED:
-        this.subtitle.setText(R.string.ConversationTitleView_manually_verified);
-        break;
-      case DIRECTLY_VERIFIED:
-        this.subtitle.setText(R.string.ConversationTitleView_directly_verified);
-        break;
-      case DUPLEX_VERIFIED:
-        this.subtitle.setText(R.string.ConversationTitleView_duplex);
-        break;
-      case INTRODUCED:
-        this.subtitle.setText(R.string.ConversationTitleView_introduced);
-        break;
-      default:
-        this.subtitle.setText(R.string.ConversationTitleView_unverified); // Should never be visible in this state
-        break;
-    }
     updateSubtitleVisibility();
   }
 

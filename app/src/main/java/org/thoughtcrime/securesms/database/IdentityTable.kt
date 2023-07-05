@@ -90,7 +90,6 @@ class IdentityTable internal constructor(context: Context?, databaseHelper: Sign
   }
 
 
-
   fun getIdentityStoreRecord(addressName: String): IdentityStoreRecord? {
     readableDatabase
       .select()

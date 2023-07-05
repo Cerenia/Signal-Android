@@ -23,6 +23,8 @@ import org.thoughtcrime.securesms.migrations.LegacyMigrationJob
 import org.thoughtcrime.securesms.migrations.LegacyMigrationJob.DatabaseUpgradeListener
 import org.thoughtcrime.securesms.service.KeyCachingService
 import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database
+import org.thoughtcrime.securesms.trustedIntroductions.database.TI_IdentityTable
+import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue
 import org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue
 import org.thoughtcrime.securesms.util.TextSecurePreferences
 import java.io.File
@@ -78,6 +80,7 @@ open class SignalDatabase(private val context: Application, databaseSecret: Data
   val callTable: CallTable = CallTable(context, this)
   // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
   val tiDummy: TI_DatabaseGlue = TI_DatabaseGlue.createSingleton(context, this)
+  val tiIdentityDummy: IdentityTableGlue = IdentityTableGlue.createSingleton(context, this)
   // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end"
 
   override fun onOpen(db: net.zetetic.database.sqlcipher.SQLiteDatabase) {
@@ -530,10 +533,16 @@ open class SignalDatabase(private val context: Application, databaseSecret: Data
     val calls: CallTable
       get() = instance!!.callTable
 
+    // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
     @get:JvmStatic
-    @get:JvmName("trustedIntroductions")
-    val trustedIntroductions: TI_DatabaseGlue
+    @get:JvmName("tiDatabase")
+    val tiDatabase: TI_DatabaseGlue
       get() = TI_DatabaseGlue.getTIDatabase(instance)
 
+    @get:JvmStatic
+    @get:JvmName("tiIdentityDatabase")
+    val tiIdentityDatabase: IdentityTableGlue
+      get() = IdentityTableGlue.getInstance(instance)
+    // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end"
   }
 }

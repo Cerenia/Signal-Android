@@ -118,7 +118,7 @@ public class ContactsSelectionViewModel extends ViewModel {
     private final ContactsSelectionManager manager;
 
     Factory(RecipientId id) {
-      this.manager = new ContactsSelectionManager(id, IdentityTableGlue.getInstance(), SignalDatabase.recipients());
+      this.manager = new ContactsSelectionManager(id, SignalDatabase.tiIdentityDatabase(), SignalDatabase.recipients());
     }
 
     @Override

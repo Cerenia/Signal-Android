@@ -38,4 +38,6 @@ public interface TI_DatabaseGlue {
   SQLiteDatabase getSignalWritableDatabase();
 
   ContentValues buildContentValuesForInsert(TI_Database.State state, String introducerServiceId, String introduceeServiceId, String introduceeName, String introduceeNumber, String introduceeIdentityKey, String predictedSecurityNumber, long timestamp);
+
+  boolean turnAllIntroductionsStale(String serviceID);
 }

@@ -24,6 +24,7 @@ import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.keyvalue.SignalStore;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
+import org.thoughtcrime.securesms.trustedIntroductions.glue.SignalBaseIdentityKeyStoreGlue;
 import org.thoughtcrime.securesms.util.IdentityUtil;
 import org.thoughtcrime.securesms.util.LRUCache;
 import org.whispersystems.signalservice.api.SignalSessionLock;
@@ -90,14 +91,9 @@ public class SignalBaseIdentityKeyStore {
         if (identityRecord.getVerifiedStatus() != VerifiedStatus.DEFAULT)
         {
           verifiedStatus = VerifiedStatus.UNVERIFIED;
-          // Security nr. changed, change all introductions for this introducee to stale
-          SignalExecutors.BOUNDED.execute(() -> {
-            Recipient recipient = Recipient.resolved(recipientId);
-            boolean res = SignalDatabase.trustedIntroductions().turnAllIntroductionsStale(recipient.requireServiceId().toString());
-            if(!res){
-              Log.e(TAG, "Error occured while turning all introductions stale for recipient: " + recipientId);
-            }
-          });
+          // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
+          SignalBaseIdentityKeyStoreGlue.turnAllIntroductionsStale(recipientId, TAG);
+          // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end"
         } else {
           // If still on Default, No introductions were present, do nothing
           verifiedStatus = VerifiedStatus.DEFAULT;

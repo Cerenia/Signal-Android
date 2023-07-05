@@ -26,14 +26,18 @@ public interface IdentityTableGlue {
    * @param databaseHelper
    * @return
    */
-  static void createSingleton(Context c, SignalDatabase databaseHelper){
+  static IdentityTableGlue createSingleton(Context c, SignalDatabase databaseHelper){
     IdentityTableGlue    identityTable = new org.thoughtcrime.securesms.trustedIntroductions.database.TI_IdentityTable(c, databaseHelper);
     IdentityTableExports exports       = IdentityTable.Companion.TI_export();
     TI_IdentityTable.Singleton.setExportedPrivates(exports);
     TI_IdentityTable.Singleton.setInstance(identityTable);
+    return identityTable;
   }
 
-  static IdentityTableGlue getInstance(){
+  static IdentityTableGlue getInstance(@Nullable SignalDatabase db){
+    if (db == null){ // check for nullpointer to equal rest of Kotlin code in Signals Identity table
+      throw new NullPointerException();
+    }
     return TI_IdentityTable.Singleton.getInst();
   }
 

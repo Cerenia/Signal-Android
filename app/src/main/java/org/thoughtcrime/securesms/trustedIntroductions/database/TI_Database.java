@@ -670,6 +670,7 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
  }
 
   @WorkerThread
+  @Override
   /**
    * Turns all introductions for the introducee named by id stale.
    * @param serviceId the introducee whose security nr. changed.
@@ -790,7 +791,7 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
      */
     @WorkerThread
     boolean setStateCallback(@NonNull TI_Data introduction, @NonNull State newState, @NonNull String logMessage){
-      TI_DatabaseGlue db           = SignalDatabase.trustedIntroductions();
+      TI_DatabaseGlue db           = SignalDatabase.tiDatabase();
       RecipientId introduceeID = TI_Utils.getRecipientIdOrUnknown(introduction.getIntroduceeServiceId());
       try (Cursor rdc = db.fetchRecipientDBCursor(introduceeID)) {
         if (rdc.getCount() <= 0) {
@@ -799,7 +800,7 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
         }
       }
 
-      IdentityTable.VerifiedStatus previousIntroduceeVerification = SignalDatabase.identities().getVerifiedStatus(introduceeID);
+      IdentityTable.VerifiedStatus previousIntroduceeVerification = SignalDatabase.tiIdentityDatabase().getVerifiedStatus(introduceeID);
       if (previousIntroduceeVerification == null){
         throw new AssertionError("Unexpected missing verification status for " + introduction.getIntroduceeName());
       }
@@ -954,7 +955,7 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
       Preconditions.checkArgument(data.aci != null && data.TIData != null &&
                                   data.aci.equals(data.TIData.getIntroduceeServiceId()));
       Preconditions.checkArgument(data.TIData.getPredictedSecurityNumber() != null);
-      TI_DatabaseGlue db = SignalDatabase.trustedIntroductions();
+      TI_DatabaseGlue db = SignalDatabase.tiDatabase();
       ContentValues values = db.buildContentValuesForInsert(data.key.equals(data.TIData.getIntroduceeIdentityKey()) ? State.PENDING : State.CONFLICTING,
                                                          data.TIData.getIntroducerServiceId(),
                                                          data.TIData.getIntroduceeServiceId(),
