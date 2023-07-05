@@ -6,7 +6,7 @@
 [subrepo]
 	remote = git@github.com:Cerenia/trusted-introductions.git
 	branch = master
-	commit = 300d70ae85d6d90cd8b27144c85e8763e4573b09
+	commit = 5718d0a7293a2911415cf3d463f0d44b3201db39
 	method = merge
 	cmdver = 0.4.6
-	parent = 9da082848ac3ebaed024bb302de1aa16ad2e66b5
+	parent = 1c12f7cc79561970027a8bc199579e95e227883c
