@@ -10,6 +10,7 @@ import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
+import org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,9 +25,9 @@ public class ManageManager {
 
   @NonNull private final String      forgottenPlaceholder;
   // Dependency injection
-  private final          TI_Database tdb;
+  private final          TI_DatabaseGlue tdb;
 
-  ManageManager(@NonNull TI_Database tdb, @NonNull String forgottenPlaceholder){
+  ManageManager(@NonNull TI_DatabaseGlue tdb, @NonNull String forgottenPlaceholder){
     this.tdb = tdb;
     this.forgottenPlaceholder = forgottenPlaceholder;
   }

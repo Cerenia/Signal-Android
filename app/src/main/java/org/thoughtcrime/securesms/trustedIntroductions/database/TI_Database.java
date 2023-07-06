@@ -431,6 +431,7 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
    */
   @SuppressLint("Range")
   @WorkerThread
+  @Override
   public long incomingIntroduction(@NonNull TI_Data data){
 
     // Fetch Data out of database where everything is identical but timestamp & maybe state.
@@ -614,6 +615,7 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
    * @return true if success, false otherwise
    */
   @WorkerThread
+  @Override
   public boolean acceptIntroduction(TI_Data introduction){
     Preconditions.checkArgument(introduction.getId() != null);
     return setState(introduction, State.ACCEPTED,"Accepted introduction for: " + introduction.getIntroduceeName());
@@ -626,6 +628,7 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
    * @return true if success, false otherwise
    */
   @WorkerThread
+  @Override
   public boolean rejectIntroduction(TI_Data introduction){
     Preconditions.checkArgument(introduction.getId() != null);
     return setState(introduction, State.REJECTED,"Rejected introduction for: " + introduction.getIntroduceeName());
@@ -637,6 +640,7 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
    * Introductions with null introducerServiceId are omitted
    * @return IntroductionReader which can be used as an iterator.
    */
+  @Override
   public IntroductionReader getAllDisplayableIntroductions() {
     String query = "SELECT * FROM " + TABLE_NAME + " WHERE " + INTRODUCER_SERVICE_ID + " IS NOT NULL";
     SQLiteDatabase db = databaseHelper.getSignalReadableDatabase();
@@ -651,6 +655,7 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
   *
   * @return true if success, false otherwise
   */
+ @Override
  public boolean clearIntroducer(TI_Data introduction){
    Preconditions.checkArgument(introduction.getIntroducerServiceId().equals(UNKNOWN_INTRODUCER_SERVICE_ID));
    Preconditions.checkArgument(introduction.getId() != null);
@@ -711,6 +716,7 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
    *
    * @return true if success, false otherwise
    */
+  @Override
   public boolean deleteIntroduction(long introductionId){
     Preconditions.checkArgument(introductionId > 0);
     SQLiteDatabase database = databaseHelper.getSignalWritableDatabase();

@@ -13,6 +13,8 @@ import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.database.IdentityTableExports;
 import org.thoughtcrime.securesms.trustedIntroductions.database.TI_IdentityTable;
 
+import java.util.ArrayList;
+
 public interface IdentityTableGlue {
   String TI_ADDRESS_PROJECTION    = IdentityTable.ADDRESS;
   String VERIFIED = IdentityTable.VERIFIED;
@@ -47,4 +49,6 @@ public interface IdentityTableGlue {
    * @return The VerifiedStatus of the recipient or default if the recipient is not in the database.
    */
   IdentityTable.VerifiedStatus getVerifiedStatus(@Nullable RecipientId id);
+
+  ArrayList<String> getAllDatabaseKeys();
 }

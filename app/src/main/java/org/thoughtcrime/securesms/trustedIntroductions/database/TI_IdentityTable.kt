@@ -91,6 +91,14 @@ class TI_IdentityTable internal constructor(context: Context?, databaseHelper: S
     }
   }
 
+
+  /**
+   * Expose all keys of the database for Precondition check in @TI_Cursor.java
+   */
+  override fun getAllDatabaseKeys(): ArrayList<String> {
+    return ALL_KEYS
+  }
+
   private fun getIdentityRecord(addressName: String): Optional<IdentityRecord> {
     if(FIRST_USE == null || TIMESTAMP == null || NONBLOCKING_APPROVAL == null){
       throw AssertionError("Accessed one of the exported Identity Table constants before they were assigned.")

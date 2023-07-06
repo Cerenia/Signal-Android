@@ -17,6 +17,7 @@ import org.thoughtcrime.securesms.jobmanager.impl.NetworkConstraint;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
+import org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -114,7 +115,7 @@ public class TrustedIntroductionsReceiveJob extends BaseJob {
       introductions.addAll(tiData);
       bodyParsed = true;
     }
-    TI_Database db = SignalDatabase.trustedIntroductions();
+    TI_DatabaseGlue db = SignalDatabase.tiDatabase();
     for(TI_Data introduction: introductions){
       long result = db.incomingIntroduction(introduction);
       if (result == -1){

@@ -14,6 +14,7 @@ import com.google.protobuf.ByteString;
 
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.database.IdentityTable;
+import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
 import org.whispersystems.signalservice.api.util.Preconditions;
 
@@ -35,7 +36,7 @@ public class TI_Cursor implements Cursor {
 
   private Map<Integer, String>   idx_to_key;
   private ArrayList<ArrayList<Object>> values;
-  private final ArrayList<String> types = IdentityTable.Companion.getAllDatabaseKeys();
+  private final ArrayList<String> types = SignalDatabase.tiIdentityDatabase().getAllDatabaseKeys();
 
   public TI_Cursor(Cursor cursor){
     values = new ArrayList<>();

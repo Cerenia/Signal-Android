@@ -15,6 +15,7 @@ import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
+import org.whispersystems.signalservice.api.util.Preconditions;
 
 import java.util.List;
 import java.util.Objects;
@@ -101,7 +102,8 @@ public class ManageViewModel extends ViewModel {
       }
 
       @Override public boolean databaseCall(TI_Data introduction) {
-        return SignalDatabase.trustedIntroductions().deleteIntroduction(introduction.getId());
+        Preconditions.checkArgument(introduction.getId() != null);
+        return SignalDatabase.tiDatabase().deleteIntroduction(introduction.getId());
       }
 
       @NonNull @Override public String errorMessage(Long introductionId) {
@@ -119,7 +121,7 @@ public class ManageViewModel extends ViewModel {
       }
 
       @WorkerThread @Override public boolean databaseCall(TI_Data introduction) {
-        return SignalDatabase.trustedIntroductions().clearIntroducer(introduction);
+        return SignalDatabase.tiDatabase().clearIntroducer(introduction);
       }
 
       @NonNull @Override public String errorMessage(Long introductionId) {
@@ -138,7 +140,7 @@ public class ManageViewModel extends ViewModel {
         }
 
         @Override public boolean databaseCall(TI_Data introduction) {
-          return SignalDatabase.trustedIntroductions().acceptIntroduction(introduction);
+          return SignalDatabase.tiDatabase().acceptIntroduction(introduction);
         }
 
         @NonNull @Override public String errorMessage(Long introductionId) {
@@ -157,7 +159,7 @@ public class ManageViewModel extends ViewModel {
       }
 
       @Override public boolean databaseCall(TI_Data introduction) {
-        return SignalDatabase.trustedIntroductions().rejectIntroduction(introduction);
+        return SignalDatabase.tiDatabase().rejectIntroduction(introduction);
       }
 
       @NonNull @Override public String errorMessage(Long introductionId) {
@@ -235,7 +237,7 @@ public class ManageViewModel extends ViewModel {
     private final String forgottenPlaceholder;
 
     Factory(@NonNull String forgottenPlaceholder) {
-      this.manager = new ManageManager(SignalDatabase.trustedIntroductions(), forgottenPlaceholder);
+      this.manager = new ManageManager(SignalDatabase.tiDatabase(), forgottenPlaceholder);
       this.forgottenPlaceholder = forgottenPlaceholder;
     }
 

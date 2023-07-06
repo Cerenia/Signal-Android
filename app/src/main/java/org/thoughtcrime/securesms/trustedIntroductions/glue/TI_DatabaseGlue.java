@@ -40,4 +40,16 @@ public interface TI_DatabaseGlue {
   ContentValues buildContentValuesForInsert(TI_Database.State state, String introducerServiceId, String introduceeServiceId, String introduceeName, String introduceeNumber, String introduceeIdentityKey, String predictedSecurityNumber, long timestamp);
 
   boolean turnAllIntroductionsStale(String serviceID);
+
+  long incomingIntroduction(TI_Data introduction);
+
+  boolean deleteIntroduction(long introductionId);
+
+  boolean clearIntroducer(TI_Data introduction);
+
+  TI_Database.IntroductionReader getAllDisplayableIntroductions();
+
+  boolean acceptIntroduction(TI_Data introduction);
+
+  boolean rejectIntroduction(TI_Data introduction);
 }
