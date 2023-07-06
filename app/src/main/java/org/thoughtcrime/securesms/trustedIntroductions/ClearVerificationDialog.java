@@ -3,11 +3,15 @@ package org.thoughtcrime.securesms.trustedIntroductions;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.widget.Button;
 
 import androidx.annotation.NonNull;
 
+import org.signal.libsignal.protocol.IdentityKey;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.database.IdentityTable;
+import org.thoughtcrime.securesms.recipients.RecipientId;
+import org.thoughtcrime.securesms.trustedIntroductions.glue.VerifyDisplayFragmentGlue;
 
 /**
  * Dialog is displayed if a user wants to clear a verification status that is higher than 'manually' verified,
@@ -28,14 +32,15 @@ public class ClearVerificationDialog {
     private ClearVerificationDialog() {
     }
 
-
     /**
+     *
      * @param context Caller context.
-     * @param cb Calling Fragment which implements the TI_DB_Callback.
      * @param status The contacts verification status. Must be strongly verified (@see IdentityTable)
-     * @return Returns the users decision. If true, clear, otherwise don't.
+     * @param recipientId Our remote recipient ID
+     * @param remoteIdentity Remote identity key
+     * @param verifyButton The button to be updated after the clearing operation.
      */
-    public static void show(@NonNull Context context, Callback cb, IdentityTable.VerifiedStatus status) {
+    public static void show(@NonNull Context context, IdentityTable.VerifiedStatus status, RecipientId recipientId, IdentityKey remoteIdentity, Button verifyButton) {
         assert IdentityTable.VerifiedStatus.stronglyVerified(status): "Unsupported Verification status";
 
         clearVerification = false;
@@ -55,14 +60,15 @@ public class ClearVerificationDialog {
         }
         builder.setNegativeButton(android.R.string.cancel, (intf, which) -> intf.dismiss())
                 .setPositiveButton(R.string.ClearVerificationDialog__Positive, (intf, which) -> {
-                    cb.onClearVerification();
+                    onClearVerification(recipientId, remoteIdentity, verifyButton);
                     intf.dismiss();
                 })
                 .show();
     }
 
-    public interface Callback {
-        void onClearVerification();
+    static void onClearVerification(RecipientId recipientId, IdentityKey remoteIdentity, Button verifyButton){
+        TI_Utils.updateContactsVerifiedStatus(recipientId, remoteIdentity, IdentityTable.VerifiedStatus.UNVERIFIED);
+        VerifyDisplayFragmentGlue.updateVerifyButtonText(false, verifyButton);
     }
 }
 

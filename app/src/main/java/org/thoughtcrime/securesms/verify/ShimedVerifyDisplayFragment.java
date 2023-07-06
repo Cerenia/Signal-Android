@@ -51,19 +51,14 @@ import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.crypto.IdentityKeyParcelable;
 import org.thoughtcrime.securesms.crypto.ReentrantSessionLock;
 import org.thoughtcrime.securesms.database.IdentityTable;
-import org.thoughtcrime.securesms.database.IdentityTable.VerifiedStatus;
-import org.thoughtcrime.securesms.database.SignalDatabase;
-import org.thoughtcrime.securesms.database.model.IdentityRecord;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.jobs.MultiDeviceVerifiedUpdateJob;
 import org.thoughtcrime.securesms.keyvalue.SignalStore;
-import org.thoughtcrime.securesms.qr.QrCode;
 import org.thoughtcrime.securesms.recipients.LiveRecipient;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.storage.StorageSyncHelper;
-import org.thoughtcrime.securesms.trustedIntroductions.ClearVerificationDialog;
-import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
+import org.thoughtcrime.securesms.trustedIntroductions.glue.VerifyDisplayFragmentGlue;
 import org.thoughtcrime.securesms.util.FeatureFlags;
 import org.thoughtcrime.securesms.util.IdentityUtil;
 import org.thoughtcrime.securesms.util.Util;
@@ -73,21 +68,18 @@ import org.whispersystems.signalservice.api.SignalSessionLock;
 
 import java.nio.charset.Charset;
 import java.util.Locale;
-import java.util.Optional;
 
 /**
  * Fragment to display a user's identity key.
  */
-public class VerifyDisplayFragment extends Fragment implements ViewTreeObserver.OnScrollChangedListener, ClearVerificationDialog.Callback {
+public class ShimedVerifyDisplayFragment extends Fragment implements ViewTreeObserver.OnScrollChangedListener {
 
   private static final String TAG = Log.tag(VerifyDisplayFragment.class);
-  private static final String TAG_TI = String.format(TI_Utils.TI_LOG_TAG, TAG);
 
   private static final String RECIPIENT_ID    = "recipient_id";
   private static final String REMOTE_IDENTITY = "remote_identity";
   private static final String LOCAL_IDENTITY  = "local_identity";
   private static final String LOCAL_NUMBER    = "local_number";
-  private static final String VERIFIED_STATE  = "verified_state";
 
   private LiveRecipient recipient;
   private IdentityKey   localIdentity;
@@ -124,7 +116,9 @@ public class VerifyDisplayFragment extends Fragment implements ViewTreeObserver.
     extras.putParcelable(REMOTE_IDENTITY, remoteIdentity);
     extras.putParcelable(LOCAL_IDENTITY, localIdentity);
     extras.putString(LOCAL_NUMBER, localNumber);
-    extras.putBoolean(VERIFIED_STATE, verifiedState);
+    // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
+    VerifyDisplayFragmentGlue.extendBundle(extras, verifiedState);
+    // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end"
 
     VerifyDisplayFragment fragment = new VerifyDisplayFragment();
     fragment.setArguments(extras);
@@ -179,9 +173,9 @@ public class VerifyDisplayFragment extends Fragment implements ViewTreeObserver.
 
     this.qrCodeContainer.setOnClickListener(v -> callback.onQrCodeContainerClicked());
     this.registerForContextMenu(numbersContainer);
-
-    updateVerifyButtonText(getArguments().getBoolean(VERIFIED_STATE, false));
-    this.verifyButton.setOnClickListener((button -> updateVerifyButtonLogic()));
+    // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
+    VerifyDisplayFragmentGlue.initializeVerifyButton();
+    // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end"
 
     this.scrollView.getViewTreeObserver().addOnScrollChangedListener(this);
 
@@ -267,9 +261,6 @@ public class VerifyDisplayFragment extends Fragment implements ViewTreeObserver.
     if (animateSuccessOnDraw) {
       animateSuccessOnDraw = false;
       animateVerifiedSuccess();
-      // The fingerprint matched after a QR scann and we can update the users verification status
-      TI_Utils.updateContactsVerifiedStatus(recipient.getId(), remoteIdentity, VerifiedStatus.DIRECTLY_VERIFIED);
-      updateVerifyButtonText(true);
     } else if (animateFailureOnDraw) {
       animateFailureOnDraw = false;
       animateVerifiedFailure();
@@ -378,7 +369,6 @@ public class VerifyDisplayFragment extends Fragment implements ViewTreeObserver.
     }
 
     if (fingerprint.getDisplayableFingerprint().getDisplayText().equals(numericClipboardData)) {
-      // This is not a strong enough verification. User needs to manually tick the box.
       animateVerifiedSuccess();
     } else {
       animateVerifiedFailure();
@@ -419,7 +409,7 @@ public class VerifyDisplayFragment extends Fragment implements ViewTreeObserver.
 
     byte[] qrCodeData   = fingerprint.getScannableFingerprint().getSerialized();
     String qrCodeString = new String(qrCodeData, Charset.forName("ISO-8859-1"));
-    Bitmap qrCodeBitmap = QrCode.create(qrCodeString);
+    Bitmap qrCodeBitmap = QrCodeUtil.create(qrCodeString);
 
     qrCode.setImageBitmap(qrCodeBitmap);
 
@@ -513,24 +503,16 @@ public class VerifyDisplayFragment extends Fragment implements ViewTreeObserver.
       @Override
       public void onAnimationEnd(Animation animation) {
         qrVerified.postDelayed(() -> {
-          try{
-            ScaleAnimation scaleAnimation1 = new ScaleAnimation(1, 0, 1, 0,
-                                                                ScaleAnimation.RELATIVE_TO_SELF, 0.5f,
-                                                                ScaleAnimation.RELATIVE_TO_SELF, 0.5f);
+          ScaleAnimation scaleAnimation1 = new ScaleAnimation(1, 0, 1, 0,
+                                                              ScaleAnimation.RELATIVE_TO_SELF, 0.5f,
+                                                              ScaleAnimation.RELATIVE_TO_SELF, 0.5f);
 
-            scaleAnimation1.setInterpolator(new AnticipateInterpolator());
-            scaleAnimation1.setDuration(500);
-            ViewUtil.animateOut(qrVerified, scaleAnimation1, View.GONE);
-            ViewUtil.fadeIn(qrCode, 800);
-            qrCodeContainer.setEnabled(true);
-            tapLabel.setText(getString(R.string.verify_display_fragment__tap_to_scan));
-          } catch (IllegalStateException e){
-            // TODO: Maybe create PR for that at some point? Not really problem in normal operation, I encounter that because I am
-            // verifying lots of contacts fast by hand
-            Log.e(TAG, "Illegal state! Possibly the user navigated back before the feedback was posted.");
-            e.printStackTrace();
-            // simply do nothing in this case
-          }
+          scaleAnimation1.setInterpolator(new AnticipateInterpolator());
+          scaleAnimation1.setDuration(500);
+          ViewUtil.animateOut(qrVerified, scaleAnimation1, View.GONE);
+          ViewUtil.fadeIn(qrCode, 800);
+          qrCodeContainer.setEnabled(true);
+          tapLabel.setText(getString(R.string.verify_display_fragment__tap_to_scan));
         }, 2000);
       }
 
@@ -543,78 +525,47 @@ public class VerifyDisplayFragment extends Fragment implements ViewTreeObserver.
     qrCodeContainer.setEnabled(false);
   }
 
-  private void updateVerifyButtonText(boolean verified) {
+  private void updateVerifyButton(boolean verified, boolean update) {
+    currentVerifiedState = verified;
+
     if (verified) {
       verifyButton.setText(R.string.verify_display_fragment__clear_verification);
     } else {
       verifyButton.setText(R.string.verify_display_fragment__mark_as_verified);
     }
-  }
 
-  private void updateVerifyButtonLogic() {
-    // TODO: This needs a good refactoring since I want to be close to the original. I completely mangled this class.
-    final RecipientId recipientId = recipient.getId();
-    // Check the current verification status
-    IdentityTable.VerifiedStatus previousStatus = SignalDatabase.identities().getVerifiedStatus(recipientId);
-    Log.i(TAG_TI, "Saving identity: " + recipientId);
-    if (IdentityTable.VerifiedStatus.stronglyVerified(previousStatus)) {
-      androidx.fragment.app.FragmentActivity activity = getActivity();
-      // TODO: when would this activity ever be null?
-      if (activity != null) {
-        // go through user check first.
-        ClearVerificationDialog.show(activity, this, previousStatus);
-      }
-    } else if (previousStatus == VerifiedStatus.MANUALLY_VERIFIED) {
-      // manually verified, no user check necessary
-      TI_Utils.updateContactsVerifiedStatus(recipient.getId(), remoteIdentity, VerifiedStatus.UNVERIFIED);
-      updateVerifyButtonText(false);
-    } else {
-      // Unverified or default, simply set to manually verified
-      TI_Utils.updateContactsVerifiedStatus(recipient.getId(), remoteIdentity, VerifiedStatus.MANUALLY_VERIFIED);
-      updateVerifyButtonText(true);
+    if (update) {
+      final RecipientId recipientId = recipient.getId();
+      final Context     context     = requireContext().getApplicationContext();
+
+      SignalExecutors.BOUNDED.execute(() -> {
+        try (SignalSessionLock.Lock unused = ReentrantSessionLock.INSTANCE.acquire()) {
+          if (verified) {
+            Log.i(TAG, "Saving identity: " + recipientId);
+            ApplicationDependencies.getProtocolStore().aci().identities()
+                                   .saveIdentityWithoutSideEffects(recipientId,
+                                                                   remoteIdentity,
+                                                                   IdentityTable.VerifiedStatus.VERIFIED,
+                                                                   false,
+                                                                   System.currentTimeMillis(),
+                                                                   true);
+          } else {
+            ApplicationDependencies.getProtocolStore().aci().identities().setVerified(recipientId, remoteIdentity, IdentityTable.VerifiedStatus.DEFAULT);
+          }
+
+          ApplicationDependencies.getJobManager()
+                                 .add(new MultiDeviceVerifiedUpdateJob(recipientId,
+                                                                       remoteIdentity,
+                                                                       verified ? IdentityTable.VerifiedStatus.VERIFIED
+                                                                                : IdentityTable.VerifiedStatus.DEFAULT));
+          StorageSyncHelper.scheduleSyncForDataChange();
+
+          IdentityUtil.markIdentityVerified(context, recipient.get(), verified, false);
+        }
+      });
     }
   }
 
-  @Override
-  public void onClearVerification() {
-    TI_Utils.updateContactsVerifiedStatus(recipient.getId(), remoteIdentity, VerifiedStatus.UNVERIFIED);
-    updateVerifyButtonText(false);
-  }
-
-  /**
-   * Runs in its own thread.
-   *
-   * @param status The new verification status
-   */
-  private void updateContactsVerifiedStatus(IdentityTable.VerifiedStatus status) {
-    final RecipientId recipientId = recipient.getId();
-    Log.i(TAG_TI, "Saving identity: " + recipientId);
-    SignalExecutors.BOUNDED.execute(() -> {
-      try (SignalSessionLock.Lock unused = ReentrantSessionLock.INSTANCE.acquire()) {
-        final boolean verified = IdentityTable.VerifiedStatus.isVerified(status);
-        if (verified) {
-          Log.i(TAG_TI, "Saving identity: " + recipientId);
-          ApplicationDependencies.getProtocolStore().aci().identities()
-                                 .saveIdentityWithoutSideEffects(recipientId,
-                                                                 remoteIdentity,
-                                                                 status,
-                                                                 false,
-                                                                 System.currentTimeMillis(),
-                                                                 true);
-        } else {
-          ApplicationDependencies.getProtocolStore().aci().identities().setVerified(recipientId, remoteIdentity, status);
-        }
-
-        // For other devices but the Android phone, we map the finer statusses to verified or unverified.
-        ApplicationDependencies.getJobManager()
-                               .add(new MultiDeviceVerifiedUpdateJob(recipientId,
-                                                                     remoteIdentity,
-                                                                     status));
-        StorageSyncHelper.scheduleSyncForDataChange();
-        IdentityUtil.markIdentityVerified(getActivity(), recipient.get(), verified, false);
-      }
-    });
-  }
 
   @Override public void onScrollChanged() {
     if (scrollView.canScrollVertically(-1)) {
