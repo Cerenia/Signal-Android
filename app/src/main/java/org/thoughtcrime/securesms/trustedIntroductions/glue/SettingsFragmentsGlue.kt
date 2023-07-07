@@ -8,7 +8,7 @@ import org.thoughtcrime.securesms.components.settings.DSLSettingsText
 import org.thoughtcrime.securesms.components.settings.conversation.ConversationSettingsState
 import org.thoughtcrime.securesms.trustedIntroductions.receive.ManageActivity
 
-interface ConversationSettingsFragmentGlue {
+interface SettingsFragmentsGlue {
 
   companion object{
     fun addTrustedIntroductionNavigation(state: ConversationSettingsState,
@@ -37,6 +37,13 @@ interface ConversationSettingsFragmentGlue {
           null
         )
       }
+    }
+
+    fun addTextPref(textPref: (t: DSLSettingsText?, s: DSLSettingsText?) -> Unit, title: DSLSettingsText?, summary: DSLSettingsText?){
+      textPref(
+        title,
+        summary
+      )
     }
   }
 }

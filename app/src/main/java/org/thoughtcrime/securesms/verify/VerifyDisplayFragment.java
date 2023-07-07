@@ -174,7 +174,10 @@ public class VerifyDisplayFragment extends Fragment implements ViewTreeObserver.
 
     this.qrCodeContainer.setOnClickListener(v -> callback.onQrCodeContainerClicked());
     this.registerForContextMenu(numbersContainer);
+
     // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
+    //updateVerifyButton(getArguments().getBoolean(VERIFIED_STATE, false), false);
+    //this.verifyButton.setOnClickListener((button -> updateVerifyButton(!currentVerifiedState, true)));
     VerifyDisplayFragmentGlue.initializeVerifyButton(getArguments().getBoolean(VerifyDisplayFragmentGlue.VERIFIED_STATE, false),
                                                      verifyButton,
                                                      recipient.getId(),
