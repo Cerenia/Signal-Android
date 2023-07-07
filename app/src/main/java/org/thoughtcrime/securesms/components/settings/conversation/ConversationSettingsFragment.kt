@@ -84,6 +84,7 @@ import org.thoughtcrime.securesms.stories.StoryViewerArgs
 import org.thoughtcrime.securesms.stories.dialogs.StoryDialogs
 import org.thoughtcrime.securesms.stories.viewer.AddToGroupStoryDelegate
 import org.thoughtcrime.securesms.stories.viewer.StoryViewerActivity
+import org.thoughtcrime.securesms.trustedIntroductions.glue.ConversationSettingsFragmentGlue
 import org.thoughtcrime.securesms.trustedIntroductions.receive.ManageActivity
 import org.thoughtcrime.securesms.util.CommunicationActions
 import org.thoughtcrime.securesms.util.ContextUtil
@@ -506,16 +507,9 @@ class ConversationSettingsFragment : DSLSettingsFragment(
         )
       }
 
-      // Trusted Introductions
-      if (!state.recipient.isReleaseNotes && !state.recipient.isSelf){
-        clickPref(
-          title = DSLSettingsText.from(R.string.ConversationSettingsFragment__Introductions),
-          icon = DSLSettingsIcon.from(R.drawable.ic_trusted_introduction),
-          onClick = {
-            startActivity(ManageActivity.createIntent(requireContext(), ManageActivity.ActiveTab.NEW))
-          }
-        )
-      }
+      // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
+      ConversationSettingsFragmentGlue.addTrustedIntroductionNavigation(state, requireContext(), ::clickPref, ::startActivity)
+      // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end"
 
       state.withRecipientSettingsState { recipientState ->
         when (recipientState.contactLinkState) {
