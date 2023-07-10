@@ -29,6 +29,7 @@ import org.thoughtcrime.securesms.keyvalue.SignalStore;
 import org.thoughtcrime.securesms.notifications.NotificationChannels;
 import org.thoughtcrime.securesms.service.GenericForegroundService;
 import org.thoughtcrime.securesms.service.NotificationController;
+import org.thoughtcrime.securesms.trustedIntroductions.glue.LocalBackupJobGlue;
 import org.thoughtcrime.securesms.util.BackupUtil;
 
 import java.io.IOException;
@@ -114,10 +115,10 @@ public final class LocalBackupJobApi29 extends BaseJob {
       String       backupPassword  = BackupPassphrase.get(context);
       DocumentFile backupDirectory = DocumentFile.fromTreeUri(context, backupDirectoryUri);
       String       timestamp       = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.US).format(new Date());
-      String[] backupNames = {"signal-%s.backup", "signal_trusted_introductions-%s.backup"};
-      for (String name: backupNames) {
-
+      // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
+      LocalBackupJobGlue.repeatBackup((name) -> {
         String       fileName        = String.format(name, timestamp);
+        // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end"
 
         if (backupDirectory == null || !backupDirectory.canWrite()) {
           BackupFileIOError.ACCESS_ERROR.postNotification(context);
@@ -184,7 +185,9 @@ public final class LocalBackupJobApi29 extends BaseJob {
         }
 
         BackupUtil.deleteOldBackups();
-      }
+        // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
+      });
+      // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end"
     } finally {
       if (notification != null) {
         notification.close();

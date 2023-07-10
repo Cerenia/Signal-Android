@@ -84,7 +84,7 @@ import org.thoughtcrime.securesms.sms.IncomingEndSessionMessage
 import org.thoughtcrime.securesms.sms.IncomingTextMessage
 import org.thoughtcrime.securesms.stickers.StickerLocator
 import org.thoughtcrime.securesms.storage.StorageSyncHelper
-import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.handleTIMessage
+import org.thoughtcrime.securesms.trustedIntroductions.glue.DataMessageProcessorGlue
 import org.thoughtcrime.securesms.util.Base64
 import org.thoughtcrime.securesms.util.EarlyMessageCacheEntry
 import org.thoughtcrime.securesms.util.LinkUtil
@@ -893,7 +893,9 @@ object DataMessageProcessor {
 
     val body = if (message.hasBody()) message.body else ""
 
-    handleTIMessage(senderRecipient.id, body, receivedTime);
+    // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
+    DataMessageProcessorGlue.handleTIMessage(senderRecipient.id, body, receivedTime);
+    // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end"
 
     handlePossibleExpirationUpdate(envelope, metadata, senderRecipient.id, threadRecipientId, groupId, message.expireTimer.seconds, receivedTime)
 
