@@ -372,7 +372,7 @@ class IdentityTable internal constructor(context: Context?, databaseHelper: Sign
 
       /**
        * Returns true for any non-trivial positive verification status.
-       * Used to promt user when clearing a verification status that is not trivially recoverable and to decide
+       * Used to prompt user when clearing a verification status that is not trivially recoverable and to decide
        * if a channel is secure enough to forward an introduction over.
        */
       @JvmStatic
