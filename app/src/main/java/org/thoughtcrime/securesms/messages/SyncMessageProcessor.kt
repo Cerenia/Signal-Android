@@ -144,7 +144,8 @@ object SyncMessageProcessor {
       syncMessage.hasKeys() && syncMessage.keys.hasStorageService() -> handleSynchronizeKeys(syncMessage.keys.storageService, envelope.timestamp)
       syncMessage.hasContacts() -> handleSynchronizeContacts(syncMessage.contacts, envelope.timestamp)
       syncMessage.hasCallEvent() -> handleSynchronizeCallEvent(syncMessage.callEvent, envelope.timestamp)
-      syncMessage.introducedList.isNotEmpty() -> handleSynchronizeIntroduced(syncMessage.introducedList)
+//      syncMessage.introducedList.isNotEmpty() ->  handleSynchronizeIntroduced(syncMessage.introducedList)
+      syncMessage.hasIntroduced() -> handleSynchronizeIntroduced(syncMessage.introduced)
       else -> warn(envelope.timestamp, "Contains no known sync types...")
     }
   }
@@ -1082,7 +1083,40 @@ object SyncMessageProcessor {
     }
   }
 
-  private fun handleSynchronizeIntroduced(introductions: List<Introduced>){
-    TODO("implement me :(")
+  @Suppress("WHEN_ENUM_CAN_BE_NULL_IN_JAVA") // we check before the switch so this should be fine
+  private fun handleSynchronizeIntroduced(it: Introduced){
+//    introductions.forEach {
+//      log("Processing introduction sync for id: ${it.introductionId} / type: ${it.syncType}")
+//      val intro = SignalDatabase.trustedIntroductions.getIntroductionById(it.introductionId.toString())
+//      intro ?: run { warn("Local database has no intro with id ${it.introductionId}. Skipping"); return@forEach }
+//      // todo: add some sanity checks to make sure the local and remote intro don't diverge
+//      val tiDb = SignalDatabase.trustedIntroductions
+//      it.syncType ?: return@forEach
+//      when (it.syncType) {
+//        Introduced.SyncType.CREATED -> warn("Desktop app shouldn't support create")
+//        Introduced.SyncType.MASKED -> tiDb.clearIntroducer(intro)
+//        Introduced.SyncType.UPDATED_STATE -> when (it.state) {
+//            Introduced.State.ACCEPTED -> tiDb.acceptIntroduction(intro)
+//            Introduced.State.REJECTED -> tiDb.rejectIntroduction(intro)
+//            else -> warn("Unsupported transition to ${it.state}")
+//        }
+//        Introduced.SyncType.DELETED -> tiDb.deleteIntroduction(it.introductionId)
+//      }
+//    }
+    val intro = SignalDatabase.trustedIntroductions.getIntroductionById(it.introductionId.toString())
+    intro ?: run { warn("Local database has no intro with id ${it.introductionId}. Skipping"); return }
+    // todo: add some sanity checks to make sure the local and remote intro don't diverge
+    val tiDb = SignalDatabase.trustedIntroductions
+    it.syncType ?: run { warn("Local database has no intro with id ${it.introductionId}. Skipping"); return }
+    when (it.syncType) {
+      Introduced.SyncType.CREATED -> warn("Desktop app shouldn't support create")
+      Introduced.SyncType.MASKED -> tiDb.clearIntroducer(intro)
+      Introduced.SyncType.UPDATED_STATE -> when (it.state) {
+          Introduced.State.ACCEPTED -> tiDb.acceptIntroduction(intro)
+          Introduced.State.REJECTED -> tiDb.rejectIntroduction(intro)
+          else -> warn("Unsupported transition to ${it.state}")
+      }
+      Introduced.SyncType.DELETED -> tiDb.deleteIntroduction(it.introductionId)
+    }
   }
 }

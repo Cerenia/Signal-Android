@@ -1513,7 +1513,8 @@ public class MessageContentProcessor {
     }
 
     if (message.isIntroductionRequest()) {
-      ApplicationDependencies.getJobManager().add(new TrustedIntroductionMultiDeviceSync());
+      // todo: handle later
+//      ApplicationDependencies.getJobManager().add(new TrustedIntroductionMultiDeviceSync());
     }
   }
 

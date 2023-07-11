@@ -125,6 +125,7 @@ public class DeviceContactsInputStream extends ChunkedInputStream {
           intro.getNumber(),
           intro.getPredictedFingerprint(),
           intro.getState().getNumber(),
+          intro.getSyncType().getNumber(),
           intro.getTimestamp()
       ));
     }

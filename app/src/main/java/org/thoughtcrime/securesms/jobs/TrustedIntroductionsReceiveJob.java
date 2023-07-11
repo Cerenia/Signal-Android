@@ -10,12 +10,14 @@ import org.json.JSONObject;
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
+import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.jobmanager.JsonJobData;
 import org.thoughtcrime.securesms.jobmanager.Job;
 import org.thoughtcrime.securesms.jobmanager.impl.NetworkConstraint;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
+import org.whispersystems.signalservice.api.messages.multidevice.IntroducedMessage;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -121,6 +123,10 @@ public class TrustedIntroductionsReceiveJob extends BaseJob  {
         throw new AssertionError(TAG + String.format("Introduction insertion for %s failed...", introduction.getIntroduceeName()));
       }
       inserts_succeeded++;
+
+      // create a jub to sync the new intro
+      ApplicationDependencies.getJobManager().add(new TrustedIntroductionMultiDeviceSync(result, introduction,
+                                                                                         IntroducedMessage.SyncType.CREATED.ordinal()));
     }
     Log.i(TAG, "TrustedIntroductionsReceiveJob completed!");
   }

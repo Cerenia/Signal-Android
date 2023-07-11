@@ -13,9 +13,12 @@ import org.signal.core.util.concurrent.SignalExecutors;
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
+import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
+import org.thoughtcrime.securesms.jobs.TrustedIntroductionMultiDeviceSync;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
+import org.whispersystems.signalservice.api.messages.multidevice.IntroducedMessage;
 
 import java.util.List;
 import java.util.Objects;
@@ -70,6 +73,12 @@ public class ManageViewModel extends ViewModel {
         return SignalDatabase.trustedIntroductions().deleteIntroduction(introduction.getId());
       }
 
+      @Override public void syncCall(TI_Data introduction) {
+        Log.w(TAG, "TODO: delete-introduction -- handle sync");
+        ApplicationDependencies.getJobManager().add(new TrustedIntroductionMultiDeviceSync(introductionId,introduction,
+                                                                                           IntroducedMessage.SyncType.DELETED.ordinal()));
+      }
+
       @NonNull @Override public String errorMessage(Long introductionId) {
         return "The deletion of introduction " + introductionId + "did not succeed!";
       }
@@ -86,6 +95,11 @@ public class ManageViewModel extends ViewModel {
 
       @WorkerThread @Override public boolean databaseCall(TI_Data introduction) {
         return SignalDatabase.trustedIntroductions().clearIntroducer(introduction);
+      }
+
+      @Override public void syncCall(TI_Data introduction) {
+        ApplicationDependencies.getJobManager().add(new TrustedIntroductionMultiDeviceSync(introduction.getId(),introduction,
+                                                                                           IntroducedMessage.SyncType.MASKED.ordinal()));
       }
 
       @NonNull @Override public String errorMessage(Long introductionId) {
@@ -107,6 +121,11 @@ public class ManageViewModel extends ViewModel {
           return SignalDatabase.trustedIntroductions().acceptIntroduction(introduction);
         }
 
+        @Override public void syncCall(TI_Data introduction) {
+          ApplicationDependencies.getJobManager().add(new TrustedIntroductionMultiDeviceSync(introduction.getId(),introduction,
+                                                                                             IntroducedMessage.SyncType.UPDATED_STATE.ordinal()));
+        }
+
         @NonNull @Override public String errorMessage(Long introductionId) {
           return "Failed to accept introduction: " + introductionId;
         }
@@ -124,6 +143,12 @@ public class ManageViewModel extends ViewModel {
 
       @Override public boolean databaseCall(TI_Data introduction) {
         return SignalDatabase.trustedIntroductions().rejectIntroduction(introduction);
+      }
+
+      @Override public void syncCall(TI_Data introduction) {
+        ApplicationDependencies.getJobManager().add(new TrustedIntroductionMultiDeviceSync(introduction.getId(),introduction,
+                                                                                           IntroducedMessage.SyncType.UPDATED_STATE.ordinal()
+        ));
       }
 
       @NonNull @Override public String errorMessage(Long introductionId) {
@@ -167,6 +192,9 @@ public class ManageViewModel extends ViewModel {
       boolean res = m.databaseCall(finalIntroduction);
       if(!res){
         Log.e(TAG, m.errorMessage(introductionId));
+      } else {
+        m.syncCall(finalIntroduction);
+        Log.i(TAG, "Introduction modification: queue new job");
       }
     });
   }
@@ -175,11 +203,12 @@ public class ManageViewModel extends ViewModel {
     /**
      *
      * @param introductionItem the item to be modified. Implementations must return a modified copy and leave the original item untouched.
-     * @return a modified introduction list item
+     * @return a modified introduction list item.
      */
     @Nullable Pair<TI_Data, IntroducerInformation> modifiedIntroductionItem(Pair<TI_Data, IntroducerInformation> introductionItem);
     @WorkerThread boolean databaseCall(TI_Data introduction);
     @NonNull String errorMessage(Long introductionId);
+    void syncCall(TI_Data introduction);
   }
 
   public void setQueryFilter(String filter) {

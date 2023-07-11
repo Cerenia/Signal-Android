@@ -36,7 +36,7 @@ public class SignalServiceSyncMessage {
   private final Optional<PniIdentity>                       pniIdentity;
   private final Optional<List<ViewedMessage>>               views;
   private final Optional<CallEvent>                         callEvent;
-  private final Optional<List<IntroducedMessage>>           introductions;
+  private final Optional<IntroducedMessage>                 introduction;
 
   private SignalServiceSyncMessage(Optional<SentTranscriptMessage> sent,
                                    Optional<ContactsMessage> contacts,
@@ -55,7 +55,7 @@ public class SignalServiceSyncMessage {
                                    Optional<List<ViewedMessage>> views,
                                    Optional<PniIdentity> pniIdentity,
                                    Optional<CallEvent> callEvent,
-                                   Optional<List<IntroducedMessage>> introductions)
+                                   Optional<IntroducedMessage> introduction)
   {
     this.sent                   = sent;
     this.contacts               = contacts;
@@ -74,7 +74,7 @@ public class SignalServiceSyncMessage {
     this.views                  = views;
     this.pniIdentity            = pniIdentity;
     this.callEvent              = callEvent;
-    this.introductions          = introductions;
+    this.introduction          = introduction;
   }
 
   public static SignalServiceSyncMessage forSentTranscript(SentTranscriptMessage sent) {
@@ -458,7 +458,7 @@ public class SignalServiceSyncMessage {
                                         Optional.empty());
   }
 
-  public static SignalServiceSyncMessage forIntroduced(List<IntroducedMessage> introductions) {
+  public static SignalServiceSyncMessage forIntroduced(IntroducedMessage introduction) {
     return new SignalServiceSyncMessage(Optional.empty(),
                                         Optional.empty(),
                                         Optional.empty(),
@@ -476,7 +476,7 @@ public class SignalServiceSyncMessage {
                                         Optional.empty(),
                                         Optional.empty(),
                                         Optional.empty(),
-                                        Optional.of(introductions));
+                                        Optional.of(introduction));
   }
 
   public static SignalServiceSyncMessage empty() {
@@ -567,9 +567,8 @@ public class SignalServiceSyncMessage {
   public Optional<CallEvent> getCallEvent() {
     return callEvent;
   }
-
-  public Optional<List<IntroducedMessage>> getIntroductions() {
-    return introductions;
+  public Optional<IntroducedMessage> getIntroduction() {
+    return introduction;
   }
 
   public enum FetchType {

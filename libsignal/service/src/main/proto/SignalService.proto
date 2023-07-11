@@ -461,13 +461,20 @@ message Introduced {
     STALE_REJECTED = 7;
     STALE_CONFLICTING = 8;
   }
+  enum SyncType {
+    // todo: maybe take the sync out of the introduced
+    CREATED = 0;
+    UPDATED_STATE = 1;
+    MASKED = 2;
+    DELETED = 3;
+  }
   optional uint64 introductionId = 1;
   // @required
   optional string introducerServiceId = 2;
   // @required
   optional string serviceId = 3;
   // @required
-  optional string identityKey = 4; //todo: not sure if bytes or string yet
+  optional string identityKey = 4;
   // @required
   optional string name = 5;
   // @required
@@ -478,6 +485,7 @@ message Introduced {
   optional State state = 8;
   // @required
   optional uint64 timestamp = 9;
+  optional SyncType syncType = 10;
 }
 
 message SyncMessage {
@@ -685,7 +693,7 @@ message SyncMessage {
   optional PniIdentity            pniIdentity            = 17;
   optional PniChangeNumber        pniChangeNumber        = 18;
   optional CallEvent              callEvent              = 19;
-  repeated Introduced             introduced             = 20;
+  optional Introduced             introduced             = 20;
 }
 
 message AttachmentPointer {

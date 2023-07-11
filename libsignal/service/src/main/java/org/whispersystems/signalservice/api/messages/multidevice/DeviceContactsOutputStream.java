@@ -126,6 +126,22 @@ public class DeviceContactsOutputStream extends ChunkedOutputStream {
             state = SignalServiceProtos.Introduced.State.STALE_CONFLICTING;
             break;
         }
+        SignalServiceProtos.Introduced.SyncType type;
+        switch (im.getSyncType()){
+          case UPDATED_STATE:
+            type = SignalServiceProtos.Introduced.SyncType.UPDATED_STATE;
+            break;
+          case MASKED:
+            type = SignalServiceProtos.Introduced.SyncType.MASKED;
+            break;
+          case DELETED:
+            type = SignalServiceProtos.Introduced.SyncType.DELETED;
+            break;
+          case CREATED:
+          default:
+            type = SignalServiceProtos.Introduced.SyncType.CREATED;
+            break;
+        }
         SignalServiceProtos.Introduced intro = SignalServiceProtos.Introduced.newBuilder()
             .setIntroductionId(im.getIntroductionId())
             .setIntroducerServiceId(im.getIntroducerServiceId())
@@ -134,6 +150,7 @@ public class DeviceContactsOutputStream extends ChunkedOutputStream {
             .setName(im.getName()).setNumber(im.getNumber())
             .setPredictedFingerprint(im.getPredictedFingerprint())
             .setState(state)
+            .setSyncType(type)
             .setTimestamp(im.getTimestamp()).build();
         contactDetails.addIntroductions(idx, intro);
         idx++;

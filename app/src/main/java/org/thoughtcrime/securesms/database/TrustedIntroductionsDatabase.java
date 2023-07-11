@@ -620,6 +620,21 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     }
   }
 
+  @WorkerThread
+  public TI_Data getIntroductionById(@Nullable String introductionId){
+    String query;
+    SQLiteDatabase db = databaseHelper.getSignalReadableDatabase();
+    if(introductionId == null){
+      return null;
+    } else {
+      // query only the Introductions made by introducerServiceId
+      query = ID + " = ?";
+      String[] arg = SqlUtil.buildArgs(introductionId);
+      IntroductionReader reader = new IntroductionReader(db.query(TABLE_NAME, TI_ALL_PROJECTION, query, arg, null, null, null));
+      return reader.getNext();
+    }
+  }
+
  @WorkerThread
  /**
   * PRE: introductionId may not be null, IntroducerServiceId must be null

@@ -52,6 +52,7 @@ import org.whispersystems.signalservice.api.messages.calls.OpaqueMessage;
 import org.whispersystems.signalservice.api.messages.calls.SignalServiceCallMessage;
 import org.whispersystems.signalservice.api.messages.multidevice.BlockedListMessage;
 import org.whispersystems.signalservice.api.messages.multidevice.ConfigurationMessage;
+import org.whispersystems.signalservice.api.messages.multidevice.IntroducedMessage;
 import org.whispersystems.signalservice.api.messages.multidevice.KeysMessage;
 import org.whispersystems.signalservice.api.messages.multidevice.MessageRequestResponseMessage;
 import org.whispersystems.signalservice.api.messages.multidevice.OutgoingPaymentMessage;
@@ -641,6 +642,9 @@ public class SignalServiceMessageSender {
       content = createPniIdentityContent(message.getPniIdentity().get());
     } else if (message.getCallEvent().isPresent()) {
       content = createCallEventContent(message.getCallEvent().get());
+    } else if (message.getIntroduction().isPresent()) {
+//      content = createIntroducedContent(message.getIntroductions().get());
+      content = createIntroducedContent(message.getIntroduction().get());
     } else {
       throw new IOException("Unsupported sync message!");
     }
@@ -653,11 +657,82 @@ public class SignalServiceMessageSender {
     return sendMessage(localAddress, Optional.empty(), timestamp, envelopeContent, false, null, urgent, false);
   }
 
+  private Content createIntroducedContent(IntroducedMessage im) {
+    Content.Builder     container   = Content.newBuilder();
+    SyncMessage.Builder syncMessage = createSyncMessageBuilder();
+//    int idx=0;
+
+//    for (IntroducedMessage im : intros) {
+      SignalServiceProtos.Introduced.State state = null;
+      switch (im.getState()) {
+        case PENDING:
+          state = SignalServiceProtos.Introduced.State.PENDING;
+          break;
+        case ACCEPTED:
+          state = SignalServiceProtos.Introduced.State.ACCEPTED;
+          break;
+        case REJECTED:
+          state = SignalServiceProtos.Introduced.State.REJECTED;
+          break;
+        case CONFLICTING:
+          state = SignalServiceProtos.Introduced.State.CONFLICTING;
+          break;
+        case STALE_PENDING:
+          state = SignalServiceProtos.Introduced.State.STALE_PENDING;
+          break;
+        case STALE_ACCEPTED:
+          state = SignalServiceProtos.Introduced.State.STALE_ACCEPTED;
+          break;
+        case STALE_REJECTED:
+          state = SignalServiceProtos.Introduced.State.STALE_REJECTED;
+          break;
+        case STALE_CONFLICTING:
+          state = SignalServiceProtos.Introduced.State.STALE_CONFLICTING;
+          break;
+      }
+      SignalServiceProtos.Introduced.SyncType type;
+      switch (im.getSyncType()){
+        case UPDATED_STATE:
+          type = SignalServiceProtos.Introduced.SyncType.UPDATED_STATE;
+          break;
+        case MASKED:
+          type = SignalServiceProtos.Introduced.SyncType.MASKED;
+          break;
+        case DELETED:
+          type = SignalServiceProtos.Introduced.SyncType.DELETED;
+          break;
+        case CREATED:
+        default:
+          type = SignalServiceProtos.Introduced.SyncType.CREATED;
+          break;
+      }
+
+      // We want to mark the introducer sometimes but protobufs should NOT be null
+      // https://github.com/google/guava/wiki/UsingAndAvoidingNullExplained & https://stackoverflow.com/a/27751912
+      String introducerServiceId = im.getIntroducerServiceId() != null ? im.getServiceId() : "";
+      SignalServiceProtos.Introduced intro = SignalServiceProtos.Introduced.newBuilder()
+                                                                           .setIntroductionId(im.getIntroductionId())
+                                                                           .setIntroducerServiceId(introducerServiceId)
+                                                                           .setServiceId(im.getServiceId())
+                                                                           .setIdentityKey(im.getIdentityKey())
+                                                                           .setName(im.getName()).setNumber(im.getNumber())
+                                                                           .setPredictedFingerprint(im.getPredictedFingerprint())
+                                                                           .setState(state)
+                                                                           .setSyncType(type)
+                                                                           .setTimestamp(im.getTimestamp()).build();
+//      syncMessage.addIntroduced(idx, intro);
+//      idx++;
+//    }
+    syncMessage.setIntroduced(intro);
+    // todo
+    return container.setSyncMessage(syncMessage).build();
+  }
+
   /**
    * Create a device specific sync message that includes updated PNI details for that specific linked device. This message is
    * sent to the server via the change number endpoint and not the normal sync message sending flow.
    *
-   * @param deviceId - Device ID of linked device to build message for
+   * @param deviceId        - Device ID of linked device to build message for
    * @param pniChangeNumber - Linked device specific updated PNI details
    * @return Encrypted {@link OutgoingPushMessage} to be included in the change number request sent to the server
    */

@@ -874,21 +874,36 @@ import javax.annotation.Nullable;
       }
     }
 
-    if (content.getIntroducedCount() > 0) {
-      List<IntroducedMessage> introductions = new LinkedList<>();
-      for (SignalServiceProtos.Introduced intro : content.getIntroducedList()) {
-        introductions.add(new IntroducedMessage(intro.getIntroductionId(),
-                                                intro.getIntroducerServiceId(),
-                                                intro.getServiceId(),
-                                                intro.getIdentityKey(),
-                                                intro.getName(),
-                                                intro.getNumber(),
-                                                intro.getPredictedFingerprint(),
-                                                intro.getState().getNumber(),
-                                                intro.getTimestamp()));
-      }
-      return SignalServiceSyncMessage.forIntroduced(introductions);
+    if (content.hasIntroduced()){
+      SignalServiceProtos.Introduced intro = content.getIntroduced(); // todo: maybe I can get rid of this
+      return SignalServiceSyncMessage.forIntroduced(new IntroducedMessage(intro.getIntroductionId(),
+                                                                          intro.getIntroducerServiceId(),
+                                                                          intro.getServiceId(),
+                                                                          intro.getIdentityKey(),
+                                                                          intro.getName(),
+                                                                          intro.getNumber(),
+                                                                          intro.getPredictedFingerprint(),
+                                                                          intro.getState().getNumber(),
+                                                                          IntroducedMessage.SyncType.CREATED.ordinal(),
+                                                                          intro.getTimestamp()));
+//      return SignalServiceSyncMessage.forIntroduced(
     }
+//    if (content.getIntroducedCount() > 0) {
+//      List<IntroducedMessage> introductions = new LinkedList<>();
+//      for (SignalServiceProtos.Introduced intro : content.getIntroducedList()) {
+//        introductions.add(new IntroducedMessage(intro.getIntroductionId(),
+//                                                intro.getIntroducerServiceId(),
+//                                                intro.getServiceId(),
+//                                                intro.getIdentityKey(),
+//                                                intro.getName(),
+//                                                intro.getNumber(),
+//                                                intro.getPredictedFingerprint(),
+//                                                intro.getState().getNumber(),
+//                                                IntroducedMessage.SyncType.CREATED.ordinal(),
+//                                                intro.getTimestamp()));
+//      }
+//      return SignalServiceSyncMessage.forIntroduced(introductions);
+//    }
 
     if (content.getStickerPackOperationList().size() > 0) {
       List<StickerPackOperationMessage> operations = new LinkedList<>();
