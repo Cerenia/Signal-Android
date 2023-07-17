@@ -70,6 +70,7 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
     String name = args.getString(NAME_KEY);
     ManageViewModel.Factory factory = new ManageViewModel.Factory(recipient, type, name, FORGOTTEN_INTRODUCER);
     viewModel = new ViewModelProvider(owner, factory).get(ManageViewModel.class);
+    viewModel.registerObserver();
   }
 
   @Override
@@ -130,6 +131,11 @@ public class ManageListFragment extends Fragment implements ContactFilterView.On
       }
       refreshList();
     });
+  }
+
+  @Override public void onDestroyView() {
+    super.onDestroyView();
+    viewModel.unregisterObserver();
   }
 
   private void initializeNavigationButton(@NonNull View view){

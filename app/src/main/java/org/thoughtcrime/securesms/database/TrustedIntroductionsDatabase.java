@@ -23,8 +23,10 @@ import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.trustedIntroductions.jobUtils.TI_JobCallbackData;
 import org.thoughtcrime.securesms.trustedIntroductions.jobUtils.TI_JobCallback;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
+import org.whispersystems.signalservice.api.messages.multidevice.IntroducedMessage;
 import org.whispersystems.signalservice.api.push.ServiceId;
 import org.whispersystems.signalservice.api.util.Preconditions;
+import org.whispersystems.signalservice.internal.push.SignalServiceProtos;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -37,7 +39,6 @@ import java.util.Set;
  * Database holding received trusted Introductions.
  * We are consciously trying to have the sending Introduction ephemeral since we want to maximize privacy,
  * (think an Informant that forwards someone to a Journalist, you don't want that information hanging around)
- *
  * This implementation currently does not support multidevice.
  *
  */
@@ -80,6 +81,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     // Debugging
     SQLiteDatabase db = databaseHelper.getSignalWritableDatabase();
     int res = db.delete(TABLE_NAME, "", new String[]{});
+    Log.i(TAG, String.format("clearTable: deleted %d rows from the db.", res));
   }
 
   private static final String[] TI_ALL_PROJECTION = new String[]{
@@ -296,7 +298,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
    * @param identityKey
    * @param predictedFingerprint
    * @param timestamp Expected to represent a Long.
-   * @return Propperly populated content values, NumberFormatException/AssertionError if a value was invalid.
+   * @return Properly populated content values, NumberFormatException/AssertionError if a value was invalid.
    */
   private @NonNull ContentValues buildContentValuesForUpdate(@NonNull String introductionId,
                                                              @NonNull String state,
@@ -335,7 +337,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
 
   /**
    *
-   * @param introduction PRE: none of it's fields may be null, except introducerServiceId (forgotten introducer)
+   * @param introduction PRE: none of its fields may be null, except introducerServiceId (forgotten introducer)
    * @return A populated contentValues object, to use for updates.
    */
   private @NonNull ContentValues buildContentValuesForUpdate(@NonNull TI_Data introduction){
@@ -355,7 +357,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
 
   /**
    *
-   * @param introduction PRE: none of it's fields may be null, state != stale.
+   * @param introduction PRE: none of its fields may be null, state != stale.
    * @return A populated contentValues object, to use when turning introductions stale.
    */
   private @NonNull ContentValues buildContentValuesForStale(@NonNull TI_Data introduction){
@@ -378,6 +380,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
         break;
       case CONFLICTING:
         newState = State.STALE_CONFLICTING;
+        break;
       default:
           throw new AssertionError();
     }
@@ -396,7 +399,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
 
   /**
    *
-   * @return -1 -> conflict occured on insert, 0 -> Profile Fetch Job started, else id of introduction.
+   * @return -1 -> conflict occurred on insert, 0 -> Profile Fetch Job started, else id of introduction.
    */
   @SuppressLint("Range")
   @WorkerThread
@@ -486,7 +489,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
     SetStateCallback.SetStateData                                  data = new SetStateCallback.SetStateData(res, newState, logMessage);
     SetStateCallback                                               cb   = new SetStateCallback(data);
     if (recipientId.equals(RecipientId.UNKNOWN) ||
-        !ApplicationDependencies.getProtocolStore().aci().identities().getIdentityRecord(recipientId).isPresent()){
+        ApplicationDependencies.getProtocolStore().aci().identities().getIdentityRecord(recipientId).isEmpty()){
       RecipientTable db = SignalDatabase.recipients();
       db.getAndPossiblyMerge(ServiceId.parseOrThrow(introduction.getIntroduceeServiceId()), introduction.getIntroduceeNumber());
       // Save identity, the user specifically decided to interfere with the introduction (accept/reject) so saving this state is ok.
@@ -503,7 +506,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
    * PRE: introducee exists in recipient and identity table
    * @param introduceeServiceId The service ID of the recipient whose verification status may change
    * @param previousIntroduceeVerification the previous verification status of the introducee
-   * @param newState PRE: !STALE (security number changes are handled in a seperate codepath)
+   * @param newState PRE: !STALE (security number changes are handled in a separate codepath)
    * @param logmessage what to print to logcat iff status was modified
    */
   @WorkerThread
@@ -656,6 +659,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
    Log.i(TAG, "Forgot introducer for introduction with id: " + introduction.getId());
    if( update > 0 ){
      // TODO: For multidevice, syncing would be handled here
+     ApplicationDependencies.getDatabaseObserver().notifyIntroObservers(introduction.getId(), IntroducedMessage.SyncType.MASKED.ordinal());
      return true;
    }
    return false;
@@ -712,6 +716,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
 
     if(count == 1){
       Log.i(TAG, String.format("Deleted introduction with id: %d from the database.", introductionId));
+      ApplicationDependencies.getDatabaseObserver().notifyIntroObservers(introductionId, IntroducedMessage.SyncType.DELETED.ordinal());
       return true;
     } else if(count > 1){
       // matching with id, which must be unique
@@ -808,11 +813,12 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
       // Modify introduction
       ContentValues newValues = db.buildContentValuesForStateUpdate(introduction, newState);
       SQLiteDatabase writeableDatabase = db.databaseHelper.getSignalWritableDatabase();
-      long result = writeableDatabase.update(TABLE_NAME, newValues, ID + " = ?", SqlUtil.buildArgs(introduction.getId()));
+      long rowsAltered = writeableDatabase.update(TABLE_NAME, newValues, ID + " = ?", SqlUtil.buildArgs(introduction.getId()));
 
-      if ( result > 0 ){
+      if ( rowsAltered > 0 ){
         // Log message on success
         Log.i(TAG, logMessage);
+        ApplicationDependencies.getDatabaseObserver().notifyIntroObservers(introduction.getId(), SignalServiceProtos.Introduced.SyncType.UPDATED_STATE_VALUE);
         return true;
       }
       Log.e(TAG, "State modification of introduction: " + introduction.getId() + " failed!");
@@ -888,7 +894,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
         if(!initialized){
           throw new AssertionError("SetStateCallback Factory was not initialized!");
         }
-        return ((TI_JobCallback) new SetStateCallback(data));
+        return (new SetStateCallback(data));
       }
 
       @Override public void initialize(TI_JobCallbackData data) {
@@ -909,7 +915,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
   // TODO: For now I'm keeping the history of introductions, but only showing the newest valid one. Might be beneficial to have them eventually go away if they become stale?
   // Maybe keep around one level of previous introduction? Apparently there is a situation in the app, whereas if someone does not follow the instructions of setting up
   // their new device exactly, they may be set as unverified, while they eventually still end up with the same identity key (TODO: find Github issue or discussion?)
-  // For this case, having a record of stale introductions could be used to restore the verification state without having to reverify.
+  // For this case, having a record of stale introductions could be used to restore the verification state without having to re-verify.
 
   // TODO: all state transition methods can be public => FSM Logic adhered to this way.
   public static class InsertCallback implements TI_JobCallback {
@@ -935,8 +941,8 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
       return tag;
     }
 
-    // TI_DB_Callback for profile retreive Identity job
-    // But java is annoying when it comes to function serialization so I won't do that for now
+    // TI_DB_Callback for profile retrieve Identity job
+    // But java is annoying when it comes to function serialization, so I won't do that for now
     // Only meant to be called by Job & @incomingIntroduction
     /**
      * @return id of introduction or -1 if fail.
@@ -948,7 +954,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
       Preconditions.checkArgument(data.TIData.getPredictedSecurityNumber() != null);
       TrustedIntroductionsDatabase db = SignalDatabase.trustedIntroductions();
       ContentValues values = db.buildContentValuesForInsert(data.key.equals(data.TIData.getIntroduceeIdentityKey()) ? State.PENDING : State.CONFLICTING,
-                                                         data.TIData.getIntroducerServiceId(),
+                                                         data.TIData.getIntroducerServiceId() == null ? "" : data.TIData.getIntroducerServiceId(),
                                                          data.TIData.getIntroduceeServiceId(),
                                                          data.TIData.getIntroduceeName(),
                                                          data.TIData.getIntroduceeNumber(),
@@ -958,6 +964,9 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
       SQLiteDatabase writeableDatabase = db.databaseHelper.getSignalWritableDatabase();
       long id = writeableDatabase.insert(TABLE_NAME, null, values);
       Log.i(TAG, "Inserted new introduction for: " + data.TIData.getIntroduceeName() + ", with id: " + id);
+      if (id > 0) {
+        ApplicationDependencies.getDatabaseObserver().notifyIntroObservers(id, IntroducedMessage.SyncType.CREATED.ordinal());
+      }
       return id;
     }
 

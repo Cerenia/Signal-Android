@@ -124,9 +124,8 @@ public class TrustedIntroductionsReceiveJob extends BaseJob  {
       }
       inserts_succeeded++;
 
-      // create a jub to sync the new intro
-      ApplicationDependencies.getJobManager().add(new TrustedIntroductionMultiDeviceSync(result, introduction,
-                                                                                         IntroducedMessage.SyncType.CREATED.ordinal()));
+      // create a job to sync the new intro
+      ApplicationDependencies.getJobManager().add(new TrustedIntroductionMultiDeviceSync(result, IntroducedMessage.SyncType.CREATED.ordinal()));
     }
     Log.i(TAG, "TrustedIntroductionsReceiveJob completed!");
   }

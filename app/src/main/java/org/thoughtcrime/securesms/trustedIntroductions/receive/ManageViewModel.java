@@ -3,14 +3,15 @@ package org.thoughtcrime.securesms.trustedIntroductions.receive;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
+import androidx.core.util.Pair;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.core.util.Pair;
 
 import org.signal.core.util.concurrent.SignalExecutors;
 import org.signal.core.util.logging.Log;
+import org.thoughtcrime.securesms.database.DatabaseObserver;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
@@ -18,7 +19,6 @@ import org.thoughtcrime.securesms.jobs.TrustedIntroductionMultiDeviceSync;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
-import org.whispersystems.signalservice.api.messages.multidevice.IntroducedMessage;
 
 import java.util.List;
 import java.util.Objects;
@@ -36,6 +36,9 @@ public class ManageViewModel extends ViewModel {
   private final String introducerName;
   private boolean      introductionsLoaded;
 
+  private final DatabaseObserver.IntroductionObserver observer; // observe for intro changes
+  private boolean observerAttached;
+
   ManageViewModel(ManageManager manager, ManageActivity.IntroductionScreenType t, @Nullable String introducerName, @NonNull String forgottenPlaceholder){
     this.manager = manager;
     filter = new MutableLiveData<>("");
@@ -44,8 +47,27 @@ public class ManageViewModel extends ViewModel {
     this.introducerName = introducerName;
     introductionsLoaded = false;
     this.forgottenPlaceholder = forgottenPlaceholder;
+    this.observer = (introId, eventType) -> {
+      Log.e(TAG, "received event " + eventType + " for introduction with id = " + introId);
+//      TI_Data introduction = SignalDatabase.trustedIntroductions().getIntroductionById(""+introId);
+//      if (introduction == null){
+//        introduction = new TI_Data(Long.parseLong("0"), TrustedIntroductionsDatabase.State.STALE_CONFLICTING,
+//                                   "","", "","","", "",0);
+//      }
+      ApplicationDependencies.getJobManager().add(new TrustedIntroductionMultiDeviceSync(introId, eventType));
+    };
   }
 
+  protected void registerObserver(){
+    Log.i(TAG, String.format("[TI] Registering observer for intro.... (was attached: %s)", observerAttached));
+    ApplicationDependencies.getDatabaseObserver().registerIntroductionObserver(observer);
+    observerAttached = true;
+  }
+  protected void unregisterObserver(){
+    Log.i(TAG, String.format("[TI] Unregistering observer for intro.... (was attached: %s)", observerAttached));
+    ApplicationDependencies.getDatabaseObserver().unregisterObserver(observer);
+    observerAttached = false;
+  }
   public void loadIntroductions(){
     manager.getIntroductions(introductions::postValue);
     introductionsLoaded = true;
@@ -73,12 +95,6 @@ public class ManageViewModel extends ViewModel {
         return SignalDatabase.trustedIntroductions().deleteIntroduction(introduction.getId());
       }
 
-      @Override public void syncCall(TI_Data introduction) {
-        Log.w(TAG, "TODO: delete-introduction -- handle sync");
-        ApplicationDependencies.getJobManager().add(new TrustedIntroductionMultiDeviceSync(introductionId,introduction,
-                                                                                           IntroducedMessage.SyncType.DELETED.ordinal()));
-      }
-
       @NonNull @Override public String errorMessage(Long introductionId) {
         return "The deletion of introduction " + introductionId + "did not succeed!";
       }
@@ -95,11 +111,6 @@ public class ManageViewModel extends ViewModel {
 
       @WorkerThread @Override public boolean databaseCall(TI_Data introduction) {
         return SignalDatabase.trustedIntroductions().clearIntroducer(introduction);
-      }
-
-      @Override public void syncCall(TI_Data introduction) {
-        ApplicationDependencies.getJobManager().add(new TrustedIntroductionMultiDeviceSync(introduction.getId(),introduction,
-                                                                                           IntroducedMessage.SyncType.MASKED.ordinal()));
       }
 
       @NonNull @Override public String errorMessage(Long introductionId) {
@@ -120,12 +131,6 @@ public class ManageViewModel extends ViewModel {
         @Override public boolean databaseCall(TI_Data introduction) {
           return SignalDatabase.trustedIntroductions().acceptIntroduction(introduction);
         }
-
-        @Override public void syncCall(TI_Data introduction) {
-          ApplicationDependencies.getJobManager().add(new TrustedIntroductionMultiDeviceSync(introduction.getId(),introduction,
-                                                                                             IntroducedMessage.SyncType.UPDATED_STATE.ordinal()));
-        }
-
         @NonNull @Override public String errorMessage(Long introductionId) {
           return "Failed to accept introduction: " + introductionId;
         }
@@ -143,12 +148,6 @@ public class ManageViewModel extends ViewModel {
 
       @Override public boolean databaseCall(TI_Data introduction) {
         return SignalDatabase.trustedIntroductions().rejectIntroduction(introduction);
-      }
-
-      @Override public void syncCall(TI_Data introduction) {
-        ApplicationDependencies.getJobManager().add(new TrustedIntroductionMultiDeviceSync(introduction.getId(),introduction,
-                                                                                           IntroducedMessage.SyncType.UPDATED_STATE.ordinal()
-        ));
       }
 
       @NonNull @Override public String errorMessage(Long introductionId) {
@@ -192,9 +191,6 @@ public class ManageViewModel extends ViewModel {
       boolean res = m.databaseCall(finalIntroduction);
       if(!res){
         Log.e(TAG, m.errorMessage(introductionId));
-      } else {
-        m.syncCall(finalIntroduction);
-        Log.i(TAG, "Introduction modification: queue new job");
       }
     });
   }
@@ -208,7 +204,6 @@ public class ManageViewModel extends ViewModel {
     @Nullable Pair<TI_Data, IntroducerInformation> modifiedIntroductionItem(Pair<TI_Data, IntroducerInformation> introductionItem);
     @WorkerThread boolean databaseCall(TI_Data introduction);
     @NonNull String errorMessage(Long introductionId);
-    void syncCall(TI_Data introduction);
   }
 
   public void setQueryFilter(String filter) {

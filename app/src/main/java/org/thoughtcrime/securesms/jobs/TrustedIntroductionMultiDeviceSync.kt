@@ -16,14 +16,14 @@ import org.whispersystems.signalservice.api.messages.multidevice.IntroducedMessa
 import org.whispersystems.signalservice.api.messages.multidevice.SignalServiceSyncMessage
 import java.util.Optional
 
-class TrustedIntroductionMultiDeviceSync(parameters: Parameters, private val introId : Long, private val introData: TI_Data, private val syncState: Int) : BaseJob(parameters) {
+class TrustedIntroductionMultiDeviceSync(parameters: Parameters, private val introId : Long, private val syncState: Int) : BaseJob(parameters) {
 
   companion object {
     const val KEY = "MultiDeviceTISyncJob"
     private val TAG = String.format(TI_Utils.TI_LOG_TAG, Log.tag(TrustedIntroductionMultiDeviceSync::class.java))
 
     @JvmStatic
-    fun create(introId: Long, introData: TI_Data, syncState: Int): TrustedIntroductionMultiDeviceSync {
+    fun create(introId: Long, syncState: Int): TrustedIntroductionMultiDeviceSync {
       return TrustedIntroductionMultiDeviceSync(
         parameters = Parameters.Builder()
           .setQueue(KEY)
@@ -32,13 +32,13 @@ class TrustedIntroductionMultiDeviceSync(parameters: Parameters, private val int
           .addConstraint(NetworkConstraint.KEY)
           .build(),
         introId = introId,
-        introData = introData,
+//        introData = introData,
         syncState = syncState,
       )
     }
   }
 
-  constructor(introId: Long, introData: TI_Data, syncState: Int ): this(
+  constructor(introId: Long, syncState: Int ): this(
     Parameters.Builder()
       .setQueue(KEY)
       .setLifespan(TI_Utils.TI_JOB_LIFESPAN)
@@ -46,7 +46,7 @@ class TrustedIntroductionMultiDeviceSync(parameters: Parameters, private val int
       .addConstraint(NetworkConstraint.KEY)
       .build(),
     introId = introId,
-    introData = introData,
+//    introData = introData,
     syncState = syncState
   )
 
@@ -54,7 +54,7 @@ class TrustedIntroductionMultiDeviceSync(parameters: Parameters, private val int
     return JsonJobData.Builder()
       .putLong("introId", introId)
       // todo, put all the data here
-      .putString("introData", introData.serialize().toString())
+//      .putString("introData", introData.serialize().toString())
       .putInt("syncState", syncState)
       .serialize()
   }
@@ -110,9 +110,11 @@ class TrustedIntroductionMultiDeviceSync(parameters: Parameters, private val int
       val data = JsonJobData.deserialize(serializedData)
 
       val introId = data.getLong("introId");
-      val jsonIntro = JSONObject(data.getString("introData"));
-      val introData : TI_Data = TI_Data.deserialize(jsonIntro) // TODO: maybe use IntroducedMessage instead?
-      return TrustedIntroductionMultiDeviceSync(parameters, introId, introData, data.getInt("syncState"));
+      val syncState = data.getInt("syncState");
+//      val jsonIntro = JSONObject(data.getString("introData"));
+//      val introData : TI_Data = TI_Data.deserialize(jsonIntro) // TODO: maybe use IntroducedMessage instead?
+//      return TrustedIntroductionMultiDeviceSync(parameters, introId, introData, data.getInt("syncState"));
+      return TrustedIntroductionMultiDeviceSync(parameters, introId, syncState)
     }
   }
 }

@@ -1,5 +1,6 @@
 package org.thoughtcrime.securesms.database;
 
+import android.annotation.SuppressLint;
 import android.app.Application;
 
 import androidx.annotation.NonNull;
@@ -7,6 +8,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.jetbrains.annotations.NotNull;
 import org.signal.core.util.concurrent.SignalExecutors;
+import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.database.model.MessageId;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
@@ -23,7 +25,7 @@ import java.util.concurrent.Executor;
 
 /**
  * Allows listening to database changes to varying degrees of specificity.
- *
+ * <p>
  * A replacement for the observer system in {@link DatabaseTable}. We should move to this over time.
  */
 public class DatabaseObserver {
@@ -45,10 +47,11 @@ public class DatabaseObserver {
   private static final String KEY_SCHEDULED_MESSAGES    = "ScheduledMessages";
   private static final String KEY_CONVERSATION_DELETES  = "ConversationDeletes";
 
-  private static final String KEY_CALL_UPDATES          = "CallUpdates";
+  private static final String KEY_CALL_UPDATES = "CallUpdates";
 
-  private final Application application;
-  private final Executor    executor;
+  private static final String      KEY_INTRODUCTION_UPDATE = "IntroductionUpdate";
+  private final        Application application;
+  private final        Executor    executor;
 
   private final Set<Observer>                   conversationListObservers;
   private final Map<Long, Set<Observer>>        conversationObservers;
@@ -66,7 +69,8 @@ public class DatabaseObserver {
   private final Set<Observer>                   notificationProfileObservers;
   private final Map<RecipientId, Set<Observer>> storyObservers;
 
-  private final Set<Observer>                   callUpdateObservers;
+  private final Set<Observer> callUpdateObservers;
+  private final Set<IntroductionObserver> introObservers;
 
   public DatabaseObserver(Application application) {
     this.application                  = application;
@@ -87,6 +91,7 @@ public class DatabaseObserver {
     this.storyObservers               = new HashMap<>();
     this.scheduledMessageObservers    = new HashMap<>();
     this.callUpdateObservers          = new HashSet<>();
+    this.introObservers               = new HashSet<>();
   }
 
   public void registerConversationListObserver(@NonNull Observer listener) {
@@ -186,6 +191,13 @@ public class DatabaseObserver {
     executor.execute(() -> callUpdateObservers.add(observer));
   }
 
+  @SuppressLint("LogTagInlined")
+  public void registerIntroductionObserver(@NonNull IntroductionObserver listener) {
+    Log.e("registerIntroductionObserver", String.format("registering new observer (total: %d)", introObservers.size()));
+    executor.execute(() -> {
+      introObservers.add(listener);
+    });
+  }
   public void unregisterObserver(@NonNull Observer listener) {
     executor.execute(() -> {
       conversationListObservers.remove(listener);
@@ -201,6 +213,14 @@ public class DatabaseObserver {
       unregisterMapped(scheduledMessageObservers, listener);
       unregisterMapped(conversationDeleteObservers, listener);
       callUpdateObservers.remove(listener);
+    });
+  }
+
+  @SuppressLint("LogTagInlined")
+  public void unregisterObserver(@NonNull IntroductionObserver listener){
+    executor.execute(() -> {
+      Log.e("unregisterObserver", String.format("unregistering new observer (total: %d)", introObservers.size()));
+      introObservers.remove(listener);
     });
   }
 
@@ -342,6 +362,13 @@ public class DatabaseObserver {
     runPostSuccessfulTransaction(KEY_CALL_UPDATES, () -> notifySet(callUpdateObservers));
   }
 
+  public void notifyIntroObservers(long introId, int eventType) {
+    runPostSuccessfulTransaction(KEY_INTRODUCTION_UPDATE + introId, () -> {
+      for (IntroductionObserver introObserver : introObservers) {
+        introObserver.onIntroChanged(introId, eventType);
+      }
+    });
+  }
   private void runPostSuccessfulTransaction(@NonNull String dedupeKey, @NonNull Runnable runnable) {
     SignalDatabase.runPostSuccessfulTransaction(dedupeKey, () -> {
       executor.execute(runnable);
@@ -406,5 +433,9 @@ public class DatabaseObserver {
 
   public interface MessageObserver {
     void onMessageChanged(@NonNull MessageId messageId);
+  }
+
+  public interface IntroductionObserver {
+    void onIntroChanged(@NonNull long introId, int eventType);
   }
 }
