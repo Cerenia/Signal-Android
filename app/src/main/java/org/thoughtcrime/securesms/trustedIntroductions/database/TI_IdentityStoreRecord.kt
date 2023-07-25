@@ -2,11 +2,12 @@ package org.thoughtcrime.securesms.trustedIntroductions.database
 
 import org.signal.libsignal.protocol.IdentityKey
 import org.thoughtcrime.securesms.recipients.RecipientId
+import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue
 
 data class TI_IdentityStoreRecord(
   val addressName: String,
   val identityKey: IdentityKey,
-  val verifiedStatus: TI_IdentityTable.VerifiedStatus,
+  val verifiedStatus: IdentityTableGlue.VerifiedStatus,
   val firstUse: Boolean,
   val timestamp: Long,
   val nonblockingApproval: Boolean
