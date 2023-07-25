@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 
 public final class TI_IdentityRecordList {
 
-  public static final org.thoughtcrime.securesms.database.identity.IdentityRecordList EMPTY = new org.thoughtcrime.securesms.database.identity.IdentityRecordList(Collections.emptyList());
+  public static final org.thoughtcrime.securesms.trustedIntroductions.database.TI_IdentityRecordList EMPTY = new org.thoughtcrime.securesms.trustedIntroductions.database.TI_IdentityRecordList(Collections.emptyList());
 
   public static final long DEFAULT_UNTRUSTED_WINDOW = TimeUnit.SECONDS.toMillis(5);
 

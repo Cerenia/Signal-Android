@@ -21,6 +21,7 @@ import org.thoughtcrime.securesms.keyvalue.SignalStore;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.database.TI_IdentityRecord;
+import org.thoughtcrime.securesms.trustedIntroductions.database.TI_IdentityRecordList;
 import org.thoughtcrime.securesms.trustedIntroductions.database.TI_IdentityStoreRecord;
 import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue;
 import org.thoughtcrime.securesms.trustedIntroductions.glue.SignalBaseIdentityKeyStoreGlue;
@@ -173,7 +174,7 @@ public class SignalBaseIdentityKeyStore {
     }
   }
 
-  public @NonNull IdentityRecordList getIdentityRecords(@NonNull List<Recipient> recipients) {
+  public @NonNull TI_IdentityRecordList getIdentityRecords(@NonNull List<Recipient> recipients) {
     List<String> addressNames = recipients.stream()
                                           .filter(Recipient::hasServiceId)
                                           .map(Recipient::requireServiceId)
@@ -181,7 +182,7 @@ public class SignalBaseIdentityKeyStore {
                                           .collect(Collectors.toList());
 
     if (addressNames.isEmpty()) {
-      return IdentityRecordList.EMPTY;
+      return TI_IdentityRecordList.EMPTY;
     }
 
     List<TI_IdentityRecord> records = new ArrayList<>(recipients.size());
@@ -202,7 +203,7 @@ public class SignalBaseIdentityKeyStore {
       }
     }
 
-    return new IdentityRecordList(records);
+    return new TI_IdentityRecordList(records);
   }
 
   public void setApproval(@NonNull RecipientId recipientId, boolean nonBlockingApproval) {

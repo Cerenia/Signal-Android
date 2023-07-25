@@ -11,6 +11,7 @@ import org.thoughtcrime.securesms.database.model.MessageId
 import org.thoughtcrime.securesms.database.model.MessageRecord
 import org.thoughtcrime.securesms.database.model.MmsMessageRecord
 import org.thoughtcrime.securesms.recipients.RecipientId
+import org.thoughtcrime.securesms.trustedIntroductions.database.TI_IdentityRecord
 import org.whispersystems.signalservice.api.util.Preconditions
 
 /**
@@ -112,8 +113,10 @@ object SafetyNumberBottomSheet {
    * @param identityRecords The list of untrusted records from the thrown error
    * @param destination The location the user was trying to send content
    */
+  // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
   @JvmStatic
-  fun forIdentityRecordsAndDestination(identityRecords: List<IdentityRecord>, destination: ContactSearchKey): Factory {
+  fun forIdentityRecordsAndDestination(identityRecords: List<TI_IdentityRecord>, destination: ContactSearchKey): Factory {
+    // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end"
     val args = SafetyNumberBottomSheetArgs(
       identityRecords.map { it.recipientId },
       listOf(destination).filterIsInstance<ContactSearchKey.RecipientSearchKey>().map { it.requireRecipientSearchKey() }

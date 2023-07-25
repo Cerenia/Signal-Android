@@ -21,7 +21,9 @@ import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database;
 import org.thoughtcrime.securesms.database.model.IdentityRecord;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.jobs.MultiDeviceVerifiedUpdateJob;
+import org.thoughtcrime.securesms.trustedIntroductions.database.TI_IdentityRecord;
 import org.thoughtcrime.securesms.trustedIntroductions.database.TI_IdentityTable;
+import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue;
 import org.thoughtcrime.securesms.trustedIntroductions.jobs.TrustedIntroductionsReceiveJob;
 import org.thoughtcrime.securesms.recipients.LiveRecipient;
 import org.thoughtcrime.securesms.recipients.Recipient;
@@ -239,7 +241,7 @@ public class TI_Utils {
    * @return their identity as saved in the Identity database
    */
   public static IdentityKey getIdentityKey(RecipientId id) throws TI_MissingIdentityException {
-    Optional<IdentityRecord> identityRecord = ApplicationDependencies.getProtocolStore().aci().identities().getIdentityRecord(id);
+    Optional<TI_IdentityRecord> identityRecord = ApplicationDependencies.getProtocolStore().aci().identities().getIdentityRecord(id);
     // If this doesn't work we have a programming error further up the stack, no introduction can be made if we don't have the identity.
     if(!identityRecord.isPresent()){
       throw new TI_MissingIdentityException(TAG + " No identity found for the recipient with id: " + id);
@@ -478,7 +480,7 @@ public class TI_Utils {
    *
    * @param status The new verification status
    */
-  public static void updateContactsVerifiedStatus(RecipientId recipientId, IdentityKey identityKey, TI_IdentityTable.VerifiedStatus status) {
+  public static void updateContactsVerifiedStatus(RecipientId recipientId, IdentityKey identityKey, IdentityTableGlue.VerifiedStatus status) {
     Log.i(TAG, "Saving identity: " + recipientId);
     SignalExecutors.BOUNDED.execute(() -> {
       try (SignalSessionLock.Lock unused = ReentrantSessionLock.INSTANCE.acquire()) {
@@ -500,7 +502,7 @@ public class TI_Utils {
         ApplicationDependencies.getJobManager()
                                .add(new MultiDeviceVerifiedUpdateJob(recipientId,
                                                                      identityKey,
-                                                                     status));
+                                                                     IdentityTable.VerifiedStatus.forState(IdentityTableGlue.VerifiedStatus.toVanilla(status.toInt()))));
         StorageSyncHelper.scheduleSyncForDataChange();
         Recipient recipient = Recipient.live(recipientId).resolve();
         IdentityUtil.markIdentityVerified(getApplicationContext(), recipient, verified, false);

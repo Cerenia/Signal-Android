@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.thoughtcrime.securesms.R;
+import org.thoughtcrime.securesms.trustedIntroductions.database.TI_IdentityRecord;
 import org.thoughtcrime.securesms.verify.VerifyIdentityActivity;
 import org.thoughtcrime.securesms.database.model.IdentityRecord;
 
@@ -31,7 +32,7 @@ public final class CanNotIntroduceDialog {
     private CanNotIntroduceDialog() {
     }
 
-    public static void show(@NonNull Context context, @Nullable IdentityRecord identityRecord, ConversationType conversationType) {
+    public static void show(@NonNull Context context, @Nullable TI_IdentityRecord identityRecord, ConversationType conversationType) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context).setTitle(R.string.CanNotIntroduceDialog__Cant_introduce);
 
         switch (conversationType){

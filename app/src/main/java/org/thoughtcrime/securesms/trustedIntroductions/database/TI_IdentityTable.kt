@@ -185,7 +185,7 @@ class TI_IdentityTable internal constructor(context: Context?, databaseHelper: S
     //  StorageSyncHelper.scheduleSyncForDataChange()
   }
 
-  fun setVerified(addressName: String, recipientId: RecipientId, identityKey: IdentityKey, verifiedStatus: VerifiedStatus) {
+  override fun setVerified(addressName: String, recipientId: RecipientId, identityKey: IdentityKey, verifiedStatus: VerifiedStatus) {
     val updated = writableDatabase
       .update(TABLE_NAME)
       .values(VERIFIED to verifiedStatus.toInt())
@@ -221,7 +221,7 @@ class TI_IdentityTable internal constructor(context: Context?, databaseHelper: S
     */
   }
 
-  fun delete(addressName: String) {
+  override fun delete(addressName: String) {
     writableDatabase
       .delete(TABLE_NAME)
       .where("${ADDRESS} = ?", addressName)

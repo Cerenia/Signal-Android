@@ -12,6 +12,8 @@ import org.thoughtcrime.securesms.crypto.IdentityKeyParcelable;
 import org.thoughtcrime.securesms.database.IdentityTable;
 import org.thoughtcrime.securesms.database.model.IdentityRecord;
 import org.thoughtcrime.securesms.recipients.RecipientId;
+import org.thoughtcrime.securesms.trustedIntroductions.database.TI_IdentityRecord;
+import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue;
 import org.thoughtcrime.securesms.util.DynamicNoActionBarTheme;
 import org.thoughtcrime.securesms.util.DynamicTheme;
 
@@ -28,18 +30,20 @@ public class VerifyIdentityActivity extends PassphraseRequiredActivity {
 
   private final DynamicTheme dynamicTheme = new DynamicNoActionBarTheme();
 
+  // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
   public static Intent newIntent(@NonNull Context context,
-                                 @NonNull IdentityRecord identityRecord)
+                                 @NonNull TI_IdentityRecord identityRecord)
   {
     return newIntent(context,
                      identityRecord.getRecipientId(),
                      identityRecord.getIdentityKey(),
-                     IdentityTable.VerifiedStatus.isVerified(identityRecord.getVerifiedStatus()));
+                     IdentityTableGlue.VerifiedStatus.isVerified(identityRecord.getVerifiedStatus()));
   }
 
   public static Intent newIntent(@NonNull Context context,
-                                 @NonNull IdentityRecord identityRecord,
+                                 @NonNull TI_IdentityRecord identityRecord,
                                  boolean verified)
+  // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end"
   {
     return newIntent(context,
                      identityRecord.getRecipientId(),
