@@ -30,8 +30,6 @@ public interface IdentityTableGlue {
    */
   static IdentityTableGlue createSingleton(Context c, SignalDatabase databaseHelper){
     IdentityTableGlue    identityTable = new org.thoughtcrime.securesms.trustedIntroductions.database.TI_IdentityTable(c, databaseHelper);
-    IdentityTableExports exports       = IdentityTable.Companion.TI_export();
-    TI_IdentityTable.Singleton.setExportedPrivates(exports);
     TI_IdentityTable.Singleton.setInstance(identityTable);
     return identityTable;
   }
@@ -48,7 +46,7 @@ public interface IdentityTableGlue {
    * @param id: id of the recipient
    * @return The VerifiedStatus of the recipient or default if the recipient is not in the database.
    */
-  IdentityTable.VerifiedStatus getVerifiedStatus(@Nullable RecipientId id);
+  TI_IdentityTable.VerifiedStatus getVerifiedStatus(@Nullable RecipientId id);
 
   ArrayList<String> getAllDatabaseKeys();
 }
