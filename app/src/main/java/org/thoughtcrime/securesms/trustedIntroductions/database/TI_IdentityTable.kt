@@ -4,14 +4,11 @@ import android.database.Cursor
 import android.content.Context
 import org.signal.core.util.delete
 import org.signal.core.util.logging.Log
-import org.signal.core.util.update
-import org.signal.libsignal.protocol.IdentityKey
 import org.thoughtcrime.securesms.database.DatabaseTable
 import org.thoughtcrime.securesms.database.IdentityTable
 import org.thoughtcrime.securesms.database.SignalDatabase
 import org.thoughtcrime.securesms.recipients.RecipientId
 import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue
-import org.thoughtcrime.securesms.util.Base64
 import java.lang.StringBuilder
 
 
@@ -169,7 +166,11 @@ class TI_IdentityTable internal constructor(context: Context?, databaseHelper: S
        * @return True is verified, false otherwise.
        */
       @JvmStatic
-      fun isVerified(verifiedStatus: VerifiedStatus): Boolean{
+      fun isVerified(id: RecipientId, verifiedStatus: IdentityTable.VerifiedStatus): Boolean{
+        // TODO: Verify cache, adapt if necesssary, then return value.
+        assert(false)
+        return false
+        /**
         return when (verifiedStatus){
           DIRECTLY_VERIFIED -> true
           INTRODUCED -> true
@@ -177,7 +178,7 @@ class TI_IdentityTable internal constructor(context: Context?, databaseHelper: S
           MANUALLY_VERIFIED -> true
           DEFAULT -> false
           UNVERIFIED -> false
-        }
+        }**/
       }
 
 
