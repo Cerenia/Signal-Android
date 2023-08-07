@@ -20,6 +20,7 @@ import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.storage.StorageSyncHelper;
 import org.thoughtcrime.securesms.trustedIntroductions.ClearVerificationDialog;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
+import org.thoughtcrime.securesms.trustedIntroductions.database.TI_IdentityTable;
 import org.thoughtcrime.securesms.util.IdentityUtil;
 import org.thoughtcrime.securesms.util.ViewUtil;
 import org.thoughtcrime.securesms.verify.VerifyDisplayFragment;
@@ -50,55 +51,55 @@ public interface VerifyDisplayFragmentGlue {
   static void updateVerifyButtonLogic(Button verifyButton, RecipientId recipientId, androidx.fragment.app.FragmentActivity activity, IdentityKey remoteIdentity) {
     // TODO: This needs a good refactoring since I want to be close to the original. I completely mangled this class.
     // Check the current verification status
-    IdentityTable.VerifiedStatus previousStatus = SignalDatabase.tiIdentityDatabase().getVerifiedStatus(recipientId);
+    TI_IdentityTable.VerifiedStatus previousStatus = SignalDatabase.tiIdentityDatabase().getVerifiedStatus(recipientId);
     Log.i(TAG_TI, "Saving identity: " + recipientId);
-    if (IdentityTable.VerifiedStatus.stronglyVerified(previousStatus)) {
+    if (TI_IdentityTable.VerifiedStatus.stronglyVerified(previousStatus)) {
       // TODO: when would this activity ever be null?
       if (activity != null) {
         // go through user check first.
-        ClearVerificationDialog.show(activity,  previousStatus, recipientId, remoteIdentity, verifyButton);
+        ClearVerificationDialog.show(activity, previousStatus, recipientId, remoteIdentity, verifyButton);
       }
-    } else if (previousStatus == IdentityTable.VerifiedStatus.MANUALLY_VERIFIED) {
+    } else if (previousStatus == TI_IdentityTable.VerifiedStatus.MANUALLY_VERIFIED) {
       // manually verified, no user check necessary
-      TI_Utils.updateContactsVerifiedStatus(recipientId, remoteIdentity, IdentityTable.VerifiedStatus.UNVERIFIED);
+      TI_Utils.updateContactsVerifiedStatus(recipientId, remoteIdentity, TI_IdentityTable.VerifiedStatus.UNVERIFIED);
       updateVerifyButtonText(false, verifyButton);
     } else {
       // Unverified or default, simply set to manually verified
-      TI_Utils.updateContactsVerifiedStatus(recipientId, remoteIdentity, IdentityTable.VerifiedStatus.MANUALLY_VERIFIED);
+      TI_Utils.updateContactsVerifiedStatus(recipientId, remoteIdentity, TI_IdentityTable.VerifiedStatus.MANUALLY_VERIFIED);
       updateVerifyButtonText(true, verifyButton);
     }
   }
 
   static void onSuccessfullVerification(RecipientId recipientId, IdentityKey remoteIdentity, Button verifyButton){
     // The fingerprint matched after a QR scann and we can update the users verification status
-    TI_Utils.updateContactsVerifiedStatus(recipientId, remoteIdentity, IdentityTable.VerifiedStatus.DIRECTLY_VERIFIED);
+    TI_Utils.updateContactsVerifiedStatus(recipientId, remoteIdentity, TI_IdentityTable.VerifiedStatus.DIRECTLY_VERIFIED);
     updateVerifyButtonText(true, verifyButton);
   }
 
-  private void updateContactsVerifiedStatus(IdentityTable.VerifiedStatus status, Recipient recipient, IdentityKey remoteIdentity, androidx.fragment.app.FragmentActivity activity) {
+  private void updateContactsVerifiedStatus(TI_IdentityTable.VerifiedStatus status, Recipient recipient, IdentityKey remoteIdentity, androidx.fragment.app.FragmentActivity activity) {
     final RecipientId recipientId = recipient.getId();
     Log.i(TAG_TI, "Saving identity: " + recipientId);
     SignalExecutors.BOUNDED.execute(() -> {
       try (SignalSessionLock.Lock unused = ReentrantSessionLock.INSTANCE.acquire()) {
-        final boolean verified = IdentityTable.VerifiedStatus.isVerified(status);
+        final boolean verified = TI_IdentityTable.VerifiedStatus.isVerified(status);
         if (verified) {
           Log.i(TAG_TI, "Saving identity: " + recipientId);
           ApplicationDependencies.getProtocolStore().aci().identities()
                                  .saveIdentityWithoutSideEffects(recipientId,
                                                                  remoteIdentity,
-                                                                 status,
+                                                                 TI_IdentityTable.VerifiedStatus.toVanilla(status),
                                                                  false,
                                                                  System.currentTimeMillis(),
                                                                  true);
         } else {
-          ApplicationDependencies.getProtocolStore().aci().identities().setVerified(recipientId, remoteIdentity, status);
+          ApplicationDependencies.getProtocolStore().aci().identities().setVerified(recipientId, remoteIdentity, TI_IdentityTable.VerifiedStatus.toVanilla(status));
         }
 
         // For other devices but the Android phone, we map the finer statusses to verified or unverified.
         ApplicationDependencies.getJobManager()
                                .add(new MultiDeviceVerifiedUpdateJob(recipientId,
                                                                      remoteIdentity,
-                                                                     status));
+                                                                     TI_IdentityTable.VerifiedStatus.toVanilla(status)));
         StorageSyncHelper.scheduleSyncForDataChange();
         IdentityUtil.markIdentityVerified(activity, recipient, verified, false);
       }

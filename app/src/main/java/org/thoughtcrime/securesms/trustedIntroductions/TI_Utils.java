@@ -21,6 +21,7 @@ import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database;
 import org.thoughtcrime.securesms.database.model.IdentityRecord;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.jobs.MultiDeviceVerifiedUpdateJob;
+import org.thoughtcrime.securesms.trustedIntroductions.database.TI_IdentityTable;
 import org.thoughtcrime.securesms.trustedIntroductions.jobs.TrustedIntroductionsReceiveJob;
 import org.thoughtcrime.securesms.recipients.LiveRecipient;
 import org.thoughtcrime.securesms.recipients.Recipient;
@@ -477,21 +478,21 @@ public class TI_Utils {
    *
    * @param status The new verification status
    */
-  public static void updateContactsVerifiedStatus(RecipientId recipientId, IdentityKey identityKey, IdentityTable.VerifiedStatus status) {
+  public static void updateContactsVerifiedStatus(RecipientId recipientId, IdentityKey identityKey, TI_IdentityTable.VerifiedStatus status) {
     Log.i(TAG, "Saving identity: " + recipientId);
     SignalExecutors.BOUNDED.execute(() -> {
       try (SignalSessionLock.Lock unused = ReentrantSessionLock.INSTANCE.acquire()) {
-        final boolean verified = IdentityTable.VerifiedStatus.isVerified(status);
+        final boolean verified = TI_IdentityTable.VerifiedStatus.isVerified(status);
         if (verified) {
           ApplicationDependencies.getProtocolStore().aci().identities()
                                  .saveIdentityWithoutSideEffects(recipientId,
                                                                  identityKey,
-                                                                 status,
+                                                                 TI_IdentityTable.VerifiedStatus.toVanilla(status),
                                                                  false,
                                                                  System.currentTimeMillis(),
                                                                  true);
         } else {
-          ApplicationDependencies.getProtocolStore().aci().identities().setVerified(recipientId, identityKey, status);
+          ApplicationDependencies.getProtocolStore().aci().identities().setVerified(recipientId, identityKey, TI_IdentityTable.VerifiedStatus.toVanilla(status));
         }
 
         // For other devices but the Android phone, we map the finer statusses to verified or unverified.
@@ -499,7 +500,7 @@ public class TI_Utils {
         ApplicationDependencies.getJobManager()
                                .add(new MultiDeviceVerifiedUpdateJob(recipientId,
                                                                      identityKey,
-                                                                     status));
+                                                                     TI_IdentityTable.VerifiedStatus.toVanilla(status)));
         StorageSyncHelper.scheduleSyncForDataChange();
         Recipient recipient = Recipient.live(recipientId).resolve();
         IdentityUtil.markIdentityVerified(getApplicationContext(), recipient, verified, false);

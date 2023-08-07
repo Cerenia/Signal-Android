@@ -11,6 +11,7 @@ import org.signal.libsignal.protocol.IdentityKey;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.database.IdentityTable;
 import org.thoughtcrime.securesms.recipients.RecipientId;
+import org.thoughtcrime.securesms.trustedIntroductions.database.TI_IdentityTable;
 import org.thoughtcrime.securesms.trustedIntroductions.glue.VerifyDisplayFragmentGlue;
 
 /**
@@ -40,8 +41,8 @@ public class ClearVerificationDialog {
      * @param remoteIdentity Remote identity key
      * @param verifyButton The button to be updated after the clearing operation.
      */
-    public static void show(@NonNull Context context, IdentityTable.VerifiedStatus status, RecipientId recipientId, IdentityKey remoteIdentity, Button verifyButton) {
-        assert IdentityTable.VerifiedStatus.stronglyVerified(status): "Unsupported Verification status";
+    public static void show(@NonNull Context context, TI_IdentityTable.VerifiedStatus status, RecipientId recipientId, IdentityKey remoteIdentity, Button verifyButton) {
+        assert TI_IdentityTable.VerifiedStatus.stronglyVerified(status): "Unsupported Verification status";
 
         clearVerification = false;
         AlertDialog.Builder builder = new AlertDialog.Builder(context).setTitle(R.string.ClearVerificationDialog__Title);
@@ -67,7 +68,7 @@ public class ClearVerificationDialog {
     }
 
     static void onClearVerification(RecipientId recipientId, IdentityKey remoteIdentity, Button verifyButton){
-        TI_Utils.updateContactsVerifiedStatus(recipientId, remoteIdentity, IdentityTable.VerifiedStatus.UNVERIFIED);
+        TI_Utils.updateContactsVerifiedStatus(recipientId, remoteIdentity, TI_IdentityTable.VerifiedStatus.UNVERIFIED);
         VerifyDisplayFragmentGlue.updateVerifyButtonText(false, verifyButton);
     }
 }
