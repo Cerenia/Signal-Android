@@ -253,7 +253,7 @@ class ChangeNumberRepository(
       pniProtocolStore.identities().saveIdentityWithoutSideEffects(
         Recipient.self().id,
         pniProtocolStore.identityKeyPair.publicKey,
-        IdentityTable.VerifiedStatus.DUPLEX_VERIFIED, // TODO: fine?
+        IdentityTable.VerifiedStatus.VERIFIED, 
         true,
         System.currentTimeMillis(),
         true

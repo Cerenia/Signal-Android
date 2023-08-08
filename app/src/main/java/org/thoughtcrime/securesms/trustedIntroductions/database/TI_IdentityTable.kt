@@ -82,7 +82,7 @@ class TI_IdentityTable internal constructor(context: Context?, databaseHelper: S
       VerifiedStatus.DEFAULT
     }
   }
-  
+
   /**
    * Expose all keys of the database for Precondition check in @TI_Cursor.java
    */
