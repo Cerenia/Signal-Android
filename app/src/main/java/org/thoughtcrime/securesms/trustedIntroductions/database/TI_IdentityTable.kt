@@ -7,6 +7,8 @@ import org.signal.core.util.logging.Log
 import org.thoughtcrime.securesms.database.DatabaseTable
 import org.thoughtcrime.securesms.database.IdentityTable
 import org.thoughtcrime.securesms.database.SignalDatabase
+import org.thoughtcrime.securesms.database.model.IdentityStoreRecord
+import org.thoughtcrime.securesms.recipients.Recipient
 import org.thoughtcrime.securesms.recipients.RecipientId
 import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue
 import java.lang.StringBuilder
@@ -19,14 +21,12 @@ class TI_IdentityTable internal constructor(context: Context?, databaseHelper: S
     const val TABLE_NAME = "TI_shadow_identities"
     private const val ID = "_id"
     const val ADDRESS = "address"
-    const val LAST_KNOWN_VANILLA_VERIFIED = "vanilla_verified"
-    const val TI_VERIFIED = "ti_verified"
+    const val VERIFIED = "verified"
     const val CREATE_TABLE = """
       CREATE TABLE $TABLE_NAME (
         $ID INTEGER PRIMARY KEY AUTOINCREMENT, 
         $ADDRESS INTEGER UNIQUE, 
-        $LAST_KNOWN_VANILLA_VERIFIED INTEGER DEFAULT 0,
-        $TI_VERIFIED INTEGER DEFAULT 0, 
+        $VERIFIED INTEGER DEFAULT 0, 
       )
     """
 
@@ -38,7 +38,6 @@ class TI_IdentityTable internal constructor(context: Context?, databaseHelper: S
       }
       inst = intfHandle
     }
-
   }
 
   /**
@@ -47,8 +46,6 @@ class TI_IdentityTable internal constructor(context: Context?, databaseHelper: S
    * trusted introductions (for which @see VerifiedStatus.tiUnlocked returns true)
    */
   override fun getCursorForTIUnlocked(): Cursor {
-    // TODO: Check cache & adapt before you give this out.
-
     val validStates: ArrayList<String> = ArrayList()
     // dynamically compute the valid states and query the Signal database for these contacts
     for (e in VerifiedStatus.values()) {
@@ -58,10 +55,10 @@ class TI_IdentityTable internal constructor(context: Context?, databaseHelper: S
     }
     assert(validStates.size > 0) { "No valid states defined for TI" }
     val selectionBuilder = StringBuilder()
-    selectionBuilder.append(String.format("%s=?", TI_VERIFIED))
+    selectionBuilder.append(String.format("%s=?", VERIFIED))
     if (validStates.size > 1) {
       for (i in 0 until validStates.size - 1) {
-        selectionBuilder.append(String.format(" OR %s=?", TI_VERIFIED))
+        selectionBuilder.append(String.format(" OR %s=?", VERIFIED))
       }
     }
     // create the rest of the query
@@ -71,19 +68,21 @@ class TI_IdentityTable internal constructor(context: Context?, databaseHelper: S
   }
 
   override fun getVerifiedStatus(id: RecipientId?): VerifiedStatus {
-    // TODO: Adapt to new scheme, statemachine needs implementation here
-    /**
     val recipient = Recipient.resolved(id!!)
-    if(recipient.hasServiceId()){
-      val ir = getIdentityRecord(recipient.requireServiceId().toString())
-      return ir.map(TI_IdentityRecord::verifiedStatus).orElse(VerifiedStatus.UNVERIFIED) // fail closed
+    return if(recipient.hasServiceId()){
+      val cursor = readableDatabase.query(TABLE_NAME, arrayOf(VERIFIED), String.format("%s=?", ADDRESS), arrayOf(recipient.serviceId.toString()), null, null, null)
+      if (cursor.count < 1){
+        VerifiedStatus.DEFAULT // this recipient is not recorded in the table -> default verification state.
+      } else{
+        assert(cursor.count == 1){"$TAG table returned more than one recipient with service ID: ${recipient.serviceId}!!"}
+        VerifiedStatus.UNVERIFIED // fail closed. But assertion error makes this unreachable.
+      }
     } else {
-      return VerifiedStatus.DEFAULT
-    }**/
-    return VerifiedStatus.DEFAULT
+      Log.w(TAG, "Recipient with recipient ID: $id, did not have a service ID and could therefore not be found in the table.")
+      VerifiedStatus.DEFAULT
+    }
   }
-
-
+  
   /**
    * Expose all keys of the database for Precondition check in @TI_Cursor.java
    */
@@ -91,8 +90,7 @@ class TI_IdentityTable internal constructor(context: Context?, databaseHelper: S
     val keys = arrayListOf<String>()
     keys.add(ID)
     keys.add(ADDRESS)
-    keys.add(LAST_KNOWN_VANILLA_VERIFIED)
-    keys.add(TI_VERIFIED)
+    keys.add(VERIFIED)
     return keys
   }
 
