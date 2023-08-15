@@ -200,14 +200,14 @@ public final class RegistrationRepository {
   private void saveOwnIdentityKey(@NonNull RecipientId selfId, @NonNull SignalServiceAccountDataStoreImpl protocolStore, long now) {
     protocolStore.identities().saveIdentityWithoutSideEffects(selfId,
                                                               protocolStore.getIdentityKeyPair().getPublicKey(),
-                                                              IdentityTable.VerifiedStatus.DUPLEX_VERIFIED,
+                                                              IdentityTable.VerifiedStatus.VERIFIED,
                                                               true,
                                                               now,
                                                               true);
     ApplicationDependencies.getProtocolStore().aci().identities()
                            .saveIdentityWithoutSideEffects(selfId,
                                                            protocolStore.getIdentityKeyPair().getPublicKey(),
-                                                           IdentityTable.VerifiedStatus.DUPLEX_VERIFIED,
+                                                           IdentityTable.VerifiedStatus.VERIFIED,
                                                            true,
                                                            System.currentTimeMillis(),
                                                            true);
