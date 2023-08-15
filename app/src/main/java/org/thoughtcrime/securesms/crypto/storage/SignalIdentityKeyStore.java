@@ -6,15 +6,11 @@ import org.signal.libsignal.protocol.IdentityKey;
 import org.signal.libsignal.protocol.IdentityKeyPair;
 import org.signal.libsignal.protocol.SignalProtocolAddress;
 import org.signal.libsignal.protocol.state.IdentityKeyStore;
-import org.thoughtcrime.securesms.database.IdentityTable;
 import org.thoughtcrime.securesms.database.IdentityTable.VerifiedStatus;
 import org.thoughtcrime.securesms.database.identity.IdentityRecordList;
 import org.thoughtcrime.securesms.database.model.IdentityRecord;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
-import org.thoughtcrime.securesms.trustedIntroductions.database.TI_IdentityRecord;
-import org.thoughtcrime.securesms.trustedIntroductions.database.TI_IdentityRecordList;
-import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue;
 
 import java.util.List;
 import java.util.Optional;
@@ -55,7 +51,7 @@ public class SignalIdentityKeyStore implements IdentityKeyStore {
 
   public void saveIdentityWithoutSideEffects(@NonNull RecipientId recipientId,
                                              IdentityKey identityKey,
-                                             IdentityTable.VerifiedStatus verifiedStatus,
+                                             VerifiedStatus verifiedStatus,
                                              boolean firstUse,
                                              long timestamp,
                                              boolean nonBlockingApproval)
@@ -72,12 +68,12 @@ public class SignalIdentityKeyStore implements IdentityKeyStore {
   public IdentityKey getIdentity(SignalProtocolAddress address) {
     return baseStore.getIdentity(address);
   }
-  // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
-  public @NonNull Optional<TI_IdentityRecord> getIdentityRecord(@NonNull RecipientId recipientId) {
+
+  public @NonNull Optional<IdentityRecord> getIdentityRecord(@NonNull RecipientId recipientId) {
     return baseStore.getIdentityRecord(recipientId);
   }
 
-  public @NonNull TI_IdentityRecordList getIdentityRecords(@NonNull List<Recipient> recipients) {
+  public @NonNull IdentityRecordList getIdentityRecords(@NonNull List<Recipient> recipients) {
     return baseStore.getIdentityRecords(recipients);
   }
 
@@ -85,10 +81,9 @@ public class SignalIdentityKeyStore implements IdentityKeyStore {
     baseStore.setApproval(recipientId, nonBlockingApproval);
   }
 
-  public void setVerified(@NonNull RecipientId recipientId, IdentityKey identityKey, IdentityTableGlue.VerifiedStatus verifiedStatus) {
+  public void setVerified(@NonNull RecipientId recipientId, IdentityKey identityKey, VerifiedStatus verifiedStatus) {
     baseStore.setVerified(recipientId, identityKey, verifiedStatus);
   }
-  // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end"
 
   public void delete(@NonNull String addressName) {
     baseStore.delete(addressName);

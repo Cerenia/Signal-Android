@@ -30,9 +30,8 @@ public class VerifyIdentityActivity extends PassphraseRequiredActivity {
 
   private final DynamicTheme dynamicTheme = new DynamicNoActionBarTheme();
 
-  // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
   public static Intent newIntent(@NonNull Context context,
-                                 @NonNull TI_IdentityRecord identityRecord)
+                                 @NonNull IdentityRecord identityRecord)
   {
     return newIntent(context,
                      identityRecord.getRecipientId(),
@@ -41,9 +40,8 @@ public class VerifyIdentityActivity extends PassphraseRequiredActivity {
   }
 
   public static Intent newIntent(@NonNull Context context,
-                                 @NonNull TI_IdentityRecord identityRecord,
+                                 @NonNull IdentityRecord identityRecord,
                                  boolean verified)
-  // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end"
   {
     return newIntent(context,
                      identityRecord.getRecipientId(),

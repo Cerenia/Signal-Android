@@ -2,15 +2,14 @@ package org.thoughtcrime.securesms.trustedIntroductions.glue;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.provider.ContactsContract;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import org.signal.libsignal.protocol.IdentityKey;
 import org.thoughtcrime.securesms.database.IdentityTable;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.recipients.RecipientId;
-import org.thoughtcrime.securesms.trustedIntroductions.database.TI_IdentityStoreRecord;
 import org.thoughtcrime.securesms.trustedIntroductions.database.TI_IdentityTable;
 
 import java.util.ArrayList;
@@ -104,6 +103,10 @@ public interface IdentityTableGlue {
         default:
           return IdentityTable.VerifiedStatus.UNVERIFIED.toInt();
       }
+    }
+
+    public static IdentityTable.VerifiedStatus toVanilla(VerifiedStatus status){
+      return IdentityTable.VerifiedStatus.forState(toVanilla(status.toInt()));
     }
 
     /**

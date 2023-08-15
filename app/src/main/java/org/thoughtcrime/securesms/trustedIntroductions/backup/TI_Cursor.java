@@ -16,6 +16,7 @@ import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.database.IdentityTable;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
+import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue;
 import org.whispersystems.signalservice.api.util.Preconditions;
 
 import java.util.ArrayList;
@@ -36,7 +37,9 @@ public class TI_Cursor implements Cursor {
 
   private Map<Integer, String>   idx_to_key;
   private ArrayList<ArrayList<Object>> values;
-  private final ArrayList<String> types = SignalDatabase.tiIdentityDatabase().getAllDatabaseKeys();
+  //TODO: adjust
+  private final ArrayList<String> types = new ArrayList<>();
+  //private final ArrayList<String> types = SignalDatabase.tiIdentityDatabase().getAllDatabaseKeys();
 
   public TI_Cursor(Cursor cursor){
     values = new ArrayList<>();
@@ -58,6 +61,7 @@ public class TI_Cursor implements Cursor {
   }
 
   // PRE: Map initialized
+  // TODO: Do I still need this?
   @SuppressLint("Range") private TI_Cursor convertVanilla(Cursor cursor){
     Preconditions.checkArgument((idx_to_key != null) &&
                                 (idx_to_key.size()) > 0);
@@ -69,7 +73,8 @@ public class TI_Cursor implements Cursor {
         int idx = cursor.getColumnIndex(t);
         int type = cursor.getType(idx);
         if(t.equals(IdentityTable.VERIFIED)){
-          v.set(idx, IdentityTable.VerifiedStatus.toVanilla(cursor.getInt(idx)));
+          // TODO: Double check??
+          v.set(idx, IdentityTableGlue.VerifiedStatus.toVanilla(cursor.getInt(idx)));
         } else if(type == Cursor.FIELD_TYPE_INTEGER){
           v.set(idx, cursor.getLong(idx));
         } else if(type == Cursor.FIELD_TYPE_STRING) {
