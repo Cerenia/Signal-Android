@@ -533,12 +533,12 @@ open class SignalDatabase(private val context: Application, databaseSecret: Data
     // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
     @get:JvmStatic
     @get:JvmName("tiDatabase")
-    val tiDatabase: TI_DatabaseGlue
+    val tiDatabase: org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue
       get() = instance!!.tiDatabase
 
     @get:JvmStatic
     @get:JvmName("tiIdentityDatabase")
-    val tiIdentityTable: IdentityTableGlue
+    val tiIdentityTable: org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue
       get() = instance!!.tiIdentityTable
     // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end"
   }
