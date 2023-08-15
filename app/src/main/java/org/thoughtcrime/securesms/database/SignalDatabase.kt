@@ -77,7 +77,8 @@ open class SignalDatabase(private val context: Application, databaseSecret: Data
   val pendingPniSignatureMessageTable: PendingPniSignatureMessageTable = PendingPniSignatureMessageTable(context, this)
   val callTable: CallTable = CallTable(context, this)
   // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
-  val tiDummy: TI_DatabaseGlue = TI_DatabaseGlue.createSingleton(context, this)
+  val tiDatabase: org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue = TI_DatabaseGlue.createSingleton(context, this)
+  val tiIdentityTable: org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue = IdentityTableGlue.createSingleton(context, this)
   // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end"
 
   override fun onOpen(db: net.zetetic.database.sqlcipher.SQLiteDatabase) {
@@ -534,12 +535,12 @@ open class SignalDatabase(private val context: Application, databaseSecret: Data
     @get:JvmStatic
     @get:JvmName("tiDatabase")
     val tiDatabase: TI_DatabaseGlue
-      get() = TI_DatabaseGlue.getTIDatabase(instance)
+      get() = instance!!.tiDatabase
 
     @get:JvmStatic
     @get:JvmName("tiIdentityDatabase")
-    val tiIdentityDatabase: IdentityTableGlue
-      get() = IdentityTableGlue.getInstance(instance)
+    val tiIdentityTable: IdentityTableGlue
+      get() = instance!!.tiIdentityTable
     // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end"
   }
 }

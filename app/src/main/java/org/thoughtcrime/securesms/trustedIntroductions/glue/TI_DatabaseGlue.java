@@ -25,10 +25,8 @@ public interface TI_DatabaseGlue {
     return TI_Database.getInstance();
   }
 
-  static TI_DatabaseGlue createSingleton(Context c, SignalDatabase databaseHelper) throws Exception {
-    TI_Database tiDatabase = new TI_Database(c, databaseHelper);
-    TI_Database.setInstance(tiDatabase);
-    return tiDatabase;
+  static TI_DatabaseGlue createSingleton(Context c, SignalDatabase databaseHelper) {
+    return new TI_Database(c, databaseHelper);
   }
 
   Cursor fetchRecipientDBCursor(RecipientId introduceeId);

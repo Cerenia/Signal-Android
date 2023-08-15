@@ -20,7 +20,7 @@ import java.lang.StringBuilder
 
 class TI_IdentityTable internal constructor(context: Context?, databaseHelper: SignalDatabase?): DatabaseTable(context, databaseHelper), IdentityTableGlue {
 
-  companion object Singleton {
+  companion object {
     private val TAG = Log.tag(TI_IdentityTable::class.java)
     const val TABLE_NAME = "TI_shadow_identities"
     private const val ID = "_id"
@@ -33,23 +33,6 @@ class TI_IdentityTable internal constructor(context: Context?, databaseHelper: S
         $VERIFIED INTEGER DEFAULT 0, 
       )
     """
-
-    var TI_inst: IdentityTableGlue? = null
-    private var signal_inst: IdentityTable? = null
-
-    fun setInstance(intfHandle: IdentityTableGlue) {
-      if (TI_inst != null) {
-        throw AssertionError("Attempted to reassign trustedIntroduction Identity Table singleton!")
-      }
-      TI_inst = intfHandle
-    }
-
-    fun createSignalIdentityTable(context: Context?, databaseHelper: SignalDatabase?) {
-      if (signal_inst != null) {
-        throw AssertionError("Attempted to reassign signal Identity Table singleton!")
-      }
-      signal_inst = IdentityTable(context, databaseHelper)
-    }
   }
 
   /**
