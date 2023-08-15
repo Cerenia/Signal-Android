@@ -22,8 +22,6 @@ import org.thoughtcrime.securesms.jobs.PreKeysSyncJob
 import org.thoughtcrime.securesms.migrations.LegacyMigrationJob
 import org.thoughtcrime.securesms.migrations.LegacyMigrationJob.DatabaseUpgradeListener
 import org.thoughtcrime.securesms.service.KeyCachingService
-import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue
-import org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue
 import org.thoughtcrime.securesms.util.TextSecurePreferences
 import java.io.File
 
@@ -116,7 +114,8 @@ open class SignalDatabase(private val context: Application, databaseSecret: Data
     db.execSQL(PendingPniSignatureMessageTable.CREATE_TABLE)
     db.execSQL(CallTable.CREATE_TABLE)
     // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
-    TI_DatabaseGlue.executeCreateTable(db);
+    db.execSQL(org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue.getCreateTable())
+    db.execSQL(org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue.getCreateTable())
     // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end"
     executeStatements(db, SearchTable.CREATE_TABLE)
     executeStatements(db, RemappedRecordTables.CREATE_TABLE)

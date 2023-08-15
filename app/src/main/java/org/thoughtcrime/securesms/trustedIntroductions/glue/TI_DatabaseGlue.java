@@ -29,6 +29,10 @@ public interface TI_DatabaseGlue {
     return new TI_Database(c, databaseHelper);
   }
 
+  static String getCreateTable(){
+    return TI_Database.CREATE_TABLE;
+  }
+
   Cursor fetchRecipientDBCursor(RecipientId introduceeId);
 
   void modifyIntroduceeVerification(String introduceeServiceId, TI_IdentityTable.VerifiedStatus previousIntroduceeVerification, TI_Database.State newState, String format);

@@ -8,6 +8,7 @@ import androidx.annotation.Nullable;
 import org.thoughtcrime.securesms.database.IdentityTable;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.recipients.RecipientId;
+import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database;
 import org.thoughtcrime.securesms.trustedIntroductions.database.TI_IdentityTable;
 
 public interface IdentityTableGlue {
@@ -15,6 +16,10 @@ public interface IdentityTableGlue {
   String VERIFIED = IdentityTable.VERIFIED;
   String TABLE_NAME = IdentityTable.TABLE_NAME;
 
+
+  static String getCreateTable(){
+    return TI_IdentityTable.CREATE_TABLE;
+  }
 
   static IdentityTableGlue createSingleton(Context c, SignalDatabase databaseHelper){
     return new TI_IdentityTable(c, databaseHelper);
