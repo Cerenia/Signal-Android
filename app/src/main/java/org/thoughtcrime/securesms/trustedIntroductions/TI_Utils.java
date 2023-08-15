@@ -482,6 +482,7 @@ public class TI_Utils {
     Log.i(TAG, "Saving identity: " + recipientId);
     SignalExecutors.BOUNDED.execute(() -> {
       try (SignalSessionLock.Lock unused = ReentrantSessionLock.INSTANCE.acquire()) {
+        // TODO: Change logic now that I have two tables
         final boolean verified = TI_IdentityTable.VerifiedStatus.isVerified(status);
         if (verified) {
           ApplicationDependencies.getProtocolStore().aci().identities()

@@ -164,11 +164,7 @@ class TI_IdentityTable internal constructor(context: Context?, databaseHelper: S
        * @return True is verified, false otherwise.
        */
       @JvmStatic
-      fun isVerified(id: RecipientId, verifiedStatus: IdentityTable.VerifiedStatus): Boolean{
-        // TODO: Verify cache, adapt if necesssary, then return value.
-        assert(false)
-        return false
-        /**
+      fun isVerified(verifiedStatus: VerifiedStatus): Boolean{
         return when (verifiedStatus){
           DIRECTLY_VERIFIED -> true
           INTRODUCED -> true
@@ -176,7 +172,7 @@ class TI_IdentityTable internal constructor(context: Context?, databaseHelper: S
           MANUALLY_VERIFIED -> true
           DEFAULT -> false
           UNVERIFIED -> false
-        }**/
+        }
       }
 
 

@@ -538,35 +538,36 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
    * @param newState PRE: !STALE (security number changes are handled in a seperate codepath)
    * @param logmessage what to print to logcat iff status was modified
    */
-  @WorkerThread public void modifyIntroduceeVerification(@NonNull String introduceeServiceId, @NonNull IdentityTable.VerifiedStatus previousIntroduceeVerification, @NonNull State newState, @NonNull String logmessage){
+  @Override
+  @WorkerThread public void modifyIntroduceeVerification(@NonNull String introduceeServiceId, @NonNull TI_IdentityTable.VerifiedStatus previousIntroduceeVerification, @NonNull State newState, @NonNull String logmessage){
     Preconditions.checkArgument(!newState.isStale());
     // Initialize with what it was
-    IdentityTable.VerifiedStatus newIntroduceeVerification = previousIntroduceeVerification;
+    TI_IdentityTable.VerifiedStatus newIntroduceeVerification = previousIntroduceeVerification;
     switch (previousIntroduceeVerification){
       case DEFAULT:
       case UNVERIFIED:
       case MANUALLY_VERIFIED:
         if (newState == State.ACCEPTED){
-          newIntroduceeVerification = IdentityTable.VerifiedStatus.INTRODUCED;
+          newIntroduceeVerification = TI_IdentityTable.VerifiedStatus.INTRODUCED;
         }
         break;
       case DUPLEX_VERIFIED:
         if (newState == State.REJECTED){
           // Stay "duplex verified" iff only more than 1 accepted introduction for this contact exist else "directly verified"
-          newIntroduceeVerification = multipleAcceptedIntroductions(introduceeServiceId) ? IdentityTable.VerifiedStatus.DUPLEX_VERIFIED :
-                                      IdentityTable.VerifiedStatus.DIRECTLY_VERIFIED;
+          newIntroduceeVerification = multipleAcceptedIntroductions(introduceeServiceId) ? TI_IdentityTable.VerifiedStatus.DUPLEX_VERIFIED :
+                                      TI_IdentityTable.VerifiedStatus.DIRECTLY_VERIFIED;
         }
         break;
       case DIRECTLY_VERIFIED:
         if (newState == State.ACCEPTED){
-          newIntroduceeVerification = IdentityTable.VerifiedStatus.DUPLEX_VERIFIED;
+          newIntroduceeVerification = TI_IdentityTable.VerifiedStatus.DUPLEX_VERIFIED;
         }
         break;
       case INTRODUCED:
         if (newState == State.REJECTED){
           // Stay "introduced" iff more than 1 accepted introduction for this contact exist else "unverified"
-          newIntroduceeVerification = multipleAcceptedIntroductions(introduceeServiceId) ? IdentityTable.VerifiedStatus.INTRODUCED :
-                                      IdentityTable.VerifiedStatus.UNVERIFIED;
+          newIntroduceeVerification = multipleAcceptedIntroductions(introduceeServiceId) ? TI_IdentityTable.VerifiedStatus.INTRODUCED :
+                                      TI_IdentityTable.VerifiedStatus.UNVERIFIED;
         }
         break;
       default:
@@ -806,7 +807,7 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
         }
       }
 
-      IdentityTable.VerifiedStatus previousIntroduceeVerification = SignalDatabase.tiIdentityDatabase().getVerifiedStatus(introduceeID);
+      TI_IdentityTable.VerifiedStatus previousIntroduceeVerification = SignalDatabase.tiIdentityDatabase().getVerifiedStatus(introduceeID);
       if (previousIntroduceeVerification == null){
         throw new AssertionError("Unexpected missing verification status for " + introduction.getIntroduceeName());
       }

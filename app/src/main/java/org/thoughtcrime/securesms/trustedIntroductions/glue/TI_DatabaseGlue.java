@@ -12,6 +12,7 @@ import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database;
+import org.thoughtcrime.securesms.trustedIntroductions.database.TI_IdentityTable;
 
 public interface TI_DatabaseGlue {
   static void executeCreateTable(net.zetetic.database.sqlcipher.SQLiteDatabase db){
@@ -32,7 +33,7 @@ public interface TI_DatabaseGlue {
 
   Cursor fetchRecipientDBCursor(RecipientId introduceeId);
 
-  void modifyIntroduceeVerification(String introduceeServiceId, IdentityTable.VerifiedStatus previousIntroduceeVerification, TI_Database.State newState, String format);
+  void modifyIntroduceeVerification(String introduceeServiceId, TI_IdentityTable.VerifiedStatus previousIntroduceeVerification, TI_Database.State newState, String format);
 
   ContentValues buildContentValuesForStateUpdate(TI_Data introduction, TI_Database.State newState);
   SQLiteDatabase getSignalWritableDatabase();
