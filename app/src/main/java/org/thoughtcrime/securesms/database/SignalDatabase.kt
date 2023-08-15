@@ -45,9 +45,7 @@ open class SignalDatabase(private val context: Application, databaseSecret: Data
   val attachmentTable: AttachmentTable = AttachmentTable(context, this, attachmentSecret)
   val mediaTable: MediaTable = MediaTable(context, this)
   val threadTable: ThreadTable = ThreadTable(context, this)
-  // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
-  val identityTable: IdentityTableGlue = IdentityTableGlue.createSingletons(context, this)
-  // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end"
+  val identityTable: IdentityTable = IdentityTable(context, this)
   val draftTable: DraftTable = DraftTable(context, this)
   val pushTable: PushTable = PushTable(context, this)
   val groupTable: GroupTable = GroupTable(context, this)
