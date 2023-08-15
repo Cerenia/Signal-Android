@@ -17,7 +17,7 @@ public interface ConversationTitleViewGlue {
   static void setIndividualRecipientTitle(@NonNull Recipient recipient, Context context, TextView title, TextView subtitle, @NonNull Runnable updateVisibility) {
     final String displayName = recipient.getDisplayNameOrUsername(context);
     title.setText(displayName);
-    IdentityTable.VerifiedStatus verifiedStatus = SignalDatabase.tiIdentityDatabase().getVerifiedStatus(recipient.getId());
+    IdentityTableGlue.VerifiedStatus verifiedStatus = SignalDatabase.tiIdentityDatabase().getVerifiedStatus(recipient.getId());
     switch (verifiedStatus){
       case MANUALLY_VERIFIED:
         subtitle.setText(R.string.ConversationTitleView_manually_verified);
