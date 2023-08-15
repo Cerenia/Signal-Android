@@ -208,8 +208,6 @@ import org.thoughtcrime.securesms.jobs.GroupV2UpdateSelfProfileKeyJob;
 import org.thoughtcrime.securesms.jobs.RequestGroupV2InfoJob;
 import org.thoughtcrime.securesms.jobs.RetrieveProfileJob;
 import org.thoughtcrime.securesms.jobs.ServiceOutageDetectionJob;
-import org.thoughtcrime.securesms.trustedIntroductions.database.TI_IdentityRecord;
-import org.thoughtcrime.securesms.trustedIntroductions.database.TI_IdentityRecordList;
 import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue;
 import org.thoughtcrime.securesms.trustedIntroductions.jobs.TrustedIntroductionSendJob;
 import org.thoughtcrime.securesms.keyboard.KeyboardPage;
@@ -1093,7 +1091,7 @@ public class ConversationParentFragment extends Fragment
         break;
       // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
       case TRUSTED_INTRODUCTION:
-        Optional<TI_IdentityRecord> recipientRecord = ApplicationDependencies.getProtocolStore().aci().identities().getIdentityRecord(recipient.getId());
+        Optional<IdentityRecord> recipientRecord = ApplicationDependencies.getProtocolStore().aci().identities().getIdentityRecord(recipient.getId());
         CanNotIntroduceDialog.ConversationType conversationType;
         if (viewModel.isDefaultSmsApplication()){
           conversationType = CanNotIntroduceDialog.ConversationType.SMS;

@@ -17,7 +17,6 @@ import androidx.annotation.RequiresApi;
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.database.model.IdentityRecord;
-import org.thoughtcrime.securesms.trustedIntroductions.database.TI_IdentityRecord;
 
 import java.util.List;
 
@@ -59,7 +58,7 @@ public class UnverifiedBannerView extends LinearLayout {
   }
   // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
   public void display(@NonNull final String text,
-                      @NonNull final List<TI_IdentityRecord> unverifiedIdentities,
+                      @NonNull final List<IdentityRecord> unverifiedIdentities,
                       @NonNull final ClickListener clickListener,
                       @NonNull final DismissListener dismissListener)
   {
@@ -90,11 +89,11 @@ public class UnverifiedBannerView extends LinearLayout {
 
   public interface DismissListener {
     // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
-    public void onDismissed(List<TI_IdentityRecord> unverifiedIdentities);
+    public void onDismissed(List<IdentityRecord> unverifiedIdentities);
   }
 
   public interface ClickListener {
-    public void onClicked(List<TI_IdentityRecord> unverifiedIdentities);
+    public void onClicked(List<IdentityRecord> unverifiedIdentities);
   }
   // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end"
 

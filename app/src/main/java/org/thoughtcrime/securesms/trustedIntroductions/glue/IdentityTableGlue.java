@@ -154,12 +154,13 @@ public interface IdentityTableGlue {
 
     /**
      * A recipient can only receive TrustedIntroductions iff they have previously been strongly verified.
-     * This function exists as it's own thing to allow for flexible changes.
+     * This function exists as it's own thing to allow for flexible changes. Queries DB for TI verification status.
      *
-     * @param status The verification status of the recipient.
+     * @param id The recipient ID.
      * @return True if this recipient can receive trusted introductions.
      */
-    public static Boolean ti_recipientUnlocked(VerifiedStatus status){
+    public static Boolean ti_recipientUnlocked(RecipientId id){
+      VerifiedStatus status = SignalDatabase.tiIdentityDatabase().getVerifiedStatus(id);
       switch(status){
         case DIRECTLY_VERIFIED:
         case DUPLEX_VERIFIED:
