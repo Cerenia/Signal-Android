@@ -7,6 +7,7 @@ import org.signal.core.util.logging.Log
 import org.thoughtcrime.securesms.database.DatabaseTable
 import org.thoughtcrime.securesms.database.IdentityTable
 import org.thoughtcrime.securesms.database.SignalDatabase
+import org.thoughtcrime.securesms.recipients.Recipient
 import org.thoughtcrime.securesms.recipients.RecipientId
 import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue
 import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue.TI_ADDRESS_PROJECTION
@@ -78,7 +79,7 @@ class TI_IdentityTable internal constructor(context: Context?, databaseHelper: S
     return readableDatabase.query(TABLE_NAME, arrayOf<String>(ADDRESS), selectionBuilder.toString(), states, null, null, null)
   }
 
-  fun getVerifiedStatus(id: RecipientId?): VerifiedStatus {
+  override fun getVerifiedStatus(id: RecipientId?): VerifiedStatus {
     val recipient = Recipient.resolved(id!!)
     if (recipient.hasServiceId()) {
       val cursor = readableDatabase.query(TABLE_NAME, arrayOf(VERIFIED), String.format("%s=?", ADDRESS), arrayOf(recipient.serviceId.toString()), null, null, null)
@@ -92,5 +93,6 @@ class TI_IdentityTable internal constructor(context: Context?, databaseHelper: S
       Log.w(TAG, "Recipient with recipient ID: $id, did not have a service ID and could therefore not be found in the table.")
       VerifiedStatus.DEFAULT
     }
+    return VerifiedStatus.UNVERIFIED // fail closed
   }
 }
