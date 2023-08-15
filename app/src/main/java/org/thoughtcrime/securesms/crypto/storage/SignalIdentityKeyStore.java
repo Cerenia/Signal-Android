@@ -6,6 +6,7 @@ import org.signal.libsignal.protocol.IdentityKey;
 import org.signal.libsignal.protocol.IdentityKeyPair;
 import org.signal.libsignal.protocol.SignalProtocolAddress;
 import org.signal.libsignal.protocol.state.IdentityKeyStore;
+import org.thoughtcrime.securesms.database.IdentityTable;
 import org.thoughtcrime.securesms.database.IdentityTable.VerifiedStatus;
 import org.thoughtcrime.securesms.database.identity.IdentityRecordList;
 import org.thoughtcrime.securesms.database.model.IdentityRecord;
@@ -52,17 +53,15 @@ public class SignalIdentityKeyStore implements IdentityKeyStore {
     return baseStore.saveIdentity(address, identityKey, nonBlockingApproval);
   }
 
-  // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
   public void saveIdentityWithoutSideEffects(@NonNull RecipientId recipientId,
                                              IdentityKey identityKey,
-                                             IdentityTableGlue.VerifiedStatus verifiedStatus,
+                                             IdentityTable.VerifiedStatus verifiedStatus,
                                              boolean firstUse,
                                              long timestamp,
                                              boolean nonBlockingApproval)
   {
     baseStore.saveIdentityWithoutSideEffects(recipientId, identityKey, verifiedStatus, firstUse, timestamp, nonBlockingApproval);
   }
-  // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end"
 
   @Override
   public boolean isTrustedIdentity(SignalProtocolAddress address, IdentityKey identityKey, Direction direction) {

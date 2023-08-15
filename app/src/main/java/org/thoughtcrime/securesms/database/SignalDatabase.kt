@@ -408,9 +408,7 @@ open class SignalDatabase(private val context: Application, databaseSecret: Data
 
     @get:JvmStatic
     @get:JvmName("identities")
-    // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
-    val identities: IdentityTableGlue
-    // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end"
+    val identities: IdentityTable
       get() = instance!!.identityTable
 
     @get:JvmStatic
