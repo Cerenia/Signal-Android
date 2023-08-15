@@ -53,6 +53,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 public class MultiDeviceContactUpdateJob extends BaseJob {
@@ -84,11 +86,11 @@ public class MultiDeviceContactUpdateJob extends BaseJob {
 
   public MultiDeviceContactUpdateJob(@Nullable RecipientId recipientId, boolean forceSync) {
     this(new Job.Parameters.Builder()
-                           .addConstraint(NetworkConstraint.KEY)
-                           .setQueue("MultiDeviceContactUpdateJob")
-                           .setLifespan(TimeUnit.DAYS.toMillis(1))
-                           .setMaxAttempts(Parameters.UNLIMITED)
-                           .build(),
+             .addConstraint(NetworkConstraint.KEY)
+             .setQueue("MultiDeviceContactUpdateJob")
+             .setLifespan(TimeUnit.DAYS.toMillis(1))
+             .setMaxAttempts(Parameters.UNLIMITED)
+             .build(),
          recipientId,
          forceSync);
   }
@@ -139,6 +141,7 @@ public class MultiDeviceContactUpdateJob extends BaseJob {
   {
     WriteDetails writeDetails = createTempFile();
 
+    Uri updateUri = null;
     try {
       DeviceContactsOutputStream out       = new DeviceContactsOutputStream(writeDetails.outputStream);
       Recipient                  recipient = Recipient.resolved(recipientId);
@@ -166,18 +169,21 @@ public class MultiDeviceContactUpdateJob extends BaseJob {
                                   archived.contains(recipientId)));
 
       out.close();
+      updateUri = writeDetails.getUri();
 
-      long length = BlobProvider.getInstance().calculateFileSize(context, writeDetails.uri);
+      long length = BlobProvider.getInstance().calculateFileSize(context, updateUri);
 
       sendUpdate(ApplicationDependencies.getSignalServiceMessageSender(),
-                 BlobProvider.getInstance().getStream(context, writeDetails.uri),
+                 BlobProvider.getInstance().getStream(context, updateUri),
                  length,
                  false);
 
-    } catch(InvalidNumberException e) {
+    } catch(InvalidNumberException | InterruptedException e) {
       Log.w(TAG, e);
     } finally {
-      BlobProvider.getInstance().delete(context, writeDetails.uri);
+      if (updateUri != null) {
+        BlobProvider.getInstance().delete(context, updateUri);
+      }
     }
   }
 
@@ -200,6 +206,7 @@ public class MultiDeviceContactUpdateJob extends BaseJob {
 
     WriteDetails writeDetails = createTempFile();
 
+    Uri updateUri = null;
     try {
       DeviceContactsOutputStream out            = new DeviceContactsOutputStream(writeDetails.outputStream);
       List<Recipient>            recipients     = SignalDatabase.recipients().getRecipientsForMultiDeviceSync();
@@ -246,16 +253,20 @@ public class MultiDeviceContactUpdateJob extends BaseJob {
 
       out.close();
 
-      long length = BlobProvider.getInstance().calculateFileSize(context, writeDetails.uri);
+      updateUri = writeDetails.getUri();
+
+      long length = BlobProvider.getInstance().calculateFileSize(context, updateUri);
 
       sendUpdate(ApplicationDependencies.getSignalServiceMessageSender(),
-                 BlobProvider.getInstance().getStream(context, writeDetails.uri),
+                 BlobProvider.getInstance().getStream(context, updateUri),
                  length,
                  true);
-    } catch(InvalidNumberException e) {
+    } catch(InvalidNumberException | InterruptedException e) {
       Log.w(TAG, e);
     } finally {
-      BlobProvider.getInstance().delete(context, writeDetails.uri);
+      if (updateUri != null) {
+        BlobProvider.getInstance().delete(context, updateUri);
+      }
     }
   }
 
@@ -363,10 +374,7 @@ public class MultiDeviceContactUpdateJob extends BaseJob {
     VerifiedMessage.VerifiedState state;
 
     switch (identity.get().getVerifiedStatus()) {
-      case MANUALLY_VERIFIED:
-      case DIRECTLY_VERIFIED:
-      case INTRODUCED:
-      case DUPLEX_VERIFIED: state = VerifiedMessage.VerifiedState.VERIFIED;   break;
+      case VERIFIED:   state = VerifiedMessage.VerifiedState.VERIFIED;   break;
       case UNVERIFIED: state = VerifiedMessage.VerifiedState.UNVERIFIED; break;
       case DEFAULT:    state = VerifiedMessage.VerifiedState.DEFAULT;    break;
       default: throw new AssertionError("Unknown state: " + identity.get().getVerifiedStatus());
@@ -378,14 +386,12 @@ public class MultiDeviceContactUpdateJob extends BaseJob {
   private @NonNull WriteDetails createTempFile() throws IOException {
     ParcelFileDescriptor[] pipe        = ParcelFileDescriptor.createPipe();
     InputStream            inputStream = new ParcelFileDescriptor.AutoCloseInputStream(pipe[0]);
-    Uri                    uri         = BlobProvider.getInstance()
+    Future<Uri>            futureUri   = BlobProvider.getInstance()
                                                      .forData(inputStream, 0)
                                                      .withFileName("multidevice-contact-update")
-                                                     .createForSingleSessionOnDiskAsync(context,
-                                                                                        () -> Log.i(TAG, "Write successful."),
-                                                                                        e  -> Log.w(TAG, "Error during write.", e));
+                                                     .createForSingleSessionOnDiskAsync(context);
 
-    return new WriteDetails(uri, new ParcelFileDescriptor.AutoCloseOutputStream(pipe[1]));
+    return new WriteDetails(futureUri, new ParcelFileDescriptor.AutoCloseOutputStream(pipe[1]));
   }
 
   private static class NetworkException extends Exception {
@@ -396,12 +402,24 @@ public class MultiDeviceContactUpdateJob extends BaseJob {
   }
 
   private static class WriteDetails {
-    private final Uri          uri;
+    private final Future<Uri>  futureUri;
     private final OutputStream outputStream;
 
-    private WriteDetails(@NonNull Uri uri, @NonNull OutputStream outputStream) {
-      this.uri          = uri;
+    private WriteDetails(@NonNull Future<Uri> blobUri, @NonNull OutputStream outputStream) {
+      this.futureUri = blobUri;
       this.outputStream = outputStream;
+    }
+
+    public Uri getUri() throws IOException, InterruptedException {
+      try {
+        return futureUri.get();
+      } catch (ExecutionException e) {
+        if (e.getCause() instanceof IOException) {
+          throw (IOException) e.getCause();
+        } else {
+          throw new RuntimeException(e.getCause());
+        }
+      }
     }
   }
 

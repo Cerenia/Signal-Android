@@ -952,11 +952,9 @@ open class RecipientTable(context: Context, databaseHelper: SignalDatabase) : Da
       }
 
       val newIdentityRecord = identityStore.getIdentityRecord(recipientId)
-      // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
-      if (newIdentityRecord.isPresent && org.thoughtcrime.securesms.trustedIntroductions.database.TI_IdentityTable.VerifiedStatus.isVerified(recipientId, newIdentityRecord.get().verifiedStatus) && (!oldIdentityRecord.isPresent || !org.thoughtcrime.securesms.trustedIntroductions.database.TI_IdentityTable.VerifiedStatus.isVerified(recipientId, oldIdentityRecord.get().verifiedStatus))) {
+      if (newIdentityRecord.isPresent && newIdentityRecord.get().verifiedStatus == VerifiedStatus.VERIFIED && (!oldIdentityRecord.isPresent || oldIdentityRecord.get().verifiedStatus != VerifiedStatus.VERIFIED)) {
         IdentityUtil.markIdentityVerified(context, Recipient.resolved(recipientId), true, true)
-      } else if (newIdentityRecord.isPresent && !org.thoughtcrime.securesms.trustedIntroductions.database.TI_IdentityTable.VerifiedStatus.isVerified(recipientId, newIdentityRecord.get().verifiedStatus) && oldIdentityRecord.isPresent && org.thoughtcrime.securesms.trustedIntroductions.database.TI_IdentityTable.VerifiedStatus.isVerified(recipientId, oldIdentityRecord.get().verifiedStatus)) {
-        // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end"
+      } else if (newIdentityRecord.isPresent && newIdentityRecord.get().verifiedStatus != VerifiedStatus.VERIFIED && oldIdentityRecord.isPresent && oldIdentityRecord.get().verifiedStatus == VerifiedStatus.VERIFIED) {
         IdentityUtil.markIdentityVerified(context, Recipient.resolved(recipientId), false, true)
       }
     } catch (e: InvalidKeyException) {

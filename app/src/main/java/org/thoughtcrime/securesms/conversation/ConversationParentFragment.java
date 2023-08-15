@@ -1086,6 +1086,7 @@ public class ConversationParentFragment extends Fragment
       case PAYMENT:
         AttachmentManager.selectPayment(this, recipient.get());
         break;
+      // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
       case TRUSTED_INTRODUCTION:
         Optional<IdentityRecord> recipientRecord = ApplicationDependencies.getProtocolStore().aci().identities().getIdentityRecord(recipient.getId());
         CanNotIntroduceDialog.ConversationType conversationType;
@@ -1094,7 +1095,7 @@ public class ConversationParentFragment extends Fragment
         } else if (isGroupConversation()){
           // Dialogue for Group (at some point this can be implemented)
           conversationType = CanNotIntroduceDialog.ConversationType.GROUP;
-        } else if (!(recipientRecord.isPresent() && VerifiedStatus.ti_recipientUnlocked(recipientRecord.get().getVerifiedStatus()))){
+        } else if (!(recipientRecord.isPresent() && org.thoughtcrime.securesms.trustedIntroductions.database.TI_IdentityTable.VerifiedStatus.ti_recipientUnlocked(recipientRecord.get().getRecipientId()))){
           // Unverified signal contact
           // Guaranteed to have a recipient Record at this point and be unverified
           conversationType = CanNotIntroduceDialog.ConversationType.SINGLE_SECURE_TEXT;
@@ -1105,6 +1106,7 @@ public class ConversationParentFragment extends Fragment
         }
         // For any unsupported TI, show the dialogue
         CanNotIntroduceDialog.show(requireContext(), recipientRecord.isPresent() ? recipientRecord.get() : null, conversationType);
+        // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end"
     }
 
     container.hideCurrentInput(composeText);

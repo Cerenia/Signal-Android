@@ -199,13 +199,14 @@ class TI_IdentityTable internal constructor(context: Context?, databaseHelper: S
 
       /**
        * A recipient can only receive TrustedIntroductions iff they have previously been strongly verified.
-       * This function exists as it's own thing to allow for flexible changes.
+       * This function exists as it's own thing to allow for flexible changes. Checks DB for TI_VerifiedStatus.
        *
-       * @param verifiedStatus The verification status of the recipient.
+       * @param recipientId Which recipient you want to make introductions to.
        * @return True if this recipient can receive trusted introductions.
        */
       @JvmStatic
-      fun ti_recipientUnlocked(verifiedStatus: VerifiedStatus): Boolean{
+      fun ti_recipientUnlocked(recipientId: RecipientId): Boolean{
+        val verifiedStatus = SignalDatabase.tiIdentityDatabase.getVerifiedStatus(recipientId)
         return when (verifiedStatus){
           DIRECTLY_VERIFIED -> true
           DUPLEX_VERIFIED -> true
