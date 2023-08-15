@@ -1,35 +1,35 @@
-package org.thoughtcrime.securesms.database.identity;
+package org.thoughtcrime.securesms.trustedIntroductions.database;
 
 import androidx.annotation.NonNull;
 
-import org.thoughtcrime.securesms.database.IdentityTable.VerifiedStatus;
 import org.thoughtcrime.securesms.database.model.IdentityRecord;
+import org.thoughtcrime.securesms.database.IdentityTable.VerifiedStatus;
 import org.thoughtcrime.securesms.recipients.Recipient;
+import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
-public final class IdentityRecordList {
+public final class TI_IdentityRecordList {
 
-  public static final IdentityRecordList EMPTY = new IdentityRecordList(Collections.emptyList());
+  public static final org.thoughtcrime.securesms.trustedIntroductions.database.TI_IdentityRecordList EMPTY = new org.thoughtcrime.securesms.trustedIntroductions.database.TI_IdentityRecordList(Collections.emptyList());
 
   public static final long DEFAULT_UNTRUSTED_WINDOW = TimeUnit.SECONDS.toMillis(5);
 
-  private final List<IdentityRecord> identityRecords;
+  private final List<TI_IdentityRecord> identityRecords;
   private final boolean              isVerified;
   private final boolean              isUnverified;
 
-  public IdentityRecordList(@NonNull Collection<IdentityRecord> records) {
+  public TI_IdentityRecordList(@NonNull Collection<TI_IdentityRecord> records) {
     identityRecords = new ArrayList<>(records);
     isVerified      = isVerified(identityRecords);
     isUnverified    = isUnverified(identityRecords);
   }
 
-  public List<IdentityRecord> getIdentityRecords() {
+  public List<TI_IdentityRecord> getIdentityRecords() {
     return Collections.unmodifiableList(identityRecords);
   }
 
@@ -41,9 +41,9 @@ public final class IdentityRecordList {
     return isUnverified;
   }
 
-  private static boolean isVerified(@NonNull Collection<IdentityRecord> identityRecords) {
-    for (IdentityRecord identityRecord : identityRecords) {
-      if (identityRecord.getVerifiedStatus() != VerifiedStatus.VERIFIED) {
+  private static boolean isVerified(@NonNull Collection<TI_IdentityRecord> identityRecords) {
+    for (TI_IdentityRecord identityRecord : identityRecords) {
+      if (!IdentityTableGlue.VerifiedStatus.isVerified(identityRecord.getVerifiedStatus())) {
         return false;
       }
     }
@@ -51,9 +51,9 @@ public final class IdentityRecordList {
     return identityRecords.size() > 0;
   }
 
-  private static boolean isUnverified(@NonNull Collection<IdentityRecord> identityRecords) {
-    for (IdentityRecord identityRecord : identityRecords) {
-      if (identityRecord.getVerifiedStatus() == VerifiedStatus.UNVERIFIED) {
+  private static boolean isUnverified(@NonNull Collection<TI_IdentityRecord> identityRecords) {
+    for (TI_IdentityRecord identityRecord : identityRecords) {
+      if (identityRecord.getVerifiedStatus() == IdentityTableGlue.VerifiedStatus.UNVERIFIED) {
         return true;
       }
     }
@@ -62,12 +62,12 @@ public final class IdentityRecordList {
   }
 
   public boolean isUnverified(boolean excludeFirstUse) {
-    for (IdentityRecord identityRecord : identityRecords) {
+    for (TI_IdentityRecord identityRecord : identityRecords) {
       if (excludeFirstUse && identityRecord.isFirstUse()) {
         continue;
       }
 
-      if (identityRecord.getVerifiedStatus() == VerifiedStatus.UNVERIFIED) {
+      if (identityRecord.getVerifiedStatus() == IdentityTableGlue.VerifiedStatus.UNVERIFIED) {
         return true;
       }
     }
@@ -76,7 +76,7 @@ public final class IdentityRecordList {
   }
 
   public boolean isUntrusted(boolean excludeFirstUse) {
-    for (IdentityRecord identityRecord : identityRecords) {
+    for (TI_IdentityRecord identityRecord : identityRecords) {
       if (excludeFirstUse && identityRecord.isFirstUse()) {
         continue;
       }
@@ -89,14 +89,14 @@ public final class IdentityRecordList {
     return false;
   }
 
-  public @NonNull List<IdentityRecord> getUntrustedRecords() {
+  public @NonNull List<TI_IdentityRecord> getUntrustedRecords() {
     return getUntrustedRecords(DEFAULT_UNTRUSTED_WINDOW);
   }
 
-  public @NonNull List<IdentityRecord> getUntrustedRecords(long untrustedWindowMillis) {
-    List<IdentityRecord> results = new ArrayList<>(identityRecords.size());
+  public @NonNull List<TI_IdentityRecord> getUntrustedRecords(long untrustedWindowMillis) {
+    List<TI_IdentityRecord> results = new ArrayList<>(identityRecords.size());
 
-    for (IdentityRecord identityRecord : identityRecords) {
+    for (TI_IdentityRecord identityRecord : identityRecords) {
       if (isUntrusted(identityRecord, untrustedWindowMillis)) {
         results.add(identityRecord);
       }
@@ -108,7 +108,7 @@ public final class IdentityRecordList {
   public @NonNull List<Recipient> getUntrustedRecipients() {
     List<Recipient> untrusted = new ArrayList<>(identityRecords.size());
 
-    for (IdentityRecord identityRecord : identityRecords) {
+    for (TI_IdentityRecord identityRecord : identityRecords) {
       if (isUntrusted(identityRecord, DEFAULT_UNTRUSTED_WINDOW)) {
         untrusted.add(Recipient.resolved(identityRecord.getRecipientId()));
       }
@@ -117,11 +117,11 @@ public final class IdentityRecordList {
     return untrusted;
   }
 
-  public @NonNull List<IdentityRecord> getUnverifiedRecords() {
-    List<IdentityRecord> results = new ArrayList<>(identityRecords.size());
+  public @NonNull List<TI_IdentityRecord> getUnverifiedRecords() {
+    List<TI_IdentityRecord> results = new ArrayList<>(identityRecords.size());
 
-    for (IdentityRecord identityRecord : identityRecords) {
-      if (identityRecord.getVerifiedStatus() == VerifiedStatus.UNVERIFIED) {
+    for (TI_IdentityRecord identityRecord : identityRecords) {
+      if (identityRecord.getVerifiedStatus() == IdentityTableGlue.VerifiedStatus.UNVERIFIED) {
         results.add(identityRecord);
       }
     }
@@ -132,8 +132,8 @@ public final class IdentityRecordList {
   public @NonNull List<Recipient> getUnverifiedRecipients() {
     List<Recipient> unverified = new ArrayList<>(identityRecords.size());
 
-    for (IdentityRecord identityRecord : identityRecords) {
-      if (identityRecord.getVerifiedStatus() == VerifiedStatus.UNVERIFIED) {
+    for (TI_IdentityRecord identityRecord : identityRecords) {
+      if (identityRecord.getVerifiedStatus() == IdentityTableGlue.VerifiedStatus.UNVERIFIED) {
         unverified.add(Recipient.resolved(identityRecord.getRecipientId()));
       }
     }
@@ -141,21 +141,9 @@ public final class IdentityRecordList {
     return unverified;
   }
 
-  private static boolean isUntrusted(@NonNull IdentityRecord identityRecord, long untrustedWindowMillis) {
+  private static boolean isUntrusted(@NonNull TI_IdentityRecord identityRecord, long untrustedWindowMillis) {
     return !identityRecord.isApprovedNonBlocking() &&
            System.currentTimeMillis() - identityRecord.getTimestamp() < untrustedWindowMillis;
   }
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    final IdentityRecordList that = (IdentityRecordList) o;
-    return Objects.equals(identityRecords, that.identityRecords);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(identityRecords);
-  }
 }

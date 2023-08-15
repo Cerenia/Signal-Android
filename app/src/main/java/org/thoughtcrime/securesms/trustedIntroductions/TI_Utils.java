@@ -22,6 +22,8 @@ import org.thoughtcrime.securesms.database.model.IdentityRecord;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.jobs.MultiDeviceVerifiedUpdateJob;
 import org.thoughtcrime.securesms.trustedIntroductions.database.TI_IdentityTable;
+import org.thoughtcrime.securesms.trustedIntroductions.database.TI_IdentityRecord;
+import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue;
 import org.thoughtcrime.securesms.trustedIntroductions.jobs.TrustedIntroductionsReceiveJob;
 import org.thoughtcrime.securesms.recipients.LiveRecipient;
 import org.thoughtcrime.securesms.recipients.Recipient;
@@ -239,7 +241,7 @@ public class TI_Utils {
    * @return their identity as saved in the Identity database
    */
   public static IdentityKey getIdentityKey(RecipientId id) throws TI_MissingIdentityException {
-    Optional<IdentityRecord> identityRecord = ApplicationDependencies.getProtocolStore().aci().identities().getIdentityRecord(id);
+    Optional<TI_IdentityRecord> identityRecord = ApplicationDependencies.getProtocolStore().aci().identities().getIdentityRecord(id);
     // If this doesn't work we have a programming error further up the stack, no introduction can be made if we don't have the identity.
     if(!identityRecord.isPresent()){
       throw new TI_MissingIdentityException(TAG + " No identity found for the recipient with id: " + id);
@@ -501,7 +503,11 @@ public class TI_Utils {
         ApplicationDependencies.getJobManager()
                                .add(new MultiDeviceVerifiedUpdateJob(recipientId,
                                                                      identityKey,
+<<<<<<< HEAD
                                                                      TI_IdentityTable.VerifiedStatus.toVanilla(status)));
+=======
+                                                                     IdentityTable.VerifiedStatus.forState(IdentityTableGlue.VerifiedStatus.toVanilla(status.toInt()))));
+>>>>>>> 3ebc6846b5523bf3ddd439dc5778724cb2e49d24
         StorageSyncHelper.scheduleSyncForDataChange();
         Recipient recipient = Recipient.live(recipientId).resolve();
         IdentityUtil.markIdentityVerified(getApplicationContext(), recipient, verified, false);

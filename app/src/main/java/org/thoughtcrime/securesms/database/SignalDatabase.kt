@@ -22,8 +22,6 @@ import org.thoughtcrime.securesms.jobs.PreKeysSyncJob
 import org.thoughtcrime.securesms.migrations.LegacyMigrationJob
 import org.thoughtcrime.securesms.migrations.LegacyMigrationJob.DatabaseUpgradeListener
 import org.thoughtcrime.securesms.service.KeyCachingService
-import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database
-import org.thoughtcrime.securesms.trustedIntroductions.database.TI_IdentityTable
 import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue
 import org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue
 import org.thoughtcrime.securesms.util.TextSecurePreferences
@@ -47,7 +45,9 @@ open class SignalDatabase(private val context: Application, databaseSecret: Data
   val attachmentTable: AttachmentTable = AttachmentTable(context, this, attachmentSecret)
   val mediaTable: MediaTable = MediaTable(context, this)
   val threadTable: ThreadTable = ThreadTable(context, this)
-  val identityTable: IdentityTable = IdentityTable(context, this)
+  // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
+  val identityTable: IdentityTableGlue = IdentityTableGlue.createSingletons(context, this)
+  // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end"
   val draftTable: DraftTable = DraftTable(context, this)
   val pushTable: PushTable = PushTable(context, this)
   val groupTable: GroupTable = GroupTable(context, this)
@@ -80,7 +80,6 @@ open class SignalDatabase(private val context: Application, databaseSecret: Data
   val callTable: CallTable = CallTable(context, this)
   // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
   val tiDummy: TI_DatabaseGlue = TI_DatabaseGlue.createSingleton(context, this)
-  val tiIdentityDummy: IdentityTableGlue = IdentityTableGlue.createSingleton(context, this)
   // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end"
 
   override fun onOpen(db: net.zetetic.database.sqlcipher.SQLiteDatabase) {
@@ -409,7 +408,9 @@ open class SignalDatabase(private val context: Application, databaseSecret: Data
 
     @get:JvmStatic
     @get:JvmName("identities")
-    val identities: IdentityTable
+    // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
+    val identities: IdentityTableGlue
+    // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end"
       get() = instance!!.identityTable
 
     @get:JvmStatic
