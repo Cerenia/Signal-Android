@@ -172,6 +172,7 @@ import org.thoughtcrime.securesms.crypto.SecurityEvent;
 import org.thoughtcrime.securesms.database.DraftTable.Draft;
 import org.thoughtcrime.securesms.database.DraftTable.Drafts;
 import org.thoughtcrime.securesms.database.GroupTable;
+import org.thoughtcrime.securesms.database.IdentityTable;
 import org.thoughtcrime.securesms.database.IdentityTable.VerifiedStatus;
 import org.thoughtcrime.securesms.database.RecipientTable;
 import org.thoughtcrime.securesms.database.RecipientTable.RegisteredState;
@@ -478,10 +479,8 @@ public class ConversationParentFragment extends Fragment
   private final LifecycleDisposable disposables            = new LifecycleDisposable();
   private final Debouncer           optionsMenuDebouncer   = new Debouncer(50);
   private final Debouncer           textDraftSaveDebouncer = new Debouncer(500);
-
-  // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
-  private TI_IdentityRecordList identityRecords = new TI_IdentityRecordList(Collections.emptyList());
-  // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end"
+  
+  private IdentityRecordList identityRecords = new IdentityRecordList(Collections.emptyList());
   private Callback              callback;
   private RecentEmojiPageModel recentEmojis;
 
@@ -1444,7 +1443,7 @@ public class ConversationParentFragment extends Fragment
 
   private void handleRecentSafetyNumberChange() {
     // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
-    List<TI_IdentityRecord> records = identityRecords.getUnverifiedRecords();
+    List<IdentityRecord> records = identityRecords.getUnverifiedRecords();
     // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end"
     records.addAll(identityRecords.getUntrustedRecords());
     SafetyNumberBottomSheet
@@ -1850,9 +1849,9 @@ public class ConversationParentFragment extends Fragment
       return future;
     }
     // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
-    new AsyncTask<Recipient, Void, Pair<TI_IdentityRecordList, String>>() {
+    new AsyncTask<Recipient, Void, Pair<IdentityRecordList, String>>() {
       @Override
-      protected @NonNull Pair<TI_IdentityRecordList, String> doInBackground(Recipient... params) {
+      protected @NonNull Pair<IdentityRecordList, String> doInBackground(Recipient... params) {
         List<Recipient> recipients;
 
         if (params[0].isGroup()) {
@@ -1862,7 +1861,7 @@ public class ConversationParentFragment extends Fragment
         }
 
         long               startTime          =  System.currentTimeMillis();
-        TI_IdentityRecordList identityRecordList = ApplicationDependencies.getProtocolStore().aci().identities().getIdentityRecords(recipients);
+        IdentityRecordList identityRecordList = ApplicationDependencies.getProtocolStore().aci().identities().getIdentityRecords(recipients);
 
         Log.i(TAG, String.format(Locale.US, "Loaded %d identities in %d ms", recipients.size(), System.currentTimeMillis() - startTime));
 
@@ -1876,7 +1875,7 @@ public class ConversationParentFragment extends Fragment
       }
 
       @Override
-      protected void onPostExecute(@NonNull Pair<TI_IdentityRecordList, String> result) {
+      protected void onPostExecute(@NonNull Pair<IdentityRecordList, String> result) {
         // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end"
         Log.i(TAG, "Got identity records: " + result.first().isUnverified());
         identityRecords = result.first();
@@ -4279,13 +4278,13 @@ public class ConversationParentFragment extends Fragment
   // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
   private class UnverifiedDismissedListener implements UnverifiedBannerView.DismissListener {
     @Override
-    public void onDismissed(final List<TI_IdentityRecord> unverifiedIdentities) {
+    public void onDismissed(final List<IdentityRecord> unverifiedIdentities) {
       SimpleTask.run(() -> {
         try (SignalSessionLock.Lock unused = ReentrantSessionLock.INSTANCE.acquire()) {
-          for (TI_IdentityRecord identityRecord : unverifiedIdentities) {
+          for (IdentityRecord identityRecord : unverifiedIdentities) {
             ApplicationDependencies.getProtocolStore().aci().identities().setVerified(identityRecord.getRecipientId(),
                                                                                       identityRecord.getIdentityKey(),
-                                                                                      IdentityTableGlue.VerifiedStatus.DEFAULT);
+                                                                                      IdentityTable.VerifiedStatus.DEFAULT);
           }
         }
         return null;
@@ -4295,7 +4294,7 @@ public class ConversationParentFragment extends Fragment
 
   private class UnverifiedClickedListener implements UnverifiedBannerView.ClickListener {
     @Override
-    public void onClicked(final List<TI_IdentityRecord> unverifiedIdentities) {
+    public void onClicked(final List<IdentityRecord> unverifiedIdentities) {
       Log.i(TAG, "onClicked: " + unverifiedIdentities.size());
       if (unverifiedIdentities.size() == 1) {
         startActivity(VerifyIdentityActivity.newIntent(requireContext(), unverifiedIdentities.get(0), false));

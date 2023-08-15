@@ -229,12 +229,12 @@ public final class IdentityUtil {
       if (verifiedMessage.getVerified() == VerifiedMessage.VerifiedState.VERIFIED &&
           (!identityRecord.isPresent() ||
          (identityRecord.isPresent() && !identityRecord.get().getIdentityKey().equals(verifiedMessage.getIdentityKey())) ||
-         (identityRecord.isPresent() && !IdentityTable.VerifiedStatus.isVerified(identityRecord.get().getVerifiedStatus()))))
+         (identityRecord.isPresent() && !(IdentityTable.VerifiedStatus.VERIFIED == identityRecord.get().getVerifiedStatus()))))
       {
         // TODO: This must be properly adapted to support multidevice together with trusted intros
-        Log.i(TAG, "Setting " + recipient.getId() + " verified status to " + IdentityTable.VerifiedStatus.MANUALLY_VERIFIED);
+        Log.i(TAG, "Setting " + recipient.getId() + " verified status to " + org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue.VerifiedStatus.MANUALLY_VERIFIED);
         saveIdentity(verifiedMessage.getDestination().getIdentifier(), verifiedMessage.getIdentityKey());
-        identityStore.setVerified(recipient.getId(), verifiedMessage.getIdentityKey(), IdentityTable.VerifiedStatus.MANUALLY_VERIFIED);
+        identityStore.setVerified(recipient.getId(), verifiedMessage.getIdentityKey(), IdentityTable.VerifiedStatus.VERIFIED);
         markIdentityVerified(context, recipient, true, true);
       }
     }

@@ -9,6 +9,7 @@ import androidx.annotation.Nullable;
 
 import org.thoughtcrime.securesms.database.IdentityTable;
 import org.thoughtcrime.securesms.database.SignalDatabase;
+import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.database.TI_IdentityTable;
 
@@ -18,6 +19,7 @@ public interface IdentityTableGlue {
   String TI_ADDRESS_PROJECTION    = IdentityTable.ADDRESS;
   String VERIFIED = IdentityTable.VERIFIED;
   String TABLE_NAME = IdentityTable.TABLE_NAME;
+
 
   Cursor getCursorForTIUnlocked();
 
@@ -115,7 +117,7 @@ public interface IdentityTableGlue {
      * Do not use this to decide if trusted introduction is allowed.
      * @return True is verified, false otherwise.
      */
-    public static Boolean isVerified(VerifiedStatus status){
+    public static boolean isVerified(VerifiedStatus status){
       switch (status){
         case DIRECTLY_VERIFIED:
         case INTRODUCED:
@@ -127,6 +129,16 @@ public interface IdentityTableGlue {
         default:
           return false;
       }
+    }
+
+    /**
+     * Convenience function with id instead of status. Queries Disk.
+     * @param id recipientID to be queried.
+     * @return
+     */
+    public static boolean isVerified(RecipientId id){
+      VerifiedStatus status = getInstance(SignalDatabase.getInstance()).getVerifiedStatus(id);
+      return isVerified(status);
     }
 
     /**

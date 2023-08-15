@@ -40,8 +40,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -329,22 +329,32 @@ public class BlobProvider {
   {
     waitUntilInitialized();
 
-    Future<Uri> uriFuture = writeBlobSpecToDiskAsync(context, blobSpec);
+    CountDownLatch               latch     = new CountDownLatch(1);
+    AtomicReference<IOException> exception = new AtomicReference<>(null);
+    Uri                          uri       = writeBlobSpecToDiskAsync(context, blobSpec, latch::countDown, e -> {
+      exception.set(e);
+      latch.countDown();
+    });
+
     try {
-      return uriFuture.get();
-    } catch (ExecutionException | InterruptedException e) {
-      Log.e(TAG, "Error writing blob spec to disk", e);
-      if (e.getCause() instanceof IOException) {
-        throw (IOException) e.getCause();
-      } else {
-        throw new IOException(e);
-      }
+      latch.await();
+    } catch (InterruptedException e) {
+      throw new IOException(e);
     }
+
+    if (exception.get() != null) {
+      throw exception.get();
+    }
+
+    return uri;
   }
 
 
   @WorkerThread
-  private synchronized @NonNull Future<Uri> writeBlobSpecToDiskAsync(@NonNull Context context, @NonNull BlobSpec blobSpec)
+  private synchronized @NonNull Uri writeBlobSpecToDiskAsync(@NonNull Context context,
+                                                             @NonNull BlobSpec blobSpec,
+                                                             @Nullable SuccessListener successListener,
+                                                             @Nullable ErrorListener errorListener)
       throws IOException
   {
     AttachmentSecret attachmentSecret = AttachmentSecretProvider.getInstance(context).getOrCreateAttachmentSecret();
@@ -352,18 +362,22 @@ public class BlobProvider {
     File             outputFile       = new File(getOrCreateDirectory(context, directory), buildFileName(blobSpec.id));
     OutputStream     outputStream     = ModernEncryptingPartOutputStream.createFor(attachmentSecret, outputFile, true).second;
 
-    final Uri uri = buildUri(blobSpec);
-
-    return SignalExecutors.BOUNDED.submit(() -> {
+    SignalExecutors.UNBOUNDED.execute(() -> {
       try {
         StreamUtil.copy(blobSpec.getData(), outputStream);
-        return uri;
+
+        if (successListener != null) {
+          successListener.onSuccess();
+        }
       } catch (IOException e) {
-        delete(context, uri);
         Log.w(TAG, "Error during write!", e);
-        throw e;
+        if (errorListener != null) {
+          errorListener.onError(e);
+        }
       }
     });
+
+    return buildUri(blobSpec);
   }
 
   private synchronized @NonNull Uri writeBlobSpecToMemory(@NonNull BlobSpec blobSpec, @NonNull byte[] data) {
@@ -456,14 +470,18 @@ public class BlobProvider {
     }
 
     /**
-     * Create an async blob that will exist for a single app session. An app session is defined as the
+     * Create a blob that will exist for a single app session. An app session is defined as the
      * period from one {@link Application#onCreate()} to the next. The file will be created on disk
      * synchronously, but the data will copied asynchronously. This is helpful when the copy is
      * long-running, such as in the case of recording a voice note.
      */
     @WorkerThread
-    public Future<Uri> createForSingleSessionOnDiskAsync(@NonNull Context context) throws IOException {
-      return writeBlobSpecToDiskAsync(context, buildBlobSpec(StorageType.SINGLE_SESSION_DISK));
+    public Uri createForSingleSessionOnDiskAsync(@NonNull Context context,
+                                                 @Nullable SuccessListener successListener,
+                                                 @Nullable ErrorListener errorListener)
+        throws IOException
+    {
+      return writeBlobSpecToDiskAsync(context, buildBlobSpec(StorageType.SINGLE_SESSION_DISK), successListener, errorListener);
     }
 
     /**
@@ -484,10 +502,12 @@ public class BlobProvider {
      * when the blob is no longer in use.
      */
     @WorkerThread
-    public Future<Uri> createForDraftAttachmentAsync(@NonNull Context context)
+    public Uri createForDraftAttachmentAsync(@NonNull Context context,
+                                             @Nullable SuccessListener successListener,
+                                             @Nullable ErrorListener errorListener)
         throws IOException
     {
-      return writeBlobSpecToDiskAsync(context, buildBlobSpec(StorageType.ATTACHMENT_DRAFT));
+      return writeBlobSpecToDiskAsync(context, buildBlobSpec(StorageType.ATTACHMENT_DRAFT), successListener, errorListener);
     }
   }
 
@@ -540,6 +560,16 @@ public class BlobProvider {
     public Uri createForSingleSessionInMemory() {
       return writeBlobSpecToMemory(buildBlobSpec(StorageType.SINGLE_SESSION_MEMORY), data);
     }
+  }
+
+  public interface SuccessListener {
+    @WorkerThread
+    void onSuccess();
+  }
+
+  public interface ErrorListener {
+    @WorkerThread
+    void onError(IOException e);
   }
 
   private static class BlobSpec {

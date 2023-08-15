@@ -12,10 +12,11 @@ import org.thoughtcrime.securesms.crypto.IdentityKeyParcelable;
 import org.thoughtcrime.securesms.database.IdentityTable;
 import org.thoughtcrime.securesms.database.model.IdentityRecord;
 import org.thoughtcrime.securesms.recipients.RecipientId;
-import org.thoughtcrime.securesms.trustedIntroductions.database.TI_IdentityRecord;
 import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue;
 import org.thoughtcrime.securesms.util.DynamicNoActionBarTheme;
 import org.thoughtcrime.securesms.util.DynamicTheme;
+
+import static org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue.*;
 
 /**
  * Activity for verifying identity keys.
@@ -36,7 +37,9 @@ public class VerifyIdentityActivity extends PassphraseRequiredActivity {
     return newIntent(context,
                      identityRecord.getRecipientId(),
                      identityRecord.getIdentityKey(),
-                     IdentityTableGlue.VerifiedStatus.isVerified(identityRecord.getVerifiedStatus()));
+                     // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
+                     org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue.VerifiedStatus.isVerified(identityRecord.getRecipientId()));
+    // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end"
   }
 
   public static Intent newIntent(@NonNull Context context,
