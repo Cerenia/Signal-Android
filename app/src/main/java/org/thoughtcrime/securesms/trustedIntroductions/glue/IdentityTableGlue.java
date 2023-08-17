@@ -3,7 +3,9 @@ package org.thoughtcrime.securesms.trustedIntroductions.glue;
 import android.content.Context;
 import android.database.Cursor;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.WorkerThread;
 
 import org.thoughtcrime.securesms.database.IdentityTable;
 import org.thoughtcrime.securesms.database.SignalDatabase;
@@ -33,6 +35,15 @@ public interface IdentityTableGlue {
    * @return The VerifiedStatus of the recipient or default if the recipient is not in the database.
    */
   TI_IdentityTable.VerifiedStatus getVerifiedStatus(@Nullable RecipientId id);
+
+  /**
+   * Set the TI verification state of this recipient. If the recipient does not yet have an entry in the
+   * DB, create one.
+   * @param id: id of the recipient
+   * @return Success of status change.
+   */
+  @WorkerThread
+  boolean setVerifiedStatus(@NonNull RecipientId id, VerifiedStatus newStatus);
 
   enum VerifiedStatus{
     DEFAULT, MANUALLY_VERIFIED, UNVERIFIED, DIRECTLY_VERIFIED, INTRODUCED, DUPLEX_VERIFIED;

@@ -1,8 +1,8 @@
 package org.thoughtcrime.securesms.trustedIntroductions.database
 
-import android.database.Cursor
 import android.content.Context
-import org.signal.core.util.delete
+import android.database.Cursor
+import androidx.core.content.contentValuesOf
 import org.signal.core.util.logging.Log
 import org.thoughtcrime.securesms.database.DatabaseTable
 import org.thoughtcrime.securesms.database.IdentityTable
@@ -10,12 +10,8 @@ import org.thoughtcrime.securesms.database.SignalDatabase
 import org.thoughtcrime.securesms.recipients.Recipient
 import org.thoughtcrime.securesms.recipients.RecipientId
 import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue
-import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue.TI_ADDRESS_PROJECTION
 import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue.VerifiedStatus
 import org.thoughtcrime.securesms.util.Base64
-import org.whispersystems.signalservice.api.push.ServiceId
-import org.whispersystems.signalservice.api.util.UuidUtil
-import java.lang.StringBuilder
 
 
 class TI_IdentityTable internal constructor(context: Context?, databaseHelper: SignalDatabase?): DatabaseTable(context, databaseHelper), IdentityTableGlue {
@@ -24,13 +20,13 @@ class TI_IdentityTable internal constructor(context: Context?, databaseHelper: S
     private val TAG = Log.tag(TI_IdentityTable::class.java)
     const val TABLE_NAME = "TI_shadow_identities"
     private const val ID = "_id"
-    const val ADDRESS = "address"
+    const val ADDRESS = "address"//serviceID
     const val VERIFIED = "verified"
     const val CREATE_TABLE = """
       CREATE TABLE $TABLE_NAME (
         $ID INTEGER PRIMARY KEY AUTOINCREMENT, 
         $ADDRESS INTEGER UNIQUE, 
-        $VERIFIED INTEGER DEFAULT 0, 
+        $VERIFIED INTEGER DEFAULT 0
       )
     """
   }
@@ -77,5 +73,22 @@ class TI_IdentityTable internal constructor(context: Context?, databaseHelper: S
       VerifiedStatus.DEFAULT
     }
     return VerifiedStatus.UNVERIFIED // fail closed
+  }
+
+  override fun setVerifiedStatus(id: RecipientId, newStatus: VerifiedStatus): Boolean {
+    val serviceID = Recipient.live(id).resolve().requireServiceId().toString()
+    val contentValues = contentValuesOf(
+      IdentityTable.ADDRESS to serviceID,
+      IdentityTable.VERIFIED to newStatus.toInt()
+    )
+    var res = writableDatabase.replace(IdentityTable.TABLE_NAME, null, contentValues)
+    if(res == -1L){
+      // There was an issue, recipient did not yet exist, so insert instead
+      res = writableDatabase.insert(IdentityTable.TABLE_NAME, null, contentValues)
+      if(res == -1L){
+        throw AssertionError("$TAG: Error inserting recipient: ${id.toString()} with status $newStatus into TI_IdentityTable!")
+      }
+    }
+    return true
   }
 }

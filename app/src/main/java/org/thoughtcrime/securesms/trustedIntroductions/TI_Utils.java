@@ -483,7 +483,9 @@ public class TI_Utils {
     Log.i(TAG, "Saving identity: " + recipientId);
     SignalExecutors.BOUNDED.execute(() -> {
       try (SignalSessionLock.Lock unused = ReentrantSessionLock.INSTANCE.acquire()) {
-        // TODO: Change logic now that I have two tables
+        // TI
+
+        // Vanilla
         final boolean verified = TI_IdentityTable.VerifiedStatus.isVerified(status);
         if (verified) {
           ApplicationDependencies.getProtocolStore().aci().identities()
@@ -496,7 +498,6 @@ public class TI_Utils {
         } else {
           ApplicationDependencies.getProtocolStore().aci().identities().setVerified(recipientId, identityKey, IdentityTable.VerifiedStatus.forState(TI_IdentityTable.VerifiedStatus.toVanilla(status.toInt())));
         }
-
         // For other devices but the Android phone, we map the finer statusses to verified or unverified.
         // TODO: Change once we add new devices for TI
         ApplicationDependencies.getJobManager()

@@ -176,8 +176,14 @@ public class VerifyDisplayFragment extends Fragment implements ViewTreeObserver.
     this.registerForContextMenu(numbersContainer);
 
     // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
-    //updateVerifyButton(getArguments().getBoolean(VERIFIED_STATE, false), false);
-    //this.verifyButton.setOnClickListener((button -> updateVerifyButton(!currentVerifiedState, true)));
+    if (savedInstanceState == null){
+      if(getArguments() == null){
+        throw new AssertionError(TAG + "Must pass a recipient!");
+      }
+      this.recipient      = Recipient.live(getArguments().getParcelable(RECIPIENT_ID));
+    } else {
+      this.recipient      = Recipient.live(savedInstanceState.getParcelable(RECIPIENT_ID));
+    }
     VerifyDisplayFragmentGlue.initializeVerifyButton(getArguments().getBoolean(VerifyDisplayFragmentGlue.VERIFIED_STATE, false),
                                                      verifyButton,
                                                      recipient.getId(),
