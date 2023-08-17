@@ -82,10 +82,10 @@ class TI_IdentityTable internal constructor(context: Context?, databaseHelper: S
       ADDRESS to serviceID,
       VERIFIED to newStatus.toInt()
     )
-    var res = writableDatabase.replace(IdentityTable.TABLE_NAME, null, contentValues)
+    var res = writableDatabase.replace(TABLE_NAME, null, contentValues)
     if(res == -1L){
       // There was an issue, recipient did not yet exist, so insert instead
-      res = writableDatabase.insert(IdentityTable.TABLE_NAME, null, contentValues)
+      res = writableDatabase.insert(TABLE_NAME, null, contentValues)
       if(res == -1L){
         throw AssertionError("$TAG: Error inserting recipient: ${id} with status $newStatus into TI_IdentityTable!")
       } else {
