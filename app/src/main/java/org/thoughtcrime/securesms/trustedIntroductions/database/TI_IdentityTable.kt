@@ -79,8 +79,8 @@ class TI_IdentityTable internal constructor(context: Context?, databaseHelper: S
   override fun setVerifiedStatus(id: RecipientId, newStatus: VerifiedStatus): Boolean {
     val serviceID = Recipient.live(id).resolve().requireServiceId().toString()
     val contentValues = contentValuesOf(
-      IdentityTable.ADDRESS to serviceID,
-      IdentityTable.VERIFIED to newStatus.toInt()
+      ADDRESS to serviceID,
+      VERIFIED to newStatus.toInt()
     )
     var res = writableDatabase.replace(IdentityTable.TABLE_NAME, null, contentValues)
     if(res == -1L){
