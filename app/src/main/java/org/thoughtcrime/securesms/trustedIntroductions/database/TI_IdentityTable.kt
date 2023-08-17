@@ -3,9 +3,13 @@ package org.thoughtcrime.securesms.trustedIntroductions.database
 import android.content.Context
 import android.database.Cursor
 import androidx.core.content.contentValuesOf
+import org.signal.core.util.SqlUtil
 import org.signal.core.util.logging.Log
+import org.signal.core.util.select
 import org.thoughtcrime.securesms.database.DatabaseTable
+import org.thoughtcrime.securesms.database.DistributionListTables
 import org.thoughtcrime.securesms.database.IdentityTable
+import org.thoughtcrime.securesms.database.SQLiteDatabase
 import org.thoughtcrime.securesms.database.SignalDatabase
 import org.thoughtcrime.securesms.recipients.Recipient
 import org.thoughtcrime.securesms.recipients.RecipientId
@@ -56,24 +60,30 @@ class TI_IdentityTable internal constructor(context: Context?, databaseHelper: S
     // create the rest of the query
     val readableDatabase = readableDatabase
     val states = validStates.toArray(arrayOf<String>())
-    return readableDatabase.query(TABLE_NAME, arrayOf<String>(ADDRESS), selectionBuilder.toString(), states, null, null, null)
+    return readableDatabase.query(TABLE_NAME, arrayOf(ADDRESS), selectionBuilder.toString(), states, null, null, null)
   }
 
   override fun getVerifiedStatus(id: RecipientId?): VerifiedStatus {
     val recipient = Recipient.resolved(id!!)
     if (recipient.hasServiceId()) {
-      val cursor = readableDatabase.query(TABLE_NAME, arrayOf(VERIFIED), String.format("%s=?", ADDRESS), arrayOf(recipient.serviceId.toString()), null, null, null)
-      if (cursor.count < 1) {
-        VerifiedStatus.DEFAULT // this recipient is not recorded in the table -> default verification state.
-      } else {
-        assert(cursor.count == 1) { "$TAG table returned more than one recipient with service ID: ${recipient.serviceId}!!" }
-        return VerifiedStatus.forState(cursor.getInt(cursor.getColumnIndexOrThrow(VERIFIED)))
-      }
+      readableDatabase
+        .select()
+        .from(TABLE_NAME)
+        .where("${IdentityTable.ADDRESS} = ?", recipient.requireServiceId().toString())
+        .run()
+        .use { cursor ->
+          if (!cursor.moveToFirst()){
+            Log.w(TAG, "Recipient: $id, with service id: ${recipient.serviceId.get()} was not found in the table. Returned default verification status.")
+            return VerifiedStatus.DEFAULT // this recipient is not recorded in the table -> default verification state.
+          } else {
+            assert(cursor.count == 1) { "$TAG table returned more than one recipient with service ID: ${recipient.serviceId.get()}!!" }
+            return VerifiedStatus.forState(cursor.getInt(cursor.getColumnIndexOrThrow(VERIFIED)))
+          }
+        }
     } else {
       Log.w(TAG, "Recipient with recipient ID: $id, did not have an associated service id. Returned default verification status.")
-      VerifiedStatus.DEFAULT
+      return VerifiedStatus.DEFAULT
     }
-    return VerifiedStatus.UNVERIFIED // fail closed
   }
 
   override fun setVerifiedStatus(id: RecipientId, newStatus: VerifiedStatus): Boolean {
@@ -82,18 +92,12 @@ class TI_IdentityTable internal constructor(context: Context?, databaseHelper: S
       ADDRESS to serviceID,
       VERIFIED to newStatus.toInt()
     )
-    var res = writableDatabase.replace(TABLE_NAME, null, contentValues)
-    if(res == -1L){
-      // There was an issue, recipient did not yet exist, so insert instead
-      res = writableDatabase.insert(TABLE_NAME, null, contentValues)
-      if(res == -1L){
+    val res = writableDatabase.replace(TABLE_NAME, null, contentValues)
+    if(res < 0){
         throw AssertionError("$TAG: Error inserting recipient: ${id} with status $newStatus into TI_IdentityTable!")
       } else {
         Log.i(TAG, "Successfully inserted recipient $id with service id:$serviceID and status: $newStatus")
       }
-    } else {
-      Log.i(TAG,"Successfully changed verification state of recipient $id with service id: $serviceID to $newStatus")
-    }
     return true
   }
 }
