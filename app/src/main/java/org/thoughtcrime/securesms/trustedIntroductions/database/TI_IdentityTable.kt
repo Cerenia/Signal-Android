@@ -67,10 +67,10 @@ class TI_IdentityTable internal constructor(context: Context?, databaseHelper: S
         VerifiedStatus.DEFAULT // this recipient is not recorded in the table -> default verification state.
       } else {
         assert(cursor.count == 1) { "$TAG table returned more than one recipient with service ID: ${recipient.serviceId}!!" }
-        VerifiedStatus.UNVERIFIED // fail closed. But assertion error makes this unreachable.
+        return VerifiedStatus.forState(cursor.getInt(cursor.getColumnIndexOrThrow(VERIFIED)))
       }
     } else {
-      Log.w(TAG, "Recipient with recipient ID: $id, did not have a service ID and could therefore not be found in the table.")
+      Log.w(TAG, "Recipient with recipient ID: $id, did not have an associated service id. Returned default verification status.")
       VerifiedStatus.DEFAULT
     }
     return VerifiedStatus.UNVERIFIED // fail closed
