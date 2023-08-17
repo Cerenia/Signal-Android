@@ -484,7 +484,7 @@ public class TI_Utils {
     SignalExecutors.BOUNDED.execute(() -> {
       try (SignalSessionLock.Lock unused = ReentrantSessionLock.INSTANCE.acquire()) {
         // TI
-
+        SignalDatabase.tiIdentityDatabase().setVerifiedStatus(recipientId, status);
         // Vanilla
         final boolean verified = TI_IdentityTable.VerifiedStatus.isVerified(status);
         if (verified) {

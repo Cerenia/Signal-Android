@@ -9,6 +9,7 @@ import org.thoughtcrime.securesms.database.IdentityTable
 import org.thoughtcrime.securesms.database.SignalDatabase
 import org.thoughtcrime.securesms.recipients.Recipient
 import org.thoughtcrime.securesms.recipients.RecipientId
+import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.TI_LOG_TAG
 import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue
 import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue.VerifiedStatus
 import org.thoughtcrime.securesms.util.Base64
@@ -17,7 +18,7 @@ import org.thoughtcrime.securesms.util.Base64
 class TI_IdentityTable internal constructor(context: Context?, databaseHelper: SignalDatabase?): DatabaseTable(context, databaseHelper), IdentityTableGlue {
 
   companion object {
-    private val TAG = Log.tag(TI_IdentityTable::class.java)
+    private val TAG = TI_LOG_TAG.format(Log.tag(TI_IdentityTable::class.java))
     const val TABLE_NAME = "TI_shadow_identities"
     private const val ID = "_id"
     const val ADDRESS = "address"//serviceID
@@ -86,8 +87,12 @@ class TI_IdentityTable internal constructor(context: Context?, databaseHelper: S
       // There was an issue, recipient did not yet exist, so insert instead
       res = writableDatabase.insert(IdentityTable.TABLE_NAME, null, contentValues)
       if(res == -1L){
-        throw AssertionError("$TAG: Error inserting recipient: ${id.toString()} with status $newStatus into TI_IdentityTable!")
+        throw AssertionError("$TAG: Error inserting recipient: ${id} with status $newStatus into TI_IdentityTable!")
+      } else {
+        Log.i(TAG, "Successfully inserted recipient with id: $id and status: $newStatus")
       }
+    } else {
+      Log.i(TAG,"Successfully changed verification state of recipient with service id: $id to $newStatus")
     }
     return true
   }
