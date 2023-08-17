@@ -89,10 +89,10 @@ class TI_IdentityTable internal constructor(context: Context?, databaseHelper: S
       if(res == -1L){
         throw AssertionError("$TAG: Error inserting recipient: ${id} with status $newStatus into TI_IdentityTable!")
       } else {
-        Log.i(TAG, "Successfully inserted recipient with id: $id and status: $newStatus")
+        Log.i(TAG, "Successfully inserted recipient $id with service id:$serviceID and status: $newStatus")
       }
     } else {
-      Log.i(TAG,"Successfully changed verification state of recipient with service id: $id to $newStatus")
+      Log.i(TAG,"Successfully changed verification state of recipient $id with service id: $serviceID to $newStatus")
     }
     return true
   }
