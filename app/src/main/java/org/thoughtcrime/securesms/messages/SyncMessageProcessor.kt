@@ -1,9 +1,11 @@
 package org.thoughtcrime.securesms.messages
 
 import android.content.Context
+import androidx.annotation.WorkerThread
 import com.google.protobuf.ByteString
 import com.mobilecoin.lib.exceptions.SerializationException
 import org.signal.core.util.Hex
+import org.signal.core.util.SqlUtil.buildArgs
 import org.signal.core.util.orNull
 import org.signal.libsignal.protocol.util.Pair
 import org.thoughtcrime.securesms.attachments.Attachment
@@ -15,12 +17,15 @@ import org.thoughtcrime.securesms.crypto.SecurityEvent
 import org.thoughtcrime.securesms.database.CallTable
 import org.thoughtcrime.securesms.database.GroupReceiptTable
 import org.thoughtcrime.securesms.database.GroupTable
+import org.thoughtcrime.securesms.database.IdentityTable.VerifiedStatus
 import org.thoughtcrime.securesms.database.MessageTable.MarkedMessageInfo
 import org.thoughtcrime.securesms.database.MessageTable.SyncMessageId
 import org.thoughtcrime.securesms.database.NoSuchMessageException
 import org.thoughtcrime.securesms.database.PaymentMetaDataUtil
+import org.thoughtcrime.securesms.database.SQLiteDatabase
 import org.thoughtcrime.securesms.database.SentStorySyncManifest
 import org.thoughtcrime.securesms.database.SignalDatabase
+import org.thoughtcrime.securesms.database.TrustedIntroductionsDatabase
 import org.thoughtcrime.securesms.database.model.DistributionListId
 import org.thoughtcrime.securesms.database.model.MediaMmsMessageRecord
 import org.thoughtcrime.securesms.database.model.Mention
@@ -83,6 +88,8 @@ import org.thoughtcrime.securesms.recipients.Recipient
 import org.thoughtcrime.securesms.recipients.RecipientId
 import org.thoughtcrime.securesms.storage.StorageSyncHelper
 import org.thoughtcrime.securesms.stories.Stories
+import org.thoughtcrime.securesms.trustedIntroductions.TI_Data
+import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils
 import org.thoughtcrime.securesms.util.EarlyMessageCacheEntry
 import org.thoughtcrime.securesms.util.FeatureFlags
 import org.thoughtcrime.securesms.util.IdentityUtil
@@ -95,6 +102,7 @@ import org.whispersystems.signalservice.api.push.DistributionId
 import org.whispersystems.signalservice.api.push.ServiceId
 import org.whispersystems.signalservice.api.push.SignalServiceAddress
 import org.whispersystems.signalservice.api.storage.StorageKey
+import org.whispersystems.signalservice.api.util.Preconditions
 import org.whispersystems.signalservice.internal.push.SignalServiceProtos
 import org.whispersystems.signalservice.internal.push.SignalServiceProtos.Content
 import org.whispersystems.signalservice.internal.push.SignalServiceProtos.DataMessage
@@ -145,7 +153,7 @@ object SyncMessageProcessor {
       syncMessage.hasContacts() -> handleSynchronizeContacts(syncMessage.contacts, envelope.timestamp)
       syncMessage.hasCallEvent() -> handleSynchronizeCallEvent(syncMessage.callEvent, envelope.timestamp)
 //      syncMessage.introducedList.isNotEmpty() ->  handleSynchronizeIntroduced(syncMessage.introducedList)
-      syncMessage.hasIntroduced() -> handleSynchronizeIntroduced(syncMessage.introduced)
+      syncMessage.hasIntroduced() -> handleSynchronizeIntroduced(context, syncMessage.introduced)
       else -> warn(envelope.timestamp, "Contains no known sync types...")
     }
   }
@@ -1084,7 +1092,7 @@ object SyncMessageProcessor {
   }
 
   @Suppress("WHEN_ENUM_CAN_BE_NULL_IN_JAVA") // we check before the switch so this should be fine
-  private fun handleSynchronizeIntroduced(it: Introduced){
+  private fun handleSynchronizeIntroduced(context: Context, it: Introduced){
 //    introductions.forEach {
 //      log("Processing introduction sync for id: ${it.introductionId} / type: ${it.syncType}")
 //      val intro = SignalDatabase.trustedIntroductions.getIntroductionById(it.introductionId.toString())
@@ -1112,11 +1120,56 @@ object SyncMessageProcessor {
       Introduced.SyncType.CREATED -> warn("Desktop app shouldn't support create")
       Introduced.SyncType.MASKED -> tiDb.clearIntroducer(intro)
       Introduced.SyncType.UPDATED_STATE -> when (it.state) {
-          Introduced.State.ACCEPTED -> tiDb.acceptIntroduction(intro)
-          Introduced.State.REJECTED -> tiDb.rejectIntroduction(intro)
+          Introduced.State.ACCEPTED -> run {
+            tiDb.acceptIntroduction(intro)
+            // check if we need to update the verified state internally
+//            tryUpdateContactVerified(context, tiDb, intro, TrustedIntroductionsDatabase.State.ACCEPTED)
+          }
+          Introduced.State.REJECTED -> run {
+            tiDb.rejectIntroduction(intro)
+            // check if we need to update the verified state internally
+//            tryUpdateContactVerified(context, tiDb, intro, TrustedIntroductionsDatabase.State.REJECTED)
+          }
           else -> warn("Unsupported transition to ${it.state}")
       }
       Introduced.SyncType.DELETED -> tiDb.deleteIntroduction(it.introductionId)
+    }
+  }
+
+  private fun tryUpdateContactVerified(context: Context, tiDb: TrustedIntroductionsDatabase, intro: TI_Data, newState: TrustedIntroductionsDatabase.State){
+    // Initialize with what it was
+    val rId = TI_Utils.getRecipientIdOrUnknown(intro.introduceeServiceId)
+    val previousIntroduceeVerification = SignalDatabase.identities.getVerifiedStatus(rId)
+//    val newState = intro.state
+    if (previousIntroduceeVerification == null){
+      warn("user $rId didn't have a verification state. skipping...")
+      return
+    }
+    // Initialize with what it was
+    var newIntroduceeVerification = previousIntroduceeVerification
+    when (previousIntroduceeVerification) {
+      VerifiedStatus.DEFAULT, VerifiedStatus.UNVERIFIED, VerifiedStatus.MANUALLY_VERIFIED -> if (newState == TrustedIntroductionsDatabase.State.ACCEPTED) {
+        newIntroduceeVerification = VerifiedStatus.INTRODUCED
+      }
+
+      VerifiedStatus.DUPLEX_VERIFIED -> if (newState == TrustedIntroductionsDatabase.State.REJECTED) {
+        // Stay "duplex verified" iff only more than 1 accepted introduction for this contact exist else "directly verified"
+        newIntroduceeVerification = if (tiDb.multipleAcceptedIntroductions(intro.introduceeServiceId)) VerifiedStatus.DUPLEX_VERIFIED else VerifiedStatus.DIRECTLY_VERIFIED
+      }
+
+      VerifiedStatus.DIRECTLY_VERIFIED -> if (newState == TrustedIntroductionsDatabase.State.ACCEPTED) {
+        newIntroduceeVerification = VerifiedStatus.DUPLEX_VERIFIED
+      }
+
+      VerifiedStatus.INTRODUCED -> if (newState == TrustedIntroductionsDatabase.State.REJECTED) {
+        // Stay "introduced" iff more than 1 accepted introduction for this contact exist else "unverified"
+        newIntroduceeVerification = if (tiDb.multipleAcceptedIntroductions(intro.introduceeServiceId)) VerifiedStatus.INTRODUCED else VerifiedStatus.UNVERIFIED
+      }
+
+    }
+    if (newIntroduceeVerification !== previousIntroduceeVerification) {
+      // Something changed
+      TI_Utils.updateContactsVerifiedStatus(context, rId, TI_Utils.getIdentityKey(rId), newIntroduceeVerification)
     }
   }
 }

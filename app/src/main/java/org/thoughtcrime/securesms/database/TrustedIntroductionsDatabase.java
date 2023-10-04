@@ -548,7 +548,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
       // Something changed
       RecipientId rId = TI_Utils.getRecipientIdOrUnknown(introduceeServiceId);
       try {
-        TI_Utils.updateContactsVerifiedStatus(rId, TI_Utils.getIdentityKey(rId), newIntroduceeVerification);
+        TI_Utils.updateContactsVerifiedStatus(this.context, rId, TI_Utils.getIdentityKey(rId), newIntroduceeVerification);
       } catch (TI_Utils.TI_MissingIdentityException e){
         e.printStackTrace();
         throw new AssertionError(TAG + " Precondition violated, recipient " + rId + "'s verification status cannot be updated!");
@@ -562,7 +562,7 @@ public class TrustedIntroductionsDatabase extends DatabaseTable {
    * @param introduceeServiceId The serviceID of the recipient whose verification status may change
    */
   @WorkerThread
-  private boolean multipleAcceptedIntroductions(String introduceeServiceId){
+  public boolean multipleAcceptedIntroductions(String introduceeServiceId){
     final String selection = String.format("%s=?", INTRODUCEE_SERVICE_ID)
                                     + String.format(" AND %s=?", STATE);
 

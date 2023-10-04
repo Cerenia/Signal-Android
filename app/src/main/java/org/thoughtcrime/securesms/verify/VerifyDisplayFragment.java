@@ -267,8 +267,8 @@ public class VerifyDisplayFragment extends Fragment implements ViewTreeObserver.
     if (animateSuccessOnDraw) {
       animateSuccessOnDraw = false;
       animateVerifiedSuccess();
-      // The fingerprint matched after a QR scann and we can update the users verification status
-      TI_Utils.updateContactsVerifiedStatus(recipient.getId(), remoteIdentity, VerifiedStatus.DIRECTLY_VERIFIED);
+      // The fingerprint matched after a QR scan, and we can update the users verification status
+      TI_Utils.updateContactsVerifiedStatus(getContext(), recipient.getId(), remoteIdentity, VerifiedStatus.DIRECTLY_VERIFIED);
       updateVerifyButtonText(true);
     } else if (animateFailureOnDraw) {
       animateFailureOnDraw = false;
@@ -565,18 +565,18 @@ public class VerifyDisplayFragment extends Fragment implements ViewTreeObserver.
       }
     } else if (previousStatus == VerifiedStatus.MANUALLY_VERIFIED) {
       // manually verified, no user check necessary
-      TI_Utils.updateContactsVerifiedStatus(recipient.getId(), remoteIdentity, VerifiedStatus.UNVERIFIED);
+      TI_Utils.updateContactsVerifiedStatus(getContext(), recipient.getId(), remoteIdentity, VerifiedStatus.UNVERIFIED);
       updateVerifyButtonText(false);
     } else {
       // Unverified or default, simply set to manually verified
-      TI_Utils.updateContactsVerifiedStatus(recipient.getId(), remoteIdentity, VerifiedStatus.MANUALLY_VERIFIED);
+      TI_Utils.updateContactsVerifiedStatus(getContext(), recipient.getId(), remoteIdentity, VerifiedStatus.MANUALLY_VERIFIED);
       updateVerifyButtonText(true);
     }
   }
 
   @Override
   public void onClearVerification() {
-    TI_Utils.updateContactsVerifiedStatus(recipient.getId(), remoteIdentity, VerifiedStatus.UNVERIFIED);
+    TI_Utils.updateContactsVerifiedStatus(getContext(), recipient.getId(), remoteIdentity, VerifiedStatus.UNVERIFIED);
     updateVerifyButtonText(false);
   }
 

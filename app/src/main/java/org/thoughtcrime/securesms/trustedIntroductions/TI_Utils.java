@@ -1,6 +1,7 @@
 package org.thoughtcrime.securesms.trustedIntroductions;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.database.Cursor;
 
 import androidx.annotation.NonNull;
@@ -13,6 +14,7 @@ import org.signal.core.util.logging.Log;
 import org.signal.libsignal.protocol.IdentityKey;
 import org.signal.libsignal.protocol.fingerprint.Fingerprint;
 import org.signal.libsignal.protocol.fingerprint.NumericFingerprintGenerator;
+import org.thoughtcrime.securesms.ApplicationContext;
 import org.thoughtcrime.securesms.crypto.ReentrantSessionLock;
 import org.thoughtcrime.securesms.database.IdentityTable;
 import org.thoughtcrime.securesms.database.RecipientTable;
@@ -470,9 +472,11 @@ public class TI_Utils {
    * Used both by verifyDisplayFragment and Introduction database.
    * TODO: Should this be a job for persistence?
    *
+   * also used to sync the the changes from another device.
+   *
    * @param status The new verification status
    */
-  public static void updateContactsVerifiedStatus(RecipientId recipientId, IdentityKey identityKey, IdentityTable.VerifiedStatus status) {
+  public static void updateContactsVerifiedStatus(Context context, RecipientId recipientId, IdentityKey identityKey, IdentityTable.VerifiedStatus status) {
     Log.i(TAG, "Saving identity: " + recipientId);
     SignalExecutors.BOUNDED.execute(() -> {
       try (SignalSessionLock.Lock unused = ReentrantSessionLock.INSTANCE.acquire()) {
@@ -491,13 +495,15 @@ public class TI_Utils {
 
         // For other devices but the Android phone, we map the finer statusses to verified or unverified.
         // TODO: Change once we add new devices for TI
-        ApplicationDependencies.getJobManager()
-                               .add(new MultiDeviceVerifiedUpdateJob(recipientId,
-                                                                     identityKey,
-                                                                     status));
+//        ApplicationDependencies.getJobManager()
+//                               .add(new MultiDeviceVerifiedUpdateJob(recipientId,
+//                                                                     identityKey,
+//                                                                     status));
         StorageSyncHelper.scheduleSyncForDataChange();
         Recipient recipient = Recipient.live(recipientId).resolve();
-        IdentityUtil.markIdentityVerified(getApplicationContext(), recipient, verified, false);
+
+//        IdentityUtil.markIdentityVerified(getApplicationContext(), recipient, verified, false);
+        IdentityUtil.markIdentityVerified(context, recipient, verified, false);
       }
     });
   }
