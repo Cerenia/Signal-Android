@@ -109,7 +109,7 @@ public interface IdentityTableGlue {
     /**
      * Much of the code relies on checks of the verification status that are not interested in the finer details.
      * This function can now be called instead of doing 4 comparisons manually.
-     * Do not use this to decide if trusted introduction is allowed.
+     * Do not use this to decide if trusted introductions are allowed.
      * @return True is verified, false otherwise.
      */
     public static boolean isVerified(VerifiedStatus status){

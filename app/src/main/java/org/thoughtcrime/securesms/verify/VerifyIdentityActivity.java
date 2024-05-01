@@ -37,9 +37,9 @@ public class VerifyIdentityActivity extends PassphraseRequiredActivity {
     return newIntent(context,
                      identityRecord.getRecipientId(),
                      identityRecord.getIdentityKey(),
-                     // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
+                     // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH start"
                      org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue.VerifiedStatus.isVerified(identityRecord.getRecipientId()));
-    // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end"
+                     // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH end"
   }
 
   public static Intent newIntent(@NonNull Context context,

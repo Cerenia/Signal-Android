@@ -6,11 +6,11 @@ import androidx.core.util.Pair;
 
 import org.signal.core.util.concurrent.SignalExecutors;
 import org.signal.core.util.logging.Log;
-import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
 import org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue;
+import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database;
 
 import java.util.ArrayList;
 import java.util.Collections;

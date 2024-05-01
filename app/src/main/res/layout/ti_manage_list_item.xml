@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--TI_GLUE: eNT9XAHgq0lZdbQs2nfH start-->
+<!--TI_GLUE: eNT9XAHgq0lZdbQs2nfH end-->
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -55,9 +57,10 @@
         android:layout_height="wrap_content"
         android:maxLines="1"
         app:layout_constraintHorizontal_bias="0"
-        app:icon="@drawable/ic_trash_24"
+        app:icon="@drawable/ic_ti_trash_24"
         app:iconGravity="textStart"
         app:iconPadding="0dp"
+        app:iconTint="@color/signal_colorOnSurface"
         app:layout_constraintWidth_max="wrap"
         app:layout_constraintTop_toBottomOf="@id/buttonBarrier"
         app:layout_constraintStart_toStartOf="parent"
@@ -123,7 +126,8 @@
         android:layout_marginEnd="16dp"
         app:layout_constraintWidth_max="wrap"
         app:layout_constraintHorizontal_bias="0"
-        app:icon="@drawable/domino_mask_24px"
+        app:icon="@drawable/ti_domino_mask_24px"
+        app:iconTint="@color/signal_colorOnSurface"
         app:iconGravity="textStart"
         app:iconPadding="0dp"
         app:layout_constraintVertical_chainStyle="spread_inside"
@@ -137,7 +141,7 @@
         android:id="@+id/maskedImage"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:src="@drawable/domino_mask_active_64"
+        android:src="@drawable/ti_domino_mask_active_64"
         android:paddingLeft="8dp"
         android:gravity="center"
         android:scaleType="fitCenter"

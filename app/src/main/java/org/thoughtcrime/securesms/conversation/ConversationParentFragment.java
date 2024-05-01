@@ -209,8 +209,10 @@ import org.thoughtcrime.securesms.jobs.GroupV2UpdateSelfProfileKeyJob;
 import org.thoughtcrime.securesms.jobs.RequestGroupV2InfoJob;
 import org.thoughtcrime.securesms.jobs.RetrieveProfileJob;
 import org.thoughtcrime.securesms.jobs.ServiceOutageDetectionJob;
+// TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
 import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue;
 import org.thoughtcrime.securesms.trustedIntroductions.jobs.TrustedIntroductionSendJob;
+// TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 import org.thoughtcrime.securesms.keyboard.KeyboardPage;
 import org.thoughtcrime.securesms.keyboard.KeyboardPagerViewModel;
 import org.thoughtcrime.securesms.keyboard.emoji.EmojiKeyboardPageFragment;
@@ -496,6 +498,7 @@ public class ConversationParentFragment extends Fragment
     return fragment;
   }
 
+  // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
   // TI Contact Picker Activity Launcher
   public ActivityResultLauncher<Intent> tiLaunch = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
                                                                       new ActivityResultCallback<ActivityResult>() {
@@ -514,6 +517,7 @@ public class ConversationParentFragment extends Fragment
       }
     }
   });
+  // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 
   @Override
   public @NonNull View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -1088,7 +1092,7 @@ public class ConversationParentFragment extends Fragment
       case PAYMENT:
         AttachmentManager.selectPayment(this, recipient.get());
         break;
-      // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
+      // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
       case TRUSTED_INTRODUCTION:
         Optional<IdentityRecord> recipientRecord = ApplicationDependencies.getProtocolStore().aci().identities().getIdentityRecord(recipient.getId());
         CanNotIntroduceDialog.ConversationType conversationType;
@@ -1108,7 +1112,7 @@ public class ConversationParentFragment extends Fragment
         }
         // For any unsupported TI, show the dialogue
         CanNotIntroduceDialog.show(requireContext(), recipientRecord.isPresent() ? recipientRecord.get() : null, conversationType);
-        // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end"
+        // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
     }
 
     container.hideCurrentInput(composeText);
@@ -1442,9 +1446,9 @@ public class ConversationParentFragment extends Fragment
   }
 
   private void handleRecentSafetyNumberChange() {
-    // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
+    // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
     List<IdentityRecord> records = identityRecords.getUnverifiedRecords();
-    // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end"
+    // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
     records.addAll(identityRecords.getUntrustedRecords());
     SafetyNumberBottomSheet
         .forIdentityRecordsAndDestination(
@@ -1848,7 +1852,7 @@ public class ConversationParentFragment extends Fragment
       future.set(false);
       return future;
     }
-    // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
+    // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
     new AsyncTask<Recipient, Void, Pair<IdentityRecordList, String>>() {
       @Override
       protected @NonNull Pair<IdentityRecordList, String> doInBackground(Recipient... params) {
@@ -1876,7 +1880,7 @@ public class ConversationParentFragment extends Fragment
 
       @Override
       protected void onPostExecute(@NonNull Pair<IdentityRecordList, String> result) {
-        // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end"
+        // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
         Log.i(TAG, "Got identity records: " + result.first().isUnverified());
         identityRecords = result.first();
 
@@ -4275,7 +4279,7 @@ public class ConversationParentFragment extends Fragment
                      false,
                      null);
   }
-  // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
+
   private class UnverifiedDismissedListener implements UnverifiedBannerView.DismissListener {
     @Override
     public void onDismissed(final List<IdentityRecord> unverifiedIdentities) {

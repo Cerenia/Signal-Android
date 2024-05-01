@@ -59,7 +59,9 @@ import org.thoughtcrime.securesms.recipients.LiveRecipient;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.storage.StorageSyncHelper;
+// TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
 import org.thoughtcrime.securesms.trustedIntroductions.glue.VerifyDisplayFragmentGlue;
+// TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 import org.thoughtcrime.securesms.util.FeatureFlags;
 import org.thoughtcrime.securesms.util.IdentityUtil;
 import org.thoughtcrime.securesms.util.Util;
@@ -117,9 +119,9 @@ public class VerifyDisplayFragment extends Fragment implements ViewTreeObserver.
     extras.putParcelable(REMOTE_IDENTITY, remoteIdentity);
     extras.putParcelable(LOCAL_IDENTITY, localIdentity);
     extras.putString(LOCAL_NUMBER, localNumber);
-    // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
+    // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
     VerifyDisplayFragmentGlue.extendBundle(extras, verifiedState);
-    // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end"
+    // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 
     VerifyDisplayFragment fragment = new VerifyDisplayFragment();
     fragment.setArguments(extras);
@@ -175,7 +177,7 @@ public class VerifyDisplayFragment extends Fragment implements ViewTreeObserver.
     this.qrCodeContainer.setOnClickListener(v -> callback.onQrCodeContainerClicked());
     this.registerForContextMenu(numbersContainer);
 
-    // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
+    // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
     IdentityKeyParcelable parcelableKey;
     if (savedInstanceState == null){
       if(getArguments() == null){
@@ -193,7 +195,7 @@ public class VerifyDisplayFragment extends Fragment implements ViewTreeObserver.
                                                      recipient.getId(),
                                                      getActivity(),
                                                      remoteIdentity);
-    // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end"
+    // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 
     this.scrollView.getViewTreeObserver().addOnScrollChangedListener(this);
 
@@ -279,9 +281,9 @@ public class VerifyDisplayFragment extends Fragment implements ViewTreeObserver.
     if (animateSuccessOnDraw) {
       animateSuccessOnDraw = false;
       animateVerifiedSuccess();
-      // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
-      VerifyDisplayFragmentGlue.onSuccessfullVerification(recipient.getId(), remoteIdentity, verifyButton);
-      // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end"
+      // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+       VerifyDisplayFragmentGlue.onSuccessfullVerification(recipient.getId(), remoteIdentity, verifyButton);
+      // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
     } else if (animateFailureOnDraw) {
       animateFailureOnDraw = false;
       animateVerifiedFailure();

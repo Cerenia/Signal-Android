@@ -27,7 +27,9 @@ import org.thoughtcrime.securesms.notifications.NotificationChannels;
 import org.thoughtcrime.securesms.permissions.Permissions;
 import org.thoughtcrime.securesms.service.GenericForegroundService;
 import org.thoughtcrime.securesms.service.NotificationController;
+// TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
 import org.thoughtcrime.securesms.trustedIntroductions.glue.LocalBackupJobGlue;
+// TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 import org.thoughtcrime.securesms.util.BackupUtil;
 import org.thoughtcrime.securesms.util.StorageUtil;
 
@@ -103,10 +105,10 @@ public final class LocalBackupJob extends BaseJob {
       String backupPassword  = BackupPassphrase.get(context);
       File   backupDirectory = StorageUtil.getOrCreateBackupDirectory();
       String timestamp       = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.US).format(new Date());
-      // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
+      // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
       LocalBackupJobGlue.repeatBackup((name) -> {
         String       fileName        = String.format(name, timestamp);
-        // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end"
+        // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
         File   backupFile      = new File(backupDirectory, fileName);
 
         deleteOldTemporaryBackups(backupDirectory);
@@ -166,9 +168,9 @@ public final class LocalBackupJob extends BaseJob {
         }
 
         BackupUtil.deleteOldBackups();
-        // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
+        // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH start"
       });
-      // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end"
+      // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH end"
     } catch (UnableToStartException e) {
         Log.w(TAG, "This should not happen on API < 31");
         throw new AssertionError(e);

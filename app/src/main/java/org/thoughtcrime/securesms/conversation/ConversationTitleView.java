@@ -27,7 +27,9 @@ import org.thoughtcrime.securesms.database.model.StoryViewState;
 import org.thoughtcrime.securesms.mms.GlideRequests;
 import org.thoughtcrime.securesms.recipients.LiveRecipient;
 import org.thoughtcrime.securesms.recipients.Recipient;
+// TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
 import org.thoughtcrime.securesms.trustedIntroductions.glue.ConversationTitleViewGlue;
+// TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 import org.thoughtcrime.securesms.util.ContextUtil;
 import org.thoughtcrime.securesms.util.DrawableUtil;
 import org.thoughtcrime.securesms.util.ExpirationUtil;
@@ -191,9 +193,9 @@ public class ConversationTitleView extends ConstraintLayout {
     if      (recipient.isGroup()) setGroupRecipientTitle(recipient);
     else if (recipient.isSelf())  setSelfTitle();
     else {
-      // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
+      // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
       ConversationTitleViewGlue.setIndividualRecipientTitle(recipient, getContext(), title, subtitle, this::updateSubtitleVisibility);
-      // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end"
+      // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
     }
   }
 

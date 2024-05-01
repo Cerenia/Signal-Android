@@ -74,10 +74,10 @@ open class SignalDatabase(private val context: Application, databaseSecret: Data
   val remoteMegaphoneTable: RemoteMegaphoneTable = RemoteMegaphoneTable(context, this)
   val pendingPniSignatureMessageTable: PendingPniSignatureMessageTable = PendingPniSignatureMessageTable(context, this)
   val callTable: CallTable = CallTable(context, this)
-  // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
+  // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
   val tiDatabase: org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue =  org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue.createSingleton(context, this)
   val tiIdentityTable: org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue =  org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue.createSingleton(context, this)
-  // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end"
+  // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 
   override fun onOpen(db: net.zetetic.database.sqlcipher.SQLiteDatabase) {
     db.setForeignKeyConstraintsEnabled(true)
@@ -113,10 +113,10 @@ open class SignalDatabase(private val context: Application, databaseSecret: Data
     db.execSQL(RemoteMegaphoneTable.CREATE_TABLE)
     db.execSQL(PendingPniSignatureMessageTable.CREATE_TABLE)
     db.execSQL(CallTable.CREATE_TABLE)
-    // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
+    // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
     db.execSQL(org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue.getCreateTable())
     db.execSQL(org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue.getCreateTable())
-    // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end"
+    // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
     executeStatements(db, SearchTable.CREATE_TABLE)
     executeStatements(db, RemappedRecordTables.CREATE_TABLE)
     executeStatements(db, MessageSendLogTables.CREATE_TABLE)
@@ -530,7 +530,7 @@ open class SignalDatabase(private val context: Application, databaseSecret: Data
     val calls: CallTable
       get() = instance!!.callTable
 
-    // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
+    // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH start"
     @get:JvmStatic
     @get:JvmName("tiDatabase")
     val tiDatabase: org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue
@@ -540,6 +540,6 @@ open class SignalDatabase(private val context: Application, databaseSecret: Data
     @get:JvmName("tiIdentityDatabase")
     val tiIdentityTable: org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue
       get() = instance!!.tiIdentityTable
-    // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end"
+    // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH end"
   }
 }

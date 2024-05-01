@@ -194,8 +194,9 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+// TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
 import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.handleTIMessage;
-
+// TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 /**
  * Takes data about a decrypted message, transforms it into user-presentable data, and writes that
  * data to our data stores.
@@ -2584,7 +2585,9 @@ public class MessageContentProcessor {
     MessageTable database = SignalDatabase.messages();
     String       body     = message.getBody().isPresent() ? message.getBody().get() : "";
 
+    // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
     handleTIMessage(senderRecipient.getId(), body, message.getTimestamp());
+    // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 
     handlePossibleExpirationUpdate(content, message, groupId, senderRecipient, threadRecipient, receivedTime);
 

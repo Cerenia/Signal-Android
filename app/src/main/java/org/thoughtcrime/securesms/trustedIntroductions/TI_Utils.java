@@ -76,8 +76,8 @@ public class TI_Utils {
   // will aid in applying glue logic mechanically further down the line.
   // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
   // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end"
-  static final String TI_GLUE_START = "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start";
-  static final String TI_GLUE_END = "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end";
+  static final String TI_GLUE_START = "TI_GLUE: eNT9XAHgq0lZdbQs2nfH start";
+  static final String TI_GLUE_END = "TI_GLUE: eNT9XAHgq0lZdbQs2nfH end";
   static final String TI_SEPARATOR = "\n"; // marks start of JsonArray, human friendly
   static final int INDENT_SPACES = 1; // pretty printing for human readableness
 
