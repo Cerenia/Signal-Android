@@ -1704,7 +1704,6 @@
 
     <!-- Chat log text for an ongoing group call with more than two participants with placeholders for the first two joined users and a placeholder for the number of users in the call -->
     <plurals name="MessageRecord_s_s_and_d_others_are_in_the_call">
-    <plurals name="MessageRecord_s_s_and_d_others_are_in_the_group_call">
         <item quantity="one">%1$s, %2$s, and %3$d other are in the group call</item>
         <item quantity="other">%1$s, %2$s, and %3$d others are in the group call</item>
     </plurals>
