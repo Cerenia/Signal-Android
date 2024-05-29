@@ -1737,7 +1737,6 @@
     <string name="MessageRequestBottomView_upgrade_this_group_to_activate_new_features">This Legacy Group can no longer be used. Create a new group to activate new features like @mentions and admins.</string>
     <string name="MessageRequestBottomView_this_legacy_group_can_no_longer_be_used">This Legacy Group can no longer be used because it is too large. The maximum group size is %1$d.</string>
     <string name="MessageRequestBottomView_continue_your_conversation_with_s_and_share_your_name_and_photo">Continue your chat with %1$s and share your name and photo with them?</string>
-    <string name="MessageRequestBottomView_continue_your_conversation_with_s_and_share_your_name_and_photo">Continue your conversation with %1$s and share your name and photo with them?</string>
     <string name="MessageRequestBottomView_do_you_want_to_join_this_group_they_wont_know_youve_seen_their_messages_until_you_accept">Join this group and share your name and photo with its members? They won\'t know you\'ve seen their messages until you accept.</string>
     <string name="MessageRequestBottomView_do_you_want_to_join_this_group_you_wont_see_their_messages">Join this group and share your name and photo with its members? You won\'t see their messages until you accept.</string>
     <string name="MessageRequestBottomView_join_this_group_they_wont_know_youve_seen_their_messages_until_you_accept">Join this group? They won’t know you’ve seen their messages until you accept.</string>
@@ -2669,9 +2668,6 @@
 
     <!-- A small toast notification to let the user know their image/video/audio was downloaded and saved to their device, accessible in other apps. -->
     <string name="SaveAttachmentTask_saved">Media saved</string>
-    <!-- SaveAttachmentTask -->
-    <string name="SaveAttachmentTask_saved_to">Saved to %s</string>
-    <string name="SaveAttachmentTask_saved">Saved</string>
 
     <!-- SearchToolbar -->
     <string name="SearchToolbar_search">Search</string>
@@ -4406,8 +4402,6 @@
     <string name="ReviewCardDialogFragment__review_members">Review members</string>
     <!-- Title of a screen where the user will be prompted to review a message request matching the name of someone they already know -->
     <string name="ReviewCardDialogFragment__review_request">Review request</string>
-    <string name="ReviewCardDialogFragment__review_members">Review Members</string>
-    <string name="ReviewCardDialogFragment__review_request">Review Request</string>
     <string name="ReviewCardDialogFragment__d_group_members_have_the_same_name">%1$d group members have the same name, review the members below and choose to take action.</string>
     <string name="ReviewCardDialogFragment__if_youre_not_sure">If you\'re not sure who the request is from, review the contacts below and take action.</string>
     <string name="ReviewCardDialogFragment__no_other_groups_in_common">No other groups in common.</string>
@@ -4597,7 +4591,6 @@
     <string name="PaymentsRecoveryStartFragment__got_balance">You’ve got a balance! Time to save your recovery phrase—a 24-word key you can use to restore your balance.</string>
     <!-- Description in save recovery phrase screen which shows up when user navigates from info card -->
     <string name="PaymentsRecoveryStartFragment__time_to_save">Time to save your recovery phrase—a 24-word key you can use to restore your balance.</string>
-    <string name="PaymentsRecoveryStartFragment__time_to_save">Time to save your recovery phrase—a 24-word key you can use to restore your balance. Learn more</string>
     <string name="PaymentsRecoveryStartFragment__your_recovery_phrase_is_a">Your recovery phrase is a %1$d-word phrase unique to you. Use this phrase to restore your balance.</string>
     <string name="PaymentsRecoveryStartFragment__start">Start</string>
     <string name="PaymentsRecoveryStartFragment__enter_manually">Enter manually</string>
