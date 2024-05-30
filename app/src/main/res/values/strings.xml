@@ -6771,6 +6771,24 @@
     <string name="ClearVerificationDialog__Clear_introduced">Are you sure you want to clear the introduction of this contact? Restoring this state will necessitate a fresh introduction of this contact by a verified third party.</string>
     <string name="ClearVerificationDialog__Clear_duplex">Are you sure you want to clear the double verification status of this contact? Restoring this state will necessitate both a rescann of your contact\'s QR code *and* a fresh introduction of this contact by a verified third party. </string>
 
+    <!-- ContactsSelectionActivity -->
+    <string name="PickContactsForTIActivity_ok">OK</string>
+    <string name="PickContactsForTIActivity_title">Introduce contacts:</string>
+    <plurals name="PickContactsForTIActivity__introduce_d_contacts_to_s">
+        <item quantity="one">Introduce %1$s to %2$s?</item>
+        <item quantity="other">Introduce %1$d contacts to %2$s?</item>
+    </plurals>
+    <string name="PickContactsForTIActivity_introduce">Introduce</string>
+    <string name="PickContactsForTIActivity_introduce_contacts">Introduce contacts</string>
+    <plurals name="PickContactsForTIActivity_d_contacts">
+        <item quantity="one">Introducing %1$d contact</item>
+        <item quantity="other">Introducing %1$d contacts</item>
+    </plurals>
+    <string name="PickContactsForTIActivity_filter_hint">Search for contact</string>
+    <string name="PickContactsForTIActivity_no_contacts">No valid contacts for introduction were found. The safety number of a contact must be verified in order to securely introduce them.
+        You can verify safety numbers by scanning the QR code on the verification screen, found by navigating to the contact\'s conversation, then "Conversation Settings" -> "View safety number". (TODO: more info? less? link to mechanism explanation?)</string>
+
+
     <!-- ManageIntroductionsActivity -->
     <string name="ManageIntroductionsActivity__Toolbar_Title">Trusted Introductions:</string>
     <string name="ManageIntroductionsActivity__Filter_hint">Search Introductions</string>
