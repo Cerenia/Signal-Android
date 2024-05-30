@@ -10,7 +10,6 @@ import androidx.annotation.WorkerThread;
 import org.thoughtcrime.securesms.database.IdentityTable;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.recipients.RecipientId;
-import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database;
 import org.thoughtcrime.securesms.trustedIntroductions.database.TI_IdentityTable;
 
 public interface IdentityTableGlue {

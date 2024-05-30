@@ -284,6 +284,10 @@ import org.thoughtcrime.securesms.stickers.StickerPackInstallEvent
 import org.thoughtcrime.securesms.stickers.StickerPackPreviewActivity
 import org.thoughtcrime.securesms.stories.StoryViewerArgs
 import org.thoughtcrime.securesms.stories.viewer.StoryViewerActivity
+import org.thoughtcrime.securesms.trustedIntroductions.CanNotIntroduceDialog
+import org.thoughtcrime.securesms.trustedIntroductions.database.TI_IdentityTable
+import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue
+import org.thoughtcrime.securesms.trustedIntroductions.send.CanNotIntroduceDialog
 import org.thoughtcrime.securesms.util.BottomSheetUtil
 import org.thoughtcrime.securesms.util.BubbleUtil
 import org.thoughtcrime.securesms.util.CommunicationActions
@@ -4088,6 +4092,23 @@ class ConversationFragment :
               toast(R.string.AttachmentManager_cant_open_media_selection, Toast.LENGTH_LONG)
             }
           }
+          // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+          AttachmentKeyboardButton.TRUSTED_INTRODUCTION -> {
+            val recipientRecord: Optional<IdentityRecord> = ApplicationDependencies.getProtocolStore().aci().identities().getIdentityRecord(recipient.id)
+            var conversationType: CanNotIntroduceDialog.ConversationType
+            if (recipient.isGroup) {
+              conversationType = CanNotIntroduceDialog.ConversationType.GROUP
+            } else if (!(recipientRecord.isPresent && IdentityTableGlue.VerifiedStatus.ti_recipientUnlocked(recipientRecord.get().recipientId))){
+              // Unverified signal contact (or empty recipient record)
+              // Guaranteed to have a recipient Record at this point and be unverified
+              conversationType = CanNotIntroduceDialog.ConversationType.SINGLE_SECURE_TEXT;
+            } else {
+              // TI allowed
+              AttachmentManager.selectTI(this, recipient.getId());
+              return;
+            }
+          }
+          // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
         }
       } else if (media != null) {
         conversationActivityResultContracts.launchMediaEditor(listOf(media), recipient.id, composeText.textTrimmed)

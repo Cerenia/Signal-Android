@@ -19,7 +19,6 @@ import org.thoughtcrime.securesms.database.model.IdentityRecord;
 public final class CanNotIntroduceDialog {
 
     public enum ConversationType {
-        SMS,
         GROUP,
         SINGLE_SECURE_TEXT;
 
@@ -35,10 +34,6 @@ public final class CanNotIntroduceDialog {
         AlertDialog.Builder builder = new AlertDialog.Builder(context).setTitle(R.string.CanNotIntroduceDialog__Cant_introduce);
 
         switch (conversationType){
-            case SMS:
-                builder.setMessage(R.string.CanNotIntroduceDialog__SMS_contact_not_applicable);
-                ConversationType.setNegativeButtonNotSupported(builder);
-                break;
             case GROUP:
                 builder.setMessage(R.string.CanNotIntroduceDialog__Group_not_yet_supported);
                 ConversationType.setNegativeButtonNotSupported(builder);

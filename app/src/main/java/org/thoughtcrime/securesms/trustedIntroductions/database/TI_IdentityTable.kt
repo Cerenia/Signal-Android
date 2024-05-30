@@ -65,7 +65,7 @@ class TI_IdentityTable internal constructor(context: Context?, databaseHelper: S
 
   override fun getVerifiedStatus(id: RecipientId?): VerifiedStatus {
     val recipient = Recipient.resolved(id!!)
-    if (recipient.hasServiceId()) {
+    if (recipient.hasServiceId) {
       readableDatabase
         .select()
         .from(TABLE_NAME)
