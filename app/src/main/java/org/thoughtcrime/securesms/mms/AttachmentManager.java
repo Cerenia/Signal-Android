@@ -49,6 +49,7 @@ import org.signal.core.util.concurrent.ListenableFuture.Listener;
 import org.signal.core.util.concurrent.SettableFuture;
 import org.signal.core.util.concurrent.SimpleTask;
 import org.signal.core.util.logging.Log;
+import org.thoughtcrime.securesms.ContactSelectionActivity;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.attachments.Attachment;
 import org.thoughtcrime.securesms.components.AudioView;
@@ -80,6 +81,8 @@ import org.thoughtcrime.securesms.providers.DeprecatedPersistentBlobProvider;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.sms.MessageSender;
+import org.thoughtcrime.securesms.trustedIntroductions.glue.ContactSelectionActivityGlue;
+import org.thoughtcrime.securesms.trustedIntroductions.glue.ConversationFragmentGlue;
 import org.thoughtcrime.securesms.util.BitmapUtil;
 import org.thoughtcrime.securesms.util.FeatureFlags;
 import org.thoughtcrime.securesms.util.MediaUtil;
@@ -496,6 +499,14 @@ public class AttachmentManager {
         .setNegativeButton(context.getString(R.string.AttachmentManager__cancel), null)
         .show();
   }
+
+  // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+  public static void selectTI(@NonNull Context fragment, @NonNull RecipientId recipientId){
+    // Start contact picker activity
+    // TODO: Only left here for consistency with the preexisting structure.. But trying to avoid using deprecated code.
+    ConversationFragmentGlue.tiLaunch.launch(ContactSelectionActivityGlue.createIntent(fragment, recipientId), null);
+  }
+  // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 
   private @Nullable Uri getSlideUri() {
     return slide.isPresent() ? slide.get().getUri() : null;

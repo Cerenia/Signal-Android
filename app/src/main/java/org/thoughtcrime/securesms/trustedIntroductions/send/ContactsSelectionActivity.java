@@ -10,15 +10,13 @@ import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.PassphraseRequiredActivity;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.components.ContactFilterView;
-import org.thoughtcrime.securesms.database.SignalDatabase;
-import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
+import org.thoughtcrime.securesms.trustedIntroductions.glue.ContactSelectionActivityGlue;
 import org.thoughtcrime.securesms.util.DynamicNoActionBarTheme;
 import org.thoughtcrime.securesms.util.DynamicTheme;
 import org.thoughtcrime.securesms.util.Util;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -35,11 +33,10 @@ import java.util.stream.Collectors;
  * Queries the Contacts Provider for Contacts which match strongly verified contacts in the Signal identity database,
  * and let's the user choose a set of them for the purpose of carrying out a trusted introduction.
  */
-public final class ContactsSelectionActivity extends PassphraseRequiredActivity implements ContactsSelectionListFragment.OnContactSelectedListener {
+public final class ContactsSelectionActivity extends PassphraseRequiredActivity implements ContactsSelectionListFragment.OnContactSelectedListener{
 
   private static final String TAG = String.format(TI_Utils.TI_LOG_TAG, Log.tag(ContactsSelectionActivity.class));
 
-  public static final String RECIPIENT_ID                 = "recipient_id";
   public static final String SELECTED_CONTACTS_TO_FORWARD = "forwarding_contacts";
 
   private final DynamicTheme dynamicTheme = new DynamicNoActionBarTheme();
@@ -52,13 +49,6 @@ public final class ContactsSelectionActivity extends PassphraseRequiredActivity 
   private TextView                      no_valid_contacts;
   private ContactFilterView                         contactFilterView;
   private Toolbar           toolbar;
-
-
-  public static @NonNull Intent createIntent(@NonNull Context context, @NonNull RecipientId id){
-    Intent intent = new Intent(context, ContactsSelectionActivity.class);
-    intent.putExtra(RECIPIENT_ID, id.toLong());
-    return intent;
-  }
 
   @Override protected void onCreate(Bundle savedInstanceState, boolean ready) {
     super.onCreate(savedInstanceState, ready);
@@ -144,7 +134,7 @@ public final class ContactsSelectionActivity extends PassphraseRequiredActivity 
   }
 
   private RecipientId getRecipientID(){
-    return RecipientId.from(getIntent().getLongExtra(RECIPIENT_ID, -1));
+    return RecipientId.from(getIntent().getLongExtra(ContactSelectionActivityGlue.RECIPIENT_ID, -1));
   }
 
   private void enableDone() {
