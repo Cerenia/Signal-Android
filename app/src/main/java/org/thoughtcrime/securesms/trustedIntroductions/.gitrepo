@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/ingydotnet/git-subrepo#readme
+;
+[subrepo]
+	remote = git@github.com:Cerenia/trusted-introductions.git
+	branch = TI_migration_v7.5.2
+	commit = 8e472ae8fd38852c2202754a3a990351855c81f6
+	parent = 43509d6ae133d7ffac33462a30c52924f37878c2
+	method = merge
+	cmdver = 0.4.6
