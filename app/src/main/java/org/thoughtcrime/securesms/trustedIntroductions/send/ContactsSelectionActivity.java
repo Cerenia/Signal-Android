@@ -6,17 +6,18 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 
-import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.PassphraseRequiredActivity;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.components.ContactFilterView;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
-import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
-import org.thoughtcrime.securesms.trustedIntroductions.glue.ContactSelectionActivityGlue;
+import org.thoughtcrime.securesms.trustedIntroductions.glue.ConversationFragmentGlue;
 import org.thoughtcrime.securesms.util.DynamicNoActionBarTheme;
 import org.thoughtcrime.securesms.util.DynamicTheme;
 import org.thoughtcrime.securesms.util.Util;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContract;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -33,11 +34,12 @@ import java.util.stream.Collectors;
  * Queries the Contacts Provider for Contacts which match strongly verified contacts in the Signal identity database,
  * and let's the user choose a set of them for the purpose of carrying out a trusted introduction.
  */
-public final class ContactsSelectionActivity extends PassphraseRequiredActivity implements ContactsSelectionListFragment.OnContactSelectedListener{
+public final class ContactsSelectionActivity extends PassphraseRequiredActivity implements ContactsSelectionListFragment.OnContactSelectedListener, ConversationFragmentGlue {
 
-  private static final String TAG = String.format(TI_Utils.TI_LOG_TAG, Log.tag(ContactsSelectionActivity.class));
 
-  private final DynamicTheme dynamicTheme = new DynamicNoActionBarTheme();
+  public static final String RECIPIENT_ID                 = "recipient_id";
+  public static final String SELECTED_CONTACTS_TO_FORWARD = "forwarding_contacts";
+  private final       DynamicTheme dynamicTheme                 = new DynamicNoActionBarTheme();
 
   // when done picking contacts (button)
   private View                          done;
@@ -132,7 +134,7 @@ public final class ContactsSelectionActivity extends PassphraseRequiredActivity 
   }
 
   private RecipientId getRecipientID(){
-    return RecipientId.from(getIntent().getLongExtra(ContactSelectionActivityGlue.RECIPIENT_ID, -1));
+    return RecipientId.from(getIntent().getLongExtra(RECIPIENT_ID, -1));
   }
 
   private void enableDone() {
@@ -186,11 +188,15 @@ public final class ContactsSelectionActivity extends PassphraseRequiredActivity 
     Intent           resultIntent = getIntent();
     Set<RecipientId> recipientIds = state.getToIntroduce().stream().map(Recipient::getId).collect(Collectors.toSet());
 
-    resultIntent.putParcelableArrayListExtra(ContactSelectionActivityGlue.SELECTED_CONTACTS_TO_FORWARD, new ArrayList<>(recipientIds));
+    resultIntent.putParcelableArrayListExtra(SELECTED_CONTACTS_TO_FORWARD, new ArrayList<>(recipientIds));
 
     setResult(RESULT_OK, resultIntent);
     finish();
   }
 
+  @Override public ActivityResultLauncher makeContactSelectionActivityLauncher(Context context) {
+    ActivityResultContract contract = new PickContactsToIntroduceContract();
+    return registerForActivityResult(contract, this.getParent()::);
+  }
 }
 

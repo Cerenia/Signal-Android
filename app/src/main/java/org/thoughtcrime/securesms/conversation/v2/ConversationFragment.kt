@@ -286,6 +286,7 @@ import org.thoughtcrime.securesms.stories.StoryViewerArgs
 import org.thoughtcrime.securesms.stories.viewer.StoryViewerActivity
 import org.thoughtcrime.securesms.trustedIntroductions.CanNotIntroduceDialog
 import org.thoughtcrime.securesms.trustedIntroductions.database.TI_IdentityTable
+import org.thoughtcrime.securesms.trustedIntroductions.glue.ConversationFragmentGlue
 import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue
 import org.thoughtcrime.securesms.trustedIntroductions.send.CanNotIntroduceDialog
 import org.thoughtcrime.securesms.util.BottomSheetUtil
@@ -4104,8 +4105,7 @@ class ConversationFragment :
               conversationType = CanNotIntroduceDialog.ConversationType.SINGLE_SECURE_TEXT;
             } else {
               // TI allowed
-              AttachmentManager.selectTI(this, recipient.getId());
-              return;
+              ConversationFragmentGlue.contactSelectionActivityLauncher(this);
             }
           }
           // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end

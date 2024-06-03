@@ -137,7 +137,7 @@ public class ContactsSelectionListFragment extends Fragment implements ContactFi
       for (Recipient c: contacts) {
         // Choose appropriate string representation
         Pattern filterPattern = Pattern.compile(Pattern.quote(filter), Pattern.CASE_INSENSITIVE);
-        if(!filterPattern.matcher(c.getDisplayNameOrUsername(requireContext())).find() &&
+        if(!filterPattern.matcher(c.getDisplayName(requireContext())).find() &&
            !filterPattern.matcher(c.getE164().orElse("")).find()){
           filtered.remove(c);
         }
