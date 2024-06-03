@@ -41,7 +41,7 @@ public interface ConversationFragmentGlue {
       assert intent != null; // Programming error.
       // Start TI Job with the id arrayList
       RecipientId            recipientId   = RecipientId.from(intent.getLongExtra(ContactSelectionActivityGlue.RECIPIENT_ID, -1));
-      ArrayList<RecipientId> introduceeIds = intent.getParcelableArrayListExtra(ContactsSelectionActivity.SELECTED_CONTACTS_TO_FORWARD);
+      ArrayList<RecipientId> introduceeIds = intent.getParcelableArrayListExtra(ContactSelectionActivityGlue.SELECTED_CONTACTS_TO_FORWARD);
       HashSet<RecipientId>   idSet         = new HashSet<>(introduceeIds);
       ApplicationDependencies.getJobManager().add(new TrustedIntroductionSendJob(recipientId, idSet));
     } else {

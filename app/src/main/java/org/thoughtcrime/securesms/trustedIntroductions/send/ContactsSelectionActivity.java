@@ -37,8 +37,6 @@ public final class ContactsSelectionActivity extends PassphraseRequiredActivity 
 
   private static final String TAG = String.format(TI_Utils.TI_LOG_TAG, Log.tag(ContactsSelectionActivity.class));
 
-  public static final String SELECTED_CONTACTS_TO_FORWARD = "forwarding_contacts";
-
   private final DynamicTheme dynamicTheme = new DynamicNoActionBarTheme();
 
   // when done picking contacts (button)
@@ -160,8 +158,8 @@ public final class ContactsSelectionActivity extends PassphraseRequiredActivity 
   }
 
   private void displayAlertForSingleIntroduction(Recipient recipient, Recipient introducee, @NonNull ContactsSelectionViewModel.IntroduceDialogMessageState state){
-    String message = getResources().getQuantityString(R.plurals.PickContactsForTIActivity__introduce_d_contacts_to_s, 1,
-                                                      introducee.getDisplayNameOrUsername(getApplicationContext()), recipient.getDisplayName(this));
+    String message = getResources().getQuantityString(R.plurals.PickContactsForTIActivity__introduce_d_contacts_to_s, 1, state.getToIntroduce().get(0).getDisplayName(getApplicationContext()),
+                                                      recipient.getDisplayName(this));
     displayAlert(message, state);
   }
 
@@ -188,7 +186,7 @@ public final class ContactsSelectionActivity extends PassphraseRequiredActivity 
     Intent           resultIntent = getIntent();
     Set<RecipientId> recipientIds = state.getToIntroduce().stream().map(Recipient::getId).collect(Collectors.toSet());
 
-    resultIntent.putParcelableArrayListExtra(SELECTED_CONTACTS_TO_FORWARD, new ArrayList<>(recipientIds));
+    resultIntent.putParcelableArrayListExtra(ContactSelectionActivityGlue.SELECTED_CONTACTS_TO_FORWARD, new ArrayList<>(recipientIds));
 
     setResult(RESULT_OK, resultIntent);
     finish();

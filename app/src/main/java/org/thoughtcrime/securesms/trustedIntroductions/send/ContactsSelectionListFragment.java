@@ -37,12 +37,6 @@ import java.util.regex.Pattern;
 
 import kotlin.Unit;
 
-/**
- * In order to keep the tight coupling to a minimum, such that we can continue syncing against the upstream repo as it evolves, we opted to
- * copy some of the code instead of adapting the originals in the repo, which would more readily lead to merge conflicts down the line.
- * This is an adaptation of ContactSelectionListFragment, but it's always a multiselect and the data is loaded from an external cursor
- * instead of using DisplayMode.
- */
 public class ContactsSelectionListFragment extends Fragment implements ContactFilterView.OnFilterChangedListener {
 
   private static final String TAG = String.format(TI_Utils.TI_LOG_TAG, Log.tag(ContactsSelectionListFragment.class));
@@ -99,9 +93,8 @@ public class ContactsSelectionListFragment extends Fragment implements ContactFi
   }
 
   private void initializeAdapter() {
-    GlideRequests glideRequests = GlideApp.with(this);
     // Not directly passing a cursor, instead submitting a list to ContactsAdapter
-    TIRecyclerViewAdapter = new ContactsSelectionAdapter(requireContext(), glideRequests, new ContactClickListener());
+    TIRecyclerViewAdapter = new ContactsSelectionAdapter(requireContext(), new ContactClickListener());
 
     TIContactsRecycler.setAdapter(TIRecyclerViewAdapter);
   }

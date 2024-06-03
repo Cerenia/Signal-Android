@@ -16,6 +16,7 @@ import org.thoughtcrime.securesms.trustedIntroductions.send.ContactsSelectionAct
 public interface ContactSelectionActivityGlue {
 
   String RECIPIENT_ID                 = "recipient_id";
+  public static final String SELECTED_CONTACTS_TO_FORWARD = "forwarding_contacts";
 
   static @NonNull Intent createIntent(@NonNull Context context, @NonNull RecipientId id){
     Intent intent = new Intent(context, ContactsSelectionActivity.class);

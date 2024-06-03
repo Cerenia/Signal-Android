@@ -26,10 +26,8 @@ public class ContactsSelectionAdapter extends ListAdapter<Recipient, ContactsSel
 
   private final LayoutInflater                             layoutInflater;
   private final ContactsSelectionAdapter.ItemClickListener clickListener;
-  private final GlideRequests                              glideRequests;
 
   ContactsSelectionAdapter(@NonNull Context context,
-                           @NonNull GlideRequests glideRequests,
                            @Nullable ContactsSelectionAdapter.ItemClickListener clickListener)
   {
     super(new DiffUtil.ItemCallback<Recipient>() {
@@ -42,7 +40,6 @@ public class ContactsSelectionAdapter extends ListAdapter<Recipient, ContactsSel
       }
     });
     this.layoutInflater  = LayoutInflater.from(context);
-    this.glideRequests   = glideRequests;
     this.clickListener   = clickListener;
   }
 
@@ -73,7 +70,7 @@ public class ContactsSelectionAdapter extends ListAdapter<Recipient, ContactsSel
   @Override public void onBindViewHolder(@NonNull TIContactViewHolder holder, int position) {
     Recipient current = getItem(position);
     // For Type, see contactRepository, 0 == normal
-    holder.bind(glideRequests, current);
+    holder.bind(current);
   }
 
 
@@ -95,11 +92,11 @@ public class ContactsSelectionAdapter extends ListAdapter<Recipient, ContactsSel
       });
       ViewUtil.setTextViewGravityStart(this.nameView, itemView.getContext());
     }
-    public void bind(@NonNull GlideRequests glideRequests, Recipient recipient){
+    public void bind( Recipient recipient){
 
       this.recipient = recipient;
       this.nameView.setText(recipient.getDisplayName(itemView.getContext()));
-      this.contactPhotoImage.setAvatar(glideRequests, recipient, false);
+      this.contactPhotoImage.setAvatarUsingProfile(recipient);
       this.numberView.setText(recipient.getE164().orElse(""));;
     }
 
