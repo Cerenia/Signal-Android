@@ -58,7 +58,7 @@ class ConversationActivityResultContracts(private val fragment: Fragment, privat
   private val cameraLauncher = fragment.registerForActivityResult(MediaCapture) { result -> callbacks.onMediaSend(result) }
   // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
   private val tiContactPickLauncher = fragment.registerForActivityResult(PickContactsToIntroduceContract.PickContacts) {}
-  
+
   fun launchSelectContactsForTrustedIntroductions(id: RecipientId){
     tiContactPickLauncher.launch(id)
   }

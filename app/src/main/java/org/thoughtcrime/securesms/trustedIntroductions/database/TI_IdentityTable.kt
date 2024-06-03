@@ -16,7 +16,6 @@ import org.thoughtcrime.securesms.recipients.RecipientId
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.TI_LOG_TAG
 import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue
 import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue.VerifiedStatus
-import org.thoughtcrime.securesms.util.Base64
 
 
 class TI_IdentityTable internal constructor(context: Context?, databaseHelper: SignalDatabase?): DatabaseTable(context, databaseHelper), IdentityTableGlue {

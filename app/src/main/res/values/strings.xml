@@ -6829,6 +6829,14 @@
     <!-- TrustedIntroductionsWaitForIdentityJob -->
     <string name="TrustedIntroductionsWaitForIdentityJob_OnFailureNotificationTitle">Error %1$s introduction!</string>
     <string name="TrustedIntroductionsWaitForIdentityJob_OnFailureNotificationText">For %1$s introducing %2$s.</string>
+
+    <!-- ConversationTitleView added states -->
+    <string name="ConversationTitleView_manually_verified">Manually Verified</string>
+    <string name="ConversationTitleView_directly_verified">QR Verified</string>
+    <string name="ConversationTitleView_introduced">Introduced</string>
+    <string name="ConversationTitleView_duplex">Strongly Verified</string>
+    <string name="ConversationTitleView_unverified">Unverified</string>  <!-- Should never be visible -->
+
     <!--TI_GLUE: eNT9XAHgq0lZdbQs2nfH end-->
 
     <!-- EOF -->
