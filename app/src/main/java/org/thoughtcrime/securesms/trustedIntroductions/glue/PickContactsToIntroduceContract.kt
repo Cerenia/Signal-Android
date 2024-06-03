@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-package org.thoughtcrime.securesms.trustedIntroductions.send
+package org.thoughtcrime.securesms.trustedIntroductions.glue
 
 import android.app.Activity
 import android.content.Context
@@ -16,10 +16,11 @@ import org.thoughtcrime.securesms.recipients.RecipientId
 import org.thoughtcrime.securesms.recipients.RecipientId.from
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils
 import org.thoughtcrime.securesms.trustedIntroductions.jobs.TrustedIntroductionSendJob
+import org.thoughtcrime.securesms.trustedIntroductions.send.ContactsSelectionActivity
 
 class PickContactsToIntroduceContract {
-  
-  object PickContacts : ActivityResultContract<RecipientId, Pair<RecipientId?, ArrayList<RecipientId>?>>() {
+
+  object PickContacts:ActivityResultContract<RecipientId, Pair<RecipientId?, ArrayList<RecipientId>?>>() {
 
     private val TAG = String.format(TI_Utils.TI_LOG_TAG, tag(PickContactsToIntroduceContract::class.java))
 
@@ -35,6 +36,7 @@ class PickContactsToIntroduceContract {
       val listOfIntroduceeIds = (intent.getParcelableArrayExtra(ContactsSelectionActivity.SELECTED_CONTACTS_TO_FORWARD)) as ArrayList<RecipientId>
       val idSet: HashSet<RecipientId> = HashSet(listOfIntroduceeIds)
       val sendJob = TrustedIntroductionSendJob(recipientId, idSet)
+      // Starting job here, nothing else needs to happen in the Conversation Fragment so there is no callback defined in ConversationActivityResultContracts
       ApplicationDependencies.getJobManager().add(sendJob)
       return Pair(recipientId, listOfIntroduceeIds)
       } else {

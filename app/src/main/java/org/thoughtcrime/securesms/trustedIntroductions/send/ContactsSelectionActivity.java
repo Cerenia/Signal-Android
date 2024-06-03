@@ -1,6 +1,5 @@
 package org.thoughtcrime.securesms.trustedIntroductions.send;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -11,13 +10,10 @@ import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.components.ContactFilterView;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
-import org.thoughtcrime.securesms.trustedIntroductions.glue.ConversationFragmentGlue;
 import org.thoughtcrime.securesms.util.DynamicNoActionBarTheme;
 import org.thoughtcrime.securesms.util.DynamicTheme;
 import org.thoughtcrime.securesms.util.Util;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContract;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -34,7 +30,7 @@ import java.util.stream.Collectors;
  * Queries the Contacts Provider for Contacts which match strongly verified contacts in the Signal identity database,
  * and let's the user choose a set of them for the purpose of carrying out a trusted introduction.
  */
-public final class ContactsSelectionActivity extends PassphraseRequiredActivity implements ContactsSelectionListFragment.OnContactSelectedListener, ConversationFragmentGlue {
+public final class ContactsSelectionActivity extends PassphraseRequiredActivity implements ContactsSelectionListFragment.OnContactSelectedListener{
 
 
   public static final String RECIPIENT_ID                 = "recipient_id";
@@ -192,11 +188,6 @@ public final class ContactsSelectionActivity extends PassphraseRequiredActivity 
 
     setResult(RESULT_OK, resultIntent);
     finish();
-  }
-
-  @Override public ActivityResultLauncher makeContactSelectionActivityLauncher(Context context) {
-    ActivityResultContract contract = new PickContactsToIntroduceContract();
-    return registerForActivityResult(contract, this.getParent()::);
   }
 }
 
