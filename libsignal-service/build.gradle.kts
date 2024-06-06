@@ -31,6 +31,21 @@ tasks.withType<KotlinCompile>().configureEach {
   }
 }
 
+// TI start: Trying to declare the dependency that keeps failing.
+tasks.named("sourcesJar"){
+  mustRunAfter("generateMainProtos")
+}
+
+// https://github.com/gradle/gradle/issues/17236
+gradle.taskGraph.whenReady {
+  allTasks
+    .filter { it.hasProperty("duplicatesStrategy") } // Because it's some weird decorated wrapper that I can't cast.
+    .forEach {
+      it.setProperty("duplicatesStrategy", "EXCLUDE")
+    }
+}
+// TI end:
+
 afterEvaluate {
   listOf(
     "runKtlintCheckOverMainSourceSet",
