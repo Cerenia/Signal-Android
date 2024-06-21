@@ -6,7 +6,7 @@
 [subrepo]
 	remote = git@github.com:Cerenia/trusted-introductions.git
 	branch = TI_migration_v7.5.2
-	commit = 8e472ae8fd38852c2202754a3a990351855c81f6
-	parent = 43509d6ae133d7ffac33462a30c52924f37878c2
+	commit = c3d0aa9efd29afc5a2888566ca0371ab5a02b2d5
+	parent = d1a8f39607402ddcecae6a154b1a87d4c37cf8ee
 	method = merge
 	cmdver = 0.4.6
