@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--TI_GLUE: eNT9XAHgq0lZdbQs2nfH start-->
+<!--TI_GLUE: eNT9XAHgq0lZdbQs2nfH end-->
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/no_introductions_found"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/ManageIntroductionsFragment__No_Introductions_all"
+        android:visibility="gone"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="2dp"
+        android:drawablePadding="4dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/barrier_recycle"
+        app:layout_constraintHorizontal_chainStyle="spread_inside"
+        app:titleTextAppearance="@style/TextSecure.TitleTextStyle"
+        />
+
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/barrier_recycle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:barrierDirection="bottom"
+        app:constraint_referenced_ids="manage_fragment_header,no_introductions_found"/>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/manage_fragment_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="32dp"
+        android:visibility="visible"
+        app:layout_constraintVertical_bias="1"
+        app:titleTextAppearance="@style/TextSecure.TitleTextStyle"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <org.thoughtcrime.securesms.components.FromTextView
+            android:id="@+id/date_header"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="2dp"
+            android:drawablePadding="4dp"
+            android:ellipsize="marquee"
+            android:singleLine="true"
+            android:text="@string/ManageIntroductionsListItemHeader__Date"
+            android:textAppearance="@style/Signal.Text.BodyMedium"
+            android:textColor="@color/signal_text_primary"
+            android:textStyle="bold"
+            app:layout_constraintHorizontal_bias="0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/guideline_left"
+            tools:text="Date"/>
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline_left"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.25" />
+
+        <org.thoughtcrime.securesms.components.FromTextView
+            android:id="@+id/from_header"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="32dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="2dp"
+            android:drawablePadding="4dp"
+            android:ellipsize="marquee"
+            android:singleLine="true"
+            android:text="@string/ManageIntroductionsListItemHeader__Introducer"
+            android:textAppearance="@style/Signal.Text.BodyMedium"
+            android:textColor="@color/signal_text_primary"
+            android:textStyle="bold"
+            app:layout_constraintHorizontal_bias="0"
+            app:layout_constraintStart_toEndOf="@id/guideline_left"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/guideline_right"
+            tools:text="From"/>
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline_right"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.50" />
+
+        <org.thoughtcrime.securesms.components.FromTextView
+            android:id="@+id/introducee_header"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="32dp"
+            android:layout_marginEnd="24dp"
+            android:drawablePadding="4dp"
+            android:ellipsize="marquee"
+            android:singleLine="true"
+            android:text="@string/ManageIntroductionsListItemHeader__Introducee"
+            android:textAppearance="@style/Signal.Text.BodyMedium"
+            android:textColor="@color/signal_text_primary"
+            android:textStyle="bold"
+            app:layout_constraintHorizontal_bias="0"
+            app:layout_constraintStart_toEndOf="@id/guideline_right"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:text="Introducee"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:scrollbarThumbVertical="@drawable/contact_selection_scrollbar_thumb"
+        android:scrollbars="vertical"
+        app:layout_constraintTop_toBottomOf="@id/barrier_recycle"
+        app:layout_constraintBottom_toTopOf="@id/toggleButton"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        tools:listitem="@layout/ti_manage_list_item" />
+
+        <com.google.android.material.button.MaterialButtonToggleGroup
+            android:id="@+id/toggleButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:gravity="center_horizontal"
+            app:layout_constraintTop_toBottomOf="@id/recycler_view"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+            <com.google.android.material.button.MaterialButton
+                style="@style/Widget.MaterialComponents.Button.TextButton.Dialog"
+                android:id="@+id/conflictingFilter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:enabled="true"
+                android:checkable="true"
+                android:text="@string/ManageIntroductionsFragment__Conflicting"
+                />
+            <com.google.android.material.button.MaterialButton
+                style="@style/Widget.MaterialComponents.Button.TextButton.Dialog"
+                android:id="@+id/staleFilter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:enabled="true"
+                android:checkable="true"
+                android:text="@string/ManageIntroductionsFragment__Stale"
+                />
+            <com.google.android.material.button.MaterialButton
+                style="@style/Widget.MaterialComponents.Button.TextButton.Dialog"
+                android:id="@+id/acceptedFilter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:enabled="true"
+                android:checkable="true"
+                android:text="@string/ManageIntroductionsFragment__Accepted"
+                />
+            <com.google.android.material.button.MaterialButton
+                style="@style/Widget.MaterialComponents.Button.TextButton.Dialog"
+                android:id="@+id/rejectedFilter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checkable="true"
+                android:enabled="true"
+                android:text="@string/ManageIntroductionsFragment__Rejected"
+                />
+        </com.google.android.material.button.MaterialButtonToggleGroup>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
