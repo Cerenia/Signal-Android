@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--TI_GLUE: eNT9XAHgq0lZdbQs2nfH start-->
+<!--TI_GLUE: eNT9XAHgq0lZdbQs2nfH end-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <padding android:left="@dimen/TI_border_visibility_padding" android:right="@dimen/TI_border_visibility_padding" android:top="@dimen/TI_border_visibility_padding" android:bottom="@dimen/TI_border_visibility_padding"/>
+    <solid android:color="@color/signal_colorSurface"/>
+    <stroke
+        android:width="@dimen/TI_listview_border_thickness"
+        android:color="#000000" />
+    <corners android:radius="@dimen/TI_listview_corner_radius"/>
+</shape> 
