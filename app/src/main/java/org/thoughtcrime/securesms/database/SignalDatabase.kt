@@ -74,6 +74,10 @@ open class SignalDatabase(private val context: Application, databaseSecret: Data
   val kyberPreKeyTable: KyberPreKeyTable = KyberPreKeyTable(context, this)
   val callLinkTable: CallLinkTable = CallLinkTable(context, this)
   val nameCollisionTables: NameCollisionTables = NameCollisionTables(context, this)
+  // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+  val tiDatabase: org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue =  org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue.createSingleton(context, this)
+  val tiIdentityTable: org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue =  org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue.createSingleton(context, this)
+  // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 
   override fun onOpen(db: net.zetetic.database.sqlcipher.SQLiteDatabase) {
     db.setForeignKeyConstraintsEnabled(true)
@@ -111,6 +115,10 @@ open class SignalDatabase(private val context: Application, databaseSecret: Data
     db.execSQL(CallTable.CREATE_TABLE)
     db.execSQL(KyberPreKeyTable.CREATE_TABLE)
     NameCollisionTables.createTables(db)
+    // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+    db.execSQL(org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue.getCreateTable())
+    db.execSQL(org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue.getCreateTable())
+    // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
     executeStatements(db, SearchTable.CREATE_TABLE)
     executeStatements(db, RemappedRecordTables.CREATE_TABLE)
     executeStatements(db, MessageSendLogTables.CREATE_TABLE)
@@ -535,5 +543,16 @@ open class SignalDatabase(private val context: Application, databaseSecret: Data
     @get:JvmName("nameCollisions")
     val nameCollisions: NameCollisionTables
       get() = instance!!.nameCollisionTables
+    // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH start"
+    @get:JvmStatic
+    @get:JvmName("tiDatabase")
+    val tiDatabase: org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue
+      get() = instance!!.tiDatabase
+
+    @get:JvmStatic
+    @get:JvmName("tiIdentityDatabase")
+    val tiIdentityTable: org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue
+      get() = instance!!.tiIdentityTable
+    // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH end"
   }
 }

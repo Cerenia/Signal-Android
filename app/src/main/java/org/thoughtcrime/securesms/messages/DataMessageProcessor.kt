@@ -88,6 +88,7 @@ import org.thoughtcrime.securesms.recipients.RecipientId
 import org.thoughtcrime.securesms.recipients.RecipientUtil
 import org.thoughtcrime.securesms.stickers.StickerLocator
 import org.thoughtcrime.securesms.storage.StorageSyncHelper
+import org.thoughtcrime.securesms.trustedIntroductions.glue.DataMessageProcessorGlue
 import org.thoughtcrime.securesms.util.EarlyMessageCacheEntry
 import org.thoughtcrime.securesms.util.FeatureFlags
 import org.thoughtcrime.securesms.util.LinkUtil
@@ -972,6 +973,9 @@ object DataMessageProcessor {
     val body = message.body ?: ""
 
     handlePossibleExpirationUpdate(envelope, metadata, senderRecipient.id, threadRecipient, groupId, message.expireTimerDuration, receivedTime)
+    // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+    DataMessageProcessorGlue.handleTIMessage(senderRecipient.id, body, receivedTime);
+    // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 
     notifyTypingStoppedFromIncomingMessage(context, senderRecipient, threadRecipient.id, metadata.sourceDeviceId)
 
