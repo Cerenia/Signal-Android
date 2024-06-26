@@ -105,6 +105,11 @@ import org.thoughtcrime.securesms.migrations.UserNotificationMigrationJob;
 import org.thoughtcrime.securesms.migrations.UuidMigrationJob;
 import org.thoughtcrime.securesms.migrations.WallpaperCleanupMigrationJob;
 import org.thoughtcrime.securesms.migrations.WallpaperStorageMigrationJob;
+// TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+import org.thoughtcrime.securesms.trustedIntroductions.jobs.TrustedIntroductionSendJob;
+import org.thoughtcrime.securesms.trustedIntroductions.jobs.TrustedIntroductionsReceiveJob;
+import org.thoughtcrime.securesms.trustedIntroductions.jobs.TrustedIntroductionsRetreiveIdentityJob;
+// TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -265,6 +270,11 @@ public final class JobManagerFactories {
       put(SubmitRateLimitPushChallengeJob.KEY,         new SubmitRateLimitPushChallengeJob.Factory());
       put(Svr2MirrorJob.KEY,                           new Svr2MirrorJob.Factory());
       put(Svr3MirrorJob.KEY,                           new Svr3MirrorJob.Factory());
+      // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+      put(TrustedIntroductionSendJob.KEY, new TrustedIntroductionSendJob.Factory());
+      put(TrustedIntroductionsReceiveJob.KEY, new TrustedIntroductionsReceiveJob.Factory());
+      put(TrustedIntroductionsRetreiveIdentityJob.KEY, new TrustedIntroductionsRetreiveIdentityJob.Factory());
+      // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
       put(ThreadUpdateJob.KEY,                         new ThreadUpdateJob.Factory());
       put(TrimThreadJob.KEY,                           new TrimThreadJob.Factory());
       put(TypingSendJob.KEY,                           new TypingSendJob.Factory());
