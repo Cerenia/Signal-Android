@@ -32,6 +32,7 @@ import org.thoughtcrime.securesms.mediasend.camerax.CameraXUtil
 import org.thoughtcrime.securesms.mediasend.v2.MediaSelectionActivity
 import org.thoughtcrime.securesms.permissions.Permissions
 import org.thoughtcrime.securesms.recipients.RecipientId
+import org.thoughtcrime.securesms.trustedIntroductions.glue.PickContactsToIntroduceContract
 
 /**
  * This encapsulates the logic for interacting with other activities used throughout a conversation. The gist
@@ -55,6 +56,14 @@ class ConversationActivityResultContracts(private val fragment: Fragment, privat
   private val selectLocationLauncher = fragment.registerForActivityResult(SelectLocation) { result -> callbacks.onLocationSelected(result?.place, result?.uri) }
   private val selectFileLauncher = fragment.registerForActivityResult(SelectFile) { result -> callbacks.onFileSelected(result) }
   private val cameraLauncher = fragment.registerForActivityResult(MediaCapture) { result -> callbacks.onMediaSend(result) }
+  // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+  private val tiContactPickLauncher = fragment.registerForActivityResult(PickContactsToIntroduceContract.PickContacts) {}
+
+  fun launchSelectContactsForTrustedIntroductions(id: RecipientId){
+    tiContactPickLauncher.launch(id)
+  }
+
+  // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 
   fun launchContactShareEditor(uri: Uri, chatColors: ChatColors) {
     contactShareLauncher.launch(uri to chatColors)

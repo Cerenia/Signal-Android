@@ -91,6 +91,8 @@
     <string name="AttachmentKeyboard_Signal_needs_permission_to_show_your_photos_and_videos">Signal needs permission to show your photos and videos</string>
     <!-- Text for a button prompting users to allow Signal access to their gallery storage -->
     <string name="AttachmentKeyboard_allow_access">Allow Access</string>
+    <string name="AttachmentKeyboard_Signal_needs_permission_to_show_your_photos_and_videos">Signal needs permission to show your photos and videos.</string>
+    <string name="AttachmentKeyboard_give_access">Give Access</string>
     <string name="AttachmentKeyboard_payment">Payment</string>
     <!-- Text in a button that allows users to manage which media Signal has access to -->
     <string name="AttachmentKeyboard_manage">Manage</string>
@@ -1731,6 +1733,8 @@
     <plurals name="MessageRecord_s_revoked_invites">
       <item quantity="one">%1$s revoked an invitation to the group.</item>
       <item quantity="other">%1$s revoked %2$d invitations to the group.</item>
+        <item quantity="one">%1$s revoked an invitation to the group.</item>
+        <item quantity="other">%1$s revoked %2$d invitations to the group.</item>
     </plurals>
     <string name="MessageRecord_someone_declined_an_invitation_to_the_group">Someone declined an invitation to the group.</string>
     <string name="MessageRecord_you_declined_the_invitation_to_the_group">You declined the invitation to the group.</string>
@@ -1739,6 +1743,8 @@
     <plurals name="MessageRecord_d_invitations_were_revoked">
       <item quantity="one">An invitation to the group was revoked.</item>
       <item quantity="other">%1$d invitations to the group were revoked.</item>
+        <item quantity="one">An invitation to the group was revoked.</item>
+        <item quantity="other">%1$d invitations to the group were revoked.</item>
     </plurals>
 
     <!-- GV2 invitation acceptance -->
@@ -2597,6 +2603,7 @@
     <string name="SupportEmailUtil_signal_package" translatable="false">Signal package:</string>
     <string name="SupportEmailUtil_registration_lock">Registration lock:</string>
     <string name="SupportEmailUtil_locale" translatable="false">Locale:</string>
+    <string name="SupportEmailUtil_locale">Locale:</string>
 
     <!-- ThreadRecord -->
     <string name="ThreadRecord_group_updated">Group updated</string>
@@ -3425,6 +3432,7 @@
     <string name="HelpFragment__support_info">Support Info</string>
     <string name="HelpFragment__signal_android_support_request">Signal Android Support Request</string>
     <string name="HelpFragment__debug_log" translatable="false">Debug Log:</string>
+    <string name="HelpFragment__debug_log">Debug Log:</string>
     <string name="HelpFragment__could_not_upload_logs">Could not upload logs</string>
     <string name="HelpFragment__please_be_as_descriptive_as_possible">Please be as descriptive as possible to help us understand the issue.</string>
     <string-array name="HelpFragment__categories_5">
@@ -4638,6 +4646,8 @@
         <item quantity="one">If you\'re not sure who the request is from, review the contact below and take action.</item>
         <item quantity="other">If you\'re not sure who the request is from, review the contacts below and take action.</item>
     </plurals>
+    <string name="ReviewCardDialogFragment__d_group_members_have_the_same_name">%1$d group members have the same name, review the members below and choose to take action.</string>
+    <string name="ReviewCardDialogFragment__if_youre_not_sure">If you\'re not sure who the request is from, review the contacts below and take action.</string>
     <string name="ReviewCardDialogFragment__no_other_groups_in_common">No other groups in common.</string>
     <string name="ReviewCardDialogFragment__no_groups_in_common">No groups in common.</string>
     <plurals name="ReviewCardDialogFragment__d_other_groups_in_common">
@@ -4673,6 +4683,7 @@
         <item quantity="one">%1$s, %2$s and %3$d other joined</item>
         <item quantity="other">%1$s, %2$s and %3$d others joined</item>
     </plurals>
+    <string name="CallParticipantsListUpdatePopupWindow__s_s_and_d_others_joined">%1$s, %2$s and %3$d others joined</string>
     <!-- Toast/popup text shown when someone leaves a group call -->
     <string name="CallParticipantsListUpdatePopupWindow__s_left">%1$s left</string>
     <string name="CallParticipantsListUpdatePopupWindow__s_and_s_left">%1$s and %2$s left</string>
@@ -4682,6 +4693,7 @@
         <item quantity="one">%1$s, %2$s and %3$d other left</item>
         <item quantity="other">%1$s, %2$s and %3$d others left</item>
     </plurals>
+    <string name="CallParticipantsListUpdatePopupWindow__s_s_and_d_others_left">%1$s, %2$s and %3$d others left</string>
 
     <string name="CallParticipant__you">You</string>
     <string name="CallParticipant__you_on_another_device">You (on another device)</string>
@@ -5061,6 +5073,7 @@
         <item quantity="one">%1$d contact or group</item>
         <item quantity="other">%1$d contacts or groups</item>
     </plurals>
+    <string name="PrivacySettingsFragment__d_contacts">%1$d contacts</string>
     <string name="PrivacySettingsFragment__messaging">Messaging</string>
     <string name="PrivacySettingsFragment__disappearing_messages">Disappearing messages</string>
     <string name="PrivacySettingsFragment__app_security">App security</string>
@@ -7475,6 +7488,93 @@
     <string name="MessageBackupsEducationScreen__enable_backups">Enable backups</string>
     <!-- Action button label to learn more -->
     <string name="MessageBackupsEducationScreen__learn_more">Learn more</string>
+    <!--TI_GLUE: eNT9XAHgq0lZdbQs2nfH start-->
+    <!-- Trusted Introductions -->
+    <string name="HelpFragment__trusted_introductions_version">Trusted Introductions Version</string>
+    <string name="ConversationSettingsFragment__Introductions">Trusted Introductions</string>
+
+    <!-- CanNotIntroduceDialog -->
+    <string name="CanNotIntroduceDialog__Group_not_yet_supported">Trusted introductions for groups are not yet supported.</string>
+    <string name="CanNotIntroduceDialog__SMS_contact_not_applicable">Trusted introductions can only happen over a secured conversation. Invite your contact to use Signal and verify them to unlock the feature.</string>
+    <string name="CanNotIntroduceDialog__direct_verification_needed_for_trusted_introduction">You need to directly verify this contact through a scan of their QR code, or ask someone for an introduction in order to forward introductions.</string>
+    <string name="CanNotIntroduceDialog__verify">Verify</string>
+    <string name="CanNotIntroduceDialog__Cant_introduce">Introduction not possible</string>
+    <string name="CanNotIntroduceDialog__Identity_record_empty">Could not redirect to the verification screen, please try to navigate there manually.</string>
+
+    <!-- ClearVerificationDialog -->
+    <string name="ClearVerificationDialog__Positive">Clear</string>
+    <string name="ClearVerificationDialog__Title">Clear Verification?</string>
+    <string name="ClearVerificationDialog__Clear_directly_verified">Are you sure you want to clear the QR-verified status of this contact? Restoring this state will necessitate rescanning the QR code on your contact\'s device.</string>
+    <string name="ClearVerificationDialog__Clear_introduced">Are you sure you want to clear the introduction of this contact? Restoring this state will necessitate a fresh introduction of this contact by a verified third party.</string>
+    <string name="ClearVerificationDialog__Clear_duplex">Are you sure you want to clear the double verification status of this contact? Restoring this state will necessitate both a rescann of your contact\'s QR code *and* a fresh introduction of this contact by a verified third party. </string>
+
+    <!-- ContactsSelectionActivity -->
+    <string name="PickContactsForTIActivity_ok">OK</string>
+    <string name="PickContactsForTIActivity_title">Introduce contacts:</string>
+    <plurals name="PickContactsForTIActivity__introduce_d_contacts_to_s">
+        <item quantity="one">Introduce %1$s to %2$s?</item>
+        <item quantity="other">Introduce %1$d contacts to %2$s?</item>
+    </plurals>
+    <string name="PickContactsForTIActivity_introduce">Introduce</string>
+    <string name="PickContactsForTIActivity_introduce_contacts">Introduce contacts</string>
+    <plurals name="PickContactsForTIActivity_d_contacts">
+        <item quantity="one">Introducing %1$d contact</item>
+        <item quantity="other">Introducing %1$d contacts</item>
+    </plurals>
+    <string name="PickContactsForTIActivity_filter_hint">Search for contact</string>
+    <string name="PickContactsForTIActivity_no_contacts">No valid contacts for introduction were found. The safety number of a contact must be verified in order to securely introduce them.
+        You can verify safety numbers by scanning the QR code on the verification screen, found by navigating to the contact\'s conversation, then "Conversation Settings" -> "View safety number". (TODO: more info? less? link to mechanism explanation?)</string>
+
+
+    <!-- ManageIntroductionsActivity -->
+    <string name="ManageIntroductionsActivity__Toolbar_Title">Trusted Introductions:</string>
+    <string name="ManageIntroductionsActivity__Filter_hint">Search Introductions</string>
+    <string name="ManageIntroductionsActivity__Navigation_Tab_new">New</string>
+    <string name="ManageIntroductionsActivity__Navigation_Tab_library">Library</string>
+    <string name="ManageIntroductionsActivity__Navigation_Tab_all">All</string>
+
+    <!-- ManageIntroductionsFragment -->
+    <string name="ManageIntroductionsFragment__Explanation">Accept/Reject an introduction by interacting with the switch. Long press the list item to delete the introduction, short press to forget who introduced you.</string>
+    <string name="ManageIntroductionsFragment__No_Introductions_all">Nobody has introduced anyone to you yet. Ask your contacts for introductions or initiate by introducing someone to them!</string>
+    <string name="ManageIntroductionsFragment__already_erased_toast">You already erased the introducer information of this introduction.</string>
+    <string name="ManageIntroductionsFragment__conflict_resolution_todo">The guided conflict resolution process is not yet implemented. TODO</string>
+    <string name="ManageIntroductionsFragment__Rejected">Distrusted</string>
+    <string name="ManageIntroductionsFragment__Accepted">Trusted</string>
+    <string name="ManageIntroductionsFragment__Conflicting">Conflicting</string>
+    <string name="ManageIntroductionsFragment__Stale">Stale</string>
+
+    <!-- ManageIntroductionsListItem -->
+    <string name="ManageIntroductionsListItem__Pending">Trust?</string>
+    <string name="ManageIntroductionsListItem__Rejected">Misstrusted</string>
+    <string name="ManageIntroductionsListItem__Accepted">Trusted</string>
+    <string name="ManageIntroductionsListItem__Conflicting">Conflict</string>
+    <string name="ManageIntroductionsListItem__Stale">Stale</string>
+    <string name="ManageIntroductionsListItem__Forgotten_Introducer">Masked</string>
+    <string name="ManageIntroductionsListItem__Forget_Introducer">Mask</string>
+
+    <!-- ManageIntroductionsListItemHeader -->
+    <string name="ManageIntroductionsListItemHeader__Date">Date:</string>
+    <string name="ManageIntroductionsListItemHeader__Introducee">Introduced:</string>
+    <string name="ManageIntroductionsListItemHeader__Introducer">From:</string>
+
+    <!-- ForgetIntroucerDialog -->
+    <string name="ForgetIntroucerDialog__Title">Erase Introducer:</string>
+    <string name="ForgetIntroucerDialog__Forget_Introducer_RECIPIENT_SPECIFIC">Are you sure that you want to forget that %1$s introduced you to %2$s on the %3$s? This action is not reversible! The introduction will disappear from this screen but will still be listed as an introduction.</string>
+    <string name="ForgetIntroucerDialog__Forget_Introducer_ALL">Are you sure that you want to forget that %1$s introduced you to %2$s on the %3$s? This action is not reversible!</string>
+    <string name="ForgetIntroucerDialog__forget">Erase</string>
+
+    <!-- TrustedIntroductionsWaitForIdentityJob -->
+    <string name="TrustedIntroductionsWaitForIdentityJob_OnFailureNotificationTitle">Error %1$s introduction!</string>
+    <string name="TrustedIntroductionsWaitForIdentityJob_OnFailureNotificationText">For %1$s introducing %2$s.</string>
+
+    <!-- ConversationTitleView added states -->
+    <string name="ConversationTitleView_manually_verified">Manually Verified</string>
+    <string name="ConversationTitleView_directly_verified">QR Verified</string>
+    <string name="ConversationTitleView_introduced">Introduced</string>
+    <string name="ConversationTitleView_duplex">Strongly Verified</string>
+    <string name="ConversationTitleView_unverified">Unverified</string>  <!-- Should never be visible -->
+
+    <!--TI_GLUE: eNT9XAHgq0lZdbQs2nfH end-->
 
     <!-- MessageBackupsKeyEducationScreen -->
     <!-- Screen headline -->
@@ -7559,4 +7659,5 @@
     <!-- Accessible content description for the reminder view, describing the icon in the view. -->
     <string name="ReminderView_icon_content_description">Reminder icon</string>
     <!-- EOF -->
+</resources>
 </resources>
