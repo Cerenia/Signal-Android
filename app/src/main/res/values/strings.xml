@@ -88,8 +88,6 @@
     <string name="AttachmentKeyboard_Signal_needs_permission_to_show_your_photos_and_videos">Signal needs permission to show your photos and videos</string>
     <!-- Text for a button prompting users to allow Signal access to their gallery storage -->
     <string name="AttachmentKeyboard_allow_access">Allow Access</string>
-    <string name="AttachmentKeyboard_Signal_needs_permission_to_show_your_photos_and_videos">Signal needs permission to show your photos and videos.</string>
-    <string name="AttachmentKeyboard_give_access">Give Access</string>
     <string name="AttachmentKeyboard_payment">Payment</string>
     <!-- Text in a button that allows users to manage which media Signal has access to -->
     <string name="AttachmentKeyboard_manage">Manage</string>
@@ -2584,7 +2582,6 @@
     <string name="SupportEmailUtil_signal_package" translatable="false">Signal package:</string>
     <string name="SupportEmailUtil_registration_lock">Registration lock:</string>
     <string name="SupportEmailUtil_locale" translatable="false">Locale:</string>
-    <string name="SupportEmailUtil_locale">Locale:</string>
 
     <!-- ThreadRecord -->
     <string name="ThreadRecord_group_updated">Group updated</string>
@@ -3408,7 +3405,6 @@
     <string name="HelpFragment__support_info">Support Info</string>
     <string name="HelpFragment__signal_android_support_request">Signal Android Support Request</string>
     <string name="HelpFragment__debug_log" translatable="false">Debug Log:</string>
-    <string name="HelpFragment__debug_log">Debug Log:</string>
     <string name="HelpFragment__could_not_upload_logs">Could not upload logs</string>
     <string name="HelpFragment__please_be_as_descriptive_as_possible">Please be as descriptive as possible to help us understand the issue.</string>
     <string-array name="HelpFragment__categories_5">
@@ -7598,5 +7594,4 @@
     <!-- Accessible content description for the reminder view, describing the icon in the view. -->
     <string name="ReminderView_icon_content_description">Reminder icon</string>
     <!-- EOF -->
-</resources>
 </resources>
