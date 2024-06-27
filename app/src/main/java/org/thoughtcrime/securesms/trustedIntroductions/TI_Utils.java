@@ -10,6 +10,7 @@ import androidx.annotation.WorkerThread;
 import org.json.JSONException;
 import org.signal.core.util.concurrent.SignalExecutors;
 import org.signal.core.util.logging.Log;
+import org.signal.core.util.Base64;
 import org.signal.libsignal.protocol.IdentityKey;
 import org.signal.libsignal.protocol.fingerprint.Fingerprint;
 import org.signal.libsignal.protocol.fingerprint.NumericFingerprintGenerator;
@@ -40,12 +41,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
 
 import org.json.JSONObject;
 import org.json.JSONArray;
 import org.thoughtcrime.securesms.storage.StorageSyncHelper;
-import org.thoughtcrime.securesms.util.Base64;
 import org.thoughtcrime.securesms.util.FeatureFlags;
 import org.thoughtcrime.securesms.util.IdentityUtil;
 import org.whispersystems.signalservice.api.SignalSessionLock;
@@ -195,7 +194,7 @@ public class TI_Utils {
       // Fetch all the values
       LiveRecipient liveIntroducee = Recipient.live(introduceeId);
       Recipient introduceeResolved = liveIntroducee.resolve();
-      introduceeServiceId = introduceeResolved.getServiceId().orElseGet((Supplier<? extends ServiceId>) ServiceId.UNKNOWN).toString();
+      introduceeServiceId = introduceeResolved.getServiceId().toString();
       introduceeE164 = introduceeResolved.requireE164();
     } else if(introduceeServiceId != null && introduceeE164 != null && introduceeIdentityKey != null){
       //noop, normal case when recipient fetched through cursor
