@@ -1,9 +1,9 @@
 package org.thoughtcrime.securesms.trustedIntroductions.send
 
 import android.view.View
+import com.bumptech.glide.Glide
 import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.contacts.ContactChip
-import org.thoughtcrime.securesms.mms.GlideApp
 import org.thoughtcrime.securesms.recipients.Recipient
 import org.thoughtcrime.securesms.recipients.RecipientId
 import org.thoughtcrime.securesms.util.adapter.mapping.LayoutFactory
@@ -11,7 +11,7 @@ import org.thoughtcrime.securesms.util.adapter.mapping.MappingAdapter
 import org.thoughtcrime.securesms.util.adapter.mapping.MappingModel
 import org.thoughtcrime.securesms.util.adapter.mapping.MappingViewHolder
 
-object SelectedTIContacts {
+object eSelectedTIContacts {
 
   @JvmStatic
   fun register(adapter: MappingAdapter, onCloseIconClicked: (Model) -> Unit) {
@@ -46,7 +46,7 @@ object SelectedTIContacts {
       chip.setOnCloseIconClickListener {
         onCloseIconClicked(m);
       }
-      chip.setAvatar(GlideApp.with(itemView), m.selectedContact, null);
+      chip.setAvatar(Glide.with(itemView), m.selectedContact, null);
     }
   }
 }
