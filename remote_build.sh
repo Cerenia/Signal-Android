@@ -35,8 +35,9 @@ if [ $? != "0" ]; then
     exit 1
 fi
 
-REMOTE_FOLDER_PATH="$REMOTE_FOLDER/$LOCAL_USER/$ROOT_PROJECT_NAME"
-ssh $SERVER_SSH_ALIAS "mkdir -p $REMOTE_FOLDER/$LOCAL_USER/$ROOT_PROJECT_NAME ; echo sdk.dir=/home/$REMOTE_USER/Android/Sdk > /home/$REMOTE_USER/$REMOTE_FOLDER/$LOCAL_USER/$ROOT_PROJECT_NAME/local.properties"
+PREFIX="/mnt/sdc1"
+REMOTE_FOLDER_PATH="$PREFIX/$REMOTE_USER/$REMOTE_FOLDER/$LOCAL_USER/$ROOT_PROJECT_NAME"
+ssh $SERVER_SSH_ALIAS "mkdir -p $PREFIX/$REMOTE_USER/$REMOTE_FOLDER/$LOCAL_USER/$ROOT_PROJECT_NAME; echo sdk.dir=/home/$REMOTE_USER/Android/Sdk > $PREFIX/$REMOTE_USER/$REMOTE_FOLDER/$LOCAL_USER/$ROOT_PROJECT_NAME/local.properties"
 
 mkdir -p ~/.gradle/init.d
 rm ~/.gradle/init.d/mirakle.gradle 2>/dev/null
