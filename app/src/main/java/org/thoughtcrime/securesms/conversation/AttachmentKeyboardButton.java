@@ -7,6 +7,9 @@ import org.thoughtcrime.securesms.R;
 
 public enum AttachmentKeyboardButton {
 
+  // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+  TRUSTED_INTRODUCTION(R.string.AttachmentKeyboard_introduce, R.drawable.ic_trusted_introduction),
+  // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
   GALLERY(R.string.AttachmentKeyboard_gallery, R.drawable.symbol_album_tilt_24),
   FILE(R.string.AttachmentKeyboard_file, R.drawable.symbol_file_24),
   PAYMENT(R.string.AttachmentKeyboard_payment, R.drawable.symbol_payment_24),
