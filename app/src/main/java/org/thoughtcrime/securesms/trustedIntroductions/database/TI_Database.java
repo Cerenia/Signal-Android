@@ -20,6 +20,7 @@ import org.thoughtcrime.securesms.database.RecipientTable;
 import org.thoughtcrime.securesms.database.SQLiteDatabase;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
+import org.thoughtcrime.securesms.trustedIntroductions.glue.RecipientTableGlue;
 import org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue;
 import org.thoughtcrime.securesms.trustedIntroductions.jobs.TrustedIntroductionsRetreiveIdentityJob;
 import org.thoughtcrime.securesms.recipients.Recipient;
@@ -747,11 +748,10 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
    */
   @WorkerThread
   @Override public Cursor fetchRecipientDBCursor(RecipientId introduceeId){
-    RecipientTable rdb = SignalDatabase.recipients();
     // TODO: Simplify if you see that you finally never query this cursor with more than 1 recipient...
     Set<RecipientId> s = new HashSet<>();
     s.add(introduceeId);
-    return rdb.getCursorForSendingTI(s);
+    return RecipientTableGlue.statics.getCursorForSendingTI(s);
   }
 
 
