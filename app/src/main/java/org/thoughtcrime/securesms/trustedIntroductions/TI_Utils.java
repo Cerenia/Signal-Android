@@ -24,6 +24,7 @@ import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.jobs.MultiDeviceVerifiedUpdateJob;
 import org.thoughtcrime.securesms.trustedIntroductions.database.TI_IdentityTable;
 import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue;
+import org.thoughtcrime.securesms.trustedIntroductions.glue.RecipientTableGlue;
 import org.thoughtcrime.securesms.trustedIntroductions.jobs.TrustedIntroductionsReceiveJob;
 import org.thoughtcrime.securesms.recipients.LiveRecipient;
 import org.thoughtcrime.securesms.recipients.Recipient;
@@ -255,7 +256,7 @@ public class TI_Utils {
   }
 
   private static String encodeIdentityKey(IdentityKey key){
-    return Base64.encodeBytes(key.serialize());
+    return Base64.encodeWithoutPadding(key.serialize());
   }
 
   public static String getEncodedIdentityKey(RecipientId id) throws TI_MissingIdentityException {
@@ -268,9 +269,7 @@ public class TI_Utils {
 
     JSONObject data = new JSONObject();
 
-    // TODO: LiveRecipient?
-    RecipientTable rdb = SignalDatabase.recipients();
-    Cursor recipientCursor = rdb.getCursorForSendingTI(introducees);
+    Cursor recipientCursor = RecipientTableGlue.statics.getCursorForSendingTI(introducees);
     JSONArray introduceeData = new JSONArray();
 
     data.put(TI_VERSION_J, TI_MESSAGE_VERSION);
@@ -360,7 +359,7 @@ public class TI_Utils {
         recipientServiceIds.add(introduceeServiceId);
       }
       // Get any known recipients & add to result
-      Cursor cursor = SignalDatabase.recipients().getCursorForReceivingTI(recipientServiceIds);
+      Cursor cursor = RecipientTableGlue.getCursorForReceivingTI(recipientServiceIds);
       ArrayList<String> knownIds = new ArrayList<>();
       if (cursor.getCount() > 0) {
         cursor.moveToFirst();

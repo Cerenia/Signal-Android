@@ -10,14 +10,14 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.components.AvatarImageView;
-import org.thoughtcrime.securesms.mms.GlideRequests;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.util.ViewUtil;
@@ -26,10 +26,10 @@ public class ContactsSelectionAdapter extends ListAdapter<Recipient, ContactsSel
 
   private final LayoutInflater                             layoutInflater;
   private final ContactsSelectionAdapter.ItemClickListener clickListener;
-  private final GlideRequests                              glideRequests;
+  private final Glide                                      glide;
 
   ContactsSelectionAdapter(@NonNull Context context,
-                           @NonNull GlideRequests glideRequests,
+                           @NonNull Glide glide,
                            @Nullable ContactsSelectionAdapter.ItemClickListener clickListener)
   {
     super(new DiffUtil.ItemCallback<Recipient>() {
@@ -42,7 +42,7 @@ public class ContactsSelectionAdapter extends ListAdapter<Recipient, ContactsSel
       }
     });
     this.layoutInflater  = LayoutInflater.from(context);
-    this.glideRequests   = glideRequests;
+    this.glide   = glide;
     this.clickListener   = clickListener;
   }
 
@@ -73,7 +73,7 @@ public class ContactsSelectionAdapter extends ListAdapter<Recipient, ContactsSel
   @Override public void onBindViewHolder(@NonNull TIContactViewHolder holder, int position) {
     Recipient current = getItem(position);
     // For Type, see contactRepository, 0 == normal
-    holder.bind(glideRequests, current);
+    holder.bind(glide, current);
   }
 
 
@@ -95,12 +95,12 @@ public class ContactsSelectionAdapter extends ListAdapter<Recipient, ContactsSel
       });
       ViewUtil.setTextViewGravityStart(this.nameView, itemView.getContext());
     }
-    public void bind(@NonNull GlideRequests glideRequests, Recipient recipient){
+    public void bind(@NonNull Glide glide, Recipient recipient){
 
       this.recipient = recipient;
       this.nameView.setText(recipient.getDisplayName(itemView.getContext()));
-      this.contactPhotoImage.setAvatar(glideRequests, recipient, false);
-      this.numberView.setText(recipient.getE164().orElse(""));;
+      this.contactPhotoImage.setAvatar(Glide.with(itemView.getContext()), recipient, false);
+      this.numberView.setText(recipient.getE164().orElse(""));
     }
 
     public void setEnabled(boolean enabled){
