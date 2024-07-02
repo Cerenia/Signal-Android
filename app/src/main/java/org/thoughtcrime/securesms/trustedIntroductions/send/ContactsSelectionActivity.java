@@ -171,7 +171,7 @@ public final class ContactsSelectionActivity extends PassphraseRequiredActivity 
 
   private void displayAlertForSingleIntroduction(Recipient recipient, Recipient introducee, @NonNull ContactsSelectionViewModel.IntroduceDialogMessageState state){
     String message = getResources().getQuantityString(R.plurals.PickContactsForTIActivity__introduce_d_contacts_to_s, 1,
-                                                      introducee.getDisplayNameOrUsername(getApplicationContext()), recipient.getDisplayName(this));
+                                                      introducee.getDisplayName(getApplicationContext()), recipient.getDisplayName(this));
     displayAlert(message, state);
   }
 

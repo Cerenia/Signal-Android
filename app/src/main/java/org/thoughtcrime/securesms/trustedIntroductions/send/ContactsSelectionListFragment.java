@@ -13,13 +13,12 @@ import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.pnikosis.materialishprogress.ProgressWheel;
 
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.components.ContactFilterView;
-import org.thoughtcrime.securesms.mms.GlideApp;
-import org.thoughtcrime.securesms.mms.GlideRequests;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
@@ -99,7 +98,7 @@ public class ContactsSelectionListFragment extends Fragment implements ContactFi
   }
 
   private void initializeAdapter() {
-    GlideRequests glideRequests = GlideApp.with(this);
+    Glide glideRequests = Glide.get(this.getContext());
     // Not directly passing a cursor, instead submitting a list to ContactsAdapter
     TIRecyclerViewAdapter = new ContactsSelectionAdapter(requireContext(), glideRequests, new ContactClickListener());
 
@@ -144,7 +143,7 @@ public class ContactsSelectionListFragment extends Fragment implements ContactFi
       for (Recipient c: contacts) {
         // Choose appropriate string representation
         Pattern filterPattern = Pattern.compile(Pattern.quote(filter), Pattern.CASE_INSENSITIVE);
-        if(!filterPattern.matcher(c.getDisplayNameOrUsername(requireContext())).find() &&
+        if(!filterPattern.matcher(c.getDisplayName(requireContext())).find() &&
            !filterPattern.matcher(c.getE164().orElse("")).find()){
           filtered.remove(c);
         }
