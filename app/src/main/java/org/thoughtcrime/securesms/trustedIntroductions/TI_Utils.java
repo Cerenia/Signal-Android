@@ -361,7 +361,7 @@ public class TI_Utils {
       // Get any known recipients & add to result
       Cursor cursor = RecipientTableGlue.getCursorForReceivingTI(recipientServiceIds);
       ArrayList<String> knownIds = new ArrayList<>();
-      if (cursor.getCount() > 0) {
+      if (cursor != null && cursor.getCount() > 0) {
         cursor.moveToFirst();
         while (!cursor.isAfterLast()){
           // Guaranteed to be the same as in introduction
@@ -477,7 +477,7 @@ public class TI_Utils {
    *
    * @param status The new verification status
    */
-  public static void updateContactsVerifiedStatus(RecipientId recipientId, IdentityKey identityKey, TI_IdentityTable.VerifiedStatus status) {
+  public static void updateContactsVerifiedStatus(RecipientId recipientId, ServiceId serviceId,IdentityKey identityKey, TI_IdentityTable.VerifiedStatus status) {
     Log.i(TAG, "Saving identity: " + recipientId);
     SignalExecutors.BOUNDED.execute(() -> {
       try (SignalSessionLock.Lock unused = ReentrantSessionLock.INSTANCE.acquire()) {
@@ -488,6 +488,7 @@ public class TI_Utils {
         if (verified) {
           ApplicationDependencies.getProtocolStore().aci().identities()
                                  .saveIdentityWithoutSideEffects(recipientId,
+                                                                 serviceId,
                                                                  identityKey,
                                                                  TI_IdentityTable.VerifiedStatus.toVanilla(status),
                                                                  false,

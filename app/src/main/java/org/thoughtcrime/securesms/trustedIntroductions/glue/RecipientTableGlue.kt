@@ -56,11 +56,6 @@ interface RecipientTableGlue {
       }
     }
 
-    fun getCursorForReceivingTI(serializedAcis: List<String>): Cursor? {
-      val query = buildService_ID_Query(serializedAcis)
-      return SignalDatabase.recipients.querySignalContacts(RecipientTable.ContactSearchQuery(query, false))
-    }
-
     private fun buildService_ID_Query(serializedServiceIds: List<String>) : String{
       val query = StringBuilder();
       if(!serializedServiceIds.isEmpty()){
@@ -70,6 +65,12 @@ interface RecipientTableGlue {
         query.append("$SERVICE_ID=?")
       }
       return query.toString()
+    }
+
+    @JvmStatic
+    fun getCursorForReceivingTI(serializedAcis: MutableList<String>): Cursor? {
+      val query = buildService_ID_Query(serializedAcis)
+      return SignalDatabase.recipients.querySignalContacts(RecipientTable.ContactSearchQuery(query, false))
     }
 
   }
