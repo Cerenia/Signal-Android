@@ -34,6 +34,7 @@ import org.thoughtcrime.securesms.components.verify.SafetyNumberQrView
 import org.thoughtcrime.securesms.components.verify.SafetyNumberQrView.Companion.getSegments
 import org.thoughtcrime.securesms.crypto.IdentityKeyParcelable
 import org.thoughtcrime.securesms.databinding.VerifyDisplayFragmentBinding
+import org.thoughtcrime.securesms.recipients.LiveRecipient
 import org.thoughtcrime.securesms.recipients.Recipient
 import org.thoughtcrime.securesms.recipients.RecipientId
 import org.thoughtcrime.securesms.util.RemoteConfig
@@ -43,6 +44,10 @@ import org.thoughtcrime.securesms.util.visible
 import java.nio.charset.StandardCharsets
 import java.util.Locale
 import kotlin.math.max
+// TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+import org.thoughtcrime.securesms.trustedIntroductions.glue.VerifyDisplayFragmentGlue;
+import org.thoughtcrime.securesms.trustedIntroductions.send.ContactsSelectionActivity
+// TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 
 /**
  * Fragment to display a user's identity key.
@@ -130,6 +135,31 @@ class VerifyDisplayFragment : Fragment(), OnScrollChangedListener {
       safetyNumberAdapter.setFingerprints(fingerprints)
     }
     binding.verifyViewPager.currentItem = selectedFingerPrint
+
+    // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+    // TODO: Do I still need this since they implemented a viewmodel?
+    // FIXME( Chrissy )
+    /**
+    val parcelableKey: IdentityKeyParcelable?
+    val recipient: LiveRecipient = viewModel.recipient
+    if (savedInstanceState == null) {
+      if (arguments == null) {
+        throw AssertionError(TAG + "Must pass a recipient!")
+      }
+      recipient = Recipient.live(requireArguments().getParcelable(ContactsSelectionActivity.RECIPIENT_ID)!!)
+      parcelableKey = requireArguments().getParcelable(REMOTE_IDENTITY)
+    } else {
+      recipient = Recipient.live(savedInstanceState.getParcelable(ContactsSelectionActivity.RECIPIENT_ID)!!)
+      parcelableKey = savedInstanceState.getParcelable(REMOTE_IDENTITY)
+    }
+    this.remoteIdentity = parcelableKey!!.get()
+    VerifyDisplayFragmentGlue.initializeVerifyButton(arguments!!.getBoolean(VerifyDisplayFragmentGlue.VERIFIED_STATE, false),
+      verifyButton,
+      recipient.getId(),
+      activity,
+      remoteIdentity)
+    // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
+    **/
   }
 
   private fun initializeViewModel() {
@@ -149,6 +179,9 @@ class VerifyDisplayFragment : Fragment(), OnScrollChangedListener {
       ThreadUtil.postToMain {
         animateSuccess(selectedSnapshot)
       }
+      // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+      VerifyDisplayFragmentGlue.onSuccessfullVerification(viewModel.recipient.id, viewModel.remoteIdentity, verifyButton);
+      // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
       ThreadUtil.postToMain {
         binding.verifyViewPager.currentItem = selectedSnapshot
       }
@@ -434,6 +467,9 @@ class VerifyDisplayFragment : Fragment(), OnScrollChangedListener {
         putParcelable(LOCAL_IDENTITY, localIdentity)
         putString(LOCAL_NUMBER, localNumber)
         putBoolean(VERIFIED_STATE, verifiedState)
+        // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+        VerifyDisplayFragmentGlue.extendBundle(this, verifiedState);
+        // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
       }
       return fragment
     }
