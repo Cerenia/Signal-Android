@@ -137,9 +137,7 @@ class VerifyDisplayFragment : Fragment(), OnScrollChangedListener {
     binding.verifyViewPager.currentItem = selectedFingerPrint
 
     // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
-    // TODO: Do I still need this since they implemented a viewmodel?
-    // FIXME( Chrissy )
-    /**
+
     val parcelableKey: IdentityKeyParcelable?
     val recipient: LiveRecipient = viewModel.recipient
     if (savedInstanceState == null) {
@@ -154,12 +152,12 @@ class VerifyDisplayFragment : Fragment(), OnScrollChangedListener {
     }
     this.remoteIdentity = parcelableKey!!.get()
     VerifyDisplayFragmentGlue.initializeVerifyButton(arguments!!.getBoolean(VerifyDisplayFragmentGlue.VERIFIED_STATE, false),
-      verifyButton,
+      this.binding.verifyButton,
       recipient.getId(),
       activity,
-      remoteIdentity)
+      this.binding.remoteIdentity)
     // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
-    **/
+
   }
 
   private fun initializeViewModel() {
