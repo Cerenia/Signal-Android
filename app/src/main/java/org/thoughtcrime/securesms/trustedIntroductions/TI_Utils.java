@@ -18,6 +18,7 @@ import org.thoughtcrime.securesms.crypto.ReentrantSessionLock;
 import org.thoughtcrime.securesms.database.IdentityTable;
 import org.thoughtcrime.securesms.database.RecipientTable;
 import org.thoughtcrime.securesms.database.SignalDatabase;
+import org.thoughtcrime.securesms.recipients.LiveRecipientCache;
 import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database;
 import org.thoughtcrime.securesms.database.model.IdentityRecord;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
@@ -477,9 +478,11 @@ public class TI_Utils {
    *
    * @param status The new verification status
    */
-  public static void updateContactsVerifiedStatus(RecipientId recipientId, ServiceId serviceId,IdentityKey identityKey, TI_IdentityTable.VerifiedStatus status) {
+  public static void updateContactsVerifiedStatus(RecipientId recipientId, TI_IdentityTable.VerifiedStatus status) {
     Log.i(TAG, "Saving identity: " + recipientId);
     SignalExecutors.BOUNDED.execute(() -> {
+      // Fetch remote identity
+      Recipient recipient = Recipient.live(recipientId).resolve();
       try (SignalSessionLock.Lock unused = ReentrantSessionLock.INSTANCE.acquire()) {
         // TI
         SignalDatabase.tiIdentityDatabase().setVerifiedStatus(recipientId, status);
@@ -488,8 +491,8 @@ public class TI_Utils {
         if (verified) {
           ApplicationDependencies.getProtocolStore().aci().identities()
                                  .saveIdentityWithoutSideEffects(recipientId,
-                                                                 serviceId,
-                                                                 identityKey,
+                                                                 recipient.requireServiceId(),
+                                                                 recipient.identityKey, CONTINUE HERE
                                                                  TI_IdentityTable.VerifiedStatus.toVanilla(status),
                                                                  false,
                                                                  System.currentTimeMillis(),
@@ -504,7 +507,6 @@ public class TI_Utils {
                                                                      identityKey,
                                                                      IdentityTable.VerifiedStatus.forState(IdentityTableGlue.VerifiedStatus.toVanilla(status.toInt()))));
         StorageSyncHelper.scheduleSyncForDataChange();
-        Recipient recipient = Recipient.live(recipientId).resolve();
         IdentityUtil.markIdentityVerified(getApplicationContext(), recipient, verified, false);
       }
     });
