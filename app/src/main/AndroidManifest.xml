@@ -116,6 +116,16 @@
     <meta-data android:name="google_analytics_adid_collection_enabled" android:value="false" />
     <meta-data android:name="firebase_messaging_auto_init_enabled" android:value="false" />
 
+    <!--TI_GLUE: eNT9XAHgq0lZdbQs2nfH start-->
+    <activity
+        android:name=".trustedIntroductions.send.ContactsSelectionActivity"
+        android:theme="@style/Theme.Signal.DayNight.NoActionBar" />
+
+    <activity
+        android:name=".trustedIntroductions.receive.ManageActivity"
+        android:theme="@style/Theme.Signal.DayNight.NoActionBar" />
+    <!--TI_GLUE: eNT9XAHgq0lZdbQs2nfH end-->
+
     <activity android:name=".WebRtcCallActivity"
               android:theme="@style/TextSecure.DarkTheme.WebRTCCall"
               android:excludeFromRecents="true"
