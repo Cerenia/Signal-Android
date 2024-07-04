@@ -22,6 +22,9 @@ import org.thoughtcrime.securesms.avatar.view.AvatarView;
 import org.thoughtcrime.securesms.badges.BadgeImageView;
 import org.thoughtcrime.securesms.database.model.StoryViewState;
 import org.thoughtcrime.securesms.recipients.Recipient;
+// TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+import org.thoughtcrime.securesms.trustedIntroductions.glue.ConversationTitleViewGlue;
+// TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 import org.thoughtcrime.securesms.util.ContextUtil;
 import org.thoughtcrime.securesms.util.DrawableUtil;
 import org.thoughtcrime.securesms.util.ExpirationUtil;
@@ -203,7 +206,10 @@ public class ConversationTitleView extends ConstraintLayout {
   private void setIndividualRecipientTitle(@NonNull Recipient recipient) {
     final String displayName = recipient.getDisplayName(getContext());
     this.title.setText(displayName);
-    this.subtitle.setText(null);
+    // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+    //this.subtitle.setText(null);
+    ConversationTitleViewGlue.setIndividualRecipientTitle(recipient, getContext(), title, subtitle, this::updateSubtitleVisibility);
+    // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
     updateSubtitleVisibility();
   }
 
