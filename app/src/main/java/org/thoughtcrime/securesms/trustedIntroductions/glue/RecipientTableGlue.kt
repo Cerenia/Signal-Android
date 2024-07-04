@@ -5,7 +5,9 @@
 
 package org.thoughtcrime.securesms.trustedIntroductions.glue
 
+import android.annotation.SuppressLint
 import android.database.Cursor
+import org.thoughtcrime.securesms.database.IdentityTable
 import org.thoughtcrime.securesms.database.RecipientTable
 import org.thoughtcrime.securesms.database.SignalDatabase
 import org.thoughtcrime.securesms.recipients.RecipientId
@@ -71,6 +73,28 @@ interface RecipientTableGlue {
     fun getCursorForReceivingTI(serializedAcis: MutableList<String>): Cursor? {
       val query = buildService_ID_Query(serializedAcis)
       return SignalDatabase.recipients.querySignalContacts(RecipientTable.ContactSearchQuery(query, false))
+    }
+
+    /**
+     * Returns a cursor populated with the Recipients that correspond to the
+     * ones that are a valid target for an introduction.
+     * @See IdentityTable.getCursorForTIUnlocked()
+     */
+    @JvmStatic
+    @SuppressLint("Range")
+    fun getReaderForValidTI_Candidates(CursorForTIUnlocked: Cursor): RecipientTable.RecipientReader {
+      val identifiers = arrayListOf<String>()
+      if(CursorForTIUnlocked.moveToFirst()){
+        CursorForTIUnlocked.use {
+          while (!it.isAfterLast) {
+            identifiers.add(it.getString(it.getColumnIndex(IdentityTable.ADDRESS)))
+            it.moveToNext()
+          }
+        }
+      }
+      val query = buildService_ID_Query(identifiers)
+      val newCursor = SignalDatabase.recipients.querySignalContacts(RecipientTable.ContactSearchQuery(query, false))
+      return RecipientTable.RecipientReader(newCursor!!)
     }
 
   }

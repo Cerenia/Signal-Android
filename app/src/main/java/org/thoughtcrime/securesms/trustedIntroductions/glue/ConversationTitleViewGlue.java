@@ -15,7 +15,7 @@ import android.widget.TextView;
 public interface ConversationTitleViewGlue {
 
   static void setIndividualRecipientTitle(@NonNull Recipient recipient, Context context, TextView title, TextView subtitle, @NonNull Runnable updateVisibility) {
-    final String displayName = recipient.getDisplayNameOrUsername(context);
+    final String displayName = recipient.getDisplayName(context);
     title.setText(displayName);
     IdentityTableGlue.VerifiedStatus verifiedStatus = SignalDatabase.tiIdentityDatabase().getVerifiedStatus(recipient.getId());
     switch (verifiedStatus){

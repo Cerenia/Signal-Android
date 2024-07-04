@@ -72,6 +72,12 @@ class VerifySafetyNumberViewModel(
     return fingerprintListLiveData
   }
 
+  // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+  fun getRemoteIdentity(): IdentityKey {
+    return remoteIdentity
+  }
+  // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
+
   fun updateSafetyNumberVerification(verified: Boolean) {
     val recipientId: RecipientId = recipientId
     val context: Context = AppDependencies.application

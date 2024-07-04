@@ -478,7 +478,7 @@ public class TI_Utils {
    *
    * @param status The new verification status
    */
-  public static void updateContactsVerifiedStatus(RecipientId recipientId, TI_IdentityTable.VerifiedStatus status) {
+  public static void updateContactsVerifiedStatus(RecipientId recipientId, IdentityKey remoteIdentity, TI_IdentityTable.VerifiedStatus status) {
     Log.i(TAG, "Saving identity: " + recipientId);
     SignalExecutors.BOUNDED.execute(() -> {
       // Fetch remote identity
@@ -492,19 +492,19 @@ public class TI_Utils {
           ApplicationDependencies.getProtocolStore().aci().identities()
                                  .saveIdentityWithoutSideEffects(recipientId,
                                                                  recipient.requireServiceId(),
-                                                                 recipient.identityKey, CONTINUE HERE
+                                                                 remoteIdentity,
                                                                  TI_IdentityTable.VerifiedStatus.toVanilla(status),
                                                                  false,
                                                                  System.currentTimeMillis(),
                                                                  true);
         } else {
-          ApplicationDependencies.getProtocolStore().aci().identities().setVerified(recipientId, identityKey, IdentityTable.VerifiedStatus.forState(TI_IdentityTable.VerifiedStatus.toVanilla(status.toInt())));
+          ApplicationDependencies.getProtocolStore().aci().identities().setVerified(recipientId, remoteIdentity, IdentityTable.VerifiedStatus.forState(TI_IdentityTable.VerifiedStatus.toVanilla(status.toInt())));
         }
         // For other devices but the Android phone, we map the finer statusses to verified or unverified.
         // TODO: Change once we add new devices for TI
         ApplicationDependencies.getJobManager()
                                .add(new MultiDeviceVerifiedUpdateJob(recipientId,
-                                                                     identityKey,
+                                                                     remoteIdentity,
                                                                      IdentityTable.VerifiedStatus.forState(IdentityTableGlue.VerifiedStatus.toVanilla(status.toInt()))));
         StorageSyncHelper.scheduleSyncForDataChange();
         IdentityUtil.markIdentityVerified(getApplicationContext(), recipient, verified, false);

@@ -8,6 +8,7 @@ import org.thoughtcrime.securesms.database.RecipientTable;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue;
+import org.thoughtcrime.securesms.trustedIntroductions.glue.RecipientTableGlue;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,6 +16,8 @@ import java.util.Comparator;
 import java.util.List;
 
 import io.reactivex.rxjava3.annotations.NonNull;
+
+import static org.thoughtcrime.securesms.trustedIntroductions.glue.RecipientTableGlue.*;
 
 public class ContactsSelectionManager {
 
@@ -24,17 +27,15 @@ public class ContactsSelectionManager {
 
   // Dependency injection makes the class testable
   private final @NonNull IdentityTableGlue idb;
-  private final RecipientTable rdb;
 
-  ContactsSelectionManager(@NonNull RecipientId recipientId, @NonNull IdentityTableGlue idb, @NonNull RecipientTable rdb){
+  ContactsSelectionManager(@NonNull RecipientId recipientId, @NonNull IdentityTableGlue idb){
     this.recipientId = recipientId;
     this.idb = idb;
-    this.rdb = rdb;
   }
 
   void getValidContacts(@NonNull Consumer<List<Recipient>> introducableContacts){
     SignalExecutors.BOUNDED.execute(() -> {
-      RecipientTable.RecipientReader reader = rdb.getReaderForValidTI_Candidates(idb.getCursorForTIUnlocked());
+      RecipientTable.RecipientReader reader = RecipientTableGlue.getReaderForValidTI_Candidates(idb.getCursorForTIUnlocked());
       int count = reader.getCount();
       if (count == 0){
         introducableContacts.accept(Collections.emptyList());
