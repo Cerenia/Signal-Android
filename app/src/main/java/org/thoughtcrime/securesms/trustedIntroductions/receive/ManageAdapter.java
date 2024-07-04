@@ -162,7 +162,7 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
         return c.getString(R.string.ManageIntroductionsListItem__Forgotten_Introducer);
       }
       Recipient r = Recipient.live(TI_Utils.getRecipientIdOrUnknown(introducerId)).resolve();
-      return r.getDisplayNameOrUsername(c);
+      return r.getDisplayName(c);
     }
 
 

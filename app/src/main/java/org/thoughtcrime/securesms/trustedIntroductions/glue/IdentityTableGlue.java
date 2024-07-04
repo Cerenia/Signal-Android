@@ -27,6 +27,12 @@ public interface IdentityTableGlue {
     return new TI_IdentityTable(c, databaseHelper);
   }
 
+
+  /**
+   *
+   * @return Returns a Cursor which iterates through all contacts that are unlocked for
+   * trusted introductions (for which @see VerifiedStatus.tiUnlocked returns true)
+   */
   Cursor getCursorForTIUnlocked();
 
   /**

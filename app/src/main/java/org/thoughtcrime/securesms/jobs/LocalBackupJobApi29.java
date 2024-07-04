@@ -23,15 +23,11 @@ import org.signal.core.util.androidx.DocumentFileUtil.OperationResult;
 import org.thoughtcrime.securesms.backup.FullBackupExporter;
 import org.thoughtcrime.securesms.crypto.AttachmentSecretProvider;
 import org.thoughtcrime.securesms.database.SignalDatabase;
-import org.thoughtcrime.securesms.jobmanager.JsonJobData;
 import org.thoughtcrime.securesms.jobmanager.Job;
 import org.thoughtcrime.securesms.keyvalue.SignalStore;
 import org.thoughtcrime.securesms.notifications.NotificationChannels;
 import org.thoughtcrime.securesms.service.GenericForegroundService;
 import org.thoughtcrime.securesms.service.NotificationController;
-// TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
-import org.thoughtcrime.securesms.trustedIntroductions.glue.LocalBackupJobGlue;
-// TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 import org.thoughtcrime.securesms.util.BackupUtil;
 
 import java.io.IOException;
@@ -106,79 +102,72 @@ public final class LocalBackupJobApi29 extends BaseJob {
       String       backupPassword  = BackupPassphrase.get(context);
       DocumentFile backupDirectory = DocumentFile.fromTreeUri(context, backupDirectoryUri);
       String       timestamp       = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.US).format(new Date());
-      // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
-      LocalBackupJobGlue.repeatBackup((name) -> {
-        String       fileName        = String.format(name, timestamp);
-        // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
+      String       fileName        = String.format("signal-%s.backup", timestamp);
 
-        if (backupDirectory == null || !backupDirectory.canWrite()) {
-          BackupFileIOError.ACCESS_ERROR.postNotification(context);
-          throw new IOException("Cannot write to backup directory location.");
+      if (backupDirectory == null || !backupDirectory.canWrite()) {
+        BackupFileIOError.ACCESS_ERROR.postNotification(context);
+        throw new IOException("Cannot write to backup directory location.");
+      }
+
+      deleteOldTemporaryBackups(backupDirectory);
+
+      if (backupDirectory.findFile(fileName) != null) {
+        throw new IOException("Backup file already exists!");
+      }
+
+      String       temporaryName = String.format(Locale.US, "%s%s%s", TEMP_BACKUP_FILE_PREFIX, UUID.randomUUID(), TEMP_BACKUP_FILE_SUFFIX);
+      DocumentFile temporaryFile = backupDirectory.createFile("application/octet-stream", temporaryName);
+
+      if (temporaryFile == null) {
+        throw new IOException("Failed to create temporary backup file.");
+      }
+
+      if (backupPassword == null) {
+        throw new IOException("Backup password is null");
+      }
+
+      try {
+        Stopwatch   stopwatch     = new Stopwatch("backup-export");
+        BackupEvent finishedEvent = FullBackupExporter.export(context,
+                                                              AttachmentSecretProvider.getInstance(context).getOrCreateAttachmentSecret(),
+                                                              SignalDatabase.getBackupDatabase(),
+                                                              temporaryFile,
+                                                              backupPassword,
+                                                              this::isCanceled);
+        stopwatch.split("backup-create");
+
+        boolean valid = verifyBackup(backupPassword, temporaryFile, finishedEvent);
+
+        stopwatch.split("backup-verify");
+        stopwatch.stop(TAG);
+
+        if (valid) {
+          renameBackup(fileName, temporaryFile);
+        } else {
+          BackupFileIOError.VERIFICATION_FAILED.postNotification(context);
         }
-
-        deleteOldTemporaryBackups(backupDirectory);
-
-        if (backupDirectory.findFile(fileName) != null) {
-          throw new IOException("Backup file already exists!");
-        }
-
-        String       temporaryName = String.format(Locale.US, "%s%s%s", TEMP_BACKUP_FILE_PREFIX, UUID.randomUUID(), TEMP_BACKUP_FILE_SUFFIX);
-        DocumentFile temporaryFile = backupDirectory.createFile("application/octet-stream", temporaryName);
-
-        if (temporaryFile == null) {
-          throw new IOException("Failed to create temporary backup file.");
-        }
-
-        if (backupPassword == null) {
-          throw new IOException("Backup password is null");
-        }
-
-        try {
-          Stopwatch   stopwatch     = new Stopwatch("backup-export");
-          BackupEvent finishedEvent = FullBackupExporter.export(context,
-                                                                AttachmentSecretProvider.getInstance(context).getOrCreateAttachmentSecret(),
-                                                                SignalDatabase.getBackupDatabase(),
-                                                                temporaryFile,
-                                                                backupPassword,
-                                                                this::isCanceled,
-                                                                !name.contains("trusted_introductions"));
-          stopwatch.split("backup-create");
-
-          boolean valid = verifyBackup(backupPassword, temporaryFile, finishedEvent);
-
-          stopwatch.split("backup-verify");
-          stopwatch.stop(TAG);
-
-          if (valid) {
-            renameBackup(fileName, temporaryFile);
+        EventBus.getDefault().post(finishedEvent);
+      } catch (FullBackupExporter.BackupCanceledException e) {
+        EventBus.getDefault().post(new BackupEvent(BackupEvent.Type.FINISHED, 0, 0));
+        Log.w(TAG, "Backup cancelled");
+        throw e;
+      } catch (IOException e) {
+        Log.w(TAG, "Error during backup!", e);
+        EventBus.getDefault().post(new BackupEvent(BackupEvent.Type.FINISHED, 0, 0));
+        BackupFileIOError.postNotificationForException(context, e);
+        throw e;
+      } finally {
+        DocumentFile fileToCleanUp = backupDirectory.findFile(temporaryName);
+        if (fileToCleanUp != null) {
+          if (fileToCleanUp.delete()) {
+            Log.w(TAG, "Backup failed. Deleted temp file");
           } else {
-            BackupFileIOError.VERIFICATION_FAILED.postNotification(context);
-          }
-          EventBus.getDefault().post(finishedEvent);
-        } catch (FullBackupExporter.BackupCanceledException e) {
-          EventBus.getDefault().post(new BackupEvent(BackupEvent.Type.FINISHED, 0, 0));
-          Log.w(TAG, "Backup cancelled");
-          throw e;
-        } catch (IOException e) {
-          Log.w(TAG, "Error during backup!", e);
-          EventBus.getDefault().post(new BackupEvent(BackupEvent.Type.FINISHED, 0, 0));
-          BackupFileIOError.postNotificationForException(context, e);
-          throw e;
-        } finally {
-          DocumentFile fileToCleanUp = backupDirectory.findFile(temporaryName);
-          if (fileToCleanUp != null) {
-            if (fileToCleanUp.delete()) {
-              Log.w(TAG, "Backup failed. Deleted temp file");
-            } else {
-              Log.w(TAG, "Backup failed. Failed to delete temp file " + temporaryName);
-            }
+            Log.w(TAG, "Backup failed. Failed to delete temp file " + temporaryName);
           }
         }
+      }
 
-        BackupUtil.deleteOldBackups();
-        // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH start"
-      });
-      // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH end"
+      BackupUtil.deleteOldBackups();
     } finally {
       if (notification != null) {
         notification.close();

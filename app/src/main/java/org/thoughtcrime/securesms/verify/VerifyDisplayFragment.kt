@@ -26,6 +26,7 @@ import com.google.android.material.tabs.TabLayoutMediator
 import org.signal.core.util.ThreadUtil
 import org.signal.core.util.logging.Log
 import org.signal.core.util.requireParcelableCompat
+import org.signal.libsignal.protocol.IdentityKey
 import org.signal.libsignal.protocol.fingerprint.Fingerprint
 import org.signal.libsignal.protocol.fingerprint.FingerprintVersionMismatchException
 import org.thoughtcrime.securesms.R
@@ -137,25 +138,13 @@ class VerifyDisplayFragment : Fragment(), OnScrollChangedListener {
     binding.verifyViewPager.currentItem = selectedFingerPrint
 
     // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
-
-    val parcelableKey: IdentityKeyParcelable?
     val recipient: LiveRecipient = viewModel.recipient
-    if (savedInstanceState == null) {
-      if (arguments == null) {
-        throw AssertionError(TAG + "Must pass a recipient!")
-      }
-      recipient = Recipient.live(requireArguments().getParcelable(ContactsSelectionActivity.RECIPIENT_ID)!!)
-      parcelableKey = requireArguments().getParcelable(REMOTE_IDENTITY)
-    } else {
-      recipient = Recipient.live(savedInstanceState.getParcelable(ContactsSelectionActivity.RECIPIENT_ID)!!)
-      parcelableKey = savedInstanceState.getParcelable(REMOTE_IDENTITY)
-    }
-    this.remoteIdentity = parcelableKey!!.get()
-    VerifyDisplayFragmentGlue.initializeVerifyButton(arguments!!.getBoolean(VerifyDisplayFragmentGlue.VERIFIED_STATE, false),
+    val remoteIdentity: IdentityKey = viewModel.getRemoteIdentity()
+    VerifyDisplayFragmentGlue.initializeVerifyButton(requireArguments().getBoolean(VerifyDisplayFragmentGlue.VERIFIED_STATE, false),
       this.binding.verifyButton,
-      recipient.getId(),
+      recipient.id,
       activity,
-      this.binding.remoteIdentity)
+      remoteIdentity)
     // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 
   }
@@ -178,7 +167,7 @@ class VerifyDisplayFragment : Fragment(), OnScrollChangedListener {
         animateSuccess(selectedSnapshot)
       }
       // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
-      VerifyDisplayFragmentGlue.onSuccessfullVerification(viewModel.recipient.id, viewModel.remoteIdentity, verifyButton);
+      VerifyDisplayFragmentGlue.onSuccessfullVerification(viewModel.recipient.id, viewModel.getRemoteIdentity(), binding.verifyButton);
       // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
       ThreadUtil.postToMain {
         binding.verifyViewPager.currentItem = selectedSnapshot

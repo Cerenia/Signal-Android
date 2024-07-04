@@ -54,7 +54,7 @@ public class ManageManager {
             String    number = r.getE164().orElse("");
             // TODO: using getApplication context because the context doesn't matter... (22-10-06)
             // It just circularly gets passed around between methods in the Recipient but is never used for anything.
-            i = new ManageViewModel.IntroducerInformation(r.getDisplayNameOrUsername(getApplicationContext()), number);
+            i = new ManageViewModel.IntroducerInformation(r.getDisplayName(getApplicationContext()), number);
           } catch (Exception e) {
             e.printStackTrace();
             Log.e(TAG, e.getMessage());

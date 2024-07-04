@@ -12,6 +12,7 @@ import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue;
+import org.thoughtcrime.securesms.trustedIntroductions.glue.RecipientTableGlue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -118,7 +119,7 @@ public class ContactsSelectionViewModel extends ViewModel {
     private final ContactsSelectionManager manager;
 
     Factory(RecipientId id) {
-      this.manager = new ContactsSelectionManager(id, SignalDatabase.tiIdentityDatabase(), SignalDatabase.recipients());
+      this.manager = new ContactsSelectionManager(id, SignalDatabase.tiIdentityDatabase());
     }
 
     @Override
