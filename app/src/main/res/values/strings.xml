@@ -6892,6 +6892,7 @@
     <string name="ManageStorageSettingsFragment_keep_messages_duration_warning">Messages older than the selected time will be permanently deleted.</string>
     <!-- Warning message at the bottom of a settings screen indicating how messages will be deleted based on user\'s selection (limit is a number like 500 or 5,000) -->
     <string name="ManageStorageSettingsFragment_chat_length_limit_warning">Messages exceeding the selected length will be permanently deleted.</string>
+
     <!--TI_GLUE: eNT9XAHgq0lZdbQs2nfH start-->
     <!-- Trusted Introductions -->
     <string name="HelpFragment__trusted_introductions_version">Trusted Introductions Version</string>
@@ -6904,6 +6905,10 @@
     <string name="CanNotIntroduceDialog__verify">Verify</string>
     <string name="CanNotIntroduceDialog__Cant_introduce">Introduction not possible</string>
     <string name="CanNotIntroduceDialog__Identity_record_empty">Could not redirect to the verification screen, please try to navigate there manually.</string>
+
+    <!-- DeleteIntroductionDialog -->
+    <string name="DeleteIntroductionDialog__Title">Delete Introduction:</string>
+    <string name="DeleteIntroductionDialog__Delete_Introduction">Are you sure that you want to delete %1$s\'s introduction of %2$s from the %3$s? This action is not reversible!</string>
 
     <!-- ClearVerificationDialog -->
     <string name="ClearVerificationDialog__Positive">Clear</string>

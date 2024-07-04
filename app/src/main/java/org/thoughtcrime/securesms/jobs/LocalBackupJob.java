@@ -27,9 +27,6 @@ import org.thoughtcrime.securesms.notifications.NotificationChannels;
 import org.thoughtcrime.securesms.permissions.Permissions;
 import org.thoughtcrime.securesms.service.GenericForegroundService;
 import org.thoughtcrime.securesms.service.NotificationController;
-// TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
-import org.thoughtcrime.securesms.trustedIntroductions.glue.LocalBackupJobGlue;
-// TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 import org.thoughtcrime.securesms.util.BackupUtil;
 import org.thoughtcrime.securesms.util.StorageUtil;
 
@@ -54,9 +51,9 @@ public final class LocalBackupJob extends BaseJob {
   public static void enqueue(boolean force) {
     JobManager         jobManager = ApplicationDependencies.getJobManager();
     Parameters.Builder parameters = new Parameters.Builder()
-                                                  .setQueue(QUEUE)
-                                                  .setMaxInstancesForFactory(1)
-                                                  .setMaxAttempts(3);
+        .setQueue(QUEUE)
+        .setMaxInstancesForFactory(1)
+        .setMaxAttempts(3);
     if (force) {
       jobManager.cancelAllInQueue(QUEUE);
     }
@@ -94,9 +91,9 @@ public final class LocalBackupJob extends BaseJob {
 
     ProgressUpdater updater = new ProgressUpdater(context.getString(R.string.LocalBackupJob_verifying_signal_backup));
     try (NotificationController notification = GenericForegroundService.startForegroundTask(context,
-                                                                     context.getString(R.string.LocalBackupJob_creating_signal_backup),
-                                                                     NotificationChannels.getInstance().BACKUPS,
-                                                                     R.drawable.ic_signal_backup))
+                                                                                            context.getString(R.string.LocalBackupJob_creating_signal_backup),
+                                                                                            NotificationChannels.getInstance().BACKUPS,
+                                                                                            R.drawable.ic_signal_backup))
     {
       updater.setNotification(notification);
       EventBus.getDefault().register(updater);
@@ -105,79 +102,72 @@ public final class LocalBackupJob extends BaseJob {
       String backupPassword  = BackupPassphrase.get(context);
       File   backupDirectory = StorageUtil.getOrCreateBackupDirectory();
       String timestamp       = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.US).format(new Date());
-      // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
-      LocalBackupJobGlue.repeatBackup((name) -> {
-        String       fileName        = String.format(name, timestamp);
-        // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
-        File   backupFile      = new File(backupDirectory, fileName);
+      String fileName        = String.format("signal-%s.backup", timestamp);
+      File   backupFile      = new File(backupDirectory, fileName);
 
-        deleteOldTemporaryBackups(backupDirectory);
+      deleteOldTemporaryBackups(backupDirectory);
 
-        if (backupFile.exists()) {
-          throw new IOException("Backup file already exists?");
-        }
+      if (backupFile.exists()) {
+        throw new IOException("Backup file already exists?");
+      }
 
-        if (backupPassword == null) {
-          throw new IOException("Backup password is null");
-        }
+      if (backupPassword == null) {
+        throw new IOException("Backup password is null");
+      }
 
-        File tempFile = File.createTempFile(TEMP_BACKUP_FILE_PREFIX, TEMP_BACKUP_FILE_SUFFIX, backupDirectory);
+      File tempFile = File.createTempFile(TEMP_BACKUP_FILE_PREFIX, TEMP_BACKUP_FILE_SUFFIX, backupDirectory);
 
-        try {
-          Stopwatch   stopwatch     = new Stopwatch("backup-export");
-          BackupEvent finishedEvent = FullBackupExporter.export(context,
-                                                                AttachmentSecretProvider.getInstance(context).getOrCreateAttachmentSecret(),
-                                                                SignalDatabase.getBackupDatabase(),
-                                                                tempFile,
-                                                                backupPassword,
-                                                                this::isCanceled,
-                                                                !name.contains("trusted_introductions"));
-          stopwatch.split("backup-create");
+      try {
+        Stopwatch   stopwatch     = new Stopwatch("backup-export");
+        BackupEvent finishedEvent = FullBackupExporter.export(context,
+                                                              AttachmentSecretProvider.getInstance(context).getOrCreateAttachmentSecret(),
+                                                              SignalDatabase.getBackupDatabase(),
+                                                              tempFile,
+                                                              backupPassword,
+                                                              this::isCanceled);
+        stopwatch.split("backup-create");
 
         boolean valid = BackupVerifier.verifyFile(new FileInputStream(tempFile), backupPassword, finishedEvent.getCount(), this::isCanceled);
         stopwatch.split("backup-verify");
         stopwatch.stop(TAG);
 
-          EventBus.getDefault().post(finishedEvent);
+        EventBus.getDefault().post(finishedEvent);
 
-          if (valid) {
-            if (!tempFile.renameTo(backupFile)) {
-              Log.w(TAG, "Failed to rename temp file");
-              throw new IOException("Renaming temporary backup file failed!");
-            }
-          } else {
-            BackupFileIOError.VERIFICATION_FAILED.postNotification(context);
+        if (valid) {
+          if (!tempFile.renameTo(backupFile)) {
+            Log.w(TAG, "Failed to rename temp file");
+            throw new IOException("Renaming temporary backup file failed!");
           }
-        } catch (FullBackupExporter.BackupCanceledException e) {
-          EventBus.getDefault().post(new BackupEvent(BackupEvent.Type.FINISHED, 0, 0));
-          Log.w(TAG, "Backup cancelled");
-          throw e;
-        } catch (IOException e) {
-          Log.w(TAG, "Error during backup!", e);
-          EventBus.getDefault().post(new BackupEvent(BackupEvent.Type.FINISHED, 0, 0));
-          BackupFileIOError.postNotificationForException(context, e);
-          throw e;
-        } finally {
-          if (tempFile.exists()) {
-            if (tempFile.delete()) {
-              Log.w(TAG, "Backup failed. Deleted temp file");
-            } else {
-              Log.w(TAG, "Backup failed. Failed to delete temp file " + tempFile);
-            }
+        } else {
+          BackupFileIOError.VERIFICATION_FAILED.postNotification(context);
+        }
+      } catch (FullBackupExporter.BackupCanceledException e) {
+        EventBus.getDefault().post(new BackupEvent(BackupEvent.Type.FINISHED, 0, 0));
+        Log.w(TAG, "Backup cancelled");
+        throw e;
+      } catch (IOException e) {
+        Log.w(TAG, "Error during backup!", e);
+        EventBus.getDefault().post(new BackupEvent(BackupEvent.Type.FINISHED, 0, 0));
+        BackupFileIOError.postNotificationForException(context, e);
+        throw e;
+      } finally {
+        if (tempFile.exists()) {
+          if (tempFile.delete()) {
+            Log.w(TAG, "Backup failed. Deleted temp file");
+          } else {
+            Log.w(TAG, "Backup failed. Failed to delete temp file " + tempFile);
           }
         }
-
-        BackupUtil.deleteOldBackups();
-        // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH start"
-      });
-      // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH end"
-    } catch (UnableToStartException e) {
-        Log.w(TAG, "This should not happen on API < 31");
-        throw new AssertionError(e);
-      } finally {
-        EventBus.getDefault().unregister(updater);
-        updater.setNotification(null);
       }
+
+      BackupUtil.deleteOldBackups();
+    } catch (UnableToStartException e) {
+      Log.w(TAG, "This should not happen on API < 31");
+      throw new AssertionError(e);
+    } finally {
+      EventBus.getDefault().unregister(updater);
+      updater.setNotification(null);
+    }
   }
 
   private static void deleteOldTemporaryBackups(@NonNull File backupDirectory) {

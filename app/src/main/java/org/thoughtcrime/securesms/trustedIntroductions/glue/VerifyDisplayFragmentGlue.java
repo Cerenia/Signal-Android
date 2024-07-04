@@ -25,6 +25,7 @@ import org.thoughtcrime.securesms.util.IdentityUtil;
 import org.thoughtcrime.securesms.util.ViewUtil;
 import org.thoughtcrime.securesms.verify.VerifyDisplayFragment;
 import org.whispersystems.signalservice.api.SignalSessionLock;
+import org.whispersystems.signalservice.api.push.ServiceId;
 
 public interface VerifyDisplayFragmentGlue {
 
@@ -78,6 +79,7 @@ public interface VerifyDisplayFragmentGlue {
 
   private void updateContactsVerifiedStatus(TI_IdentityTable.VerifiedStatus status, Recipient recipient, IdentityKey remoteIdentity, androidx.fragment.app.FragmentActivity activity) {
     final RecipientId recipientId = recipient.getId();
+    ServiceId         sid         = recipient.requireServiceId();
     Log.i(TAG_TI, "Saving identity: " + recipientId);
     SignalExecutors.BOUNDED.execute(() -> {
       try (SignalSessionLock.Lock unused = ReentrantSessionLock.INSTANCE.acquire()) {
@@ -86,6 +88,7 @@ public interface VerifyDisplayFragmentGlue {
           Log.i(TAG_TI, "Saving identity: " + recipientId);
           ApplicationDependencies.getProtocolStore().aci().identities()
                                  .saveIdentityWithoutSideEffects(recipientId,
+                                                                 sid,
                                                                  remoteIdentity,
                                                                  TI_IdentityTable.VerifiedStatus.toVanilla(status),
                                                                  false,
