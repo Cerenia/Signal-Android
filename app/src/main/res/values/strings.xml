@@ -7493,6 +7493,10 @@
     <string name="CanNotIntroduceDialog__Cant_introduce">Introduction not possible</string>
     <string name="CanNotIntroduceDialog__Identity_record_empty">Could not redirect to the verification screen, please try to navigate there manually.</string>
 
+    <!-- DeleteIntroductionDialog -->
+    <string name="DeleteIntroductionDialog__Title">Delete Introduction:</string>
+    <string name="DeleteIntroductionDialog__Delete_Introduction">Are you sure that you want to delete %1$s\'s introduction of %2$s from the %3$s? This action is not reversible!</string>
+
     <!-- ClearVerificationDialog -->
     <string name="ClearVerificationDialog__Positive">Clear</string>
     <string name="ClearVerificationDialog__Title">Clear Verification?</string>
