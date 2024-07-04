@@ -32,7 +32,10 @@ import java.util.stream.Collectors;
 public class AttachmentKeyboard extends FrameLayout implements InputAwareLayout.InputView {
 
   private static final int                            ANIMATION_DURATION  = 150;
-  private static final List<AttachmentKeyboardButton> DEFAULT_BUTTONS     = Arrays.asList(
+  private static final List<AttachmentKeyboardButton> DEFAULT_BUTTONS = Arrays.asList(
+      // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
+      AttachmentKeyboardButton.TRUSTED_INTRODUCTION,
+      // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end"
       AttachmentKeyboardButton.GALLERY,
       AttachmentKeyboardButton.FILE,
       AttachmentKeyboardButton.CONTACT,
