@@ -147,7 +147,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
             <com.google.android.material.button.MaterialButton
-                style="@style/Widget.MaterialComponents.Button.TextButton.Dialog"
+                style="@style/Widget.Signal.Button.TextButton"
                 android:id="@+id/conflictingFilter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -156,7 +156,7 @@
                 android:text="@string/ManageIntroductionsFragment__Conflicting"
                 />
             <com.google.android.material.button.MaterialButton
-                style="@style/Widget.MaterialComponents.Button.TextButton.Dialog"
+                style="@style/Widget.Signal.Button.TextButton"
                 android:id="@+id/staleFilter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -165,7 +165,7 @@
                 android:text="@string/ManageIntroductionsFragment__Stale"
                 />
             <com.google.android.material.button.MaterialButton
-                style="@style/Widget.MaterialComponents.Button.TextButton.Dialog"
+                style="@style/Widget.Signal.Button.TextButton"
                 android:id="@+id/acceptedFilter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -174,7 +174,7 @@
                 android:text="@string/ManageIntroductionsFragment__Accepted"
                 />
             <com.google.android.material.button.MaterialButton
-                style="@style/Widget.MaterialComponents.Button.TextButton.Dialog"
+                style="@style/Widget.Signal.Button.TextButton"
                 android:id="@+id/rejectedFilter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
