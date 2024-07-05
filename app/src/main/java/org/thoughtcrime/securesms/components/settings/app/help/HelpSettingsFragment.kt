@@ -27,6 +27,11 @@ import org.signal.core.ui.compose.Rows.defaultPadding
 import org.signal.core.ui.compose.Scaffolds
 import org.thoughtcrime.securesms.BuildConfig
 import org.thoughtcrime.securesms.R
+import org.thoughtcrime.securesms.components.settings.DSLSettingsText
+// TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils
+import org.thoughtcrime.securesms.trustedIntroductions.glue.SettingsFragmentsGlue
+// TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 import org.thoughtcrime.securesms.compose.ComposeFragment
 import org.thoughtcrime.securesms.util.CommunicationActions
 import org.thoughtcrime.securesms.util.navigation.safeNavigate
@@ -77,6 +82,12 @@ class HelpSettingsFragment : ComposeFragment() {
             label = BuildConfig.VERSION_NAME
           )
         }
+
+        // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+        item {
+          SettingsFragmentsGlue.AddTextPref(R.string.HelpFragment__trusted_introductions_version, TI_Utils.TI_APK_VERSION)
+        }
+        // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 
         item {
           Rows.TextRow(

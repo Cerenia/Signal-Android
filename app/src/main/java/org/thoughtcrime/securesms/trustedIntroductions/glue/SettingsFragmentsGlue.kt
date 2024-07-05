@@ -2,6 +2,9 @@ package org.thoughtcrime.securesms.trustedIntroductions.glue
 
 import android.content.Context
 import android.content.Intent
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import org.signal.core.ui.compose.Rows
 import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.components.settings.DSLSettingsIcon
 import org.thoughtcrime.securesms.components.settings.DSLSettingsText
@@ -39,10 +42,11 @@ interface SettingsFragmentsGlue {
       }
     }
 
-    fun addTextPref(textPref: (t: DSLSettingsText?, s: DSLSettingsText?) -> Unit, title: DSLSettingsText?, summary: DSLSettingsText?){
-      textPref(
-        title,
-        summary
+    @Composable
+    fun AddTextPref(title: String, summary: String){
+      return Rows.TextRow(
+        text = title,
+        label = summary
       )
     }
   }
