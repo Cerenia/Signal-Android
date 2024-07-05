@@ -10,12 +10,14 @@ import android.database.Cursor
 import org.thoughtcrime.securesms.database.IdentityTable
 import org.thoughtcrime.securesms.database.RecipientTable
 import org.thoughtcrime.securesms.database.SignalDatabase
+import org.thoughtcrime.securesms.database.model.RecipientRecord
 import org.thoughtcrime.securesms.recipients.RecipientId
+import org.whispersystems.signalservice.api.push.ServiceId
 
 interface RecipientTableGlue {
 
   companion object statics{
-    val SERVICE_ID: String = RecipientTable.STORAGE_SERVICE_ID
+    val SERVICE_ID: String = RecipientTable.ACI_COLUMN
     // All the values returned in the search projection
     val ID: String = RecipientTable.ID
     val SYSTEM_JOINED_NAME: String = RecipientTable.SYSTEM_JOINED_NAME
@@ -41,38 +43,13 @@ interface RecipientTableGlue {
     // -> as SORT_NAME
     val SORT_NAME: String = RecipientTable.SORT_NAME
 
-    fun getCursorForSendingTI(recipientIds: Set<RecipientId?>?): Cursor? {
-      val query = StringBuilder()
-      val ID = RecipientTable.ID
-      if (recipientIds != null) {
-        if(recipientIds.isNotEmpty()){
-          (1 until recipientIds.size).map{
-            query.append("$ID=? OR ")
-          }
-          query.append("$ID=?")
-        }
-        val identifiers = recipientIds.map { id -> id!!.toLong().toString() }
-        return SignalDatabase.recipients.querySignalContacts(RecipientTable.ContactSearchQuery(query.toString(), false))
-      } else {
-        return null
-      }
-    }
-
-    private fun buildService_ID_Query(serializedServiceIds: List<String>) : String{
-      val query = StringBuilder();
-      if(!serializedServiceIds.isEmpty()){
-        (1 until serializedServiceIds.size).map{
-          query.append("$SERVICE_ID=? OR ")
-        }
-        query.append("$SERVICE_ID=?")
-      }
-      return query.toString()
+    fun getRecordsForSendingTI(recipientIds: Set<RecipientId>): Map<RecipientId, RecipientRecord> {
+      return SignalDatabase.recipients.getRecords(recipientIds)
     }
 
     @JvmStatic
-    fun getCursorForReceivingTI(serializedAcis: MutableList<String>): Cursor? {
-      val query = buildService_ID_Query(serializedAcis)
-      return SignalDatabase.recipients.querySignalContacts(RecipientTable.ContactSearchQuery(query, false))
+    fun getRecordsForReceivingTI(serializedAcis: MutableList<String>): Map<RecipientId, RecipientRecord> {
+      return getRecipientIdsFromACIs(null, serializedAcis)
     }
 
     /**
@@ -82,20 +59,33 @@ interface RecipientTableGlue {
      */
     @JvmStatic
     @SuppressLint("Range")
-    fun getReaderForValidTI_Candidates(CursorForTIUnlocked: Cursor): RecipientTable.RecipientReader {
-      val identifiers = arrayListOf<String>()
-      if(CursorForTIUnlocked.moveToFirst()){
-        CursorForTIUnlocked.use {
-          while (!it.isAfterLast) {
-            identifiers.add(it.getString(it.getColumnIndex(IdentityTable.ADDRESS)))
-            it.moveToNext()
-          }
-        }
-      }
-      val query = buildService_ID_Query(identifiers)
-      val newCursor = SignalDatabase.recipients.querySignalContacts(RecipientTable.ContactSearchQuery(query, false))
-      return RecipientTable.RecipientReader(newCursor!!)
+    fun getReaderForValidTI_Candidates(cursorForTIUnlocked: Cursor): Map<RecipientId, RecipientRecord> {
+      return getRecipientIdsFromACIs(cursorForTIUnlocked)
     }
 
+    @SuppressLint("Range")
+    private fun getRecipientIdsFromACIs(cursor: Cursor? = null, acis: Collection<String>? = null): Map<RecipientId, RecipientRecord>{
+      val serviceIdentifyers = arrayListOf<String>()
+      val recipientIds: MutableSet<RecipientId> = hashSetOf()
+      if (cursor == null && acis == null){
+        throw IllegalArgumentException("Either cursor or acis must not be null!")
+      } else if (cursor != null){
+        if(cursor.moveToFirst()){
+          cursor.use {
+            while (!it.isAfterLast) {
+              serviceIdentifyers.add(it.getString(it.getColumnIndex(IdentityTable.ADDRESS)))
+              it.moveToNext()
+            }
+          }
+        }
+      } else {
+        serviceIdentifyers.addAll(acis!!)
+      }
+      serviceIdentifyers.forEach({aci ->
+        val rid: RecipientId = SignalDatabase.recipients.getByAci(ServiceId.ACI.parseOrThrow(aci)).get()
+        recipientIds.add(rid)
+      })
+      return SignalDatabase.recipients.getRecords(recipientIds)
+    }
   }
 }

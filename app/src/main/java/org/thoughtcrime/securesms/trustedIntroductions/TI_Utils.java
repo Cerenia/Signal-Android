@@ -18,7 +18,6 @@ import org.thoughtcrime.securesms.crypto.ReentrantSessionLock;
 import org.thoughtcrime.securesms.database.IdentityTable;
 import org.thoughtcrime.securesms.database.RecipientTable;
 import org.thoughtcrime.securesms.database.SignalDatabase;
-import org.thoughtcrime.securesms.recipients.LiveRecipientCache;
 import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database;
 import org.thoughtcrime.securesms.database.model.IdentityRecord;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
@@ -270,7 +269,7 @@ public class TI_Utils {
 
     JSONObject data = new JSONObject();
 
-    Cursor recipientCursor = RecipientTableGlue.statics.getCursorForSendingTI(introducees);
+    Cursor recipientCursor = RecipientTableGlue.statics.getRecordsForSendingTI(introducees);
     JSONArray introduceeData = new JSONArray();
 
     data.put(TI_VERSION_J, TI_MESSAGE_VERSION);
@@ -360,7 +359,7 @@ public class TI_Utils {
         recipientServiceIds.add(introduceeServiceId);
       }
       // Get any known recipients & add to result
-      Cursor cursor = RecipientTableGlue.getCursorForReceivingTI(recipientServiceIds);
+      Cursor cursor = RecipientTableGlue.getRecordsForReceivingTI(recipientServiceIds);
       ArrayList<String> knownIds = new ArrayList<>();
       if (cursor != null && cursor.getCount() > 0) {
         cursor.moveToFirst();
