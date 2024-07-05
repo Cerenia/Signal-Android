@@ -59,7 +59,7 @@ interface RecipientTableGlue {
      */
     @JvmStatic
     @SuppressLint("Range")
-    fun getReaderForValidTI_Candidates(cursorForTIUnlocked: Cursor): Map<RecipientId, RecipientRecord> {
+    fun getValidTI_Candidates(cursorForTIUnlocked: Cursor): Map<RecipientId, RecipientRecord> {
       return getRecipientIdsFromACIs(cursorForTIUnlocked)
     }
 

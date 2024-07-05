@@ -3,8 +3,8 @@ package org.thoughtcrime.securesms.trustedIntroductions.send;
 import androidx.core.util.Consumer;
 
 import org.signal.core.util.concurrent.SignalExecutors;
-import org.thoughtcrime.securesms.database.IdentityTable;
-import org.thoughtcrime.securesms.database.RecipientTable;
+import org.thoughtcrime.securesms.database.model.RecipientRecord;
+import org.thoughtcrime.securesms.recipients.LiveRecipient;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue;
@@ -14,10 +14,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 import io.reactivex.rxjava3.annotations.NonNull;
-
-import static org.thoughtcrime.securesms.trustedIntroductions.glue.RecipientTableGlue.*;
 
 public class ContactsSelectionManager {
 
@@ -35,19 +34,13 @@ public class ContactsSelectionManager {
 
   void getValidContacts(@NonNull Consumer<List<Recipient>> introducableContacts){
     SignalExecutors.BOUNDED.execute(() -> {
-      RecipientTable.RecipientReader reader = RecipientTableGlue.getReaderForValidTI_Candidates(idb.getCursorForTIUnlocked());
-      int count = reader.getCount();
+      Map<RecipientId, RecipientRecord> elligibleCandidates = RecipientTableGlue.getValidTI_Candidates(idb.getCursorForTIUnlocked());
+      int count = elligibleCandidates.size();
       if (count == 0){
         introducableContacts.accept(Collections.emptyList());
       } else {
         List<Recipient> contacts = new ArrayList<>();
-        while(reader.getNext() != null){
-          Recipient current = reader.getCurrent();
-          RecipientId id = current.getId();
-          if(!current.isSelf() && id.compareTo(recipientId)!=0){
-            contacts.add(current);
-          }
-        }
+        elligibleCandidates.forEach((recipientID, recipientRecord) -> contacts.add(Recipient.resolved(recipientID)));
         // sort ascending
         Collections.sort(contacts, Comparator.comparing((Recipient recipient) -> recipient.getProfileName().toString()));
         introducableContacts.accept(contacts);
