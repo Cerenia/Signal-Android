@@ -18,6 +18,7 @@ import org.thoughtcrime.securesms.crypto.ReentrantSessionLock;
 import org.thoughtcrime.securesms.database.IdentityTable;
 import org.thoughtcrime.securesms.database.RecipientTable;
 import org.thoughtcrime.securesms.database.SignalDatabase;
+import org.thoughtcrime.securesms.database.model.RecipientRecord;
 import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database;
 import org.thoughtcrime.securesms.database.model.IdentityRecord;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
@@ -39,6 +40,7 @@ import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -269,37 +271,36 @@ public class TI_Utils {
 
     JSONObject data = new JSONObject();
 
-    Cursor recipientCursor = RecipientTableGlue.statics.getRecordsForSendingTI(introducees);
+    Map<RecipientId, RecipientRecord> recipients = RecipientTableGlue.statics.getRecordsForSendingTI(introducees);
     JSONArray introduceeData = new JSONArray();
 
     data.put(TI_VERSION_J, TI_MESSAGE_VERSION);
     // Loop over all the contacts you want to introduce
-    recipientCursor.moveToFirst();
-    for(int i = 0; !recipientCursor.isAfterLast(); i++){
-      JSONObject introducee = new JSONObject();
-      introducee.put(NAME_J, recipientCursor.getString(recipientCursor.getColumnIndex(SORT_NAME)));
-      String introduceeE164 = recipientCursor.getString(recipientCursor.getColumnIndex(PHONE));
-      introducee.put(NUMBER_J, introduceeE164);
-      String introduceeServiceId = recipientCursor.getString(recipientCursor.getColumnIndex(SERVICE_ID));
-      introducee.put(INTRODUCEE_SERVICE_ID_J, introduceeServiceId);
-      String formatedSafetyNr;
-      try{
-        RecipientId introduceeRecipientId = RecipientId.from(recipientCursor.getLong(recipientCursor.getColumnIndex("_id")));
-        IdentityKey introduceeIdentityKey = getIdentityKey(introduceeRecipientId);
-        introducee.put(IDENTITY_J, encodeIdentityKey(introduceeIdentityKey));
-        formatedSafetyNr = predictFingerprint(introductionRecipientId, introduceeRecipientId, introduceeServiceId, introduceeE164, introduceeIdentityKey);
-      } catch (TI_MissingIdentityException e){
+    recipients.forEach((recipientId, recipientRecord) -> {
+      try {
+        JSONObject introducee = new JSONObject();
+        introducee.put(NAME_J, recipientRecord.getSystemDisplayName());
+        String introduceeE164 = recipientRecord.getE164();
+        introducee.put(NUMBER_J, introduceeE164);
+        ServiceId introduceeServiceId =  recipientRecord.getAci();
+        introducee.put(INTRODUCEE_SERVICE_ID_J, introduceeServiceId);
+        String formatedSafetyNR;
+        try{
+          IdentityKey introduceeIdentityKey = getIdentityKey(recipientId);
+          introducee.put(IDENTITY_J, encodeIdentityKey(introduceeIdentityKey));
+          formatedSafetyNR = predictFingerprint(introductionRecipientId, recipientId, introduceeServiceId.toString(), introduceeE164, introduceeIdentityKey);
+        } catch (TI_MissingIdentityException e){
+          e.printStackTrace();
+          throw new AssertionError(TAG + " Unexpected missing identities when building TI message body!");
+        }
+        introducee.put(PREDICTED_FINGERPRINT_J, formatedSafetyNR);
+        introduceeData.put(introducee);
+        data.put(INTRODUCEE_DATA_J, introduceeData);
+      } catch (JSONException e){
         e.printStackTrace();
-        throw new AssertionError(TAG + " Unexpected missing identities when building TI message body!");
+        throw new AssertionError(TAG + "Json Error occured while building TI_message body.\n");
       }
-      introducee.put(PREDICTED_FINGERPRINT_J, formatedSafetyNr);
-      introduceeData.put(introducee);
-      recipientCursor.moveToNext();
-    }
-
-    recipientCursor.close();
-    data.put(INTRODUCEE_DATA_J, introduceeData);
-
+    });
     return TI_IDENTIFYER + TI_SEPARATOR + data.toString(INDENT_SPACES);
   }
 
@@ -359,27 +360,19 @@ public class TI_Utils {
         recipientServiceIds.add(introduceeServiceId);
       }
       // Get any known recipients & add to result
-      Cursor cursor = RecipientTableGlue.getRecordsForReceivingTI(recipientServiceIds);
-      ArrayList<String> knownIds = new ArrayList<>();
-      if (cursor != null && cursor.getCount() > 0) {
-        cursor.moveToFirst();
-        while (!cursor.isAfterLast()){
-          // Guaranteed to be the same as in introduction
-          String introduceeServiceId = cursor.getString(cursor.getColumnIndex(SERVICE_ID));
+      Map<RecipientId, RecipientRecord> records   = RecipientTableGlue.getRecordsForReceivingTI(recipientServiceIds);
+      ArrayList<String>                 knownIds = new ArrayList<>();
+      if (records.size() > 0){
+        records.forEach((recipientID, recipientRecord) -> {
+          String introduceeServiceId = recipientRecord.getAci().toString();
           knownIds.add(introduceeServiceId);
-          String name = cursor.getString(cursor.getColumnIndex(SORT_NAME));
-          String phone = cursor.getString(cursor.getColumnIndex(PHONE));
-          // TODO: hacky workaround, using nr provided in introduction if empty.
-          // couldn't easily find how I can check the matching phone nr. against directory
-          // -> at some point, defer this intro, add background task that verifies number and reinsert.
-          phone = phone == null? getPhone(introducees, introduceeServiceId) : phone;
+          String name = recipientRecord.getSystemDisplayName();
+          String phone = recipientRecord.getE164();
           String identityKey = IdKeyPair.findCorrespondingKeyInList(introduceeServiceId, idKeyPairs);
           TI_Data d = new TI_Data(null, TI_Database.State.PENDING, introducerServiceId, introduceeServiceId, name, phone, identityKey, null, timestamp);
           result.add(d);
-          cursor.moveToNext();
-        }
+        });
       }
-      cursor.close();
       // Iterate through JSONData again, create the introductions for the still unknown recipients & set the predictedSecurityNumbers for all
       for(int i = 0; i < introducees.length(); i++){
         JSONObject o = introducees.getJSONObject(i);
