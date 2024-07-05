@@ -94,6 +94,9 @@ import org.thoughtcrime.securesms.stories.StoryViewerArgs
 import org.thoughtcrime.securesms.stories.dialogs.StoryDialogs
 import org.thoughtcrime.securesms.stories.viewer.AddToGroupStoryDelegate
 import org.thoughtcrime.securesms.stories.viewer.StoryViewerActivity
+// TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+import org.thoughtcrime.securesms.trustedIntroductions.glue.SettingsFragmentsGlue
+// TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 import org.thoughtcrime.securesms.util.CommunicationActions
 import org.thoughtcrime.securesms.util.ContextUtil
 import org.thoughtcrime.securesms.util.DateUtils
@@ -560,6 +563,10 @@ class ConversationSettingsFragment : DSLSettingsFragment(
           }
         )
       }
+
+      // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+      SettingsFragmentsGlue.addTrustedIntroductionNavigation(state, requireContext(), ::clickPref, ::startActivity)
+      // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 
       state.withRecipientSettingsState { recipientState ->
         when (recipientState.contactLinkState) {
