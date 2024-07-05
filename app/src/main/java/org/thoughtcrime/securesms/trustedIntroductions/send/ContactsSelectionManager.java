@@ -40,7 +40,11 @@ public class ContactsSelectionManager {
         introducableContacts.accept(Collections.emptyList());
       } else {
         List<Recipient> contacts = new ArrayList<>();
-        elligibleCandidates.forEach((recipientID, recipientRecord) -> contacts.add(Recipient.resolved(recipientID)));
+        elligibleCandidates.forEach((recipientID, recipientRecord) -> {
+          if (recipientID.compareTo(this.recipientId) != 0){
+            contacts.add(Recipient.resolved(recipientID));
+          }
+        });
         // sort ascending
         Collections.sort(contacts, Comparator.comparing((Recipient recipient) -> recipient.getProfileName().toString()));
         introducableContacts.accept(contacts);
