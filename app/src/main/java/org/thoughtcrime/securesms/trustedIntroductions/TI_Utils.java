@@ -279,7 +279,7 @@ public class TI_Utils {
     recipients.forEach((recipientId, recipientRecord) -> {
       try {
         JSONObject introducee = new JSONObject();
-        introducee.put(NAME_J, recipientRecord.getSystemDisplayName());
+        introducee.put(NAME_J, getSomeNonNullName(recipientId, recipientRecord));
         String introduceeE164 = recipientRecord.getE164();
         introducee.put(NUMBER_J, introduceeE164);
         ServiceId introduceeServiceId =  recipientRecord.getAci();
@@ -302,6 +302,33 @@ public class TI_Utils {
       }
     });
     return TI_IDENTIFYER + TI_SEPARATOR + data.toString(INDENT_SPACES);
+  }
+
+
+  private static String getSomeNonNullName(RecipientId id, RecipientRecord record){
+    String name;
+    name = record.getSystemDisplayName();
+    if(name != null && !name.equals("")){
+      return name;
+    }
+    name = record.getUsername();
+    if(name != null && !name.equals("")){
+      return name;
+    }
+    name = record.getEmail();
+    if(name != null && !name.equals("")){
+      return name;
+    }
+    Recipient rp = Recipient.resolved(id);
+    name = rp.getDisplayName(getApplicationContext());
+    if(name != null && !name.equals("")){
+      return name;
+    }
+    name = rp.getProfileName().toString();
+    if(name != null && !name.equals("")){
+      return name;
+    }
+    return "¯\\_(ツ)_/¯";
   }
 
   // This structure allows for a oneliner in the processing logic to minimize additional code needed in there.
