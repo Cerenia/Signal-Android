@@ -18,6 +18,7 @@ import org.thoughtcrime.securesms.database.DatabaseTable;
 import org.thoughtcrime.securesms.database.RecipientTable;
 import org.thoughtcrime.securesms.database.SQLiteDatabase;
 import org.thoughtcrime.securesms.database.SignalDatabase;
+import org.thoughtcrime.securesms.database.model.RecipientRecord;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.trustedIntroductions.glue.RecipientTableGlue;
 import org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue;
@@ -35,6 +36,7 @@ import org.whispersystems.signalservice.api.util.Preconditions;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -746,7 +748,7 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
    * @return Cursor pointing to query result.
    */
   @WorkerThread
-  @Override public Cursor fetchRecipientDBCursor(RecipientId introduceeId){
+  @Override public Map<RecipientId, RecipientRecord> fetchRecipientRecord(RecipientId introduceeId){
     // TODO: Simplify if you see that you finally never query this cursor with more than 1 recipient...
     Set<RecipientId> s = new HashSet<>();
     s.add(introduceeId);
@@ -799,11 +801,10 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
     boolean setStateCallback(@NonNull TI_Data introduction, @NonNull State newState, @NonNull String logMessage){
       TI_DatabaseGlue db           = SignalDatabase.tiDatabase();
       RecipientId introduceeID = TI_Utils.getRecipientIdOrUnknown(introduction.getIntroduceeServiceId());
-      try (Cursor rdc = db.fetchRecipientDBCursor(introduceeID)) {
-        if (rdc.getCount() <= 0) {
-          // Programming error in setState codepath if this occurs.
-          throw new AssertionError("Unexpected missing recipient " + introduction.getIntroduceeName() + " in database while trying to change introduction state...");
-        }
+      Map<RecipientId, RecipientRecord> mp = db.fetchRecipientRecord(introduceeID);
+      if (mp.size() <= 0) {
+        // Programming error in setState codepath if this occurs.
+        throw new AssertionError("Unexpected missing recipient " + introduction.getIntroduceeName() + " in database while trying to change introduction state...");
       }
 
       TI_IdentityTable.VerifiedStatus previousIntroduceeVerification = SignalDatabase.tiIdentityDatabase().getVerifiedStatus(introduceeID);

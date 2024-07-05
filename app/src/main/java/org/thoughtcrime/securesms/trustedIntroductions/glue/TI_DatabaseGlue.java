@@ -2,17 +2,18 @@ package org.thoughtcrime.securesms.trustedIntroductions.glue;
 
 import android.content.ContentValues;
 import android.content.Context;
-import android.database.Cursor;
 
 import androidx.annotation.Nullable;
 
-import org.thoughtcrime.securesms.database.IdentityTable;
 import org.thoughtcrime.securesms.database.SQLiteDatabase;
 import org.thoughtcrime.securesms.database.SignalDatabase;
+import org.thoughtcrime.securesms.database.model.RecipientRecord;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database;
 import org.thoughtcrime.securesms.trustedIntroductions.database.TI_IdentityTable;
+
+import java.util.Map;
 
 public interface TI_DatabaseGlue {
   static void executeCreateTable(net.zetetic.database.sqlcipher.SQLiteDatabase db){
@@ -33,7 +34,7 @@ public interface TI_DatabaseGlue {
     return TI_Database.CREATE_TABLE;
   }
 
-  Cursor fetchRecipientDBCursor(RecipientId introduceeId);
+  Map<RecipientId, RecipientRecord> fetchRecipientRecord(RecipientId introduceeId);
 
   void modifyIntroduceeVerification(String introduceeServiceId, TI_IdentityTable.VerifiedStatus previousIntroduceeVerification, TI_Database.State newState, String format);
 

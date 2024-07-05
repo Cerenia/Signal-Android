@@ -33,7 +33,7 @@ class PickContactsToIntroduceContract {
     override fun parseResult(resultCode: Int, intent: Intent?): Pair<RecipientId?, ArrayList<RecipientId>?> {
       if (resultCode == Activity.RESULT_OK && intent != null) {
       val recipientId = from(intent.getLongExtra(ContactsSelectionActivity.RECIPIENT_ID, -1))
-      val listOfIntroduceeIds = (intent.getParcelableArrayExtra(ContactsSelectionActivity.SELECTED_CONTACTS_TO_FORWARD)) as ArrayList<RecipientId>
+      val listOfIntroduceeIds:  ArrayList<RecipientId>? = intent.getParcelableArrayListExtra(ContactsSelectionActivity.SELECTED_CONTACTS_TO_FORWARD)
       val idSet: HashSet<RecipientId> = HashSet(listOfIntroduceeIds)
       val sendJob = TrustedIntroductionSendJob(recipientId, idSet)
       // Starting job here, nothing else needs to happen in the Conversation Fragment so there is no callback defined in ConversationActivityResultContracts

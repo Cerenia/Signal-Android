@@ -196,9 +196,9 @@ public final class ContactsSelectionActivity extends PassphraseRequiredActivity 
 
   private void onFinishedSelection(@NonNull ContactsSelectionViewModel.IntroduceDialogMessageState state) {
     Intent           resultIntent = getIntent();
-    Set<RecipientId> recipientIds = state.getToIntroduce().stream().map(Recipient::getId).collect(Collectors.toSet());
+    ArrayList<RecipientId> recipientIds = state.getToIntroduce().stream().map(Recipient::getId).collect(Collectors.toCollection(ArrayList::new));
 
-    resultIntent.putParcelableArrayListExtra(SELECTED_CONTACTS_TO_FORWARD, new ArrayList<>(recipientIds));
+    resultIntent.putParcelableArrayListExtra(SELECTED_CONTACTS_TO_FORWARD, recipientIds);
 
     setResult(RESULT_OK, resultIntent);
     finish();
