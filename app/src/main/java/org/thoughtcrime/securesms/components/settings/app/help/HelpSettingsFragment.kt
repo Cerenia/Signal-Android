@@ -7,6 +7,10 @@ import org.thoughtcrime.securesms.components.settings.DSLConfiguration
 import org.thoughtcrime.securesms.components.settings.DSLSettingsFragment
 import org.thoughtcrime.securesms.components.settings.DSLSettingsText
 import org.thoughtcrime.securesms.components.settings.configure
+// TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils
+import org.thoughtcrime.securesms.trustedIntroductions.glue.SettingsFragmentsGlue
+// TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 import org.thoughtcrime.securesms.util.adapter.mapping.MappingAdapter
 import org.thoughtcrime.securesms.util.navigation.safeNavigate
 
@@ -36,6 +40,10 @@ class HelpSettingsFragment : DSLSettingsFragment(R.string.preferences__help) {
         title = DSLSettingsText.from(R.string.HelpSettingsFragment__version),
         summary = DSLSettingsText.from(BuildConfig.VERSION_NAME)
       )
+
+      // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+      SettingsFragmentsGlue.addTextPref(::textPref, DSLSettingsText.from(R.string.HelpFragment__trusted_introductions_version), DSLSettingsText.from(TI_Utils.TI_APK_VERSION))
+      // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 
       clickPref(
         title = DSLSettingsText.from(R.string.HelpSettingsFragment__debug_log),
