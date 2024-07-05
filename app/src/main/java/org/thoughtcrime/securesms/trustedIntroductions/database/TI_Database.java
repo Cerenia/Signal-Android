@@ -15,7 +15,6 @@ import org.json.JSONObject;
 import org.signal.core.util.SqlUtil;
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.database.DatabaseTable;
-import org.thoughtcrime.securesms.database.IdentityTable;
 import org.thoughtcrime.securesms.database.RecipientTable;
 import org.thoughtcrime.securesms.database.SQLiteDatabase;
 import org.thoughtcrime.securesms.database.SignalDatabase;
@@ -751,7 +750,7 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
     // TODO: Simplify if you see that you finally never query this cursor with more than 1 recipient...
     Set<RecipientId> s = new HashSet<>();
     s.add(introduceeId);
-    return RecipientTableGlue.statics.getCursorForSendingTI(s);
+    return RecipientTableGlue.statics.getRecordsForSendingTI(s);
   }
 
 
