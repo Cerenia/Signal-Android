@@ -85,6 +85,21 @@ class TI_IdentityTable internal constructor(context: Context?, databaseHelper: S
     }
   }
 
+
+  override fun saveIdentity(addressName: String, verifiedStatus: VerifiedStatus): Boolean {
+    val contentValues = contentValuesOf(
+      ADDRESS to addressName,
+      VERIFIED to verifiedStatus.toInt()
+    )
+    val res = writableDatabase.insert(TABLE_NAME, null, contentValues)
+    if(res < 0){
+      throw AssertionError("$TAG: Error inserting recipient: ${addressName} with status $verifiedStatus into TI_IdentityTable!")
+    } else {
+      Log.i(TAG, "Successfully added recipient with service id:$addressName and status: $verifiedStatus")
+    }
+    return true
+  }
+
   override fun setVerifiedStatus(id: RecipientId, newStatus: VerifiedStatus): Boolean {
     val serviceID = Recipient.live(id).resolve().requireServiceId().toString()
     val contentValues = contentValuesOf(

@@ -42,6 +42,13 @@ public interface IdentityTableGlue {
    */
   TI_IdentityTable.VerifiedStatus getVerifiedStatus(@Nullable RecipientId id);
 
+
+  /**
+    Adds a new identity to the shadow table
+   */
+  @WorkerThread
+  boolean saveIdentity(@NonNull String addressName, @NonNull VerifiedStatus verifiedStatus);
+
   /**
    * Set the TI verification state of this recipient. If the recipient does not yet have an entry in the
    * DB, create one.
