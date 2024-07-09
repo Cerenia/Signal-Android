@@ -91,9 +91,15 @@ class TI_IdentityTable internal constructor(context: Context?, databaseHelper: S
       ADDRESS to addressName,
       VERIFIED to verifiedStatus.toInt()
     )
-    val res = writableDatabase.insert(TABLE_NAME, null, contentValues)
+    var res = writableDatabase.insert(TABLE_NAME, null, contentValues)
     if(res < 0){
-      throw AssertionError("$TAG: Error inserting recipient: ${addressName} with status $verifiedStatus into TI_IdentityTable!")
+      // Try a replace instead
+      res = writableDatabase.replace(TABLE_NAME, null, contentValues)
+      if (res < 0){
+        throw AssertionError("$TAG: Error replacing recipient: $addressName with status $verifiedStatus into TI_IdentityTable!")
+      } else {
+        Log.i(TAG, "Successfully replaced the verification status of recipient with service id:$addressName to: $verifiedStatus")
+      }
     } else {
       Log.i(TAG, "Successfully added recipient with service id:$addressName and status: $verifiedStatus")
     }
