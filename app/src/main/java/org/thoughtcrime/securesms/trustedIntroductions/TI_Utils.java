@@ -393,8 +393,8 @@ public class TI_Utils {
         records.forEach((recipientID, recipientRecord) -> {
           String introduceeServiceId = recipientRecord.getAci().toString();
           knownIds.add(introduceeServiceId);
-          String name = recipientRecord.getSystemDisplayName();
-          String phone = recipientRecord.getE164();
+          String name = getSomeNonNullName(recipientID, recipientRecord);
+          String phone = recipientRecord.getE164() == null ? "Unknown" : recipientRecord.getE164();
           String identityKey = IdKeyPair.findCorrespondingKeyInList(introduceeServiceId, idKeyPairs);
           TI_Data d = new TI_Data(null, TI_Database.State.PENDING, introducerServiceId, introduceeServiceId, name, phone, identityKey, null, timestamp);
           result.add(d);
