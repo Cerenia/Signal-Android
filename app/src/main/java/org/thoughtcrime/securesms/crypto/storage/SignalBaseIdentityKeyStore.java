@@ -23,6 +23,9 @@ import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.keyvalue.SignalStore;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
+import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue;
+import org.thoughtcrime.securesms.trustedIntroductions.glue.SignalBaseIdentityKeyStoreGlue;
+import org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue;
 import org.thoughtcrime.securesms.util.IdentityUtil;
 import org.thoughtcrime.securesms.util.LRUCache;
 import org.whispersystems.signalservice.api.SignalSessionLock;
@@ -85,6 +88,11 @@ public class SignalBaseIdentityKeyStore {
       } else if (identityKeyChanged) {
         Log.i(TAG, "Replacing existing identity for " + address + " | Existing: " + identityRecord.getIdentityKey().hashCode() + ", New: " + identityKey.hashCode());
         VerifiedStatus verifiedStatus;
+
+        //TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+        SignalBaseIdentityKeyStoreGlue.turnAllIntroductionsStale(recipientId, TAG);
+        SignalDatabase.tiIdentityDatabase().saveIdentity(address.getName(), IdentityTableGlue.VerifiedStatus.UNVERIFIED);
+        //TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 
         if (identityRecord.getVerifiedStatus() == VerifiedStatus.VERIFIED ||
             identityRecord.getVerifiedStatus() == VerifiedStatus.UNVERIFIED)
