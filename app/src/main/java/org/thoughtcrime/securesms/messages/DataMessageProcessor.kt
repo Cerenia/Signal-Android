@@ -989,7 +989,7 @@ object DataMessageProcessor {
     handlePossibleExpirationUpdate(envelope, metadata, senderRecipient, threadRecipient, groupId, message.expireTimerDuration, message.expireTimerVersion, receivedTime)
     // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
     DataMessageProcessorGlue.handleTIMessage(senderRecipient.id, body, receivedTime);
-    // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
+    // TI_GLUE: eNfT9XAHgq0lZdbQs2nfH end
 
     notifyTypingStoppedFromIncomingMessage(context, senderRecipient, threadRecipient.id, metadata.sourceDeviceId)
 
