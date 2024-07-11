@@ -93,7 +93,7 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
       INTRODUCEE_SERVICE_ID + " TEXT NOT NULL, " +
       INTRODUCEE_PUBLIC_IDENTITY_KEY + " TEXT NOT NULL, " +
       INTRODUCEE_NAME + " TEXT NOT NULL, " +
-      INTRODUCEE_NUMBER + " TEXT NOT NULL, " +
+      INTRODUCEE_NUMBER + " TEXT, " +
       PREDICTED_FINGERPRINT + " TEXT NOT NULL, " +
       TIMESTAMP + " INTEGER NOT NULL, " +
       STATE + " INTEGER NOT NULL);";
@@ -232,7 +232,7 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
                                                     @Nullable String introducerServiceId,
                                                     @NonNull String serviceId,
                                                     @NonNull String name,
-                                                    @NonNull String number,
+                                                    @Nullable String number,
                                                     @NonNull String identityKey,
                                                     @NonNull String predictedFingerprint,
                                                     @NonNull Long timestamp){
@@ -298,7 +298,7 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
                                                              @NonNull String introducerServiceId,
                                                              @NonNull String introduceeServiceId,
                                                              @NonNull String introduceeName,
-                                                             @NonNull String introduceeNumber,
+                                                             @Nullable String introduceeNumber,
                                                              @NonNull String introduceeIdentityKey,
                                                              @NonNull String predictedSecurityNumber,
                                                              long timestamp) {
@@ -336,7 +336,7 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
                                                              @NonNull String introducerServiceId,
                                                              @NonNull String introduceeServiceId,
                                                              @NonNull String name,
-                                                             @NonNull String number,
+                                                             @Nullable String number,
                                                              @NonNull String identityKey,
                                                              @NonNull String predictedFingerprint,
                                                              @NonNull String timestamp) throws NumberFormatException{
@@ -388,7 +388,7 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
 
   /**
    *
-   * @param introduction PRE: none of it's fields may be null, state != stale.
+   * @param introduction PRE: none of it's fields (except nr.) may be null, state != stale.
    * @return A populated contentValues object, to use when turning introductions stale.
    */
   private @NonNull ContentValues buildContentValuesForStale(@NonNull TI_Data introduction){
@@ -826,7 +826,7 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
       SQLiteDatabase writeableDatabase = db.getSignalWritableDatabase();
       long result = writeableDatabase.update(TABLE_NAME, newValues, ID + " = ?", SqlUtil.buildArgs(introduction.getId()));
 
-      if ( result > 0 ){
+      if (result > 0){
         // Log message on success
         Log.i(TAG, logMessage);
         return true;
