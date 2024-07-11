@@ -89,12 +89,7 @@ public class TI_Utils {
   // @See length of codes in VerifyDisplayFragment
   static final int SEGMENTS = 12;
 
-  // Constants to pull values out of the cursors
-  // Might be worth it to consider using live recipient for all of them... but I only need a few values, not sure
-  // what is less overhead and if caching is really relevant here.
-  static final String SERVICE_ID = "uuid";
-  static final String SORT_NAME = "sort_name"; // From search projection, keeps me from doing name shenanigans
-  static final String PHONE = "phone";
+  static final String UNDISCLOSED_NUMBER = "undisclosed";
 
   // Json keys
   // TODO: May want to add that to be part of the introduction at some point. This way we can avoid crashed on importing old backups with version missmatches
@@ -256,7 +251,9 @@ public class TI_Utils {
 
   @SuppressLint("Range") @WorkerThread
   public static String buildMessageBody(@NonNull RecipientId introductionRecipientId, @NonNull Set<RecipientId> introducees) throws JSONException {
-    assert introducees.size() > 0: TAG + " buildMessageBody called with no Recipient Ids!";
+    if(introducees.size() <= 0){
+      throw new AssertionError(TAG + " buildMessageBody called with no Recipient Ids!");
+    }
 
     JSONObject data = new JSONObject();
 
@@ -269,15 +266,18 @@ public class TI_Utils {
       try {
         JSONObject introducee = new JSONObject();
         introducee.put(NAME_J, getSomeNonNullName(recipientId, recipientRecord));
-        String introduceeE164 = recipientRecord.getE164();
+        String introduceeE164 = recipientRecord.getE164() == null ? UNDISCLOSED_NUMBER : recipientRecord.getE164();
         introducee.put(NUMBER_J, introduceeE164);
         ServiceId introduceeServiceId =  recipientRecord.getAci();
+        if (introduceeServiceId == null){
+          throw new AssertionError(TAG + "Introducee service ID may not be null.");
+        }
         introducee.put(INTRODUCEE_SERVICE_ID_J, introduceeServiceId);
         String formatedSafetyNR;
         try{
           IdentityKey introduceeIdentityKey = getIdentityKey(recipientId);
           introducee.put(IDENTITY_J, encodeIdentityKey(introduceeIdentityKey));
-          formatedSafetyNR = predictFingerprint(introductionRecipientId, recipientId, introduceeServiceId.toString(), introduceeE164, introduceeIdentityKey);
+          formatedSafetyNR = predictFingerprint(introductionRecipientId, recipientId, introduceeServiceId.toString(), introduceeIdentityKey);
         } catch (TI_MissingIdentityException e){
           e.printStackTrace();
           throw new AssertionError(TAG + " Unexpected missing identities when building TI message body!");
