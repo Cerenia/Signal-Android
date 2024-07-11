@@ -260,12 +260,16 @@
         android:id="@+id/accept"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:scaleX="1.2"
+        android:scaleY="1.2"
         android:button="@drawable/ic_ti_selector_accepted_24" />
 
     <RadioButton
         android:id="@+id/reject"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:scaleX="1.2"
+        android:scaleY="1.2"
         android:button="@drawable/ic_ti_selector_rejected_24" />
 </RadioGroup>
 

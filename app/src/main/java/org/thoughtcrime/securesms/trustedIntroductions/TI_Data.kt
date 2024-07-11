@@ -18,7 +18,7 @@ data class TI_Data (val id: Long?, val state: TI_Database.State, val introducerS
     builder.putOpt("introducerServiceId", introducerServiceId)
     builder.put("introduceeServiceId", introduceeServiceId)
     builder.put("introduceeName", introduceeName)
-    builder.put("introduceeNumber", introduceeNumber)
+    builder.putOpt("introduceeNumber", introduceeNumber)
     builder.put("introduceeIdentityKey", introduceeIdentityKey)
     builder.putOpt("predictedSecurityNumber", predictedSecurityNumber)
     builder.put("timestamp", timestamp)
