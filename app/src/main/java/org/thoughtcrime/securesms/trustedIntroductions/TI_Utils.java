@@ -188,22 +188,20 @@ public class TI_Utils {
    * @param introductionRecipientId first Recipient
    * @param introduceeId second Recipient (introducee) => Must be present in the local database!
    * @param introduceeServiceId, fetched if null and needed
-   * @param introduceeE164, phone nr., fetched if null and needed
    * @param introduceeIdentityKey fetched if null
    * @return The expected safety number as a String, formated into segments identical to the VerifyDisplayFragment TODO: fix whacky formatting (some whitespaces missing)
    */
-  public static String predictFingerprint(@NonNull RecipientId introductionRecipientId, @NonNull RecipientId introduceeId, @Nullable String introduceeServiceId, @Nullable String introduceeE164, @Nullable IdentityKey introduceeIdentityKey) throws TI_MissingIdentityException {
-    if(introduceeServiceId == null && introduceeE164 == null && introduceeIdentityKey == null){
+  public static String predictFingerprint(@NonNull RecipientId introductionRecipientId, @NonNull RecipientId introduceeId, @Nullable String introduceeServiceId, @Nullable IdentityKey introduceeIdentityKey) throws TI_MissingIdentityException {
+    if(introduceeServiceId == null && introduceeIdentityKey == null){
       // Fetch all the values
       LiveRecipient liveIntroducee = Recipient.live(introduceeId);
       Recipient introduceeResolved = liveIntroducee.resolve();
       introduceeServiceId = introduceeResolved.getServiceId().toString();
-      introduceeE164 = introduceeResolved.requireE164();
-    } else if(introduceeServiceId != null && introduceeE164 != null && introduceeIdentityKey != null){
+    } else if(introduceeServiceId != null && introduceeIdentityKey != null){
       //noop, normal case when recipient fetched through cursor
     } else {
       // TODO: Does that make sense??
-      assert false: "Unexpected non-null parameter in TI_Utils.predictFingerprint";
+      throw new AssertionError(TAG + "Unexpected non-null parameter in TI_Utils.predictFingerprint");
     }
     // Initialize version and introduction recipients id & key
     int version;
@@ -212,23 +210,14 @@ public class TI_Utils {
     LiveRecipient live = Recipient.live(introductionRecipientId);
     Recipient introductionRecipientResolved = live.resolve();
     NumericFingerprintGenerator generator = new NumericFingerprintGenerator(ITERATIONS);
-    // @see VerifyDisplayFragment for verification version differences
-    if (FeatureFlags.verifyV2()){
-      version = 2;
-      Log.i(TAG, "using " + introductionRecipientResolved.requireServiceId());
-      introductionRecipientFingerprintId = introductionRecipientResolved.requireServiceId().toByteArray();
-      introduceeFingerprintId = introduceeServiceId.getBytes();
-    } else {
-      version = 1;
-      Log.i(TAG, "using " + introductionRecipientResolved.requireE164());
-      introductionRecipientFingerprintId = introductionRecipientResolved.requireE164().getBytes();
-      introduceeFingerprintId = introduceeE164.getBytes();
-    }
+    Log.i(TAG, "using " + introductionRecipientResolved.requireServiceId());
+    introductionRecipientFingerprintId = introductionRecipientResolved.requireServiceId().toByteArray();
+    introduceeFingerprintId = introduceeServiceId.getBytes();
     IdentityKey introductionRecipientIdentityKey = getIdentityKey(introductionRecipientId);
     // @see VerifyDisplayFragment::initializeFingerprint(), iterations there also hardcoded to 5200 for FingerprintGenerator
     // @see ServiceId.java to understand how they convert the ACI to ByteArray
     // @see IdentityKey.java
-    Fingerprint fingerprint = generator.createFor(version,
+    Fingerprint fingerprint = generator.createFor(2,
                                                   introductionRecipientFingerprintId,
                                                   introductionRecipientIdentityKey,
                                                   introduceeFingerprintId,
