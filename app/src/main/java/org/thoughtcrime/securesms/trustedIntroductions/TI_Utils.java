@@ -203,8 +203,7 @@ public class TI_Utils {
       // TODO: Does that make sense??
       throw new AssertionError(TAG + "Unexpected non-null parameter in TI_Utils.predictFingerprint");
     }
-    // Initialize version and introduction recipients id & key
-    int version;
+    // Initialize introduction recipients id & key
     byte[]        introductionRecipientFingerprintId;
     byte[] introduceeFingerprintId;
     LiveRecipient live = Recipient.live(introductionRecipientId);
@@ -217,6 +216,7 @@ public class TI_Utils {
     // @see VerifyDisplayFragment::initializeFingerprint(), iterations there also hardcoded to 5200 for FingerprintGenerator
     // @see ServiceId.java to understand how they convert the ACI to ByteArray
     // @see IdentityKey.java
+    // Only version 2 is used since the migration to usernames
     Fingerprint fingerprint = generator.createFor(2,
                                                   introductionRecipientFingerprintId,
                                                   introductionRecipientIdentityKey,
