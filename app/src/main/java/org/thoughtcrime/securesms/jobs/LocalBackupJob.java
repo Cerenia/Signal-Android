@@ -104,6 +104,8 @@ public final class LocalBackupJob extends BaseJob {
       String timestamp       = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.US).format(new Date());
       String fileName        = String.format("signal-%s.backup", timestamp);
       File   backupFile      = new File(backupDirectory, fileName);
+      String tiFileName = String.format("ti-signal-%s.backup", timestamp);
+      File   tiBackupFile      = new File(backupDirectory, tiFileName);
 
       deleteOldTemporaryBackups(backupDirectory);
 
@@ -111,11 +113,16 @@ public final class LocalBackupJob extends BaseJob {
         throw new IOException("Backup file already exists?");
       }
 
+      if (tiBackupFile.exists()) {
+        throw new IOException("TI Backup file already exists?");
+      }
+
       if (backupPassword == null) {
         throw new IOException("Backup password is null");
       }
 
       File tempFile = File.createTempFile(TEMP_BACKUP_FILE_PREFIX, TEMP_BACKUP_FILE_SUFFIX, backupDirectory);
+      File tempFileTI = File.createTempFile(TEMP_BACKUP_FILE_PREFIX, TEMP_BACKUP_FILE_SUFFIX, backupDirectory);
 
       try {
         Stopwatch   stopwatch     = new Stopwatch("backup-export");
@@ -123,6 +130,7 @@ public final class LocalBackupJob extends BaseJob {
                                                               AttachmentSecretProvider.getInstance(context).getOrCreateAttachmentSecret(),
                                                               SignalDatabase.getBackupDatabase(),
                                                               tempFile,
+                                                              tempFileTI,
                                                               backupPassword,
                                                               this::isCanceled);
         stopwatch.split("backup-create");
@@ -131,23 +139,30 @@ public final class LocalBackupJob extends BaseJob {
         stopwatch.split("backup-verify");
         stopwatch.stop(TAG);
 
+        boolean tiValid = BackupVerifier.verifyFile(new FileInputStream(tempFileTI), backupPassword, finishedEvent.getCount(), this::isCanceled);
+        //boolean tiValid = true;
+
         EventBus.getDefault().post(finishedEvent);
 
-        if (valid) {
+        if (valid && tiValid) {
           if (!tempFile.renameTo(backupFile)) {
             Log.w(TAG, "Failed to rename temp file");
+            throw new IOException("Renaming temporary backup file failed!");
+          }
+          if(!tempFileTI.renameTo(tiBackupFile)){
+            Log.w(TAG, "Failed to rename temp TI file");
             throw new IOException("Renaming temporary backup file failed!");
           }
         } else {
           BackupFileIOError.VERIFICATION_FAILED.postNotification(context);
         }
       } catch (FullBackupExporter.BackupCanceledException e) {
-        EventBus.getDefault().post(new BackupEvent(BackupEvent.Type.FINISHED, 0, 0));
+        EventBus.getDefault().post(new BackupEvent(BackupEvent.Type.FINISHED, 0, 0,0,0));
         Log.w(TAG, "Backup cancelled");
         throw e;
       } catch (IOException e) {
         Log.w(TAG, "Error during backup!", e);
-        EventBus.getDefault().post(new BackupEvent(BackupEvent.Type.FINISHED, 0, 0));
+        EventBus.getDefault().post(new BackupEvent(BackupEvent.Type.FINISHED, 0, 0,0,0));
         BackupFileIOError.postNotificationForException(context, e);
         throw e;
       } finally {
@@ -156,6 +171,13 @@ public final class LocalBackupJob extends BaseJob {
             Log.w(TAG, "Backup failed. Deleted temp file");
           } else {
             Log.w(TAG, "Backup failed. Failed to delete temp file " + tempFile);
+          }
+        }
+        if(tempFileTI.exists()){
+          if (tempFileTI.delete()) {
+            Log.w(TAG, "Backup failed. Deleted temp TI file");
+          } else {
+            Log.w(TAG, "Backup failed. Failed to delete temp TI file " + tempFileTI);
           }
         }
       }

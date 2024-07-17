@@ -112,7 +112,7 @@ public class FullBackupImporter extends FullBackupBase {
       BackupFrame frame;
 
       while ((frame = inputStream.readFrame()).end != Boolean.TRUE) {
-        if (count % 100 == 0) EventBus.getDefault().post(new BackupEvent(BackupEvent.Type.PROGRESS, count, 0));
+        if (count % 100 == 0) EventBus.getDefault().post(new BackupEvent(BackupEvent.Type.PROGRESS, count,0,0, 0));
         count++;
 
         if      (frame.version != null)    processVersion(db, frame.version);
@@ -144,7 +144,7 @@ public class FullBackupImporter extends FullBackupBase {
       db.setForeignKeyConstraintsEnabled(true);
     }
 
-    EventBus.getDefault().post(new BackupEvent(BackupEvent.Type.FINISHED, count, 0));
+    EventBus.getDefault().post(new BackupEvent(BackupEvent.Type.FINISHED, count, 0,0,0));
   }
 
   private static @NonNull InputStream getInputStream(@NonNull Context context, @NonNull Uri uri) throws IOException{
