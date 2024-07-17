@@ -43,6 +43,7 @@ final class OldDeviceClientTask implements ClientTask {
                                   AttachmentSecretProvider.getInstance(context).getOrCreateAttachmentSecret(),
                                   SignalDatabase.getBackupDatabase(),
                                   outputStream,
+                                  outputStream, // todo: probably a bad idea
                                   "deadbeef");
     } catch (Exception e) {
       DeviceTransferBlockingInterceptor.getInstance().unblockNetwork();

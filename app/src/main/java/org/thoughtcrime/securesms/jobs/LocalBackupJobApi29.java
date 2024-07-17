@@ -103,6 +103,8 @@ public final class LocalBackupJobApi29 extends BaseJob {
       DocumentFile backupDirectory = DocumentFile.fromTreeUri(context, backupDirectoryUri);
       String       timestamp       = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.US).format(new Date());
       String       fileName        = String.format("signal-%s.backup", timestamp);
+      String       fileNameTI        = String.format("ti-signal-%s.backup", timestamp);
+
 
       if (backupDirectory == null || !backupDirectory.canWrite()) {
         BackupFileIOError.ACCESS_ERROR.postNotification(context);
@@ -117,9 +119,14 @@ public final class LocalBackupJobApi29 extends BaseJob {
 
       String       temporaryName = String.format(Locale.US, "%s%s%s", TEMP_BACKUP_FILE_PREFIX, UUID.randomUUID(), TEMP_BACKUP_FILE_SUFFIX);
       DocumentFile temporaryFile = backupDirectory.createFile("application/octet-stream", temporaryName);
+      DocumentFile temporaryTIFile = backupDirectory.createFile("application/octet-stream", "TIData"+temporaryName);
 
       if (temporaryFile == null) {
         throw new IOException("Failed to create temporary backup file.");
+      }
+
+      if (temporaryTIFile == null) {
+        throw new IOException("Failed to create temporary TI backup file.");
       }
 
       if (backupPassword == null) {
@@ -132,28 +139,32 @@ public final class LocalBackupJobApi29 extends BaseJob {
                                                               AttachmentSecretProvider.getInstance(context).getOrCreateAttachmentSecret(),
                                                               SignalDatabase.getBackupDatabase(),
                                                               temporaryFile,
+                                                              temporaryTIFile,
                                                               backupPassword,
                                                               this::isCanceled);
         stopwatch.split("backup-create");
 
         boolean valid = verifyBackup(backupPassword, temporaryFile, finishedEvent);
+        boolean validTI = verifyBackupTI(backupPassword, temporaryTIFile, finishedEvent);
+//        boolean validTI = true;
 
         stopwatch.split("backup-verify");
         stopwatch.stop(TAG);
 
-        if (valid) {
+        if (valid && validTI) {
           renameBackup(fileName, temporaryFile);
+          renameBackup(fileNameTI, temporaryTIFile);
         } else {
           BackupFileIOError.VERIFICATION_FAILED.postNotification(context);
         }
         EventBus.getDefault().post(finishedEvent);
       } catch (FullBackupExporter.BackupCanceledException e) {
-        EventBus.getDefault().post(new BackupEvent(BackupEvent.Type.FINISHED, 0, 0));
+        EventBus.getDefault().post(new BackupEvent(BackupEvent.Type.FINISHED, 0, 0,0,0));
         Log.w(TAG, "Backup cancelled");
         throw e;
       } catch (IOException e) {
         Log.w(TAG, "Error during backup!", e);
-        EventBus.getDefault().post(new BackupEvent(BackupEvent.Type.FINISHED, 0, 0));
+        EventBus.getDefault().post(new BackupEvent(BackupEvent.Type.FINISHED, 0, 0,0,0));
         BackupFileIOError.postNotificationForException(context, e);
         throw e;
       } finally {
@@ -212,6 +223,33 @@ public final class LocalBackupJobApi29 extends BaseJob {
     }
 
     return result.isSuccess() && ((OperationResult.Success) result).getValue();
+  }
+
+  private boolean verifyBackupTI(String backupPassword, DocumentFile tempFile, BackupEvent finishedEvent) throws FullBackupExporter.BackupCanceledException {
+    Boolean valid    = null;
+    int     attempts = 0;
+
+    while (attempts < MAX_STORAGE_ATTEMPTS && valid == null && !isCanceled()) {
+      ThreadUtil.sleep(WAIT_FOR_SCOPED_STORAGE[attempts]);
+
+      try (InputStream cipherStream = context.getContentResolver().openInputStream(tempFile.getUri())) {
+        try {
+          valid = BackupVerifier.verifyFile(cipherStream, backupPassword, finishedEvent.getTICount(), this::isCanceled);
+        } catch (IOException e) {
+          Log.w(TAG, "Unable to verify backup", e);
+          valid = false;
+        }
+      } catch (SecurityException | IOException e) {
+        attempts++;
+        Log.w(TAG, "Unable to find backup file, attempt: " + attempts + "/" + MAX_STORAGE_ATTEMPTS, e);
+      }
+    }
+
+    if (isCanceled()) {
+      throw new FullBackupExporter.BackupCanceledException();
+    }
+
+    return valid != null ? valid : false;
   }
 
   @SuppressLint("NewApi")
