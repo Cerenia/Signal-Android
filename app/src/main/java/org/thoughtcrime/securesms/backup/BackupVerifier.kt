@@ -38,7 +38,7 @@ object BackupVerifier {
           return false
         }
 
-        EventBus.getDefault().post(BackupEvent(BackupEvent.Type.PROGRESS_VERIFYING, ++count, expectedCount))
+        EventBus.getDefault().post(BackupEvent(BackupEvent.Type.PROGRESS_VERIFYING, ++count, 0, expectedCount, 0))
 
         frame = inputStream.readFrame()
       }

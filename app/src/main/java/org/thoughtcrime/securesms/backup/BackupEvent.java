@@ -9,12 +9,17 @@ public class BackupEvent {
 
   private final Type type;
   private final long count;
+  private final long tiCount;
   private final long estimatedTotalCount;
+  private final long estimatedTotalCountTI;
 
-  public BackupEvent(Type type, long count, long estimatedTotalCount) {
-    this.type                = type;
-    this.count               = count;
-    this.estimatedTotalCount = estimatedTotalCount;
+
+  public BackupEvent(Type type, long count, long tiCount, long estimatedTotalCount, long estimatedTotalCountTI) {
+    this.type                  = type;
+    this.count                 = count;
+    this.tiCount               = tiCount;
+    this.estimatedTotalCount   = estimatedTotalCount;
+    this.estimatedTotalCountTI = estimatedTotalCountTI;
   }
 
   public Type getType() {
@@ -25,8 +30,16 @@ public class BackupEvent {
     return count;
   }
 
+  public long getTICount() {
+    return tiCount;
+  }
+
   public long getEstimatedTotalCount() {
     return estimatedTotalCount;
+  }
+
+  public long getEstimatedTotalCountTI() {
+    return estimatedTotalCountTI;
   }
 
   public double getCompletionPercentage() {

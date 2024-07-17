@@ -37,6 +37,17 @@ object SqlUtil {
     return tables
   }
 
+  @JvmStatic
+  fun getAllTablesTI(db: SupportSQLiteDatabase): List<String> {
+    val tables: MutableList<String> = LinkedList()
+    db.query("SELECT name FROM sqlite_master WHERE type=? and (name LIKE 'TI_%' or name LIKE 'trusted_%')", arrayOf("table")).use { cursor ->
+      while (cursor.moveToNext()) {
+        tables.add(cursor.getString(0))
+      }
+    }
+    return tables
+  }
+
   /**
    * Returns the total number of changes that have been made since the creation of this database connection.
    *
