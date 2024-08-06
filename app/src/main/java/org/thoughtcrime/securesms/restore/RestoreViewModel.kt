@@ -68,6 +68,8 @@ class RestoreViewModel : ViewModel() {
 
   fun getBackupFileUri(): Uri? = store.value.backupFile
 
+  fun getTIBackupFileUri(): Uri? = store.value.backupFileTI
+
   fun getNextIntent(): Intent? = store.value.nextIntent
 
   fun hasMultipleRestoreMethods(): Boolean {

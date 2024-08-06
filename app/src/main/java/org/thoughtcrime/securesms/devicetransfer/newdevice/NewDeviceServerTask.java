@@ -49,6 +49,7 @@ final class NewDeviceServerTask implements ServerTask {
                                     AttachmentSecretProvider.getInstance(context).getOrCreateAttachmentSecret(),
                                     database,
                                     inputStream,
+                                    null,
                                     passphrase);
 
       SignalDatabase.runPostBackupRestoreTasks(database);

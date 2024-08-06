@@ -38,7 +38,7 @@ object RestoreRepository {
     }
   }
 
-  suspend fun restoreBackupAsynchronously(context: Context, backupFileUri: Uri, passphrase: String): BackupImportResult = withContext(Dispatchers.IO) {
+  suspend fun restoreBackupAsynchronously(context: Context, backupFileUri: Uri, tiBackupFileUri: Uri?, passphrase: String): BackupImportResult = withContext(Dispatchers.IO) {
     // TODO [regv2]: migrate this to a service
     try {
       Log.i(TAG, "Initiating backup restore.")
@@ -60,6 +60,7 @@ object RestoreRepository {
         AttachmentSecretProvider.getInstance(context).getOrCreateAttachmentSecret(),
         database,
         backupFileUri,
+        tiBackupFileUri,
         passphrase
       )
 

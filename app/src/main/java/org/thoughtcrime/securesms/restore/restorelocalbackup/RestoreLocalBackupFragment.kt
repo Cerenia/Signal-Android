@@ -47,7 +47,8 @@ class RestoreLocalBackupFragment : LoggingFragment(R.layout.fragment_restore_loc
   private val restoreLocalBackupViewModel: RestoreLocalBackupViewModel by viewModels(
     factoryProducer = ViewModelFactory.factoryProducer {
       val fileBackupUri = sharedViewModel.getBackupFileUri()!!
-      RestoreLocalBackupViewModel(fileBackupUri)
+      val tiFileBackupUri = sharedViewModel.getTIBackupFileUri()!!
+      RestoreLocalBackupViewModel(fileBackupUri, tiFileBackupUri)
     }
   )
   private val binding: FragmentRestoreLocalBackupBinding by ViewBinderDelegate(FragmentRestoreLocalBackupBinding::bind)
