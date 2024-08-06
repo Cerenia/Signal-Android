@@ -12,4 +12,4 @@ import org.thoughtcrime.securesms.devicetransfer.newdevice.BackupRestorationType
 /**
  * Shared state holder for the restore flow.
  */
-data class RestoreState(val restorationType: BackupRestorationType = BackupRestorationType.LOCAL_BACKUP, val backupFile: Uri? = null, val nextIntent: Intent? = null)
+data class RestoreState(val restorationType: BackupRestorationType = BackupRestorationType.LOCAL_BACKUP, val backupFile: Uri? = null, val backupFileTI: Uri? = null, val nextIntent: Intent? = null)
