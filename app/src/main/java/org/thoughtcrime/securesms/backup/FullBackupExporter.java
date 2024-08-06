@@ -215,6 +215,7 @@ public class FullBackupExporter extends FullBackupBase {
         }
         stopwatch.split("table::" + table);
       }
+
       // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
       tiCount += ti_tables.size() * TABLE_RECORD_COUNT_MULTIPLIER;
       final long estimatedTICount = calculateCount(context, input, ti_tables);
