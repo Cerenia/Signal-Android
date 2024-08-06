@@ -28,7 +28,10 @@ public class ChooseBackupFragment extends LoggingFragment {
 
   private static final String TAG = Log.tag(ChooseBackupFragment.class);
 
-  private static final short OPEN_FILE_REQUEST_CODE = 3862;
+  private static final short OPEN_FILE_REQUEST_CODE  = 3862;
+  private static final short OPEN_TI_FILE_REQUEST_CODE = 3863; // New request code for TI backup
+  private ChooseBackupFragmentDirections.ActionRestore restore = ChooseBackupFragmentDirections.actionRestore();
+
 
   @Override
   public @Nullable View onCreateView(@NonNull LayoutInflater inflater,
@@ -43,6 +46,9 @@ public class ChooseBackupFragment extends LoggingFragment {
     View chooseBackupButton = view.findViewById(R.id.choose_backup_fragment_button);
     chooseBackupButton.setOnClickListener(this::onChooseBackupSelected);
 
+    View chooseTIBackupButton = view.findViewById(R.id.choose_ti_backup_fragment_button);
+    chooseTIBackupButton.setOnClickListener(this::onChooseTIBackupSelected);
+
     TextView learnMore = view.findViewById(R.id.choose_backup_fragment_learn_more);
     learnMore.setText(HtmlCompat.fromHtml(String.format("<a href=\"%s\">%s</a>", getString(R.string.backup_support_url), getString(R.string.ChooseBackupFragment__learn_more)), 0));
     learnMore.setMovementMethod(LinkMovementMethod.getInstance());
@@ -50,12 +56,21 @@ public class ChooseBackupFragment extends LoggingFragment {
 
   @Override
   public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-    if (requestCode == OPEN_FILE_REQUEST_CODE && resultCode == Activity.RESULT_OK && data != null) {
-      ChooseBackupFragmentDirections.ActionRestore restore = ChooseBackupFragmentDirections.actionRestore();
-
-      restore.setUri(data.getData());
-
-      SafeNavigation.safeNavigate(Navigation.findNavController(requireView()), restore);
+//    if (requestCode == OPEN_FILE_REQUEST_CODE && resultCode == Activity.RESULT_OK && data != null) {
+//      ChooseBackupFragmentDirections.ActionRestore restore = ChooseBackupFragmentDirections.actionRestore();
+//
+//      restore.setUri(data.getData());
+//
+//      SafeNavigation.safeNavigate(Navigation.findNavController(requireView()), restore);
+//    }
+    if (resultCode == Activity.RESULT_OK && data != null) {
+      if (requestCode == OPEN_FILE_REQUEST_CODE) {
+        restore.setUri(data.getData());
+        SafeNavigation.safeNavigate(Navigation.findNavController(requireView()), restore);
+      } else if (requestCode == OPEN_TI_FILE_REQUEST_CODE) {
+//        restore.setTiUri(data.getData()); // Assuming there's a method to set TI Uri
+        restore.setTiUri(data.getData());
+      }
     }
   }
 
@@ -72,6 +87,25 @@ public class ChooseBackupFragment extends LoggingFragment {
 
     try {
       startActivityForResult(intent, OPEN_FILE_REQUEST_CODE);
+    } catch (ActivityNotFoundException e) {
+      Toast.makeText(requireContext(), R.string.ChooseBackupFragment__no_file_browser_available, Toast.LENGTH_LONG).show();
+      Log.w(TAG, "No matching activity!", e);
+    }
+  }
+
+  private void onChooseTIBackupSelected(@NonNull View view) {
+    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+
+    intent.setType("application/octet-stream");
+    intent.addCategory(Intent.CATEGORY_OPENABLE);
+    intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
+
+    if (Build.VERSION.SDK_INT >= 26) {
+      intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, SignalStore.settings().getLatestSignalBackupDirectory());
+    }
+
+    try {
+      startActivityForResult(intent, OPEN_TI_FILE_REQUEST_CODE);
     } catch (ActivityNotFoundException e) {
       Toast.makeText(requireContext(), R.string.ChooseBackupFragment__no_file_browser_available, Toast.LENGTH_LONG).show();
       Log.w(TAG, "No matching activity!", e);

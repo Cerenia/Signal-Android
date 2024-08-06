@@ -72,10 +72,13 @@ public final class RestoreBackupFragment extends LoggingFragment {
 
   private TextView                       restoreBackupSize;
   private TextView                       restoreBackupTime;
+  private TextView                       restoreBackupSizeTI;
+  private TextView                       restoreBackupTimeTI;
   private TextView                       restoreBackupProgress;
   private CircularProgressMaterialButton restoreButton;
   private View                           skipRestoreButton;
   private RegistrationViewModel          viewModel;
+  private BackupUtil.BackupInfo           tiBackupInfo;
 
   @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -93,6 +96,9 @@ public final class RestoreBackupFragment extends LoggingFragment {
 
     restoreBackupSize     = view.findViewById(R.id.backup_size_text);
     restoreBackupTime     = view.findViewById(R.id.backup_created_text);
+    restoreBackupSizeTI     = view.findViewById(R.id.ti_backup_size_text);
+    restoreBackupTimeTI     = view.findViewById(R.id.ti_backup_created_text);
+
     restoreBackupProgress = view.findViewById(R.id.backup_progress_text);
     restoreButton         = view.findViewById(R.id.restore_button);
     skipRestoreButton     = view.findViewById(R.id.skip_restore_button);
@@ -127,8 +133,7 @@ public final class RestoreBackupFragment extends LoggingFragment {
     RestoreBackupFragmentArgs args = RestoreBackupFragmentArgs.fromBundle(requireArguments());
     if ((Build.VERSION.SDK_INT < 29 || BackupUtil.isUserSelectionRequired(requireContext())) && args.getUri() != null) {
       Log.i(TAG, "Restoring backup from passed uri");
-      initializeBackupForUri(view, args.getUri());
-
+      initializeBackupForUri(view, args.getUri(), args.getTiUri());
       return;
     }
 
@@ -159,8 +164,11 @@ public final class RestoreBackupFragment extends LoggingFragment {
     }
   }
 
-  private void initializeBackupForUri(@NonNull View view, @NonNull Uri uri) {
+  private void initializeBackupForUri(@NonNull View view, @NonNull Uri uri, @Nullable Uri tiUri) {
     getFromUri(requireContext(), uri, backup -> handleBackupInfo(view, backup));
+    if (tiUri != null) {
+      getFromUriTI(requireContext(), tiUri, tiBackup -> handleTIBackupInfo(view, tiBackup));
+    }
   }
 
   @SuppressLint("StaticFieldLeak")
@@ -183,7 +191,26 @@ public final class RestoreBackupFragment extends LoggingFragment {
       restoreBackupSize.setText(getString(R.string.RegistrationActivity_backup_size_s, Util.getPrettyFileSize(backup.getSize())));
       restoreBackupTime.setText(getString(R.string.RegistrationActivity_backup_timestamp_s, DateUtils.getExtendedRelativeTimeSpanString(requireContext(), Locale.getDefault(), backup.getTimestamp())));
 
-      restoreButton.setOnClickListener((v) -> handleRestore(v.getContext(), backup));
+      restoreButton.setOnClickListener((v) -> handleRestore(v.getContext(), backup, tiBackupInfo));
+    }
+  }
+
+  private void handleTIBackupInfo(@NonNull View view, @Nullable BackupUtil.BackupInfo tiBackup) {
+    Context context = getContext();
+    if (context == null) {
+      Log.i(TAG, "No context on fragment, must have navigated away.");
+      return;
+    }
+
+    if (tiBackup == null) {
+      Log.i(TAG, "Skipping TI backup detection. No backup found, or permission revoked since.");
+      restoreBackupSizeTI.setText(getString(R.string.RegistrationActivity_ti_backup_missing));
+      restoreBackupTime.setText("");
+
+    } else {
+      tiBackupInfo = tiBackup;
+      restoreBackupSizeTI.setText(getString(R.string.RegistrationActivity_ti_backup_size_s, Util.getPrettyFileSize(tiBackup.getSize())));
+      restoreBackupTimeTI.setText(getString(R.string.RegistrationActivity_ti_backup_timestamp_s, DateUtils.getExtendedRelativeTimeSpanString(requireContext(), Locale.getDefault(), tiBackup.getTimestamp())));
     }
   }
 
@@ -227,9 +254,39 @@ public final class RestoreBackupFragment extends LoggingFragment {
                      }
                    },
                    listener::run);
+//    if(tiBackupUri != null) {
+//      SimpleTask.run(() -> {
+//                       try {
+//                         return BackupUtil.getBackupInfoFromSingleUri(context, tiBackupUri);
+//                       } catch (BackupUtil.BackupFileException e) {
+//                         Log.w(TAG, "Could not restore TI backup.", e);
+//                         postToastForBackupRestorationFailure(context, e);
+//                         return null;
+//                       }
+//                     },
+//                     tiListener::run);
+//    }
   }
 
-  private static void postToastForBackupRestorationFailure(@NonNull Context context, @NonNull BackupUtil.BackupFileException exception) {
+  static void getFromUriTI(@NonNull Context context,
+                         @Nullable Uri tiBackupUri,
+                         @Nullable OnBackupSearchResultListener tiListener)
+  {
+      if(tiBackupUri != null) {
+      SimpleTask.run(() -> {
+                       try {
+                         return BackupUtil.getBackupInfoFromSingleUri(context, tiBackupUri);
+                       } catch (BackupUtil.BackupFileException e) {
+                         Log.w(TAG, "Could not restore TI backup.", e);
+                         postToastForBackupRestorationFailure(context, e);
+                         return null;
+                       }
+                     },
+                     tiListener::run);
+    }
+  }
+
+    private static void postToastForBackupRestorationFailure(@NonNull Context context, @NonNull BackupUtil.BackupFileException exception) {
     final @StringRes int errorResId;
     switch (exception.getState()) {
       case READABLE:
@@ -247,7 +304,7 @@ public final class RestoreBackupFragment extends LoggingFragment {
     ThreadUtil.postToMain(() -> Toast.makeText(context, errorResId, Toast.LENGTH_LONG).show());
   }
 
-  private void handleRestore(@NonNull Context context, @NonNull BackupUtil.BackupInfo backup) {
+  private void handleRestore(@NonNull Context context, @NonNull BackupUtil.BackupInfo backup, @Nullable BackupUtil.BackupInfo tiBackup) {
     View     view   = LayoutInflater.from(context).inflate(R.layout.enter_backup_passphrase_dialog, null);
     EditText prompt = view.findViewById(R.id.restore_passphrase_input);
 
@@ -265,7 +322,10 @@ public final class RestoreBackupFragment extends LoggingFragment {
 
                      String passphrase = prompt.getText().toString();
 
-                     restoreAsynchronously(context, backup, passphrase);
+                     restoreAsynchronously(context, backup, passphrase, tiBackup);
+//                     if(tiBackup != null) {
+//                       restoreAsynchronously(context, tiBackup, passphrase);
+//                     }
                    })
                    .setNegativeButton(android.R.string.cancel, null)
                    .show();
@@ -276,7 +336,8 @@ public final class RestoreBackupFragment extends LoggingFragment {
   @SuppressLint("StaticFieldLeak")
   private void restoreAsynchronously(@NonNull Context context,
                                      @NonNull BackupUtil.BackupInfo backup,
-                                     @NonNull String passphrase)
+                                     @NonNull String passphrase,
+                                     @Nullable BackupUtil.BackupInfo tiBackup)
   {
     new AsyncTask<Void, Void, BackupImportResult>() {
       @Override
@@ -297,7 +358,17 @@ public final class RestoreBackupFragment extends LoggingFragment {
                                         AttachmentSecretProvider.getInstance(context).getOrCreateAttachmentSecret(),
                                         database,
                                         backup.getUri(),
+                                        tiBackup != null ? tiBackup.getUri() : null,
                                         passphrase);
+
+//          if (tiBackup != null){
+//            FullBackupImporter.importFile(context,
+//                                          AttachmentSecretProvider.getInstance(context).getOrCreateAttachmentSecret(),
+//                                          database,
+//                                          backup.getUri(),
+//                                          tiBackup.getUri(),
+//                                          passphrase);
+//          }
 
           SignalDatabase.runPostBackupRestoreTasks(database);
           NotificationChannels.getInstance().restoreContactNotificationChannels();

@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.util.Pair;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import net.zetetic.database.sqlcipher.SQLiteDatabase;
@@ -85,16 +86,25 @@ public class FullBackupImporter extends FullBackupBase {
   }
 
   public static void importFile(@NonNull Context context, @NonNull AttachmentSecret attachmentSecret,
-                                @NonNull SQLiteDatabase db, @NonNull Uri uri, @NonNull String passphrase)
+                                @NonNull SQLiteDatabase db, @NonNull Uri uri, @Nullable Uri tiUri, @NonNull String passphrase)
       throws IOException
   {
     try (InputStream is = getInputStream(context, uri)) {
-      importFile(context, attachmentSecret, db, is, passphrase);
+      if (tiUri != null){
+        try (InputStream tiInputStream = getInputStream(context, tiUri)) {
+          importFile(context, attachmentSecret, db, is, tiInputStream, passphrase);
+        }
+      } else {
+        importFile(context, attachmentSecret, db, is, null, passphrase);
+      }
+//      try {
+//
+//      }
     }
   }
 
   public static void importFile(@NonNull Context context, @NonNull AttachmentSecret attachmentSecret,
-                                @NonNull SQLiteDatabase db, @NonNull InputStream is, @NonNull String passphrase)
+                                @NonNull SQLiteDatabase db, @NonNull InputStream is, @Nullable InputStream tiIs, @NonNull String passphrase)
       throws IOException
   {
     int count = 0;
@@ -106,32 +116,43 @@ public class FullBackupImporter extends FullBackupBase {
     keyValueDatabase.beginTransaction();
     try {
       BackupRecordInputStream inputStream = new BackupRecordInputStream(is, passphrase);
-
+      BackupRecordInputStream tiInputStream = tiIs != null ?   new BackupRecordInputStream(tiIs, passphrase) : null;
       dropAllTables(db);
 
       BackupFrame frame;
 
       while ((frame = inputStream.readFrame()).end != Boolean.TRUE) {
-        if (count % 100 == 0) EventBus.getDefault().post(new BackupEvent(BackupEvent.Type.PROGRESS, count,0,0, 0));
+        if (count % 100 == 0) EventBus.getDefault().post(new BackupEvent(BackupEvent.Type.PROGRESS, count, 0, 0, 0));
         count++;
 
-        if      (frame.version != null)    processVersion(db, frame.version);
-        else if (frame.statement != null)  processStatement(db, frame.statement);
+        if (frame.version != null) processVersion(db, frame.version);
+        else if (frame.statement != null) processStatement(db, frame.statement);
         else if (frame.preference != null) processPreference(context, frame.preference);
         else if (frame.attachment != null) processAttachment(context, attachmentSecret, db, frame.attachment, inputStream);
-        else if (frame.sticker != null)    processSticker(context, attachmentSecret, db, frame.sticker, inputStream);
-        else if (frame.avatar != null)     processAvatar(context, db, frame.avatar, inputStream);
-        else if (frame.keyValue != null)   processKeyValue(frame.keyValue);
-        else                            count--;
+        else if (frame.sticker != null) processSticker(context, attachmentSecret, db, frame.sticker, inputStream);
+        else if (frame.avatar != null) processAvatar(context, db, frame.avatar, inputStream);
+        else if (frame.keyValue != null) processKeyValue(frame.keyValue);
+        else count--;
+      }
+
+      if(tiInputStream != null) {
+        while ((frame = tiInputStream.readFrame()).end != Boolean.TRUE) {
+          if (frame.statement != null) processStatement(db, frame.statement);
+          else if (frame.preference != null) processPreference(context, frame.preference);
+          else if (frame.attachment != null) processAttachment(context, attachmentSecret, db, frame.attachment, inputStream);
+          else if (frame.sticker != null) processSticker(context, attachmentSecret, db, frame.sticker, inputStream);
+          else if (frame.avatar != null) processAvatar(context, db, frame.avatar, inputStream);
+          else if (frame.keyValue != null) processKeyValue(frame.keyValue);
+        }
       }
 
       db.setTransactionSuccessful();
       keyValueDatabase.setTransactionSuccessful();
     } finally {
       List<SqlUtil.ForeignKeyViolation> violations = SqlUtil.getForeignKeyViolations(db)
-          .stream()
-          .filter(it -> !it.getTable().startsWith("msl_"))
-          .collect(Collectors.toList());
+                                                            .stream()
+                                                            .filter(it -> !it.getTable().startsWith("msl_"))
+                                                            .collect(Collectors.toList());
 
       if (violations.size() > 0) {
         Log.w(TAG, "Foreign key constraints failed!\n" + Util.join(violations, "\n"));
@@ -144,10 +165,10 @@ public class FullBackupImporter extends FullBackupBase {
       db.setForeignKeyConstraintsEnabled(true);
     }
 
-    EventBus.getDefault().post(new BackupEvent(BackupEvent.Type.FINISHED, count, 0,0,0));
+    EventBus.getDefault().post(new BackupEvent(BackupEvent.Type.FINISHED, count, 0, 0, 0));
   }
 
-  private static @NonNull InputStream getInputStream(@NonNull Context context, @NonNull Uri uri) throws IOException{
+  private static @NonNull InputStream getInputStream(@NonNull Context context, @NonNull Uri uri) throws IOException {
     if (BackupUtil.isUserSelectionRequired(context) || uri.getScheme().equals("content")) {
       return Objects.requireNonNull(context.getContentResolver().openInputStream(uri));
     } else {
@@ -181,15 +202,15 @@ public class FullBackupImporter extends FullBackupBase {
     List<Object> parameters = new LinkedList<>();
 
     for (SqlStatement.SqlParameter parameter : statement.parameters) {
-      if      (parameter.stringParamter != null)   parameters.add(parameter.stringParamter);
-      else if (parameter.doubleParameter != null)  parameters.add(parameter.doubleParameter);
+      if (parameter.stringParamter != null) parameters.add(parameter.stringParamter);
+      else if (parameter.doubleParameter != null) parameters.add(parameter.doubleParameter);
       else if (parameter.integerParameter != null) parameters.add(parameter.integerParameter);
-      else if (parameter.blobParameter != null)    parameters.add(parameter.blobParameter.toByteArray());
-      else if (parameter.nullparameter != null)    parameters.add(null);
+      else if (parameter.blobParameter != null) parameters.add(parameter.blobParameter.toByteArray());
+      else if (parameter.nullparameter != null) parameters.add(null);
     }
 
     if (parameters.size() > 0) db.execSQL(statement.statement, parameters.toArray());
-    else                       db.execSQL(statement.statement);
+    else db.execSQL(statement.statement);
   }
 
   private static void processAttachment(@NonNull Context context, @NonNull AttachmentSecret attachmentSecret, @NonNull SQLiteDatabase db, @NonNull Attachment attachment, BackupRecordInputStream inputStream)
@@ -241,7 +262,7 @@ public class FullBackupImporter extends FullBackupBase {
 
     db.update(StickerTable.TABLE_NAME, contentValues,
               StickerTable._ID + " = ?",
-              new String[] {String.valueOf(sticker.rowId)});
+              new String[] { String.valueOf(sticker.rowId) });
   }
 
   private static void processAvatar(@NonNull Context context, @NonNull SQLiteDatabase db, @NonNull Avatar avatar, @NonNull BackupRecordInputStream inputStream) throws IOException {
