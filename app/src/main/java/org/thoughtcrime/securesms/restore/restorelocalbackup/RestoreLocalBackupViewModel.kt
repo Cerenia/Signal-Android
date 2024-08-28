@@ -20,8 +20,8 @@ import org.thoughtcrime.securesms.restore.RestoreRepository
 /**
  * ViewModel for [RestoreLocalBackupFragment]
  */
-class RestoreLocalBackupViewModel(fileBackupUri: Uri) : ViewModel() {
-  private val store = MutableStateFlow(RestoreLocalBackupState(fileBackupUri))
+class RestoreLocalBackupViewModel(fileBackupUri: Uri, fileBackupUriTI: Uri) : ViewModel() {
+  private val store = MutableStateFlow(RestoreLocalBackupState(fileBackupUri, tiBackupUri = fileBackupUriTI))
   val uiState = store.asLiveData()
 
   fun prepareRestore(context: Context) {
@@ -57,6 +57,7 @@ class RestoreLocalBackupViewModel(fileBackupUri: Uri) : ViewModel() {
     }
 
     val backupFileUri = store.value.backupInfo?.uri
+    val tiBackupFileUri = store.value.tiBackupUri
     val backupPassphrase = store.value.backupPassphrase
     if (backupFileUri == null) {
       Log.w(TAG, "Could not begin backup import because backup file URI was null!")
@@ -71,7 +72,7 @@ class RestoreLocalBackupViewModel(fileBackupUri: Uri) : ViewModel() {
     }
 
     viewModelScope.launch {
-      val importResult = RestoreRepository.restoreBackupAsynchronously(context, backupFileUri, backupPassphrase)
+      val importResult = RestoreRepository.restoreBackupAsynchronously(context, backupFileUri, tiBackupFileUri, backupPassphrase)
 
       store.update {
         it.copy(

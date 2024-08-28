@@ -63,6 +63,19 @@
         app:tint="@color/signal_colorPrimary" />
 
     <org.thoughtcrime.securesms.util.views.CircularProgressMaterialButton
+        android:id="@+id/choose_ti_backup_fragment_button"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginBottom="64dp"
+        app:circularProgressMaterialButton__label="@string/ChooseBackupFragment__choose_ti_backup"
+        app:layout_constraintBottom_toBottomOf="@id/choose_backup_fragment_button"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:materialThemeOverlay="@style/ThemeOverlay.Signal.CircularProgressIndicator.Primary" />
+
+    <org.thoughtcrime.securesms.util.views.CircularProgressMaterialButton
         android:id="@+id/choose_backup_fragment_button"
         android:layout_width="0dp"
         android:layout_height="wrap_content"

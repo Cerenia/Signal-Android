@@ -3978,6 +3978,9 @@
     <string name="RegistrationActivity_restore_your_messages_and_media_from_a_local_backup">Restore your messages and media from a local backup. If you don\'t restore now, you won\'t be able to restore later.</string>
     <string name="RegistrationActivity_backup_size_s">Backup size: %s</string>
     <string name="RegistrationActivity_backup_timestamp_s">Backup timestamp: %s</string>
+    <string name="RegistrationActivity_ti_backup_size_s">Trusted introductions backup size: %s</string>
+    <string name="RegistrationActivity_ti_backup_timestamp_s">Trusted introductions backup timestamp: %s</string>
+    <string name="RegistrationActivity_ti_backup_missing">Trusted introductions database missing. Skipping.</string>
     <string name="BackupDialog_enable_local_backups">Enable local backups?</string>
     <string name="BackupDialog_enable_backups">Enable backups</string>
     <string name="BackupDialog_please_acknowledge_your_understanding_by_marking_the_confirmation_check_box">Please acknowledge your understanding by marking the confirmation check box.</string>
@@ -6986,6 +6989,7 @@
 
     <!-- AttachmentKeyboardButton -->
     <string name="AttachmentKeyboard_introduce">Introduction</string>
+    <string name="ChooseBackupFragment__choose_ti_backup">Choose Trusted Introductions Backup (optional)</string>
     <!--TI_GLUE: eNT9XAHgq0lZdbQs2nfH end-->
 
     <!-- EOF -->
