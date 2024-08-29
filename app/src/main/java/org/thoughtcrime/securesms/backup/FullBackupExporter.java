@@ -102,15 +102,19 @@ public class FullBackupExporter extends FullBackupBase {
                             @NonNull AttachmentSecret attachmentSecret,
                             @NonNull SQLiteDatabase input,
                             @NonNull File output,
+                            // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
                             @NonNull File tiOutput,
+                             // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
                             @NonNull String passphrase,
                             @NonNull BackupCancellationSignal cancellationSignal)
       throws IOException
   {
     try (OutputStream outputStream = new FileOutputStream(output)) {
+      // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
       try(OutputStream tiOutputStream = new FileOutputStream(tiOutput)) {
         return internalExport(context, attachmentSecret, input, outputStream, tiOutputStream, passphrase, true, cancellationSignal);
       }
+      // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
     }
   }
 
@@ -119,15 +123,19 @@ public class FullBackupExporter extends FullBackupBase {
                             @NonNull AttachmentSecret attachmentSecret,
                             @NonNull SQLiteDatabase input,
                             @NonNull DocumentFile output,
+                             // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
                             @NonNull DocumentFile tiOutput,
+                             // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
                             @NonNull String passphrase,
                             @NonNull BackupCancellationSignal cancellationSignal)
       throws IOException
   {
     try (OutputStream outputStream = Objects.requireNonNull(context.getContentResolver().openOutputStream(output.getUri()))) {
+      // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
       try(OutputStream tiOutputStream = Objects.requireNonNull(context.getContentResolver().openOutputStream(tiOutput.getUri()))) {
         return internalExport(context, attachmentSecret, input, outputStream, tiOutputStream, passphrase, true, cancellationSignal);
       }
+      // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
     }
   }
 
@@ -135,48 +143,54 @@ public class FullBackupExporter extends FullBackupBase {
                               @NonNull AttachmentSecret attachmentSecret,
                               @NonNull SQLiteDatabase input,
                               @NonNull OutputStream outputStream,
+                              // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
                               @NonNull OutputStream tiOutputStream,
+                              // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
                               @NonNull String passphrase)
       throws IOException
   {
+    // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
     EventBus.getDefault().post(internalExport(context, attachmentSecret, input, outputStream, tiOutputStream, passphrase, false, () -> false));
+    // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
   }
 
   private static BackupEvent internalExport(@NonNull Context context,
                                             @NonNull AttachmentSecret attachmentSecret,
                                             @NonNull SQLiteDatabase input,
                                             @NonNull OutputStream fileOutputStream,
+                                            // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
                                             @NonNull OutputStream tiFileOutputStream,
+                                            // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
                                             @NonNull String passphrase,
                                             boolean closeOutputStream,
                                             @NonNull BackupCancellationSignal cancellationSignal)
       throws IOException
   {
     BackupFrameOutputStream outputStream          = new BackupFrameOutputStream(fileOutputStream, passphrase);
+    // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
     BackupFrameOutputStream outputStreamTI        = new BackupFrameOutputStream(tiFileOutputStream, passphrase);
-
-    int                     count                 = 0;
     int                     tiCount               = 0;
-    long                    estimatedCountOutside;
     long                    estimatedTICountOutside;
+    // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
+    int                     count                 = 0;
+    long                    estimatedCountOutside;
 
     try {
       outputStream.writeDatabaseVersion(input.getVersion());
-      outputStreamTI.writeDatabaseVersion(input.getVersion());
       count++;
 
+      // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+      outputStreamTI.writeDatabaseVersion(input.getVersion());
       List<String> tables = exportSchema(input, outputStream, false);
       Log.w(TAG, "Exporting TI Schema...");
       List<String> ti_tables = exportSchema(input, outputStreamTI, true);
       // todo - fix backup timestamp for ti file
+      // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 
       count += tables.size() * TABLE_RECORD_COUNT_MULTIPLIER;
-      tiCount += ti_tables.size() * TABLE_RECORD_COUNT_MULTIPLIER;
 
       final long estimatedCount = calculateCount(context, input, tables);
       estimatedCountOutside = estimatedCount;
-      final long estimatedTICount = calculateCount(context, input, ti_tables);
-      estimatedTICountOutside = estimatedTICount;
 
       Stopwatch stopwatch = new Stopwatch("Backup");
 
@@ -199,17 +213,22 @@ public class FullBackupExporter extends FullBackupBase {
         }
         stopwatch.split("table::" + table);
       }
-
+      // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+      tiCount += ti_tables.size() * TABLE_RECORD_COUNT_MULTIPLIER;
+      final long estimatedTICount = calculateCount(context, input, ti_tables);
+      estimatedTICountOutside = estimatedTICount;
       for (String table: ti_tables){
         throwIfCanceled(cancellationSignal);
           tiCount = exportTable(table, input, outputStreamTI, null, null, tiCount, estimatedTICount, cancellationSignal);
       }
+      // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 
       for (SharedPreference preference : TextSecurePreferences.getPreferencesToSaveToBackup(context)) {
         throwIfCanceled(cancellationSignal);
+        // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
         EventBus.getDefault().post(new BackupEvent(BackupEvent.Type.PROGRESS, ++count, tiCount, estimatedCount, estimatedTICount));
+        // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
         outputStream.write(preference);
-//        outputStreamTI.write(preference);
       }
 
       stopwatch.split("prefs");
@@ -220,7 +239,9 @@ public class FullBackupExporter extends FullBackupBase {
       for (AvatarHelper.Avatar avatar : AvatarHelper.getAvatars(context)) {
         throwIfCanceled(cancellationSignal);
         if (avatar != null) {
+          // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
           EventBus.getDefault().post(new BackupEvent(BackupEvent.Type.PROGRESS, ++count, tiCount, estimatedCount, estimatedTICount));
+          // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
           try (InputStream inputStream = avatar.getInputStream()) {
             outputStream.write(avatar.getFilename(), inputStream, avatar.getLength());
           }
@@ -231,16 +252,19 @@ public class FullBackupExporter extends FullBackupBase {
       stopwatch.stop(TAG);
 
       outputStream.writeEnd();
+      // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
       outputStreamTI.writeEnd();
+      // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
     } finally {
       if (closeOutputStream) {
         outputStream.close();
+        // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
         outputStreamTI.close();
       }
     }
-
     // todo: estimatedTICountOutside?
     return new BackupEvent(BackupEvent.Type.FINISHED, outputStream.getFrames(), outputStreamTI.getFrames(), estimatedCountOutside, estimatedTICountOutside);
+    // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
   }
 
   private static long calculateCount(@NonNull Context context, @NonNull SQLiteDatabase input, List<String> tables) {
@@ -288,7 +312,7 @@ public class FullBackupExporter extends FullBackupBase {
       throw new BackupCanceledException();
     }
   }
-
+  // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
   private static List<String> exportSchema(@NonNull SQLiteDatabase input, @NonNull BackupFrameOutputStream outputStream, Boolean exportingTI)
       throws IOException
   {
@@ -302,7 +326,7 @@ public class FullBackupExporter extends FullBackupBase {
                               .sorted()
                               .collect(Collectors.toList());
     }
-
+    // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
     Log.i(TAG, "Exporting tables in the following order: " + tablesInOrder);
 
     Map<String, String> createStatementsByTable = new HashMap<>();
@@ -331,6 +355,7 @@ public class FullBackupExporter extends FullBackupBase {
         String sql  = cursor.getString(0);
         String name = cursor.getString(1);
 
+        // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
         if (!exportingTI) {
           if (isTableAllowed(name)) {
             outputStream.write(new SqlStatement.Builder().statement(sql).build());
@@ -340,6 +365,7 @@ public class FullBackupExporter extends FullBackupBase {
             Log.w(TAG, "wrote to ti_table data "+ name + " -> "+ sql);
             outputStream.write(new SqlStatement.Builder().statement(sql).build());
           }
+          // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
         }
       }
     }
@@ -417,6 +443,7 @@ public class FullBackupExporter extends FullBackupBase {
     boolean isReservedTable       = table.startsWith("sqlite_");
     boolean isMmsFtsSecretTable   = !table.equals(SearchTable.FTS_TABLE_NAME) && table.startsWith(SearchTable.FTS_TABLE_NAME);
     boolean isEmojiFtsSecretTable = !table.equals(EmojiSearchTable.TABLE_NAME) && table.startsWith(EmojiSearchTable.TABLE_NAME);
+    // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
     boolean isTITable             = table.startsWith("TI_") || table.startsWith("trusted_");
 
     if (isTITable) {
@@ -428,6 +455,7 @@ public class FullBackupExporter extends FullBackupBase {
            !isEmojiFtsSecretTable &&
            !isTITable;
   }
+  // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 
   private static int exportTable(@NonNull String table,
                                  @NonNull SQLiteDatabase input,
@@ -479,7 +507,9 @@ public class FullBackupExporter extends FullBackupBase {
 
           statement.append(')');
 
+          // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
           EventBus.getDefault().post(new BackupEvent(BackupEvent.Type.PROGRESS, ++count, 0, estimatedCount, 0));
+          // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
           outputStream.write(statementBuilder.statement(statement.toString()).build());
 
           if (postProcess != null) {
@@ -515,7 +545,9 @@ public class FullBackupExporter extends FullBackupBase {
       }
     }
 
+    // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
     EventBus.getDefault().post(new BackupEvent(BackupEvent.Type.PROGRESS, ++count, 0, estimatedCount, 0));
+    // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
     if (!TextUtils.isEmpty(data) && size > 0) {
       try (InputStream inputStream = openAttachmentStream(attachmentSecret, random, data)) {
         outputStream.write(new AttachmentId(rowId), inputStream, size);
@@ -541,7 +573,9 @@ public class FullBackupExporter extends FullBackupBase {
     byte[] random = cursor.getBlob(cursor.getColumnIndexOrThrow(StickerTable.FILE_RANDOM));
 
     if (!TextUtils.isEmpty(data) && size > 0) {
+      // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
       EventBus.getDefault().post(new BackupEvent(BackupEvent.Type.PROGRESS, ++count, 0, estimatedCount, 0));
+      // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
       try (InputStream inputStream = ModernDecryptingPartInputStream.createFor(attachmentSecret, random, new File(data), 0)) {
         outputStream.writeSticker(rowId, inputStream, size);
       } catch (FileNotFoundException e) {
@@ -625,8 +659,9 @@ public class FullBackupExporter extends FullBackupBase {
       } else {
         throw new AssertionError("Unknown type: " + type);
       }
-
+      // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
       EventBus.getDefault().post(new BackupEvent(BackupEvent.Type.PROGRESS, ++count, 0, estimatedCount, 0));
+      // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
       outputStream.write(builder.build());
     }
 
