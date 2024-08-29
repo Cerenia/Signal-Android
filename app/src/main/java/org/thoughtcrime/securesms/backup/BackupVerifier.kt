@@ -37,9 +37,9 @@ object BackupVerifier {
         if (!verified) {
           return false
         }
-
+        // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
         EventBus.getDefault().post(BackupEvent(BackupEvent.Type.PROGRESS_VERIFYING, ++count, 0, expectedCount, 0))
-
+        // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
         frame = inputStream.readFrame()
       }
       if (frame.end == true) {

@@ -7,19 +7,24 @@ public class BackupEvent {
     FINISHED
   }
 
+  // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+  private final long estimatedTotalCountTI;
+  private final long tiCount;
+  // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
   private final Type type;
   private final long count;
-  private final long tiCount;
   private final long estimatedTotalCount;
-  private final long estimatedTotalCountTI;
+
 
 
   public BackupEvent(Type type, long count, long tiCount, long estimatedTotalCount, long estimatedTotalCountTI) {
     this.type                  = type;
     this.count                 = count;
-    this.tiCount               = tiCount;
     this.estimatedTotalCount   = estimatedTotalCount;
+    // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+    this.tiCount               = tiCount;
     this.estimatedTotalCountTI = estimatedTotalCountTI;
+    // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
   }
 
   public Type getType() {
@@ -30,16 +35,8 @@ public class BackupEvent {
     return count;
   }
 
-  public long getTICount() {
-    return tiCount;
-  }
-
   public long getEstimatedTotalCount() {
     return estimatedTotalCount;
-  }
-
-  public long getEstimatedTotalCountTI() {
-    return estimatedTotalCountTI;
   }
 
   public double getCompletionPercentage() {
@@ -49,4 +46,14 @@ public class BackupEvent {
 
     return Math.min(99.9f, (double) count * 100L / (double) estimatedTotalCount);
   }
+
+  // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+  public long getEstimatedTotalCountTI() {
+    return estimatedTotalCountTI;
+  }
+
+  public long getTICount() {
+    return tiCount;
+  }
+  // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 }
