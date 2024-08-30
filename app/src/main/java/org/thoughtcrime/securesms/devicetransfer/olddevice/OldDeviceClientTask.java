@@ -39,12 +39,14 @@ final class OldDeviceClientTask implements ClientTask {
 
     EventBus.getDefault().register(this);
     try {
+      // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
       FullBackupExporter.transfer(context,
                                   AttachmentSecretProvider.getInstance(context).getOrCreateAttachmentSecret(),
                                   SignalDatabase.getBackupDatabase(),
                                   outputStream,
-                                  outputStream, // todo: probably a bad idea
+                                  outputStream, // TODO: probably a bad idea (check if really immutable)
                                   "deadbeef");
+      // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
     } catch (Exception e) {
       DeviceTransferBlockingInterceptor.getInstance().unblockNetwork();
       throw e;
