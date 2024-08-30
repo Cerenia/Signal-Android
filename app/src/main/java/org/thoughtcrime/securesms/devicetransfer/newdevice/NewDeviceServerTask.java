@@ -45,12 +45,14 @@ final class NewDeviceServerTask implements ServerTask {
       String passphrase = "deadbeef";
 
       BackupPassphrase.set(context, passphrase);
+      // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
       FullBackupImporter.importFile(context,
                                     AttachmentSecretProvider.getInstance(context).getOrCreateAttachmentSecret(),
                                     database,
                                     inputStream,
                                     null,
                                     passphrase);
+      // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 
       SignalDatabase.runPostBackupRestoreTasks(database);
       NotificationChannels.getInstance().restoreContactNotificationChannels();
