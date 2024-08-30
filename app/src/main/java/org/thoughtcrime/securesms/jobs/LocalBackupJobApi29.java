@@ -114,8 +114,6 @@ public final class LocalBackupJobApi29 extends BaseJob {
       DocumentFile backupDirectory = DocumentFile.fromTreeUri(context, backupDirectoryUri);
       String       timestamp       = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.US).format(new Date());
       String       fileName        = String.format("signal-%s.backup", timestamp);
-      String       fileNameTI        = String.format("ti-signal-%s.backup", timestamp);
-
 
       if (backupDirectory == null || !backupDirectory.canWrite()) {
         BackupFileIOError.ACCESS_ERROR.postNotification(context);
@@ -128,16 +126,23 @@ public final class LocalBackupJobApi29 extends BaseJob {
         throw new IOException("Backup file already exists!");
       }
 
+      // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+      String       fileNameTI        = String.format("ti-signal-%s.backup", timestamp);
+      if (backupDirectory.findFile(fileNameTI) != null) {
+        throw new IOException("Trusted Introductions backup file already exists!");
+      }
+      // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
       String       temporaryName = String.format(Locale.US, "%s%s%s", TEMP_BACKUP_FILE_PREFIX, UUID.randomUUID(), TEMP_BACKUP_FILE_SUFFIX);
       DocumentFile temporaryFile = backupDirectory.createFile("application/octet-stream", temporaryName);
+      // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
       DocumentFile temporaryTIFile = backupDirectory.createFile("application/octet-stream", "TIData"+temporaryName);
+      if (temporaryTIFile == null) {
+        throw new IOException("Failed to create temporary TI backup file.");
+      }
+      // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 
       if (temporaryFile == null) {
         throw new IOException("Failed to create temporary backup file.");
-      }
-
-      if (temporaryTIFile == null) {
-        throw new IOException("Failed to create temporary TI backup file.");
       }
 
       if (backupPassword == null) {
@@ -150,32 +155,41 @@ public final class LocalBackupJobApi29 extends BaseJob {
                                                               AttachmentSecretProvider.getInstance(context).getOrCreateAttachmentSecret(),
                                                               SignalDatabase.getBackupDatabase(),
                                                               temporaryFile,
+                                                              // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
                                                               temporaryTIFile,
+                                                              // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
                                                               backupPassword,
                                                               this::isCanceled);
         stopwatch.split("backup-create");
 
         boolean valid = verifyBackup(backupPassword, temporaryFile, finishedEvent);
+        // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
         boolean validTI = verifyBackupTI(backupPassword, temporaryTIFile, finishedEvent);
-//        boolean validTI = true;
+        // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 
         stopwatch.split("backup-verify");
         stopwatch.stop(TAG);
 
+        // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
         if (valid && validTI) {
-          renameBackup(fileName, temporaryFile);
           renameBackup(fileNameTI, temporaryTIFile);
+          // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
+          renameBackup(fileName, temporaryFile);
         } else {
           BackupFileIOError.VERIFICATION_FAILED.postNotification(context);
         }
         EventBus.getDefault().post(finishedEvent);
       } catch (FullBackupExporter.BackupCanceledException e) {
+        // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
         EventBus.getDefault().post(new BackupEvent(BackupEvent.Type.FINISHED, 0, 0,0,0));
+        // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
         Log.w(TAG, "Backup cancelled");
         throw e;
       } catch (IOException e) {
         Log.w(TAG, "Error during backup!", e);
+        // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
         EventBus.getDefault().post(new BackupEvent(BackupEvent.Type.FINISHED, 0, 0,0,0));
+        // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
         BackupFileIOError.postNotificationForException(context, e);
         throw e;
       } finally {
@@ -218,7 +232,7 @@ public final class LocalBackupJobApi29 extends BaseJob {
         Log.w(TAG, "Unable to find backup file, attempt: " + attempts + "/" + MAX_STORAGE_ATTEMPTS, e);
       }
     }
-
+    // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
     if (isCanceled()) {
       throw new FullBackupExporter.BackupCanceledException();
     }
@@ -245,7 +259,7 @@ public final class LocalBackupJobApi29 extends BaseJob {
         Log.w(TAG, "Unable to find backup file, attempt: " + attempts + "/" + MAX_STORAGE_ATTEMPTS, e);
       }
     }
-
+    // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
     if (isCanceled()) {
       throw new FullBackupExporter.BackupCanceledException();
     }
