@@ -38,7 +38,9 @@ object RestoreRepository {
     }
   }
 
+  // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
   suspend fun restoreBackupAsynchronously(context: Context, backupFileUri: Uri, tiBackupFileUri: Uri?, passphrase: String): BackupImportResult = withContext(Dispatchers.IO) {
+    // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
     // TODO [regv2]: migrate this to a service
     try {
       Log.i(TAG, "Initiating backup restore.")
@@ -60,7 +62,9 @@ object RestoreRepository {
         AttachmentSecretProvider.getInstance(context).getOrCreateAttachmentSecret(),
         database,
         backupFileUri,
+        // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
         tiBackupFileUri,
+        // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
         passphrase
       )
 

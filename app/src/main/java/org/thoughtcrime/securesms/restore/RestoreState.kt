@@ -12,4 +12,6 @@ import org.thoughtcrime.securesms.restore.transferorrestore.BackupRestorationTyp
 /**
  * Shared state holder for the restore flow.
  */
+// TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
 data class RestoreState(val restorationType: BackupRestorationType = BackupRestorationType.LOCAL_BACKUP, val backupFile: Uri? = null, val backupFileTI: Uri? = null, val nextIntent: Intent? = null)
+// TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
