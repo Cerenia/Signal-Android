@@ -61,6 +61,7 @@
             app:layout_constraintTop_toBottomOf="@+id/backup_created_text"
             tools:text="Backup size: 899 KB" />
 
+        <!--TI_GLUE: eNT9XAHgq0lZdbQs2nfH start-->
         <TextView
             android:id="@+id/ti_backup_created_text"
             android:layout_width="wrap_content"
@@ -90,6 +91,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/ti_backup_size_text"
             tools:text="100 messages so far..." />
+        <!--TI_GLUE: eNT9XAHgq0lZdbQs2nfH end-->
 
         <TextView
             android:id="@+id/verify_header"
