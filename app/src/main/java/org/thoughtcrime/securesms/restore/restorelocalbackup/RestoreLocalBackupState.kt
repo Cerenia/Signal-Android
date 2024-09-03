@@ -14,6 +14,9 @@ import org.thoughtcrime.securesms.util.BackupUtil.BackupInfo
  * State holder for a backup restore.
  */
 data class RestoreLocalBackupState(
+  // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+  val tiBackupUri: Uri? = null,
+  // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
   val uri: Uri,
   val backupInfo: BackupInfo? = null,
   val backupFileStateError: BackupUtil.BackupFileState? = null,
@@ -24,6 +27,5 @@ data class RestoreLocalBackupState(
   val backupEstimatedTotalCount: Long = -1,
   val backupRestoreComplete: Boolean = false,
   val backupImportResult: RestoreRepository.BackupImportResult? = null,
-  val abort: Boolean = false,
-  val tiBackupUri: Uri? = null,
+  val abort: Boolean = false
 )
