@@ -25,20 +25,7 @@ public interface ChooseBackupFragmentGlue {
   short  OPEN_TI_FILE_REQUEST_CODE = 3863; // New request code for TI backup
   String TAG                       = String.format(TI_Utils.TI_LOG_TAG, org.signal.core.util.logging.Log.tag(ChooseBackupFragmentGlue.class));
 
-
-  class onChooseTIBackupSelectedArg {
-    public View     view;
-    public Context  context;
-    public Activity activity;
-
-    public onChooseTIBackupSelectedArg(View view, Context context, Activity activity){
-      this.view = view;
-      this.context = context;
-      this.activity = activity;
-    }
-  }
-
-  static void onChooseTIBackup(onChooseTIBackupSelectedArg args) {
+  static void onChooseTIBackup(View     view, Context  context, Activity activity) {
     Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
 
     intent.setType("application/octet-stream");
@@ -50,9 +37,9 @@ public interface ChooseBackupFragmentGlue {
     }
 
     try {
-      startActivityForResult(args.activity, intent, OPEN_TI_FILE_REQUEST_CODE, null);
+      startActivityForResult(activity, intent, OPEN_TI_FILE_REQUEST_CODE, null);
     } catch (ActivityNotFoundException e) {
-      Toast.makeText(args.context, R.string.ChooseBackupFragment__no_file_browser_available, Toast.LENGTH_LONG).show();
+      Toast.makeText(context, R.string.ChooseBackupFragment__no_file_browser_available, Toast.LENGTH_LONG).show();
       Log.w(TAG, "No matching activity!", e);
     }
   }
