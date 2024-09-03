@@ -123,9 +123,7 @@ class MainActivity : AppCompatActivity() {
       e164Formatter = { PhoneNumberUtils.formatNumberToE164(it, "US") },
       messageMimetype = "vnd.android.cursor.item/vnd.org.signal.contacts.test.message",
       callMimetype = "vnd.android.cursor.item/vnd.org.signal.contacts.test.call",
-      syncTag = "__TEST",
-      videoCallMimetype = "",
-      videoCallPrompt = { "" }
+      syncTag = "__TEST"
     )
   }
 }
