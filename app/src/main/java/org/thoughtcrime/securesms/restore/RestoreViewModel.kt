@@ -56,7 +56,9 @@ class RestoreViewModel : ViewModel() {
 
   fun getBackupFileUri(): Uri? = store.value.backupFile
 
+  // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
   fun getTIBackupFileUri(): Uri? = store.value.backupFileTI
+  // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 
   fun getNextIntent(): Intent? = store.value.nextIntent
 }
