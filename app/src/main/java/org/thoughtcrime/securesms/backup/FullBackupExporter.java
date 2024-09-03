@@ -70,6 +70,8 @@ import java.util.stream.Collectors;
 
 import okio.ByteString;
 
+import static org.thoughtcrime.securesms.trustedIntroductions.backup.SqlUtils.getAllTablesTI;
+
 public class FullBackupExporter extends FullBackupBase {
 
   private static final String TAG = Log.tag(FullBackupExporter.class);
@@ -321,7 +323,7 @@ public class FullBackupExporter extends FullBackupBase {
     if (!exportingTI) {
       tablesInOrder = getTablesToExportInOrder(input);
     } else {
-      tablesInOrder =  SqlUtil.getAllTablesTI(input)
+      tablesInOrder =  getAllTablesTI(input)
                               .stream()
                               .sorted()
                               .collect(Collectors.toList());
