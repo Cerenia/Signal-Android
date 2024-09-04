@@ -186,7 +186,7 @@ public class TI_Utils {
    * @param introduceeIdentityKey fetched if null
    * @return The expected safety number as a String, formated into segments identical to the VerifyDisplayFragment TODO: fix whacky formatting (some whitespaces missing)
    */
-  public static String predictFingerprint(@NonNull RecipientId introductionRecipientId, @NonNull RecipientId introduceeId, @Nullable String introduceeServiceId, @Nullable IdentityKey introduceeIdentityKey) throws TI_MissingIdentityException {
+  public static String predictFingerprint(@NonNull RecipientId introductionRecipientId, @NonNull RecipientId introduceeId, @Nullable String introduceeServiceId, @Nullable IdentityKey introduceeIdentityKey) {
     if(introduceeServiceId == null && introduceeIdentityKey == null){
       // Fetch all the values
       LiveRecipient liveIntroducee = Recipient.live(introduceeId);
@@ -225,11 +225,11 @@ public class TI_Utils {
    * @param id recipient ID
    * @return their identity as saved in the Identity database
    */
-  public static IdentityKey getIdentityKey(RecipientId id) throws TI_MissingIdentityException {
+  public static IdentityKey getIdentityKey(RecipientId id) {
     Optional<IdentityRecord> identityRecord = ApplicationDependencies.getProtocolStore().aci().identities().getIdentityRecord(id);
     // If this doesn't work we have a programming error further up the stack, no introduction can be made if we don't have the identity.
     if(!identityRecord.isPresent()){
-      throw new TI_MissingIdentityException(TAG + " No identity found for the recipient with id: " + id);
+      throw new AssertionError(TAG + " No identity found for the recipient with id: " + id);
     }
     return identityRecord.get().getIdentityKey();
   }
@@ -238,7 +238,7 @@ public class TI_Utils {
     return Base64.encodeWithoutPadding(key.serialize());
   }
 
-  public static String getEncodedIdentityKey(RecipientId id) throws TI_MissingIdentityException {
+  public static String getEncodedIdentityKey(RecipientId id) {
     return encodeIdentityKey(getIdentityKey(id));
   }
 
@@ -271,7 +271,7 @@ public class TI_Utils {
           IdentityKey introduceeIdentityKey = getIdentityKey(recipientId);
           introducee.put(IDENTITY_J, encodeIdentityKey(introduceeIdentityKey));
           formatedSafetyNR = predictFingerprint(introductionRecipientId, recipientId, introduceeServiceId.toString(), introduceeIdentityKey);
-        } catch (TI_MissingIdentityException e){
+        } catch (AssertionError e){
           e.printStackTrace();
           throw new AssertionError(TAG + " Unexpected missing identities when building TI message body!");
         }
