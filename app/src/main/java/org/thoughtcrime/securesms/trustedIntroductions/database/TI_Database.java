@@ -22,7 +22,6 @@ import org.thoughtcrime.securesms.database.model.RecipientRecord;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.trustedIntroductions.glue.RecipientTableGlue;
 import org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue;
-import org.thoughtcrime.securesms.trustedIntroductions.jobs.TrustedIntroductionsRetreiveIdentityJob;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.recipients.RecipientUtil;
@@ -435,7 +434,6 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
   @WorkerThread
   @Override
   public long incomingIntroduction(@NonNull TI_Data data){
-
     // Fetch Data out of database where everything is identical but timestamp & maybe state.
     StringBuilder selectionBuilder = new StringBuilder();
     selectionBuilder.append(String.format("%s=?", INTRODUCER_SERVICE_ID)); // if ID was purged, duplicate detection no longer possible // TODO: issue for, e.g., count if pure distance-1 case (future problem)
