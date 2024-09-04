@@ -89,7 +89,6 @@ import org.thoughtcrime.securesms.recipients.RecipientId
 import org.thoughtcrime.securesms.recipients.RecipientUtil
 import org.thoughtcrime.securesms.stickers.StickerLocator
 import org.thoughtcrime.securesms.storage.StorageSyncHelper
-import org.thoughtcrime.securesms.trustedIntroductions.glue.DataMessageProcessorGlue
 import org.thoughtcrime.securesms.util.EarlyMessageCacheEntry
 import org.thoughtcrime.securesms.util.LinkUtil
 import org.thoughtcrime.securesms.util.MediaUtil
