@@ -26,8 +26,6 @@ import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.recipients.RecipientUtil;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
-import org.thoughtcrime.securesms.trustedIntroductions.jobs.TI_JobCallbackData;
-import org.thoughtcrime.securesms.trustedIntroductions.jobs.TI_JobCallback;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
 import org.whispersystems.signalservice.api.push.ServiceId;
 import org.whispersystems.signalservice.api.util.Preconditions;
@@ -426,9 +424,29 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
   }
 
 
+  // TODO: Adapt to non-callback case
+  private long insertIntroduction(){
+    Preconditions.checkArgument(data.aci != null && data.TIData != null &&
+                                data.aci.equals(data.TIData.getIntroduceeServiceId()));
+    Preconditions.checkArgument(data.TIData.getPredictedSecurityNumber() != null);
+    TI_DatabaseGlue db = SignalDatabase.tiDatabase();
+    ContentValues values = db.buildContentValuesForInsert(data.key.equals(data.TIData.getIntroduceeIdentityKey()) ? State.PENDING : State.CONFLICTING,
+                                                          data.TIData.getIntroducerServiceId(),
+                                                          data.TIData.getIntroduceeServiceId(),
+                                                          data.TIData.getIntroduceeName(),
+                                                          data.TIData.getIntroduceeNumber(),
+                                                          data.TIData.getIntroduceeIdentityKey(),
+                                                          data.TIData.getPredictedSecurityNumber(),
+                                                          data.TIData.getTimestamp());
+    SQLiteDatabase writeableDatabase = db.getSignalWritableDatabase();
+    long id = writeableDatabase.insert(TABLE_NAME, null, values);
+    Log.i(TAG, "Inserted new introduction for: " + data.TIData.getIntroduceeName() + ", with id: " + id);
+    return id;
+  }
+
   /**
    *
-   * @return -1 -> conflict occured on insert, 0 -> Profile Fetch Job started, else id of introduction.
+   * @return -1 -> conflict occured on insert, else id of introduction.
    */
   @SuppressLint("Range")
   @WorkerThread
@@ -450,6 +468,7 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
 
     SQLiteDatabase writeableDatabase = databaseHelper.getSignalWritableDatabase();
     Cursor c = writeableDatabase.query(TABLE_NAME, TI_ALL_PROJECTION, selectionBuilder.toString(), args, null, null, null);
+    // We found a matching introduction, we will update it and not insert a new one.
     if (c.getCount() == 1){
       c.moveToFirst();
       long result = writeableDatabase.update(TABLE_NAME, buildContentValuesForTimestampUpdate(c, data.getTimestamp()), ID + " = ?", SqlUtil.buildArgs(c.getInt(c.getColumnIndex(ID))));
@@ -458,21 +477,25 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
       return result;
     }
     if(c.getCount() != 0)
-      throw new AssertionError(TAG + " Either there is one entry or none, nothing else valid.");
+      throw new AssertionError(TAG + " When checking for existing Introductions, there is one entry or none, nothing else is valid.");
     c.close();
 
     Optional<RecipientId> introduceeOpt =  SignalDatabase.recipients().getByServiceId(ServiceId.parseOrThrow(data.getIntroduceeServiceId()));
     RecipientId introduceeId = introduceeOpt.orElse(null);
     if(introduceeId == null){
+      // We do not know this recipient, we will add an introduction that is not bound to a recipient.
+      // TODO: implement
+      /**
       // Do not save identity when you are simply checking for conflict. We do not want persistent data that the user did not consciously decide to add.
       InsertCallback cb = new InsertCallback(data, null, null);
       TrustedIntroductionsRetreiveIdentityJob job = new TrustedIntroductionsRetreiveIdentityJob(data, false, cb);
       ApplicationDependencies.getJobManager().add(job);
       Log.i(TAG, "Unknown recipient, deferred insertion of Introduction into database for: " + data.getIntroduceeName());
       // This is expected and not an error.
-      return 0;
+      **/
+      return 0; // TODO: replace with an insert
     } else {
-      // The recipient already exists and must not be fetched
+      // The recipient is known
       ServiceId introduceeServiceId;
       try {
         introduceeServiceId = RecipientUtil.getOrFetchServiceId(context, Recipient.resolved(introduceeId));
@@ -956,24 +979,6 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
      * @return id of introduction or -1 if fail.
      */
     @WorkerThread
-    private long insertIntroduction(){
-      Preconditions.checkArgument(data.aci != null && data.TIData != null &&
-                                  data.aci.equals(data.TIData.getIntroduceeServiceId()));
-      Preconditions.checkArgument(data.TIData.getPredictedSecurityNumber() != null);
-      TI_DatabaseGlue db = SignalDatabase.tiDatabase();
-      ContentValues values = db.buildContentValuesForInsert(data.key.equals(data.TIData.getIntroduceeIdentityKey()) ? State.PENDING : State.CONFLICTING,
-                                                         data.TIData.getIntroducerServiceId(),
-                                                         data.TIData.getIntroduceeServiceId(),
-                                                         data.TIData.getIntroduceeName(),
-                                                         data.TIData.getIntroduceeNumber(),
-                                                         data.TIData.getIntroduceeIdentityKey(),
-                                                         data.TIData.getPredictedSecurityNumber(),
-                                                         data.TIData.getTimestamp());
-      SQLiteDatabase writeableDatabase = db.getSignalWritableDatabase();
-      long id = writeableDatabase.insert(TABLE_NAME, null, values);
-      Log.i(TAG, "Inserted new introduction for: " + data.TIData.getIntroduceeName() + ", with id: " + id);
-      return id;
-    }
 
     public long getResult() {
       return result;
