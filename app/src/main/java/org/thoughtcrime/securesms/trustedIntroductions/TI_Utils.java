@@ -234,13 +234,6 @@ public class TI_Utils {
     return identityRecord.get().getIdentityKey();
   }
 
-  public static class TI_MissingIdentityException extends Exception {
-    // throw this if the identity is not found in the database
-    TI_MissingIdentityException(String message){
-      super(message);
-    }
-  }
-
   private static String encodeIdentityKey(IdentityKey key){
     return Base64.encodeWithoutPadding(key.serialize());
   }
