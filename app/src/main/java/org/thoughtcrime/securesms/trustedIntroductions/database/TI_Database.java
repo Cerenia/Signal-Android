@@ -426,24 +426,23 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
                                        introduction.getTimestamp());
   }
 
+  // TODO: Given a contact that cannot be contacted (hidden, no username/phone nr.) we cannot determine from the pending introduction, if there was a conflict
+  // or the thing turned stale in the meantime when a session is initiated. Thus we must turn it stale immediately from whatever state it was in...
 
-  // TODO: Adapt to non-callback case
-  private long insertIntroduction(){
-    Preconditions.checkArgument(data.aci != null && data.TIData != null &&
-                                data.aci.equals(data.TIData.getIntroduceeServiceId()));
-    Preconditions.checkArgument(data.TIData.getPredictedSecurityNumber() != null);
+  private long insertIntroduction(TI_Data data, State state){
+    Preconditions.checkArgument(state == State.PENDING || state == State.PENDING_CONFLICTING);
     TI_DatabaseGlue db = SignalDatabase.tiDatabase();
-    ContentValues values = db.buildContentValuesForInsert(data.key.equals(data.TIData.getIntroduceeIdentityKey()) ? State.PENDING : State.CONFLICTING,
-                                                          data.TIData.getIntroducerServiceId(),
-                                                          data.TIData.getIntroduceeServiceId(),
-                                                          data.TIData.getIntroduceeName(),
-                                                          data.TIData.getIntroduceeNumber(),
-                                                          data.TIData.getIntroduceeIdentityKey(),
-                                                          data.TIData.getPredictedSecurityNumber(),
-                                                          data.TIData.getTimestamp());
+    ContentValues values = db.buildContentValuesForInsert(state,
+                                                          data.getIntroducerServiceId(),
+                                                          data.getIntroduceeServiceId(),
+                                                          data.getIntroduceeName(),
+                                                          data.getIntroduceeNumber(),
+                                                          data.getIntroduceeIdentityKey(),
+                                                          data.getPredictedSecurityNumber(),
+                                                          data.getTimestamp());
     SQLiteDatabase writeableDatabase = db.getSignalWritableDatabase();
     long id = writeableDatabase.insert(TABLE_NAME, null, values);
-    Log.i(TAG, "Inserted new introduction for: " + data.TIData.getIntroduceeName() + ", with id: " + id);
+    Log.i(TAG, "Inserted new introduction for: " + data.getIntroduceeName() + ", with id: " + id);
     return id;
   }
 
