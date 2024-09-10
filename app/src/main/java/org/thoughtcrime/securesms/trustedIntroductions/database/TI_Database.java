@@ -448,17 +448,36 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
 
   /**
    * This is the START state of the introduction FSM.
+   * Check if there is a detectable conflict (only possible if the service ID maps to a recipient ID)
+   * and set the state accordingly for the insert
    *
    * @param data the new introduction to insert.
    * @return insertion id of introduction.
    */
   private long insertKnownNewIntroduction(TI_Data data){
     //TODO: Implement
+    /**
+     * 1. check if the recipient exists
+     * yes: check for conflict
+     *    yes: insert pending conflict
+     *    no: insert pending
+     * no: insert pending
+     */
+
+
     Optional<RecipientId> introduceeOpt =  SignalDatabase.recipients().getByServiceId(ServiceId.parseOrThrow(data.getIntroduceeServiceId()));
     RecipientId introduceeId = introduceeOpt.orElse(null);
-    if(introduceeId == null){
-      // We do not know this recipient, we will add an introduction that is not bound to a recipient.
+    if(introduceeId != null){
+      // The recipient already exists, check if the identity key matches what we already have in the database
       // TODO: implement
+      ServiceId introduceeServiceId;
+      try {
+        introduceeServiceId = RecipientUtil.getOrFetchServiceId(context, Recipient.resolved(introduceeId));
+      } catch (IOException e) {
+        Log.e(TAG, "Failed to fetch service ID for: " + data.getIntroduceeName() + ", with RecipientId: " + introduceeId);
+        return -1;
+      }
+      TI_Utils.getEncodedIdentityKey(introduceeId);
       /**
        // Do not save identity when you are simply checking for conflict. We do not want persistent data that the user did not consciously decide to add.
        InsertCallback cb = new InsertCallback(data, null, null);
@@ -470,13 +489,7 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
       return 0; // TODO: replace with an insert
     } else {
       // The recipient is known
-      ServiceId introduceeServiceId;
-      try {
-        introduceeServiceId = RecipientUtil.getOrFetchServiceId(context, Recipient.resolved(introduceeId));
-      } catch (IOException e) {
-        Log.e(TAG, "Failed to fetch service ID for: " + data.getIntroduceeName() + ", with RecipientId: " + introduceeId);
-        return -1;
-      }
+
       try {
         InsertCallback cb = new InsertCallback(data, TI_Utils.getEncodedIdentityKey(introduceeId), introduceeServiceId.toString());
         cb.callback();
@@ -508,13 +521,14 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
   @Override
   public long incomingIntroduction(@NonNull TI_Data data){
     // Fetch Data to compare if present
+    // TODO: Adapt when we are more clear about what the data will be...
+    // TODO: reimplment...
     StringBuilder selectionBuilder = new StringBuilder();
     selectionBuilder.append(String.format("%s=?", INTRODUCER_SERVICE_ID));
     String andAppend = " AND %s=?";
     selectionBuilder.append(String.format(andAppend, INTRODUCEE_SERVICE_ID));
     selectionBuilder.append(String.format(andAppend, INTRODUCEE_PUBLIC_IDENTITY_KEY));
 
-    // TODO: if this works well, use in other dbs where you build queries
     String[] args = SqlUtil.buildArgs(data.getIntroducerServiceId(),
                                       data.getIntroduceeServiceId(),
                                       data.getIntroduceeIdentityKey());
