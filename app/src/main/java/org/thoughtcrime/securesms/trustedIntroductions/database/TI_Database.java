@@ -942,77 +942,7 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
       }
     }
   }
-
-  // TODO: For now I'm keeping the history of introductions, but only showing the newest valid one. Might be beneficial to have them eventually go away if they become stale?
-  // Maybe keep around one level of previous introduction? Apparently there is a situation in the app, whereas if someone does not follow the instructions of setting up
-  // their new device exactly, they may be set as unverified, while they eventually still end up with the same identity key (TODO: find Github issue or discussion?)
-  // For this case, having a record of stale introductions could be used to restore the verification state without having to reverify.
-
-  // TODO: all state transition methods can be public => FSM Logic adhered to this way.
-  public static class InsertCallback implements TI_JobCallback {
-
-    public static final String                                                         tag = Log.tag(InsertCallback.class);
-    private final       TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult data;
-    long result;
-
-    public InsertCallback(@NonNull TI_Data data, @Nullable String base64KeyResult, @Nullable String aciResult){
-      this.data = new TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult(data, base64KeyResult, aciResult);
-    }
-
-    public void callback(){
-      this.result = insertIntroduction();
-    }
-
-
-    @Override public TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult getCallbackData() {
-      return data;
-    }
-
-    public String getTag() {
-      return tag;
-    }
-
-    // TI_DB_Callback for profile retreive Identity job
-    // But java is annoying when it comes to function serialization so I won't do that for now
-    // Only meant to be called by Job & @incomingIntroduction
-    /**
-     * @return id of introduction or -1 if fail.
-     */
-    @WorkerThread
-
-    public long getResult() {
-      return result;
-    }
-
-    public static class Factory implements TI_JobCallback.Factory {
-      private TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult data;
-      private boolean initialized = false;
-
-      public Factory(){
-      }
-
-      public TI_JobCallback create(){
-        if(!initialized){
-          throw new AssertionError("InsertCallback Factory was not initialized!");
-        }
-        return new InsertCallback(data.TIData, data.key, data.aci);
-      }
-
-      @Override public void initialize(TI_JobCallbackData data) {
-        if(data instanceof TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult){
-          this.data = (TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult) data;
-          initialized = true;
-        } else{
-          throw new AssertionError("Unexpected datatype for InsertCallback!");
-        }
-      }
-
-      @Override public TI_JobCallbackData getEmptyJobDataInstance() {
-        return new TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult();
-      }
-    }
-  }
-
+  
   public static class IntroductionReader implements Closeable{
     private final Cursor cursor;
 
