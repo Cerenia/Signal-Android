@@ -119,15 +119,11 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
 
 
   /**
-   * An Introduction can either be waiting for a decision from the user (PENDING),
-   * been accepted or rejected by the user, or conflict with the Identity Key that the
-   * Signal server provided for this recipient. If the identity key of the introducee
-   * changes, the entries become stale.
-   * => For now, leaving STALE. In fact, I need 4 Stale states if I want to be able to go back to a non-stale state from there,
-   * see comment between @see clearIntroducer and @see setState, or FSM drawn on the 09.08.2022.
+   * All states in the FSM for Introductions.
    */
   public enum State {
-    PENDING, ACCEPTED, REJECTED, CONFLICTING, STALE_PENDING, STALE_ACCEPTED, STALE_REJECTED, STALE_CONFLICTING;
+    PENDING, ACCEPTED, REJECTED, PENDING_CONFLICTING, ACCEPTED_CONFLICTING, REJECTED_CONFLICTING, STALE_PENDING, STALE_ACCEPTED,
+    STALE_REJECTED, STALE_PENDING_CONFLICTING, STALE_ACCEPTED_CONFLICTING, STALE_REJECTED_CONFLICTING;
 
     public int toInt() {
       switch (this) {
@@ -137,16 +133,24 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
           return 1;
         case REJECTED:
           return 2;
-        case CONFLICTING:
+        case PENDING_CONFLICTING:
           return 3;
-        case STALE_PENDING:
+        case ACCEPTED_CONFLICTING:
           return 4;
-        case STALE_ACCEPTED:
+        case REJECTED_CONFLICTING:
           return 5;
-        case STALE_REJECTED:
+        case STALE_PENDING:
           return 6;
-        case STALE_CONFLICTING:
+        case STALE_ACCEPTED:
           return 7;
+        case STALE_REJECTED:
+          return 8;
+        case STALE_PENDING_CONFLICTING:
+          return 9;
+        case STALE_ACCEPTED_CONFLICTING:
+          return 10;
+        case STALE_REJECTED_CONFLICTING:
+          return 11;
         default:
           throw new AssertionError("No such state " + this);
       }
@@ -161,15 +165,23 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
         case 2:
           return REJECTED;
         case 3:
-          return CONFLICTING;
+          return PENDING_CONFLICTING;
         case 4:
-          return STALE_PENDING;
+          return ACCEPTED_CONFLICTING;
         case 5:
-          return STALE_ACCEPTED;
+          return REJECTED_CONFLICTING;
         case 6:
-          return STALE_REJECTED;
+          return STALE_PENDING;
         case 7:
-          return STALE_CONFLICTING;
+          return STALE_ACCEPTED;
+        case 8:
+          return STALE_REJECTED;
+        case 9:
+          return STALE_PENDING_CONFLICTING;
+        case 10:
+          return STALE_ACCEPTED_CONFLICTING;
+        case 11:
+          return STALE_REJECTED_CONFLICTING;
         default:
           throw new AssertionError("No such state: " + state);
       }
@@ -180,33 +192,17 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
         case PENDING:
         case ACCEPTED:
         case REJECTED:
-        case CONFLICTING:
+        case PENDING_CONFLICTING:
+        case ACCEPTED_CONFLICTING:
+        case REJECTED_CONFLICTING:
           return false;
         case STALE_PENDING:
         case STALE_ACCEPTED:
         case STALE_REJECTED:
-        case STALE_CONFLICTING:
+        case STALE_PENDING_CONFLICTING:
+        case STALE_ACCEPTED_CONFLICTING:
+        case STALE_REJECTED_CONFLICTING:
           return true;
-        default:
-          throw new AssertionError("No such state: " + this);
-      }
-    }
-
-    // Convenience for prototype, would obv. not fly in prod.
-    public String toVerbIng(){
-      switch(this){
-        case PENDING:
-          throw new AssertionError("Starting state cannot be reached: " + this);
-        case ACCEPTED:
-          return "accepting";
-        case REJECTED:
-          return "rejecting";
-        case CONFLICTING:
-        case STALE_PENDING:
-        case STALE_ACCEPTED:
-        case STALE_REJECTED:
-        case STALE_CONFLICTING:
-          throw new AssertionError("No user action can reach " + this);
         default:
           throw new AssertionError("No such state: " + this);
       }
