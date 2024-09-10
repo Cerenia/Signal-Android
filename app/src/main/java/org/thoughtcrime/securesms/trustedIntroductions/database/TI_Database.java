@@ -447,54 +447,26 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
   }
 
   /**
+   * This is the START state of the introduction FSM.
    *
-   * @return -1 -> conflict occured on insert, else id of introduction.
+   * @param data the new introduction to insert.
+   * @return insertion id of introduction.
    */
-  @SuppressLint("Range")
-  @WorkerThread
-  @Override
-  public long incomingIntroduction(@NonNull TI_Data data){
-    // Fetch Data out of database where everything is identical but timestamp & maybe state.
-    StringBuilder selectionBuilder = new StringBuilder();
-    selectionBuilder.append(String.format("%s=?", INTRODUCER_SERVICE_ID)); // if ID was purged, duplicate detection no longer possible // TODO: issue for, e.g., count if pure distance-1 case (future problem)
-    String andAppend = " AND %s=?";
-    // does not work iff the recipient to be introduced does not yet have an ID and then gets added.
-    //selectionBuilder.append(String.format(andAppend, INTRODUCEE_RECIPIENT_ID));
-    selectionBuilder.append(String.format(andAppend, INTRODUCEE_SERVICE_ID));
-    selectionBuilder.append(String.format(andAppend, INTRODUCEE_PUBLIC_IDENTITY_KEY));
-
-    // TODO: if this works well, use in other dbs where you build queries
-    String[] args = SqlUtil.buildArgs(data.getIntroducerServiceId(),
-                                      data.getIntroduceeServiceId(),
-                                      data.getIntroduceeIdentityKey());
-
-    SQLiteDatabase writeableDatabase = databaseHelper.getSignalWritableDatabase();
-    Cursor c = writeableDatabase.query(TABLE_NAME, TI_ALL_PROJECTION, selectionBuilder.toString(), args, null, null, null);
-    // We found a matching introduction, we will update it and not insert a new one.
-    if (c.getCount() == 1){
-      c.moveToFirst();
-      long result = writeableDatabase.update(TABLE_NAME, buildContentValuesForTimestampUpdate(c, data.getTimestamp()), ID + " = ?", SqlUtil.buildArgs(c.getInt(c.getColumnIndex(ID))));
-      Log.i(TAG, "Updated timestamp of introduction " + result + " to: " + TI_Utils.INTRODUCTION_DATE_PATTERN.format(data.getTimestamp()));
-      c.close();
-      return result;
-    }
-    if(c.getCount() != 0)
-      throw new AssertionError(TAG + " When checking for existing Introductions, there is one entry or none, nothing else is valid.");
-    c.close();
-
+  private long insertKnownNewIntroduction(TI_Data data){
+    //TODO: Implement
     Optional<RecipientId> introduceeOpt =  SignalDatabase.recipients().getByServiceId(ServiceId.parseOrThrow(data.getIntroduceeServiceId()));
     RecipientId introduceeId = introduceeOpt.orElse(null);
     if(introduceeId == null){
       // We do not know this recipient, we will add an introduction that is not bound to a recipient.
       // TODO: implement
       /**
-      // Do not save identity when you are simply checking for conflict. We do not want persistent data that the user did not consciously decide to add.
-      InsertCallback cb = new InsertCallback(data, null, null);
-      TrustedIntroductionsRetreiveIdentityJob job = new TrustedIntroductionsRetreiveIdentityJob(data, false, cb);
-      ApplicationDependencies.getJobManager().add(job);
-      Log.i(TAG, "Unknown recipient, deferred insertion of Introduction into database for: " + data.getIntroduceeName());
-      // This is expected and not an error.
-      **/
+       // Do not save identity when you are simply checking for conflict. We do not want persistent data that the user did not consciously decide to add.
+       InsertCallback cb = new InsertCallback(data, null, null);
+       TrustedIntroductionsRetreiveIdentityJob job = new TrustedIntroductionsRetreiveIdentityJob(data, false, cb);
+       ApplicationDependencies.getJobManager().add(job);
+       Log.i(TAG, "Unknown recipient, deferred insertion of Introduction into database for: " + data.getIntroduceeName());
+       // This is expected and not an error.
+       **/
       return 0; // TODO: replace with an insert
     } else {
       // The recipient is known
@@ -518,6 +490,49 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
         return 0;
       }
     }
+    return 0;
+  }
+
+  /**
+   *
+   *  We first check if an introduction with the same introducer service id, introducee service id, and identity key
+   *  already exists in the database to avoid duplication.
+   *  If we find a duplicate, we simply update the timestamp to the most recent one.
+   *  Otherwise the start of the introduction FSM is reached.
+   *
+   *  @param data the incoming introduction
+   * @return insertion id of introduction.
+   */
+  @SuppressLint("Range")
+  @WorkerThread
+  @Override
+  public long incomingIntroduction(@NonNull TI_Data data){
+    // Fetch Data to compare if present
+    StringBuilder selectionBuilder = new StringBuilder();
+    selectionBuilder.append(String.format("%s=?", INTRODUCER_SERVICE_ID));
+    String andAppend = " AND %s=?";
+    selectionBuilder.append(String.format(andAppend, INTRODUCEE_SERVICE_ID));
+    selectionBuilder.append(String.format(andAppend, INTRODUCEE_PUBLIC_IDENTITY_KEY));
+
+    // TODO: if this works well, use in other dbs where you build queries
+    String[] args = SqlUtil.buildArgs(data.getIntroducerServiceId(),
+                                      data.getIntroduceeServiceId(),
+                                      data.getIntroduceeIdentityKey());
+
+    SQLiteDatabase writeableDatabase = databaseHelper.getSignalWritableDatabase();
+    Cursor c = writeableDatabase.query(TABLE_NAME, TI_ALL_PROJECTION, selectionBuilder.toString(), args, null, null, null);
+    // We found a matching introduction, we will update it and not insert a new one.
+    if (c.getCount() == 1){
+      c.moveToFirst();
+      long result = writeableDatabase.update(TABLE_NAME, buildContentValuesForTimestampUpdate(c, data.getTimestamp()), ID + " = ?", SqlUtil.buildArgs(c.getInt(c.getColumnIndex(ID))));
+      Log.i(TAG, "Updated timestamp of introduction " + result + " to: " + TI_Utils.INTRODUCTION_DATE_PATTERN.format(data.getTimestamp()));
+      c.close();
+      return result;
+    }
+    if(c.getCount() != 0)
+      throw new AssertionError(TAG + " When checking for existing Introductions, there is one entry or none, nothing else is valid.");
+    c.close();
+    return insertKnownNewIntroduction(data);
   }
 
 
