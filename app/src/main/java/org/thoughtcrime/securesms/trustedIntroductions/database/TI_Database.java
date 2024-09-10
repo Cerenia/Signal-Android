@@ -402,10 +402,17 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
       case REJECTED:
         newState = State.STALE_REJECTED;
         break;
-      case CONFLICTING:
-        newState = State.STALE_CONFLICTING;
+      case PENDING_CONFLICTING:
+        newState = State.STALE_PENDING_CONFLICTING;
+        break;
+      case ACCEPTED_CONFLICTING:
+        newState = State.STALE_ACCEPTED_CONFLICTING;
+        break;
+      case REJECTED_CONFLICTING:
+        newState = State.STALE_REJECTED_CONFLICTING;
+        break;
       default:
-          throw new AssertionError();
+          throw new AssertionError("State: " + introduction.getState() + " was illegal or already stale.");
     }
 
     return buildContentValuesForUpdate(introduction.getId(),
