@@ -207,7 +207,14 @@ public class TI_Utils {
     Log.i(TAG, "using " + introductionRecipientResolved.requireServiceId());
     introductionRecipientFingerprintId = introductionRecipientResolved.requireServiceId().toByteArray();
     introduceeFingerprintId = introduceeServiceId.getBytes();
-    IdentityKey introductionRecipientIdentityKey = getIdentityKey(introductionRecipientId);
+    IdentityKey introductionRecipientIdentityKey;
+    try {
+      introductionRecipientIdentityKey = getIdentityKey(introductionRecipientId);
+    } catch(MissingIdentityException e) {
+      Log.e(TAG, e.toString());
+      throw new AssertionError(TAG + "The key of the introduction recipient must be present in the database at this stage. RecipientID: " + introductionRecipientId);
+    }
+
     // @see VerifyDisplayFragment::initializeFingerprint(), iterations there also hardcoded to 5200 for FingerprintGenerator
     // @see ServiceId.java to understand how they convert the ACI to ByteArray
     // @see IdentityKey.java
@@ -225,11 +232,10 @@ public class TI_Utils {
    * @param id recipient ID
    * @return their identity as saved in the Identity database
    */
-  public static IdentityKey getIdentityKey(RecipientId id) {
+  public static IdentityKey getIdentityKey(RecipientId id) throws MissingIdentityException {
     Optional<IdentityRecord> identityRecord = ApplicationDependencies.getProtocolStore().aci().identities().getIdentityRecord(id);
-    // If this doesn't work we have a programming error further up the stack, no introduction can be made if we don't have the identity.
-    if(!identityRecord.isPresent()){
-      throw new AssertionError(TAG + " No identity found for the recipient with id: " + id);
+    if(identityRecord.isEmpty()){
+      throw new MissingIdentityException(TAG + " No identity found for the recipient with id: " + id);
     }
     return identityRecord.get().getIdentityKey();
   }
@@ -238,7 +244,7 @@ public class TI_Utils {
     return Base64.encodeWithoutPadding(key.serialize());
   }
 
-  public static String getEncodedIdentityKey(RecipientId id) {
+  public static String getEncodedIdentityKey(RecipientId id) throws MissingIdentityException {
     return encodeIdentityKey(getIdentityKey(id));
   }
 
@@ -271,7 +277,7 @@ public class TI_Utils {
           IdentityKey introduceeIdentityKey = getIdentityKey(recipientId);
           introducee.put(IDENTITY_J, encodeIdentityKey(introduceeIdentityKey));
           formatedSafetyNR = predictFingerprint(introductionRecipientId, recipientId, introduceeServiceId.toString(), introduceeIdentityKey);
-        } catch (AssertionError e){
+        } catch (MissingIdentityException e){
           e.printStackTrace();
           throw new AssertionError(TAG + " Unexpected missing identities when building TI message body!");
         }
@@ -290,24 +296,24 @@ public class TI_Utils {
   private static String getSomeNonNullName(RecipientId id, RecipientRecord record){
     String name;
     name = record.getSystemDisplayName();
-    if(name != null && !name.equals("")){
+    if(name != null && !name.isEmpty()){
       return name;
     }
     name = record.getUsername();
-    if(name != null && !name.equals("")){
+    if(name != null && !name.isEmpty()){
       return name;
     }
     name = record.getEmail();
-    if(name != null && !name.equals("")){
+    if(name != null && !name.isEmpty()){
       return name;
     }
     Recipient rp = Recipient.resolved(id);
     name = rp.getDisplayName(getApplicationContext());
-    if(name != null && !name.equals("")){
+    if(name != null && !name.isEmpty()){
       return name;
     }
     name = rp.getProfileName().toString();
-    if(name != null && !name.equals("")){
+    if(name != null && !name.isEmpty()){
       return name;
     }
     return "¯\\_(ツ)_/¯";
