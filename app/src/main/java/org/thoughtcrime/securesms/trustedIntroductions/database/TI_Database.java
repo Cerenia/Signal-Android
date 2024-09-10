@@ -20,6 +20,7 @@ import org.thoughtcrime.securesms.database.SQLiteDatabase;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.database.model.RecipientRecord;
 import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
+import org.thoughtcrime.securesms.trustedIntroductions.MissingIdentityException;
 import org.thoughtcrime.securesms.trustedIntroductions.glue.RecipientTableGlue;
 import org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue;
 import org.thoughtcrime.securesms.recipients.Recipient;
@@ -455,55 +456,22 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
    * @return insertion id of introduction.
    */
   private long insertKnownNewIntroduction(TI_Data data){
-    //TODO: Implement
-    /**
-     * 1. check if the recipient exists
-     * yes: check for conflict
-     *    yes: insert pending conflict
-     *    no: insert pending
-     * no: insert pending
-     */
-
-
     Optional<RecipientId> introduceeOpt =  SignalDatabase.recipients().getByServiceId(ServiceId.parseOrThrow(data.getIntroduceeServiceId()));
     RecipientId introduceeId = introduceeOpt.orElse(null);
-    if(introduceeId != null){
+    if(introduceeId != null) {
       // The recipient already exists, check if the identity key matches what we already have in the database
-      // TODO: implement
-      ServiceId introduceeServiceId;
+      String identityKey;
       try {
-        introduceeServiceId = RecipientUtil.getOrFetchServiceId(context, Recipient.resolved(introduceeId));
-      } catch (IOException e) {
-        Log.e(TAG, "Failed to fetch service ID for: " + data.getIntroduceeName() + ", with RecipientId: " + introduceeId);
-        return -1;
+        identityKey = TI_Utils.getEncodedIdentityKey(introduceeId);
+        if(!data.getIntroduceeIdentityKey().equals(identityKey)){
+          return insertIntroduction(data, State.PENDING_CONFLICTING);
+        }
+      } catch (MissingIdentityException e){
+        // Continue to end condition, recipient is unknown.
       }
-      TI_Utils.getEncodedIdentityKey(introduceeId);
-      /**
-       // Do not save identity when you are simply checking for conflict. We do not want persistent data that the user did not consciously decide to add.
-       InsertCallback cb = new InsertCallback(data, null, null);
-       TrustedIntroductionsRetreiveIdentityJob job = new TrustedIntroductionsRetreiveIdentityJob(data, false, cb);
-       ApplicationDependencies.getJobManager().add(job);
-       Log.i(TAG, "Unknown recipient, deferred insertion of Introduction into database for: " + data.getIntroduceeName());
-       // This is expected and not an error.
-       **/
-      return 0; // TODO: replace with an insert
-    } else {
-      // The recipient is known
-
-      try {
-        InsertCallback cb = new InsertCallback(data, TI_Utils.getEncodedIdentityKey(introduceeId), introduceeServiceId.toString());
-        cb.callback();
-        return cb.getResult();
-      } catch (TI_Utils.TI_MissingIdentityException e){
-        e.printStackTrace();
-        // Fetch identity key from infrastructure for conflict detection. The user still has not interacted so identity is not saved.
-        ApplicationDependencies.getJobManager().add(new TrustedIntroductionsRetreiveIdentityJob(data, false, new InsertCallback(data, null, null)));
-        Log.i(TAG, "Unknown identity, deferred insertion of Introduction into database for: " + data.getIntroduceeName());
-        // This is expected and not an error.
-        return 0;
-      }
+      return insertIntroduction(data, State.PENDING);
     }
-    return 0;
+    throw new AssertionError(TAG + "This code should be unreachable!");
   }
 
   /**
