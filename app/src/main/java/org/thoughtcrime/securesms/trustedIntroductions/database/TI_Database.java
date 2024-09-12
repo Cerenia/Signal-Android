@@ -10,8 +10,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.annotation.WorkerThread;
 
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.signal.core.util.SqlUtil;
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.database.DatabaseTable;
@@ -23,9 +21,7 @@ import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.trustedIntroductions.MissingIdentityException;
 import org.thoughtcrime.securesms.trustedIntroductions.glue.RecipientTableGlue;
 import org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue;
-import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
-import org.thoughtcrime.securesms.recipients.RecipientUtil;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
 import org.whispersystems.signalservice.api.push.ServiceId;
@@ -519,37 +515,41 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
 
 
   /**
-   * @param introduction the introduction to be modified.
-   * @param newState the new state for the introduction.
+   * Modify the state of an introduction and call to modify the verified state of the introducee if appropriate
+   * @param introduction the introduction to be modified. Their state cannot be any of the PENDING states as they are final. ID =! null.
+   * @param newState the new state for the introduction. Cannot be PENDING
    * @param logMessage what should be written on the logcat for the modification.
    * @return  if the insertion succeeded or failed
-   * PRE: State is not Pending or Conflicting, introductionId != null
-   * TODO: currently can't distinguish between total failure or having to wait for a profilefetch.
-   * => would only be necessary if we bubble this state up to the user... We could have a Toast stating that the verification state may take a while to update
-   * if recipient was not yet in the database.
    */
   @WorkerThread
-  private boolean setState(@NonNull TI_Data introduction, @NonNull State newState, @NonNull String logMessage) {
-    // We are setting conflicting and pending states directly when the introduction comes in. Should not change afterwards.
-    Preconditions.checkArgument(newState != State.PENDING && newState != State.CONFLICTING);
+  private boolean changeIntroductionState(@NonNull TI_Data introduction, @NonNull State newState, @NonNull String logMessage) {
+    // We are setting the pending states directly when the introduction is first received. There is no other transition to this state.
+    Preconditions.checkArgument(newState != State.PENDING);
     Preconditions.checkArgument(introduction.getId() != null);
+    Preconditions.checkArgument(!introduction.getState().isStale());
 
-    // Recipient not yet in database, must insert it first and update the introducee ID
-    RecipientId recipientId = TI_Utils.getRecipientIdOrUnknown(introduction.getIntroduceeServiceId());
-    TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult res  = new TrustedIntroductionsRetreiveIdentityJob.TI_RetrieveIDJobResult(introduction, null, null);
-    SetStateCallback.SetStateData                                  data = new SetStateCallback.SetStateData(res, newState, logMessage);
-    SetStateCallback                                               cb   = new SetStateCallback(data);
-    if (recipientId.equals(RecipientId.UNKNOWN) ||
-        !ApplicationDependencies.getProtocolStore().aci().identities().getIdentityRecord(recipientId).isPresent()){
-      RecipientTable db = SignalDatabase.recipients();
-      db.getAndPossiblyMerge(ServiceId.parseOrThrow(introduction.getIntroduceeServiceId()), introduction.getIntroduceeNumber());
-      // Save identity, the user specifically decided to interfere with the introduction (accept/reject) so saving this state is ok.
-      Log.d(TAG, "Saving identity for: " + recipientId);
-      ApplicationDependencies.getJobManager().add(new TrustedIntroductionsRetreiveIdentityJob(introduction, true, cb));
-      return false; // TODO: simply postponed, do we need ternary state here?
+    // Modify introduction
+    ContentValues newValues = buildContentValuesForStateUpdate(introduction, newState);
+    SQLiteDatabase writeableDatabase = getSignalWritableDatabase();
+    long result = writeableDatabase.update(TABLE_NAME, newValues, ID + " = ?", SqlUtil.buildArgs(introduction.getId()));
+
+    if ( result > 0 ){
+      // Log message on success
+      Log.i(TAG, logMessage);
+      // Check if a recipient may change verification status as a result of this operation
+      RecipientId introduceeID = TI_Utils.getRecipientIdOrUnknown(introduction.getIntroduceeServiceId());
+      if(!introduceeID.isUnknown()){
+        TI_IdentityTable.VerifiedStatus previousIntroduceeVerification = SignalDatabase.tiIdentityDatabase().getVerifiedStatus(introduceeID);
+        if (previousIntroduceeVerification == null){
+          throw new AssertionError("Unexpected missing verification status for " + introduction.getIntroduceeName());
+        }
+        modifyIntroduceeVerification(introduction.getIntroduceeServiceId(), previousIntroduceeVerification, newState, logMessage);
+      } // if introduceeID is unknnown we do not have the recipient as a conversation partner yet and can skip any verification modification
+      return true;
     }
-    cb.callback();
-    return cb.getResult();
+    // don't touch the verification state of the introducee if the modification failed
+    Log.e(TAG, "State modification of introduction: " + introduction.getId() + " failed!");
+    return false;
   }
 
   /**
@@ -641,7 +641,7 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
   @Override
   public boolean acceptIntroduction(TI_Data introduction){
     Preconditions.checkArgument(introduction.getId() != null);
-    return setState(introduction, State.ACCEPTED,"Accepted introduction for: " + introduction.getIntroduceeName());
+    return changeIntroductionState(introduction, State.ACCEPTED, "Accepted introduction for: " + introduction.getIntroduceeName());
   }
 
   /**
@@ -654,7 +654,7 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
   @Override
   public boolean rejectIntroduction(TI_Data introduction){
     Preconditions.checkArgument(introduction.getId() != null);
-    return setState(introduction, State.REJECTED,"Rejected introduction for: " + introduction.getIntroduceeName());
+    return changeIntroductionState(introduction, State.REJECTED, "Rejected introduction for: " + introduction.getIntroduceeName());
   }
 
   @WorkerThread
