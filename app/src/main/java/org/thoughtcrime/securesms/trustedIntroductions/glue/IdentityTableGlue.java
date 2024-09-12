@@ -59,7 +59,7 @@ public interface IdentityTableGlue {
   boolean setVerifiedStatus(@NonNull RecipientId id, VerifiedStatus newStatus);
 
   enum VerifiedStatus{
-    DEFAULT, MANUALLY_VERIFIED, UNVERIFIED, DIRECTLY_VERIFIED, INTRODUCED, DUPLEX_VERIFIED;
+    DEFAULT, MANUALLY_VERIFIED, UNVERIFIED, DIRECTLY_VERIFIED, INTRODUCED, DUPLEX_VERIFIED, SUSPECTED_COMPROMISE;
 
     public Integer toInt(){
       switch(this){
@@ -75,6 +75,8 @@ public interface IdentityTableGlue {
           return 4;
         case DUPLEX_VERIFIED:
           return 5;
+        case SUSPECTED_COMPROMISE:
+          return 6;
         default:
           return 2; // fail closed
       }
@@ -94,6 +96,8 @@ public interface IdentityTableGlue {
           return INTRODUCED;
         case 5:
           return DUPLEX_VERIFIED;
+        case 6:
+          return SUSPECTED_COMPROMISE;
         default:
           return UNVERIFIED;
       }
@@ -110,6 +114,7 @@ public interface IdentityTableGlue {
         case MANUALLY_VERIFIED:
           return IdentityTable.VerifiedStatus.VERIFIED.toInt();
         case UNVERIFIED:
+        case SUSPECTED_COMPROMISE:
         default:
           return IdentityTable.VerifiedStatus.UNVERIFIED.toInt();
       }
@@ -134,6 +139,7 @@ public interface IdentityTableGlue {
           return true;
         case DEFAULT:
         case UNVERIFIED:
+        case SUSPECTED_COMPROMISE:
         default:
           return false;
       }
@@ -167,6 +173,7 @@ public interface IdentityTableGlue {
         case MANUALLY_VERIFIED:
         case DEFAULT:
         case UNVERIFIED:
+        case SUSPECTED_COMPROMISE:
         default:
           return false;
       }
@@ -192,6 +199,7 @@ public interface IdentityTableGlue {
         case MANUALLY_VERIFIED:
         case DEFAULT:
         case UNVERIFIED:
+        case SUSPECTED_COMPROMISE:
         default:
           return false;
       }
@@ -211,6 +219,7 @@ public interface IdentityTableGlue {
         case MANUALLY_VERIFIED:
         case DEFAULT:
         case UNVERIFIED:
+        case SUSPECTED_COMPROMISE:
         default:
           return false;
       }
