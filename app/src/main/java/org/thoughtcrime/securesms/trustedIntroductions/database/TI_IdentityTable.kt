@@ -2,20 +2,21 @@ package org.thoughtcrime.securesms.trustedIntroductions.database
 
 import android.content.Context
 import android.database.Cursor
+import androidx.annotation.WorkerThread
 import androidx.core.content.contentValuesOf
-import org.signal.core.util.SqlUtil
 import org.signal.core.util.logging.Log
+import org.signal.core.util.logging.Log.i
 import org.signal.core.util.select
 import org.thoughtcrime.securesms.database.DatabaseTable
-import org.thoughtcrime.securesms.database.DistributionListTables
 import org.thoughtcrime.securesms.database.IdentityTable
-import org.thoughtcrime.securesms.database.SQLiteDatabase
 import org.thoughtcrime.securesms.database.SignalDatabase
 import org.thoughtcrime.securesms.recipients.Recipient
 import org.thoughtcrime.securesms.recipients.RecipientId
+import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.TI_LOG_TAG
 import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue
 import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue.VerifiedStatus
+import org.whispersystems.signalservice.api.util.Preconditions
 
 
 class TI_IdentityTable internal constructor(context: Context?, databaseHelper: SignalDatabase?): DatabaseTable(context, databaseHelper), IdentityTableGlue {
@@ -119,5 +120,76 @@ class TI_IdentityTable internal constructor(context: Context?, databaseHelper: S
         Log.i(TAG, "Successfully inserted recipient $id with service id:$serviceID and status: $newStatus")
       }
     return true
+  }
+
+  /**
+   * State changes due to introduction modifications implemented here.
+   * PRE: introducee exists in recipient and identity table
+   * @param introduceeServiceId The service ID of the recipient whose verification status may change
+   * @param previousIntroduceeVerification the previous verification status of the introducee.
+   * @param newState the new state of the introduction that changed.
+   * @param logmessage what to print to logcat iff status was modified
+   */
+  @WorkerThread
+  override fun modifyIntroduceeVerification(introduceeServiceId: String, previousIntroduceeVerification: VerifiedStatus, newState: TI_Database.State, logmessage: String) {
+    // Initialize with what it was
+    var newIntroduceeVerification: IdentityTableGlue.VerifiedStatus;
+    // Check if we need to remain in suspected conflict
+    if (SignalDatabase.tiDatabase.atLeastOneIntroductionIs(TI_Database.State.ACCEPTED_CONFLICTING, introduceeServiceId)) {
+      newIntroduceeVerification = VerifiedStatus.SUSPECTED_COMPROMISE
+    } else {
+      when (newState) {
+        TI_Database.State.STALE_PENDING, TI_Database.State.STALE_ACCEPTED, TI_Database.State.STALE_REJECTED, TI_Database.State.STALE_ACCEPTED_CONFLICTING,
+        TI_Database.State.STALE_REJECTED_CONFLICTING, TI_Database.State.STALE_PENDING_CONFLICTING -> {
+          newIntroduceeVerification = VerifiedStatus.UNVERIFIED
+        }
+
+        TI_Database.State.ACCEPTED -> {
+          when (previousIntroduceeVerification) {
+            VerifiedStatus.DUPLEX_VERIFIED, VerifiedStatus.DIRECTLY_VERIFIED -> newIntroduceeVerification = VerifiedStatus.DUPLEX_VERIFIED
+            VerifiedStatus.DEFAULT, VerifiedStatus.UNVERIFIED, VerifiedStatus.INTRODUCED -> newIntroduceeVerification = VerifiedStatus.INTRODUCED
+
+          }
+        }
+
+
+      }
+    }
+    /**
+    when (previousIntroduceeVerification) {
+      VerifiedStatus.DEFAULT, VerifiedStatus.UNVERIFIED, VerifiedStatus.MANUALLY_VERIFIED -> if (newState == TI_Database.State.ACCEPTED) {
+        newIntroduceeVerification = VerifiedStatus.INTRODUCED
+      }
+
+      VerifiedStatus.DUPLEX_VERIFIED -> if (newState == TI_Database.State.REJECTED) {
+        // Stay "duplex verified" if another accepted introduction for this contact exist else "directly verified"
+        newIntroduceeVerification = if (SignalDatabase.tiDatabase.atLeastOneAcceptedIntroduction(introduceeServiceId)) VerifiedStatus.DUPLEX_VERIFIED else VerifiedStatus.DIRECTLY_VERIFIED
+      }
+
+      VerifiedStatus.DIRECTLY_VERIFIED -> if (newState == TI_Database.State.ACCEPTED) {
+        newIntroduceeVerification = VerifiedStatus.DUPLEX_VERIFIED
+      }
+
+      VerifiedStatus.INTRODUCED -> if (newState == TI_Database.State.REJECTED) {
+        // Stay "introduced" iff more than 1 accepted introduction for this contact exist else "unverified"
+        newIntroduceeVerification = if (SignalDatabase.tiDatabase.atLeastOneAcceptedIntroduction(introduceeServiceId)) VerifiedStatus.INTRODUCED else VerifiedStatus.UNVERIFIED
+      }
+
+      VerifiedStatus.SUSPECTED_COMPROMISE -> throw java.lang.AssertionError("Invalid verification status: " + previousIntroduceeVerification.toInt())
+      else -> throw java.lang.AssertionError("Invalid verification status: " + previousIntroduceeVerification.toInt())
+    }
+    if (newIntroduceeVerification != previousIntroduceeVerification) {
+      // Something changed
+      val rId = TI_Utils.getRecipientIdOrUnknown(introduceeServiceId)
+      try {
+        TI_Utils.updateContactsVerifiedStatus(rId, TI_Utils.getIdentityKey(rId), newIntroduceeVerification)
+      } catch (e: TI_Utils.TI_MissingIdentityException) {
+        e.printStackTrace()
+        throw java.lang.AssertionError(TAG + " Precondition violated, recipient " + rId + "'s verification status cannot be updated!")
+      }
+      i(TAG, logmessage)
+    **/
+      // TODO: return true on success
+    }
   }
 }

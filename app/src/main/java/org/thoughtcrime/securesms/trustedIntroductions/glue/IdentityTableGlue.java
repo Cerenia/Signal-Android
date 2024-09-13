@@ -225,4 +225,13 @@ public interface IdentityTableGlue {
       }
     }
   }
+
+  /**
+   *
+   * @param introduceeServiceId The service ID of the introducee that may get their verification state modified.
+   * @param previousIntroduceeVerification The previous introducee verification state.
+   * @param newState The new state of the modified introduction.
+   * @param logmessage What to print to logcat if the verification state was modified.
+   */
+  void modifyIntroduceeVerification(String introduceeServiceId, TI_IdentityTable.VerifiedStatus previousIntroduceeVerification, TI_Database.State newState, String logmessage);
 }
