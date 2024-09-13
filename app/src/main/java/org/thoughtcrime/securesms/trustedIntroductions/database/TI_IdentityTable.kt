@@ -16,8 +16,6 @@ import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.TI_LOG_TAG
 import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue
 import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue.VerifiedStatus
-import org.whispersystems.signalservice.api.util.Preconditions
-import kotlin.math.log
 
 
 class TI_IdentityTable internal constructor(context: Context?, databaseHelper: SignalDatabase?): DatabaseTable(context, databaseHelper), IdentityTableGlue {
@@ -124,17 +122,16 @@ class TI_IdentityTable internal constructor(context: Context?, databaseHelper: S
   }
 
   /**
-   * State changes due to introduction modifications implemented here.
-   * Parts of FSM implemented here.
+   * Parts of FSM that react to changing introductions implemented here.
    * PRE: introducee exists in recipient and identity table
    * @param introduceeServiceId The service ID of the recipient whose verification status may change
    * @param previousIntroduceeVerification the previous verification status of the introducee.
-   * @param newState the new state of the introduction that changed. PRE: May not be PENDING
-   * @param logmessage what to print to logcat iff status was modified
+   * @param newIntroductionState the new state of the introduction that changed. PRE: May not be PENDING
+   * @param logmessage what to print to logcat iff verification status of introducee was modified
    */
   @WorkerThread
-  override fun modifyIntroduceeVerification(introduceeServiceId: String, previousIntroduceeVerification: VerifiedStatus, newState: TI_Database.State, logmessage: String) {
-    val newIntroduceeVerification = when (newState) {
+  override fun modifyIntroduceeVerification(introduceeServiceId: String, previousIntroduceeVerification: VerifiedStatus, newIntroductionState: TI_Database.State, logmessage: String) {
+    val newIntroduceeVerification = when (newIntroductionState) {
         TI_Database.State.PENDING -> throw AssertionError("$TAG Precondition violation! newState may not be PENDING")
         // Any stale state leads to unverified
         TI_Database.State.STALE_PENDING, TI_Database.State.STALE_ACCEPTED, TI_Database.State.STALE_REJECTED, TI_Database.State.STALE_ACCEPTED_CONFLICTING,

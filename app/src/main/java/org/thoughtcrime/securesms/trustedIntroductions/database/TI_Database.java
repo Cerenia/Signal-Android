@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.annotation.WorkerThread;
+import androidx.camera.core.processing.SurfaceProcessorNode;
 
 import org.signal.core.util.SqlUtil;
 import org.signal.core.util.logging.Log;
@@ -512,7 +513,6 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
     // We are setting the pending states directly when the introduction is first received. There is no other transition to this state.
     Preconditions.checkArgument(newState != State.PENDING);
     Preconditions.checkArgument(introduction.getId() != null);
-    Preconditions.checkArgument(!introduction.getState().isStale());
 
     // Modify introduction
     ContentValues newValues = buildContentValuesForStateUpdate(introduction, newState);
@@ -546,17 +546,43 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
   public boolean atLeastOneIntroductionIs(State state, String introduceeServiceId){
     final String selection = String.format("%s=?", INTRODUCEE_SERVICE_ID)
                                     + String.format(" AND %s=?", STATE);
-
     String[] args = SqlUtil.buildArgs(introduceeServiceId,
                                       state.toInt());
-
     SQLiteDatabase writeableDatabase = getSignalWritableDatabase();
     Cursor c = writeableDatabase.query(TABLE_NAME, TI_ALL_PROJECTION, selection, args, null, null, null);
 
     return c.getCount() >= 1;
    }
 
+  /**
+   * Check database for any preexisting introduction and modify verification state of the introducee if appropriate.
+   * @param serviceId the service ID of the new contact
+   */
+  @WorkerThread
+  @Override public void handleDanglingIntroductions(String serviceId, String encodedIdentityKey) {
+    final String selection = String.format("%s=?", INTRODUCEE_SERVICE_ID);
+    String[] args = SqlUtil.buildArgs(serviceId);
+    SQLiteDatabase writeableDatabase = getSignalWritableDatabase();
+    Cursor c = writeableDatabase.query(TABLE_NAME, TI_ALL_PROJECTION, selection, args, null, null, null);
+    if(c.getCount() >= 1){
+      IntroductionReader reader = new IntroductionReader(c);
+      TI_Data current;
+      while (reader.hasNext()) {
+        current = reader.getNext();
+        if(!encodedIdentityKey.equals(current.getIntroduceeIdentityKey())){
+          // Turn this intro stale
+          ContentValues cv = buildContentValuesForStale(current.getIntroduction());
+          long result = writeableDatabase.update(TABLE_NAME, cv, ID + " = ?", SqlUtil.buildArgs(current.getId()));
+          if (result < 0){
+            throw new AssertionError(TAG + " Could not turn introduction for " + current.getIntroduceeName() + " stale!");
+          }
+          CONTINUE HERE!!
 
+        }
+      }
+      // Decide if you need to adjust the verification state of the now known introducee
+    }
+  }
 
 
   /**
