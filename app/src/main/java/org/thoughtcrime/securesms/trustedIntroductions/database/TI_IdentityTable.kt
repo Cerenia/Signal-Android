@@ -127,34 +127,59 @@ class TI_IdentityTable internal constructor(context: Context?, databaseHelper: S
    * PRE: introducee exists in recipient and identity table
    * @param introduceeServiceId The service ID of the recipient whose verification status may change
    * @param previousIntroduceeVerification the previous verification status of the introducee.
-   * @param newState the new state of the introduction that changed.
+   * @param newState the new state of the introduction that changed. PRE: May not be PENDING
    * @param logmessage what to print to logcat iff status was modified
    */
   @WorkerThread
   override fun modifyIntroduceeVerification(introduceeServiceId: String, previousIntroduceeVerification: VerifiedStatus, newState: TI_Database.State, logmessage: String) {
-    // Initialize with what it was
-    var newIntroduceeVerification: IdentityTableGlue.VerifiedStatus;
-    // Check if we need to remain in suspected conflict
-    if (SignalDatabase.tiDatabase.atLeastOneIntroductionIs(TI_Database.State.ACCEPTED_CONFLICTING, introduceeServiceId)) {
-      newIntroduceeVerification = VerifiedStatus.SUSPECTED_COMPROMISE
-    } else {
-      when (newState) {
+    val newIntroduceeVerification = when (newState) {
+        TI_Database.State.PENDING -> throw AssertionError("$TAG Precondition violation! newState may not be PENDING")
+        // Any stale state leads to unverified
         TI_Database.State.STALE_PENDING, TI_Database.State.STALE_ACCEPTED, TI_Database.State.STALE_REJECTED, TI_Database.State.STALE_ACCEPTED_CONFLICTING,
-        TI_Database.State.STALE_REJECTED_CONFLICTING, TI_Database.State.STALE_PENDING_CONFLICTING -> {
-          newIntroduceeVerification = VerifiedStatus.UNVERIFIED
-        }
-
-        TI_Database.State.ACCEPTED -> {
-          when (previousIntroduceeVerification) {
-            VerifiedStatus.DUPLEX_VERIFIED, VerifiedStatus.DIRECTLY_VERIFIED -> newIntroduceeVerification = VerifiedStatus.DUPLEX_VERIFIED
-            VerifiedStatus.DEFAULT, VerifiedStatus.UNVERIFIED, VerifiedStatus.INTRODUCED -> newIntroduceeVerification = VerifiedStatus.INTRODUCED
-
+        TI_Database.State.STALE_REJECTED_CONFLICTING, TI_Database.State.STALE_PENDING_CONFLICTING -> VerifiedStatus.UNVERIFIED
+        // An accepted introduction may lead to the introducee verification state:
+        TI_Database.State.ACCEPTED -> when (previousIntroduceeVerification) {
+            // Becoming or staying strongly verified
+            VerifiedStatus.DUPLEX_VERIFIED, VerifiedStatus.DIRECTLY_VERIFIED -> VerifiedStatus.DUPLEX_VERIFIED
+            // Staying or becoming introduced
+            VerifiedStatus.DEFAULT, VerifiedStatus.UNVERIFIED, VerifiedStatus.INTRODUCED, VerifiedStatus.MANUALLY_VERIFIED -> VerifiedStatus.INTRODUCED
+            // Or staying in the suspected compromised state
+            VerifiedStatus.SUSPECTED_COMPROMISE -> VerifiedStatus.SUSPECTED_COMPROMISE
           }
-        }
-
-
+        // A rejected introduction may lead to the introducee verification state:
+        TI_Database.State.REJECTED -> when (previousIntroduceeVerification) {
+            // Staying the same
+            VerifiedStatus.DIRECTLY_VERIFIED, VerifiedStatus.MANUALLY_VERIFIED, VerifiedStatus.DEFAULT, VerifiedStatus.UNVERIFIED -> previousIntroduceeVerification
+            // Potentially degrading in status
+            VerifiedStatus.DUPLEX_VERIFIED -> {
+              if(SignalDatabase.tiDatabase.atLeastOneIntroductionIs(TI_Database.State.ACCEPTED, introduceeServiceId)) VerifiedStatus.DUPLEX_VERIFIED
+              else VerifiedStatus.DIRECTLY_VERIFIED
+            }
+            VerifiedStatus.INTRODUCED -> {
+              if(SignalDatabase.tiDatabase.atLeastOneIntroductionIs(TI_Database.State.ACCEPTED, introduceeServiceId)) VerifiedStatus.INTRODUCED
+              else VerifiedStatus.UNVERIFIED
+            }
+            // Or staying in the suspected compromised state
+            VerifiedStatus.SUSPECTED_COMPROMISE -> VerifiedStatus.SUSPECTED_COMPROMISE
+          }
+        // An accepted conflicting introduction will lead to a suspected compromise
+        TI_Database.State.ACCEPTED_CONFLICTING -> VerifiedStatus.SUSPECTED_COMPROMISE
+        // A rejected conflicting introduction might move the introducee out of the conflicting state or keep the state the same
+        TI_Database.State.REJECTED_CONFLICTING -> when (previousIntroduceeVerification) {
+            VerifiedStatus.SUSPECTED_COMPROMISE -> {
+              if(SignalDatabase.tiDatabase.atLeastOneIntroductionIs(TI_Database.State.ACCEPTED_CONFLICTING, introduceeServiceId)) VerifiedStatus.SUSPECTED_COMPROMISE
+              else {
+                if (SignalDatabase.tiDatabase.atLeastOneIntroductionIs(TI_Database.State.ACCEPTED, introduceeServiceId)) VerifiedStatus.INTRODUCED
+                else VerifiedStatus.UNVERIFIED
+              }
+            }
+            VerifiedStatus.INTRODUCED, VerifiedStatus.UNVERIFIED, VerifiedStatus.DIRECTLY_VERIFIED, VerifiedStatus.MANUALLY_VERIFIED, VerifiedStatus.DEFAULT,
+            VerifiedStatus.DUPLEX_VERIFIED -> previousIntroduceeVerification
+          }
+        TI_Database.State.PENDING_CONFLICTING -> previousIntroduceeVerification
       }
-    }
+    TI_Utils.updateContactsVerifiedStatus()
+
     /**
     when (previousIntroduceeVerification) {
       VerifiedStatus.DEFAULT, VerifiedStatus.UNVERIFIED, VerifiedStatus.MANUALLY_VERIFIED -> if (newState == TI_Database.State.ACCEPTED) {
@@ -190,6 +215,5 @@ class TI_IdentityTable internal constructor(context: Context?, databaseHelper: S
       i(TAG, logmessage)
     **/
       // TODO: return true on success
-    }
   }
 }

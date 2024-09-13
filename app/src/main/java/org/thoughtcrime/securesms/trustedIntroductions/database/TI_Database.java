@@ -659,6 +659,7 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
     // Any stale state will result in the same unverified new verification state
     tiIdentityDB.modifyIntroduceeVerification(serviceId, tiIdentityDB.getVerifiedStatus(recipient.getId()), State.STALE_PENDING, "Marked " + recipient.getDisplayName(context) + " unverified"
                                                                                                                                  + "after successfully turning all introductions for them stale.");
+    return true;
   }
 
   private boolean turnAllIntroductionsStaleInternal(String serviceId){
