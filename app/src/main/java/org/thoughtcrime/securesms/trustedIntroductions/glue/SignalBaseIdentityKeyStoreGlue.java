@@ -18,11 +18,4 @@ public interface SignalBaseIdentityKeyStoreGlue {
       }
     });
   }
-
-  static void changeVerificationStatusToUnverified(String serviceId, String TAG){
-    // Go through the Identity table interface to change the verification state for both.
-    SignalExecutors.BOUNDED.execute(() -> {
-      SignalDatabase.tiIdentityDatabase().saveIdentity(serviceId, IdentityTableGlue.VerifiedStatus.UNVERIFIED);
-    });
-  }
 }
