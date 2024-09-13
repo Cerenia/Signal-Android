@@ -13,12 +13,12 @@ import androidx.annotation.WorkerThread;
 import org.signal.core.util.SqlUtil;
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.database.DatabaseTable;
-import org.thoughtcrime.securesms.database.RecipientTable;
 import org.thoughtcrime.securesms.database.SQLiteDatabase;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.database.model.RecipientRecord;
-import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
+import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.trustedIntroductions.MissingIdentityException;
+import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue;
 import org.thoughtcrime.securesms.trustedIntroductions.glue.RecipientTableGlue;
 import org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue;
 import org.thoughtcrime.securesms.recipients.RecipientId;
@@ -543,7 +543,7 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
         if (previousIntroduceeVerification == null){
           throw new AssertionError("Unexpected missing verification status for " + introduction.getIntroduceeName());
         }
-        modifyIntroduceeVerification(introduction.getIntroduceeServiceId(), previousIntroduceeVerification, newState, logMessage);
+        SignalDatabase.tiIdentityDatabase().modifyIntroduceeVerification(introduction.getIntroduceeServiceId(), previousIntroduceeVerification, newState, logMessage)
       } // if introduceeID is unknnown we do not have the recipient as a conversation partner yet and can skip any verification modification
       return true;
     }
@@ -553,81 +553,23 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
   }
 
   /**
-   * FSMs for verification status implemented here.
-   * PRE: introducee exists in recipient and identity table
-   * @param introduceeServiceId The service ID of the recipient whose verification status may change
-   * @param previousIntroduceeVerification the previous verification status of the introducee
-   * @param newState PRE: !STALE (security number changes are handled in a seperate codepath)
-   * @param logmessage what to print to logcat iff status was modified
-   */
-  @Override
-  @WorkerThread public void modifyIntroduceeVerification(@NonNull String introduceeServiceId, @NonNull TI_IdentityTable.VerifiedStatus previousIntroduceeVerification, @NonNull State newState, @NonNull String logmessage){
-    Preconditions.checkArgument(!newState.isStale());
-    // Initialize with what it was
-    TI_IdentityTable.VerifiedStatus newIntroduceeVerification = previousIntroduceeVerification;
-    switch (previousIntroduceeVerification){
-      case DEFAULT:
-      case UNVERIFIED:
-      case MANUALLY_VERIFIED:
-        if (newState == State.ACCEPTED){
-          newIntroduceeVerification = TI_IdentityTable.VerifiedStatus.INTRODUCED;
-        }
-        break;
-      case DUPLEX_VERIFIED:
-        if (newState == State.REJECTED){
-          // Stay "duplex verified" iff only more than 1 accepted introduction for this contact exist else "directly verified"
-          newIntroduceeVerification = multipleAcceptedIntroductions(introduceeServiceId) ? TI_IdentityTable.VerifiedStatus.DUPLEX_VERIFIED :
-                                      TI_IdentityTable.VerifiedStatus.DIRECTLY_VERIFIED;
-        }
-        break;
-      case DIRECTLY_VERIFIED:
-        if (newState == State.ACCEPTED){
-          newIntroduceeVerification = TI_IdentityTable.VerifiedStatus.DUPLEX_VERIFIED;
-        }
-        break;
-      case INTRODUCED:
-        if (newState == State.REJECTED){
-          // Stay "introduced" iff more than 1 accepted introduction for this contact exist else "unverified"
-          newIntroduceeVerification = multipleAcceptedIntroductions(introduceeServiceId) ? TI_IdentityTable.VerifiedStatus.INTRODUCED :
-                                      TI_IdentityTable.VerifiedStatus.UNVERIFIED;
-        }
-        break;
-      default:
-        throw new AssertionError("Invalid verification status: " + previousIntroduceeVerification.toInt());
-    }
-    if (newIntroduceeVerification != previousIntroduceeVerification) {
-      // Something changed
-      RecipientId rId = TI_Utils.getRecipientIdOrUnknown(introduceeServiceId);
-      try {
-        TI_Utils.updateContactsVerifiedStatus(rId, TI_Utils.getIdentityKey(rId), newIntroduceeVerification);
-      } catch (TI_Utils.TI_MissingIdentityException e){
-        e.printStackTrace();
-        throw new AssertionError(TAG + " Precondition violated, recipient " + rId + "'s verification status cannot be updated!");
-      }
-      Log.i(TAG, logmessage);
-    }
-  }
-
-  /**
-   * PRE: at least one accepted introduction for introduceeID
+   * @param state which state to query for
    * @param introduceeServiceId The serviceID of the recipient whose verification status may change
    */
   @WorkerThread
-  private boolean multipleAcceptedIntroductions(String introduceeServiceId){
+  public boolean atLeastOneIntroductionIs(State state, String introduceeServiceId){
     final String selection = String.format("%s=?", INTRODUCEE_SERVICE_ID)
                                     + String.format(" AND %s=?", STATE);
 
     String[] args = SqlUtil.buildArgs(introduceeServiceId,
-                                      State.ACCEPTED.toInt());
+                                      state.toInt());
 
-    SQLiteDatabase writeableDatabase = databaseHelper.getSignalWritableDatabase();
+    SQLiteDatabase writeableDatabase = getSignalWritableDatabase();
     Cursor c = writeableDatabase.query(TABLE_NAME, TI_ALL_PROJECTION, selection, args, null, null, null);
 
-    // check precondition
-    Preconditions.checkArgument(c.getCount() > 0);
-
-    return c.getCount() > 1;
+    return c.getCount() >= 1;
    }
+
 
 
 
@@ -701,35 +643,49 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
   @Override
   /**
    * Turns all introductions for the introducee named by id stale.
+   * If this succeeds attempts to update the verification status of the introducee
    * @param serviceId the introducee whose security nr. changed.
    * @return true if all updates succeeded, false otherwise
    */
   public boolean turnAllIntroductionsStale(String serviceId){
-     boolean updateSucceeded = true;
-     Preconditions.checkArgument(!TI_Utils.getRecipientIdOrUnknown(serviceId).equals(RecipientId.UNKNOWN));
-     String query = INTRODUCEE_SERVICE_ID + " = ?";
-     String[] args = SqlUtil.buildArgs(serviceId);
+    boolean success = turnAllIntroductionsStaleInternal(serviceId);
+    Recipient recipient =  Recipient.live(RecipientId.fromSidOrE164(serviceId)).get();
+    if(!success){
+      // This should hopefully never happen... if it does we need to investigate how to handle this inconsistent state.
+      // Maybe turn it into a job and try again?
+      throw new AssertionError("At least one introduction for: " + recipient.getDisplayName(context) + " could not be turned stale! Verification state will not be updated!");
+    }
+    IdentityTableGlue tiIdentityDB = SignalDatabase.tiIdentityDatabase();
+    // Any stale state will result in the same unverified new verification state
+    tiIdentityDB.modifyIntroduceeVerification(serviceId, tiIdentityDB.getVerifiedStatus(recipient.getId()), State.STALE_PENDING, "Marked " + recipient.getDisplayName(context) + " unverified"
+                                                                                                                                 + "after successfully turning all introductions for them stale.");
+  }
 
-     SQLiteDatabase writeableDatabase = databaseHelper.getSignalWritableDatabase();
-     Cursor c = writeableDatabase.query(TABLE_NAME, TI_ALL_PROJECTION, query, args, null, null, null);
-     IntroductionReader reader = new IntroductionReader(c);
-     TI_Data introduction;
-     while((introduction = reader.getNext()) != null){
-       // If the intro is already stale, we don't need to do anything.
-       if(!introduction.getState().isStale()){
-         ContentValues cv = buildContentValuesForStale(introduction);
-         int res = writeableDatabase.update(TABLE_NAME, cv, ID + " = ?", SqlUtil.buildArgs(introduction.getId()));
-         if (res < 0){
-           Log.e(TAG, "Introduction " + introduction.getId() + " for " + introduction.getIntroduceeName() + " with state " + introduction.getState() + " could not be turned stale!");
-           updateSucceeded = false;
-         } else {
-           Log.i(TAG, "Introduction " + introduction.getId() + " for " + introduction.getIntroduceeName() + " with state " + introduction.getState() + " was turned stale!");
-           // TODO: For multidevice, syncing would be handled here
-         }
-       }
-     }
-     // TODO: This does not really make sense here when there are multiple introductions...
-     return updateSucceeded;
+  private boolean turnAllIntroductionsStaleInternal(String serviceId){
+    boolean updateSucceeded = true;
+    Preconditions.checkArgument(!TI_Utils.getRecipientIdOrUnknown(serviceId).equals(RecipientId.UNKNOWN));
+    String query = INTRODUCEE_SERVICE_ID + " = ?";
+    String[] args = SqlUtil.buildArgs(serviceId);
+
+    SQLiteDatabase writeableDatabase = databaseHelper.getSignalWritableDatabase();
+    Cursor c = writeableDatabase.query(TABLE_NAME, TI_ALL_PROJECTION, query, args, null, null, null);
+    IntroductionReader reader = new IntroductionReader(c);
+    TI_Data introduction;
+    while((introduction = reader.getNext()) != null){
+      // If the intro is already stale, we don't need to do anything.
+      if(!introduction.getState().isStale()){
+        ContentValues cv = buildContentValuesForStale(introduction);
+        int res = writeableDatabase.update(TABLE_NAME, cv, ID + " = ?", SqlUtil.buildArgs(introduction.getId()));
+        if (res < 0){
+          Log.e(TAG, "Introduction " + introduction.getId() + " for " + introduction.getIntroduceeName() + " with state " + introduction.getState() + " could not be turned stale!");
+          updateSucceeded = false;
+        } else {
+          Log.i(TAG, "Introduction " + introduction.getId() + " for " + introduction.getIntroduceeName() + " with state " + introduction.getState() + " was turned stale!");
+          // TODO: For multidevice, syncing would be handled here
+        }
+      }
+    }
+    return updateSucceeded;
   }
 
   @WorkerThread

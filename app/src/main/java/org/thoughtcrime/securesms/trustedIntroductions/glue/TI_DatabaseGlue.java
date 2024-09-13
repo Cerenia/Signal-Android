@@ -5,13 +5,13 @@ import android.content.Context;
 
 import androidx.annotation.Nullable;
 
+import org.jetbrains.annotations.NotNull;
 import org.thoughtcrime.securesms.database.SQLiteDatabase;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.database.model.RecipientRecord;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database;
-import org.thoughtcrime.securesms.trustedIntroductions.database.TI_IdentityTable;
 
 import java.util.Map;
 
@@ -36,8 +36,6 @@ public interface TI_DatabaseGlue {
 
   Map<RecipientId, RecipientRecord> fetchRecipientRecord(RecipientId introduceeId);
 
-  void modifyIntroduceeVerification(String introduceeServiceId, TI_IdentityTable.VerifiedStatus previousIntroduceeVerification, TI_Database.State newState, String format);
-
   ContentValues buildContentValuesForStateUpdate(TI_Data introduction, TI_Database.State newState);
   SQLiteDatabase getSignalWritableDatabase();
 
@@ -56,4 +54,6 @@ public interface TI_DatabaseGlue {
   boolean acceptIntroduction(TI_Data introduction);
 
   boolean rejectIntroduction(TI_Data introduction);
+
+  boolean atLeastOneIntroductionIs(TI_Database.State state, @NotNull String introduceeServiceId);
 }
