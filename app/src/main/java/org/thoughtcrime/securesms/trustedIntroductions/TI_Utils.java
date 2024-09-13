@@ -240,7 +240,7 @@ public class TI_Utils {
     return identityRecord.get().getIdentityKey();
   }
 
-  private static String encodeIdentityKey(IdentityKey key){
+  public static String encodeIdentityKey(IdentityKey key){
     return Base64.encodeWithoutPadding(key.serialize());
   }
 

@@ -56,4 +56,6 @@ public interface TI_DatabaseGlue {
   boolean rejectIntroduction(TI_Data introduction);
 
   boolean atLeastOneIntroductionIs(TI_Database.State state, @NotNull String introduceeServiceId);
+
+  void handleDanglingIntroductions(String serviceId, String encodedIdentityKey);
 }
