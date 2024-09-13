@@ -292,7 +292,7 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
                                                              @NonNull String introduceeIdentityKey,
                                                              @NonNull String predictedSecurityNumber,
                                                              long timestamp) {
-    Preconditions.checkArgument(state == State.PENDING || state == State.CONFLICTING);
+    Preconditions.checkArgument(state == State.PENDING || state == State.PENDING_CONFLICTING);
     ContentValues cv = new ContentValues();
     cv.put(STATE, state.toInt());
     cv.put(INTRODUCER_SERVICE_ID, introducerServiceId);
@@ -387,30 +387,16 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
     Preconditions.checkNotNull(introduction.getIntroducerServiceId());
     Preconditions.checkNotNull(introduction.getPredictedSecurityNumber());
     Preconditions.checkArgument(!introduction.getState().isStale());
-    State newState;
     // Find stale state
-    switch(introduction.getState()){
-      case PENDING:
-        newState = State.STALE_PENDING;
-        break;
-      case ACCEPTED:
-        newState = State.STALE_ACCEPTED;
-        break;
-      case REJECTED:
-        newState = State.STALE_REJECTED;
-        break;
-      case PENDING_CONFLICTING:
-        newState = State.STALE_PENDING_CONFLICTING;
-        break;
-      case ACCEPTED_CONFLICTING:
-        newState = State.STALE_ACCEPTED_CONFLICTING;
-        break;
-      case REJECTED_CONFLICTING:
-        newState = State.STALE_REJECTED_CONFLICTING;
-        break;
-      default:
-          throw new AssertionError("State: " + introduction.getState() + " was illegal or already stale.");
-    }
+    State newState = switch (introduction.getState()) {
+      case PENDING -> State.STALE_PENDING;
+      case ACCEPTED -> State.STALE_ACCEPTED;
+      case REJECTED -> State.STALE_REJECTED;
+      case PENDING_CONFLICTING -> State.STALE_PENDING_CONFLICTING;
+      case ACCEPTED_CONFLICTING -> State.STALE_ACCEPTED_CONFLICTING;
+      case REJECTED_CONFLICTING -> State.STALE_REJECTED_CONFLICTING;
+      default -> throw new AssertionError("State: " + introduction.getState() + " was illegal or already stale.");
+    };
 
     return buildContentValuesForUpdate(introduction.getId(),
                                        newState,
@@ -543,7 +529,7 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
         if (previousIntroduceeVerification == null){
           throw new AssertionError("Unexpected missing verification status for " + introduction.getIntroduceeName());
         }
-        SignalDatabase.tiIdentityDatabase().modifyIntroduceeVerification(introduction.getIntroduceeServiceId(), previousIntroduceeVerification, newState, logMessage)
+        SignalDatabase.tiIdentityDatabase().modifyIntroduceeVerification(introduction.getIntroduceeServiceId(), previousIntroduceeVerification, newState, logMessage);
       } // if introduceeID is unknnown we do not have the recipient as a conversation partner yet and can skip any verification modification
       return true;
     }
