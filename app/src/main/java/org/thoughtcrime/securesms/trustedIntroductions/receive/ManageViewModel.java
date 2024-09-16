@@ -29,11 +29,11 @@ public class ManageViewModel extends ViewModel {
   private final MutableLiveData<String>   filter;
   private final MutableLiveData<List<Pair<TI_Data, IntroducerInformation>>> introductions;
   @NonNull      String                                                      forgottenPlaceholder;
-  private boolean      introductionsLoaded;
+  private boolean                  introductionsLoaded;
   // Filters
-  private MutableLiveData<Boolean> showAccepted = new MutableLiveData<>(true);
-  private MutableLiveData<Boolean> showRejected = new MutableLiveData<>(true);
-  private MutableLiveData<Boolean> showStale = new MutableLiveData<>(true);
+  private MutableLiveData<Boolean> showTrusted    = new MutableLiveData<>(true);
+  private MutableLiveData<Boolean> showDistrusted = new MutableLiveData<>(true);
+  private MutableLiveData<Boolean> showStale      = new MutableLiveData<>(true);
   private MutableLiveData<Boolean> showConflicting = new MutableLiveData<>(true);
 
   ManageViewModel(ManageManager manager, @NonNull String forgottenPlaceholder){
@@ -45,12 +45,12 @@ public class ManageViewModel extends ViewModel {
   }
 
   // UI filters
-  public void setShowAccepted(Boolean state){
-    showAccepted.postValue(state);
+  public void setShowTrusted(Boolean state){
+    showTrusted.postValue(state);
   }
 
-  public void setShowRejected(Boolean state){
-    showRejected.postValue(state);
+  public void setShowDistrusted(Boolean state){
+    showDistrusted.postValue(state);
   }
 
   public void setShowStale(Boolean state){
@@ -69,12 +69,12 @@ public class ManageViewModel extends ViewModel {
     return showStale;
   }
 
-  public LiveData<Boolean> showAccepted(){
-    return showAccepted;
+  public LiveData<Boolean> showTrusted(){
+    return showTrusted;
   }
 
-  public LiveData<Boolean> showRejected(){
-    return showRejected;
+  public LiveData<Boolean> showDistrusted(){
+    return showDistrusted;
   }
 
   public void setTextFilter(String filter) {
