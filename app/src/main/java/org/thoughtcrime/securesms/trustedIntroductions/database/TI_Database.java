@@ -30,6 +30,7 @@ import org.whispersystems.signalservice.api.util.Preconditions;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
@@ -564,23 +565,31 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
     String[] args = SqlUtil.buildArgs(serviceId);
     SQLiteDatabase writeableDatabase = getSignalWritableDatabase();
     Cursor c = writeableDatabase.query(TABLE_NAME, TI_ALL_PROJECTION, selection, args, null, null, null);
-    if(c.getCount() >= 1){
+    ArrayList<TI_Data> staleIntroductions = new ArrayList<>();
+    if (c.getCount() >= 1) {
       IntroductionReader reader = new IntroductionReader(c);
       TI_Data current;
-      while (reader.hasNext()) {
+      do {
         current = reader.getNext();
         if(!encodedIdentityKey.equals(current.getIntroduceeIdentityKey())){
-          // Turn this intro stale
-          ContentValues cv = buildContentValuesForStale(current.getIntroduction());
-          long result = writeableDatabase.update(TABLE_NAME, cv, ID + " = ?", SqlUtil.buildArgs(current.getId()));
-          if (result < 0){
-            throw new AssertionError(TAG + " Could not turn introduction for " + current.getIntroduceeName() + " stale!");
-          }
-          CONTINUE HERE!!
-
+          // Add this datapoint to the introductions that must be turned stale
+          staleIntroductions.add(current);
+        }
+      } while (reader.hasNext());
+      try {
+        reader.close();
+      } catch (IOException e) {
+        e.printStackTrace();
+        throw new AssertionError("Error occured while trying to close the cursor to dangling Introductions for " + current.getIntroduceeName());
+      }
+      // Turn all introductions stale that had the incorrect identity key
+      for (TI_Data staleIntro: staleIntroductions) {
+        ContentValues cv = buildContentValuesForStale(staleIntro.getIntroduction());
+        long result = writeableDatabase.update(TABLE_NAME, cv, ID + " = ?", SqlUtil.buildArgs(staleIntro.getId()));
+        if (result < 0){
+          throw new AssertionError(TAG + " Could not turn introduction for " + staleIntro.getIntroduceeName() + " stale!");
         }
       }
-      // Decide if you need to adjust the verification state of the now known introducee
     }
   }
 
