@@ -7536,17 +7536,18 @@
     <string name="ManageIntroductionsFragment__conflict_resolution_todo">The guided conflict resolution process is not yet implemented. TODO</string>
     <string name="ManageIntroductionsFragment__Rejected">Distrusted</string>
     <string name="ManageIntroductionsFragment__Accepted">Trusted</string>
-    <string name="ManageIntroductionsFragment__Conflicting">Conflicting</string>
+    <string name="ManageIntroductionsFragment__Conflicting">Conflict!</string>
     <string name="ManageIntroductionsFragment__Stale">Stale</string>
 
     <!-- ManageIntroductionsListItem -->
     <string name="ManageIntroductionsListItem__Pending">Trust?</string>
-    <string name="ManageIntroductionsListItem__Rejected">Misstrusted</string>
+    <string name="ManageIntroductionsListItem__Rejected">Distrusted</string>
     <string name="ManageIntroductionsListItem__Accepted">Trusted</string>
     <string name="ManageIntroductionsListItem__Conflicting">Conflict</string>
     <string name="ManageIntroductionsListItem__Stale">Stale</string>
     <string name="ManageIntroductionsListItem__Forgotten_Introducer">Masked</string>
     <string name="ManageIntroductionsListItem__Forget_Introducer">Mask</string>
+    <string name="ManageIntroductionsListItem__Unknown_Value">Unknown</string>
 
     <!-- ManageIntroductionsListItemHeader -->
     <string name="ManageIntroductionsListItemHeader__Date">Date:</string>
@@ -7564,11 +7565,12 @@
     <string name="TrustedIntroductionsWaitForIdentityJob_OnFailureNotificationText">For %1$s introducing %2$s.</string>
 
     <!-- ConversationTitleView added states -->
-    <string name="ConversationTitleView_manually_verified">Manually Verified</string>
-    <string name="ConversationTitleView_directly_verified">QR Verified</string>
-    <string name="ConversationTitleView_introduced">Introduced</string>
-    <string name="ConversationTitleView_duplex">Strongly Verified</string>
-    <string name="ConversationTitleView_unverified">Unverified</string>  <!-- Should never be visible -->
+    <string name="ConversationTitleView__manually_verified">Manually Verified</string>
+    <string name="ConversationTitleView__directly_verified">QR Verified</string>
+    <string name="ConversationTitleView__introduced">Introduced</string>
+    <string name="ConversationTitleView__duplex">Strongly Verified</string>
+    <string name="ConversationTitleView__suspected_compromise">Suspected Compromise</string>
+    <string name="ConversationTitleView__unverified">Unverified</string>  <!-- Should never be visible -->
 
     <!-- RegistrationActivity -->
     <string name="RegistrationActivity_ti_backup_size_s">Trusted introductions backup size: %s</string>

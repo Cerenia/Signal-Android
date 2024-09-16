@@ -74,7 +74,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.5" />
+        app:layout_constraintGuide_percent="0.27" />
 
 
     <org.thoughtcrime.securesms.components.FromTextView
@@ -160,7 +160,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.9" />
+        app:layout_constraintGuide_percent="0.6" />
     <!--The following views are not correctly constraining to the right guideline
     and the previous ones are ellipsizing too soon... I have not yet figured out why and
     am countering with larger margins, but it's not quite clean on orientation change.-->
