@@ -38,14 +38,13 @@ import static android.view.View.INVISIBLE;
 import static android.view.View.VISIBLE;
 import static org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.ACCEPTED;
 import static org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.ACCEPTED_CONFLICTING;
-import static org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.CONFLICTING;
 import static org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.PENDING;
 import static org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.PENDING_CONFLICTING;
 import static org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.REJECTED;
 import static org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.REJECTED_CONFLICTING;
 import static org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.STALE_ACCEPTED;
-import static org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.STALE_CONFLICTING;
 import static org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.STALE_PENDING;
+import static org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.STALE_PENDING_CONFLICTING;
 import static org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.STALE_REJECTED;
 import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.INTRODUCTION_DATE_PATTERN;
 
@@ -225,118 +224,83 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
      * @return
      */
     private void changeListitemAppearanceByState(TI_Database.State s){
-      switch(s){
-        case PENDING:
-          radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Pending);
+      // Background
+      if (s.isStale() && s.isConflicting()){
+        this.itemView.setBackground(ContextCompat.getDrawable(context, R.drawable.ti_manage_listview_background_stale_conflicting));
+      } else if (s.isStale()){
+        this.itemView.setBackground(ContextCompat.getDrawable(context, R.drawable.ti_manage_listview_background_stale));
+      } else if (s.isConflicting()){
+        this.itemView.setBackground(ContextCompat.getDrawable(context, R.drawable.ti_manage_listview_background_conflicting));
+      } else {
+        this.itemView.setBackground(ContextCompat.getDrawable(context, R.drawable.ti_manage_listview_background_default));
+      }
+
+      // Clickability radioGroupButtons
+      accept.setEnabled(!s.isStale());
+      accept.setClickable(!s.isStale());
+      reject.setEnabled(!s.isStale());
+      reject.setClickable(!s.isStale());
+
+      // Masking can only happen after introduction was interacted with or it turned stale
+      maskIntroducer.setVisibility(VISIBLE);
+      if (s == STALE_PENDING || s == STALE_PENDING_CONFLICTING){
+        maskIntroducer.setEnabled(true);
+        maskIntroducer.setClickable(true);
+      } else {
+        maskIntroducer.setEnabled(!s.isPending());
+        maskIntroducer.setClickable(!s.isPending());
+        setForgetIntroducerComponentVisibility();
+      }
+
+      // Label text, visibility && radio group checking state
+      switch (s){
+        case PENDING, PENDING_CONFLICTING:
           radioGroupLabel.setVisibility(VISIBLE);
-          radioGroup.setVisibility(VISIBLE);
-          accept.setVisibility(VISIBLE);
-          accept.setEnabled(true);
-          accept.setClickable(true);
-          reject.setVisibility(VISIBLE);
-          reject.setEnabled(true);
-          reject.setClickable(true);
-          maskIntroducer.setVisibility(VISIBLE);
-          maskIntroducer.setEnabled(false);
-          maskIntroducer.setClickable(false);
-          this.itemView.setBackground(ContextCompat.getDrawable(context, R.drawable.ti_manage_listview_background_default));
+          radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Pending);
           break;
-        case ACCEPTED:
-          radioGroupLabel.setVisibility(INVISIBLE);
-          radioGroup.setVisibility(VISIBLE);
-          accept.setVisibility(VISIBLE);
-          accept.setEnabled(true);
-          reject.setVisibility(VISIBLE);
-          reject.setEnabled(true);
+        case ACCEPTED_CONFLICTING:
+          radioGroupLabel.setVisibility(VISIBLE);
+          radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Conflicting);
           if (!accept.isChecked()) {
             accept.setChecked(true);
           }
-          setForgetIntroducerComponentVisibility();
-          reject.setClickable(true);
-          accept.setClickable(true);
-          this.itemView.setBackground(ContextCompat.getDrawable(context, R.drawable.ti_manage_listview_background_default));
           break;
-        case REJECTED:
-          radioGroupLabel.setVisibility(INVISIBLE);
-          radioGroup.setVisibility(VISIBLE);
-          accept.setVisibility(VISIBLE);
-          accept.setEnabled(true);
-          reject.setVisibility(VISIBLE);
-          reject.setEnabled(true);
+        case REJECTED_CONFLICTING:
+          radioGroupLabel.setVisibility(VISIBLE);
+          radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Conflicting);
           if (!reject.isChecked()){
             reject.setChecked(true);
           }
-          setForgetIntroducerComponentVisibility();
-          reject.setClickable(true);
-          accept.setClickable(true);
-          this.itemView.setBackground(ContextCompat.getDrawable(context, R.drawable.ti_manage_listview_background_default));
           break;
-        case CONFLICTING:
-          radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Conflicting);
+        case  STALE_PENDING,  STALE_PENDING_CONFLICTING:
           radioGroupLabel.setVisibility(VISIBLE);
-          accept.setEnabled(false);
-          accept.setClickable(false);
-          reject.setEnabled(false);
-          accept.setClickable(false);
-          radioGroup.setVisibility(GONE);
-          setForgetIntroducerComponentVisibility();
-          this.itemView.setBackground(ContextCompat.getDrawable(context, R.drawable.ti_manage_listview_background_conflicting));
+          radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Stale);
           break;
-        case STALE_ACCEPTED: // Keep the visible state of the switch in these cases
-          radioGroupLabel.setVisibility(INVISIBLE);
-          radioGroup.setVisibility(VISIBLE);
-          accept.setVisibility(VISIBLE);
-          accept.setEnabled(false);
-          accept.setClickable(false);
-          if (!accept.isChecked()){
+        case STALE_ACCEPTED, STALE_ACCEPTED_CONFLICTING:
+          radioGroupLabel.setVisibility(VISIBLE);
+          radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Stale);
+          if (!accept.isChecked()) {
             accept.setChecked(true);
           }
-          reject.setVisibility(VISIBLE);
-          reject.setEnabled(false);
-          reject.setClickable(false);
-          setForgetIntroducerComponentVisibility();
-          this.itemView.setBackground(ContextCompat.getDrawable(context, R.drawable.ti_manage_listview_background_stale));
           break;
-        case STALE_REJECTED:
-          radioGroupLabel.setVisibility(INVISIBLE);
-          radioGroup.setVisibility(VISIBLE);
-          accept.setVisibility(VISIBLE);
-          accept.setEnabled(false);
-          accept.setClickable(false);
-          reject.setVisibility(VISIBLE);
-          reject.setEnabled(false);
-          reject.setClickable(false);
-          if (!reject.isChecked()) {
+        case STALE_REJECTED, STALE_REJECTED_CONFLICTING:
+          radioGroupLabel.setVisibility(VISIBLE);
+          radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Stale);
+          if (!reject.isChecked()){
             reject.setChecked(true);
           }
-          setForgetIntroducerComponentVisibility();
-          this.itemView.setBackground(ContextCompat.getDrawable(context, R.drawable.ti_manage_listview_background_stale));
           break;
-        case STALE_PENDING:
-          radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Stale);
-          radioGroupLabel.setVisibility(VISIBLE);
-          radioGroup.setVisibility(VISIBLE);
-          accept.setVisibility(VISIBLE);
-          accept.setEnabled(false);
-          accept.setClickable(false);
-          reject.setVisibility(VISIBLE);
-          reject.setEnabled(false);
-          reject.setClickable(false);
-          setForgetIntroducerComponentVisibility();
-          this.itemView.setBackground(ContextCompat.getDrawable(context, R.drawable.ti_manage_listview_background_stale));
+        case ACCEPTED:
+          radioGroupLabel.setVisibility(GONE);
+          if (!accept.isChecked()) {
+            accept.setChecked(true);
+          }
           break;
-        case STALE_CONFLICTING:
-          radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Conflicting);
-          radioGroupLabel.setVisibility(VISIBLE);
-          radioGroup.setVisibility(GONE);
-          accept.setVisibility(GONE);
-          accept.setEnabled(false);
-          accept.setClickable(false);
-          reject.setVisibility(GONE);
-          reject.setEnabled(false);
-          reject.setClickable(false);
-          setForgetIntroducerComponentVisibility();
-          this.itemView.setBackground(ContextCompat.getDrawable(context, R.drawable.ti_manage_listview_background_stale_conflicting));
+        case REJECTED:
+          radioGroupLabel.setVisibility(GONE);
+          if (!reject.isChecked()){
+            reject.setChecked(true);
+          }
           break;
       }
     }
