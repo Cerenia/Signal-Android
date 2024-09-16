@@ -21,6 +21,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.button.MaterialButton;
 
+import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database;
 import org.thoughtcrime.securesms.recipients.Recipient;
@@ -30,13 +31,18 @@ import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
 import org.whispersystems.signalservice.api.util.Preconditions;
 
 import java.util.Date;
+import java.util.Objects;
 
 import static android.view.View.GONE;
 import static android.view.View.INVISIBLE;
 import static android.view.View.VISIBLE;
 import static org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.ACCEPTED;
+import static org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.ACCEPTED_CONFLICTING;
 import static org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.CONFLICTING;
+import static org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.PENDING;
+import static org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.PENDING_CONFLICTING;
 import static org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.REJECTED;
+import static org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.REJECTED_CONFLICTING;
 import static org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.STALE_ACCEPTED;
 import static org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.STALE_CONFLICTING;
 import static org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.STALE_PENDING;
@@ -44,6 +50,8 @@ import static org.thoughtcrime.securesms.trustedIntroductions.database.TI_Databa
 import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.INTRODUCTION_DATE_PATTERN;
 
 public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.IntroducerInformation>, ManageAdapter.IntroductionViewHolder> {
+
+  private static final String TAG = String.format(TI_Utils.TI_LOG_TAG, Log.tag(ManageAdapter.class));
 
   private final LayoutInflater layoutInflater;
   private final ManageAdapter.InteractionListener listener;
@@ -167,22 +175,29 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
 
 
     /**
-     * PRE: May not be called on conflicting entries.
-     * @param trust true if the user accepts, false otherwise.
+     * Introduction FSM triggered by user interaction implemented here.
+     * @param trust true if the user trusts the introduction, false otherwise.
      */
     public void changeTrust(boolean trust){
       TI_Database.State s = data.getState();
-      Preconditions.checkArgument(s != CONFLICTING);
-      if(s == STALE_ACCEPTED || s == STALE_PENDING || s == STALE_CONFLICTING || s == STALE_REJECTED) return; // may not interact with stale intros
-      if (s == ACCEPTED && trust || s == REJECTED && !trust) return; // nothing to change
+      if (s.isStale()) return; // may not interact with stale intros
+      if (s.isTrusted() && trust || s.isDistrusted() && !trust) return; // nothing to change
       TI_Data           newIntro;
       TI_Database.State newState;
-      if(trust){
-        newState = TI_Database.State.ACCEPTED;
-        listener.accept(data.getId());
+      if (trust){
+        if(s == PENDING || s == REJECTED)
+          newState = TI_Database.State.ACCEPTED;
+        else if(s == PENDING_CONFLICTING || s == REJECTED_CONFLICTING)
+          newState = ACCEPTED_CONFLICTING;
+        else throw new AssertionError(TAG + "Illegal statemachine transition for state: " + s.name() + " and new trust: " + trust);
+        listener.accept(Objects.requireNonNull(data.getId()));
       } else {
-        newState = TI_Database.State.REJECTED;
-        listener.reject(data.getId());
+        if(s == PENDING || s == ACCEPTED)
+          newState = REJECTED;
+        else if(s == PENDING_CONFLICTING || s == ACCEPTED_CONFLICTING)
+          newState = REJECTED_CONFLICTING;
+        else throw new AssertionError(TAG + "Illegal statemachine transition for state: " + s.name() + " and new trust: " + trust);
+        listener.reject(Objects.requireNonNull(data.getId()));
       }
       newIntro = changeState(data, newState);
       data = newIntro; // the only thing that will change based on user interactions is check/uncheck or masking...
