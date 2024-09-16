@@ -206,16 +206,16 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
     switch(tab){
       case NEW:
         // Only display pending and conflicting
-        if(!(s == TI_Database.State.PENDING || s == TI_Database.State.CONFLICTING)){
+        if (!(s.isPending() && !s.isStale())){
           return false;
         }
-        if(userFiltered(s)){
+        if (userFiltered(s)){
           return false;
         }
         break;
       case LIBRARY:
         // Display everything but pending
-        if((s == TI_Database.State.PENDING)){
+        if((s.isPending())){
           return false;
         }
         if(userFiltered(s)){
@@ -234,46 +234,7 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
    * @return true if filtered, false otherwise
    */
   private boolean userFiltered(TI_Database.State s){
-    switch(s){
-      case ACCEPTED:
-        if(!viewModel.showAccepted().getValue()){
-          return true;
-        }
-        break;
-      case REJECTED:
-        if(!viewModel.showRejected().getValue()){
-          return true;
-        }
-        break;
-      case CONFLICTING:
-        if(!viewModel.showConflicting().getValue()){
-          return true;
-        }
-        break;
-      case STALE_PENDING:
-        if(!viewModel.showStale().getValue()){
-          return true;
-        }
-        break;
-      case STALE_REJECTED:
-        if(!viewModel.showStale().getValue() && !viewModel.showStale().getValue()){
-          return true;
-        }
-        break;
-      case STALE_ACCEPTED:
-        if(!viewModel.showAccepted().getValue() && !viewModel.showStale().getValue()){
-          return true;
-        }
-        break;
-      case STALE_CONFLICTING:
-        if(!viewModel.showConflicting().getValue() && !viewModel.showStale().getValue()){
-          return true;
-        }
-        break;
-      default: // fail open
-        return false;
-    }
-    return false;
+
   }
 
   /**
