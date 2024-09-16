@@ -133,17 +133,17 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
         showAccepted.setVisibility(View.VISIBLE);
         showRejected.setVisibility(View.VISIBLE);
         if(viewModel != null){
-          showAccepted.setChecked(viewModel.showAccepted().getValue());
-          showRejected.setChecked(viewModel.showRejected().getValue());
+          showAccepted.setChecked(viewModel.showTrusted().getValue());
+          showRejected.setChecked(viewModel.showDistrusted().getValue());
         } else {
           showAccepted.setChecked(true);
           showRejected.setChecked(true);
         }
         showAccepted.addOnCheckedChangeListener((button, isChecked) ->{
-          viewModel.setShowAccepted(isChecked);
+          viewModel.setShowTrusted(isChecked);
         });
         showRejected.addOnCheckedChangeListener((button, isChecked) ->{
-          viewModel.setShowRejected(isChecked);
+          viewModel.setShowDistrusted(isChecked);
         });
     }
     // Filter state Obvservers
@@ -153,10 +153,10 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
     viewModel.showStale().observe(getViewLifecycleOwner(), state ->{
       sSisFirstInit = onFilterStateChanged(showStale, state, sSisFirstInit);
     });
-    viewModel.showAccepted().observe(getViewLifecycleOwner(), state ->{
+    viewModel.showTrusted().observe(getViewLifecycleOwner(), state ->{
       sAisFirstInit = onFilterStateChanged(showAccepted, state, sAisFirstInit);
     });
-    viewModel.showRejected().observe(getViewLifecycleOwner(), state->{
+    viewModel.showDistrusted().observe(getViewLifecycleOwner(), state->{
       sRisFirstInit = onFilterStateChanged(showRejected, state, sRisFirstInit);
     });
     // Introduction Observer
@@ -234,7 +234,27 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
    * @return true if filtered, false otherwise
    */
   private boolean userFiltered(TI_Database.State s){
-
+    if (Boolean.FALSE.equals(viewModel.showConflicting().getValue())) {
+      if (s.isConflicting()){
+        return true;
+      }
+    }
+    if (Boolean.FALSE.equals(viewModel.showStale().getValue())) {
+      if (s.isStale()){
+        return true;
+      }
+    }
+    if (Boolean.FALSE.equals(viewModel.showTrusted().getValue())) {
+      if (s.isTrusted()) {
+        return true;
+      }
+    }
+    if (Boolean.FALSE.equals(viewModel.showDistrusted().getValue())) {
+      if (s.isDistrusted()) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
@@ -303,16 +323,14 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
   }
 
   void refreshList(){
-    Trace.beginSection("refreshList:" + tab.toString());
-      if(adapter != null){
-        List l = viewModel.getIntroductions().getValue();
-        if(l == null){
-          Log.e(TAG, "Introductions list not yet loaded when calling refreshList!");
-          return;
-        }
-        adapter.submitList(getFiltered(viewModel.getIntroductions().getValue(), viewModel.getTextFilter().getValue()));
+    if(adapter != null){
+      List l = viewModel.getIntroductions().getValue();
+      if(l == null){
+        Log.e(TAG, "Introductions list not yet loaded when calling refreshList!");
+        return;
       }
-    Trace.endSection();
+      adapter.submitList(getFiltered(viewModel.getIntroductions().getValue(), viewModel.getTextFilter().getValue()));
+    }
   }
 
   public void onFilterChanged(String filter) {
