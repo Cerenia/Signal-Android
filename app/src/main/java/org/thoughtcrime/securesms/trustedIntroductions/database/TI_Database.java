@@ -125,86 +125,73 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
     STALE_REJECTED, STALE_PENDING_CONFLICTING, STALE_ACCEPTED_CONFLICTING, STALE_REJECTED_CONFLICTING;
 
     public int toInt() {
-      switch (this) {
-        case PENDING:
-          return 0;
-        case ACCEPTED:
-          return 1;
-        case REJECTED:
-          return 2;
-        case PENDING_CONFLICTING:
-          return 3;
-        case ACCEPTED_CONFLICTING:
-          return 4;
-        case REJECTED_CONFLICTING:
-          return 5;
-        case STALE_PENDING:
-          return 6;
-        case STALE_ACCEPTED:
-          return 7;
-        case STALE_REJECTED:
-          return 8;
-        case STALE_PENDING_CONFLICTING:
-          return 9;
-        case STALE_ACCEPTED_CONFLICTING:
-          return 10;
-        case STALE_REJECTED_CONFLICTING:
-          return 11;
-        default:
-          throw new AssertionError("No such state " + this);
-      }
+      return switch (this) {
+        case PENDING -> 0;
+        case ACCEPTED -> 1;
+        case REJECTED -> 2;
+        case PENDING_CONFLICTING -> 3;
+        case ACCEPTED_CONFLICTING -> 4;
+        case REJECTED_CONFLICTING -> 5;
+        case STALE_PENDING -> 6;
+        case STALE_ACCEPTED -> 7;
+        case STALE_REJECTED -> 8;
+        case STALE_PENDING_CONFLICTING -> 9;
+        case STALE_ACCEPTED_CONFLICTING -> 10;
+        case STALE_REJECTED_CONFLICTING -> 11;
+      };
     }
 
     public static State forState(int state) {
-      switch (state) {
-        case 0:
-          return PENDING;
-        case 1:
-          return ACCEPTED;
-        case 2:
-          return REJECTED;
-        case 3:
-          return PENDING_CONFLICTING;
-        case 4:
-          return ACCEPTED_CONFLICTING;
-        case 5:
-          return REJECTED_CONFLICTING;
-        case 6:
-          return STALE_PENDING;
-        case 7:
-          return STALE_ACCEPTED;
-        case 8:
-          return STALE_REJECTED;
-        case 9:
-          return STALE_PENDING_CONFLICTING;
-        case 10:
-          return STALE_ACCEPTED_CONFLICTING;
-        case 11:
-          return STALE_REJECTED_CONFLICTING;
-        default:
-          throw new AssertionError("No such state: " + state);
-      }
+      return switch (state) {
+        case 0 -> PENDING;
+        case 1 -> ACCEPTED;
+        case 2 -> REJECTED;
+        case 3 -> PENDING_CONFLICTING;
+        case 4 -> ACCEPTED_CONFLICTING;
+        case 5 -> REJECTED_CONFLICTING;
+        case 6 -> STALE_PENDING;
+        case 7 -> STALE_ACCEPTED;
+        case 8 -> STALE_REJECTED;
+        case 9 -> STALE_PENDING_CONFLICTING;
+        case 10 -> STALE_ACCEPTED_CONFLICTING;
+        case 11 -> STALE_REJECTED_CONFLICTING;
+        default -> throw new AssertionError("No such state: " + state);
+      };
     }
 
     public boolean isStale(){
-      switch (this) {
-        case PENDING:
-        case ACCEPTED:
-        case REJECTED:
-        case PENDING_CONFLICTING:
-        case ACCEPTED_CONFLICTING:
-        case REJECTED_CONFLICTING:
-          return false;
-        case STALE_PENDING:
-        case STALE_ACCEPTED:
-        case STALE_REJECTED:
-        case STALE_PENDING_CONFLICTING:
-        case STALE_ACCEPTED_CONFLICTING:
-        case STALE_REJECTED_CONFLICTING:
-          return true;
-        default:
-          throw new AssertionError("No such state: " + this);
-      }
+      return switch (this) {
+        case STALE_PENDING, STALE_ACCEPTED, STALE_REJECTED, STALE_PENDING_CONFLICTING, STALE_ACCEPTED_CONFLICTING, STALE_REJECTED_CONFLICTING -> true;
+        default -> false;
+      };
+    }
+
+    public boolean isPending(){
+      return switch (this) {
+        case PENDING, PENDING_CONFLICTING, STALE_PENDING, STALE_PENDING_CONFLICTING -> true;
+        default -> false;
+      };
+    }
+
+    public boolean isConflicting(){
+      return switch (this) {
+        case PENDING_CONFLICTING, ACCEPTED_CONFLICTING, REJECTED_CONFLICTING, STALE_PENDING_CONFLICTING, STALE_ACCEPTED_CONFLICTING, STALE_REJECTED_CONFLICTING -> true;
+        default -> false;
+      };
+    }
+
+    public boolean isTrusted(){
+      return switch (this) {
+        case ACCEPTED, ACCEPTED_CONFLICTING, STALE_ACCEPTED, STALE_ACCEPTED_CONFLICTING -> true;
+        default -> false;
+      };
+    }
+
+    public boolean isDistrusted(){
+      return switch (this){
+        case REJECTED, REJECTED_CONFLICTING, STALE_REJECTED, STALE_REJECTED_CONFLICTING -> true;
+        default -> false;
+      };
     }
   }
 
