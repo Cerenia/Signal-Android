@@ -120,7 +120,8 @@ public class TrustedIntroductionsReceiveJob extends BaseJob {
       long result = db.incomingIntroduction(introduction);
       if (result == -1){
         // TODO: How to fail gracefully?
-        throw new AssertionError(TAG + String.format("Introduction insertion for %s failed...", introduction.getIntroduceeName()));
+        Log.e(TAG, String.format("Introduction insertion for %s failed...", introduction.getIntroduceeName()));
+        //throw new AssertionError(TAG + String.format("Introduction insertion for %s failed...", introduction.getIntroduceeName()));
       }
       inserts_succeeded++;
     }

@@ -7,6 +7,8 @@ package org.thoughtcrime.securesms.trustedIntroductions.glue
 
 import android.annotation.SuppressLint
 import android.database.Cursor
+import org.signal.glide.Log.i
+import org.thoughtcrime.securesms.audio.TAG
 import org.thoughtcrime.securesms.database.IdentityTable
 import org.thoughtcrime.securesms.database.RecipientTable
 import org.thoughtcrime.securesms.database.SignalDatabase
@@ -81,10 +83,15 @@ interface RecipientTableGlue {
       } else {
         serviceIdentifyers.addAll(acis!!)
       }
-      serviceIdentifyers.forEach({aci ->
-        val rid: RecipientId = SignalDatabase.recipients.getByAci(ServiceId.ACI.parseOrThrow(aci)).get()
-        recipientIds.add(rid)
-      })
+      serviceIdentifyers.forEach { aci ->
+        try {
+          val rid: RecipientId = SignalDatabase.recipients.getByAci(ServiceId.ACI.parseOrThrow(aci)).get()
+          recipientIds.add(rid)
+        } catch (e: NoSuchElementException) {
+          // Just don't add a recipient that doesn't exist already
+          i(TAG, "Recipient with service ID $aci was not present in the database.")
+        }
+      }
       return SignalDatabase.recipients.getRecords(recipientIds)
     }
   }

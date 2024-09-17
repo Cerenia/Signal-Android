@@ -9,7 +9,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.annotation.WorkerThread;
-import androidx.camera.core.processing.SurfaceProcessorNode;
 
 import org.signal.core.util.SqlUtil;
 import org.signal.core.util.logging.Log;
@@ -440,9 +439,8 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
       } catch (MissingIdentityException e){
         // Continue to end condition, recipient is unknown.
       }
-      return insertIntroduction(data, State.PENDING);
     }
-    throw new AssertionError(TAG + "This code should be unreachable!");
+    return insertIntroduction(data, State.PENDING);
   }
 
   /**
