@@ -48,11 +48,9 @@ import java.util.concurrent.TimeUnit;
 import org.json.JSONObject;
 import org.json.JSONArray;
 import org.thoughtcrime.securesms.storage.StorageSyncHelper;
-import org.thoughtcrime.securesms.util.FeatureFlags;
 import org.thoughtcrime.securesms.util.IdentityUtil;
 import org.whispersystems.signalservice.api.SignalSessionLock;
 import org.whispersystems.signalservice.api.push.ServiceId;
-
 import static org.webrtc.ContextUtils.getApplicationContext;
 
 // TODO: May be able to simplify further by using JsonUtil.java in codebase...
@@ -377,7 +375,7 @@ public class TI_Utils {
       // Get any known recipients & add to result
       Map<RecipientId, RecipientRecord> records   = RecipientTableGlue.getRecordsForReceivingTI(recipientServiceIds);
       ArrayList<String>                 knownIds = new ArrayList<>();
-      if (records.size() > 0){
+      if (!records.isEmpty()){
         records.forEach((recipientID, recipientRecord) -> {
           String introduceeServiceId = recipientRecord.getAci().toString();
           knownIds.add(introduceeServiceId);
