@@ -19,9 +19,9 @@ import org.thoughtcrime.securesms.database.IdentityTable;
 import org.thoughtcrime.securesms.database.RecipientTable;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.database.model.RecipientRecord;
+import org.thoughtcrime.securesms.dependencies.AppDependencies;
 import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database;
 import org.thoughtcrime.securesms.database.model.IdentityRecord;
-import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
 import org.thoughtcrime.securesms.jobs.MultiDeviceVerifiedUpdateJob;
 import org.thoughtcrime.securesms.trustedIntroductions.database.TI_IdentityTable;
 import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue;
@@ -231,7 +231,7 @@ public class TI_Utils {
    * @return their identity as saved in the Identity database
    */
   public static IdentityKey getIdentityKey(RecipientId id) throws MissingIdentityException {
-    Optional<IdentityRecord> identityRecord = ApplicationDependencies.getProtocolStore().aci().identities().getIdentityRecord(id);
+    Optional<IdentityRecord> identityRecord = AppDependencies.getProtocolStore().aci().identities().getIdentityRecord(id);
     if(identityRecord.isEmpty()){
       throw new MissingIdentityException(TAG + " No identity found for the recipient with id: " + id);
     }
@@ -321,7 +321,7 @@ public class TI_Utils {
   public static void handleTIMessage(RecipientId introducer, String message, long timestamp){
     if(!message.contains(TI_IDENTIFYER)) return;
     // Schedule Reception Job
-    ApplicationDependencies.getJobManager().add(new TrustedIntroductionsReceiveJob(introducer, message, timestamp));
+    AppDependencies.getJobManager().add(new TrustedIntroductionsReceiveJob(introducer, message, timestamp));
   }
 
   /**
@@ -494,7 +494,7 @@ public class TI_Utils {
         // Vanilla
         final boolean verified = TI_IdentityTable.VerifiedStatus.isVerified(status);
         if (verified) {
-          ApplicationDependencies.getProtocolStore().aci().identities()
+          AppDependencies.getProtocolStore().aci().identities()
                                  .saveIdentityWithoutSideEffects(recipientId,
                                                                  recipient.requireServiceId(),
                                                                  remoteIdentity,
@@ -503,11 +503,11 @@ public class TI_Utils {
                                                                  System.currentTimeMillis(),
                                                                  true);
         } else {
-          ApplicationDependencies.getProtocolStore().aci().identities().setVerified(recipientId, remoteIdentity, IdentityTable.VerifiedStatus.forState(TI_IdentityTable.VerifiedStatus.toVanilla(status.toInt())));
+          AppDependencies.getProtocolStore().aci().identities().setVerified(recipientId, remoteIdentity, IdentityTable.VerifiedStatus.forState(TI_IdentityTable.VerifiedStatus.toVanilla(status.toInt())));
         }
         // For other devices but the Android phone, we map the finer statusses to verified or unverified.
         // TODO: Change once we add new devices for TI
-        ApplicationDependencies.getJobManager()
+        AppDependencies.getJobManager()
                                .add(new MultiDeviceVerifiedUpdateJob(recipientId,
                                                                      remoteIdentity,
                                                                      IdentityTable.VerifiedStatus.forState(IdentityTableGlue.VerifiedStatus.toVanilla(status.toInt()))));
