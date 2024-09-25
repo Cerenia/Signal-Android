@@ -217,6 +217,7 @@ import org.thoughtcrime.securesms.database.model.StickerRecord
 import org.thoughtcrime.securesms.database.model.databaseprotos.BodyRangeList
 import org.thoughtcrime.securesms.databinding.V2ConversationFragmentBinding
 import org.thoughtcrime.securesms.dependencies.AppDependencies
+import org.thoughtcrime.securesms.dependencies.AppDependencies.protocolStore
 import org.thoughtcrime.securesms.events.GroupCallPeekEvent
 import org.thoughtcrime.securesms.giph.mp4.GiphyMp4ItemDecoration
 import org.thoughtcrime.securesms.giph.mp4.GiphyMp4PlaybackController
@@ -4261,7 +4262,7 @@ class ConversationFragment :
           }
           // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
           AttachmentKeyboardButton.TRUSTED_INTRODUCTION -> {
-            val recipientRecord: Optional<IdentityRecord> = ApplicationDependencies.getProtocolStore().aci().identities().getIdentityRecord(recipient.id)
+            val recipientRecord: Optional<IdentityRecord> = protocolStore.aci().identities().getIdentityRecord(recipient.id)
             var conversationType: CanNotIntroduceDialog.ConversationType
             if (recipient.isGroup) {
               conversationType = CanNotIntroduceDialog.ConversationType.GROUP
