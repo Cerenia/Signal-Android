@@ -13,7 +13,7 @@ import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.crypto.ReentrantSessionLock;
 import org.thoughtcrime.securesms.database.IdentityTable;
 import org.thoughtcrime.securesms.database.SignalDatabase;
-import org.thoughtcrime.securesms.dependencies.ApplicationDependencies;
+import org.thoughtcrime.securesms.dependencies.AppDependencies;
 import org.thoughtcrime.securesms.jobs.MultiDeviceVerifiedUpdateJob;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
@@ -86,7 +86,7 @@ public interface VerifyDisplayFragmentGlue {
         final boolean verified = TI_IdentityTable.VerifiedStatus.isVerified(status);
         if (verified) {
           Log.i(TAG_TI, "Saving identity: " + recipientId);
-          ApplicationDependencies.getProtocolStore().aci().identities()
+          AppDependencies.getProtocolStore().aci().identities()
                                  .saveIdentityWithoutSideEffects(recipientId,
                                                                  sid,
                                                                  remoteIdentity,
@@ -95,11 +95,11 @@ public interface VerifyDisplayFragmentGlue {
                                                                  System.currentTimeMillis(),
                                                                  true);
         } else {
-          ApplicationDependencies.getProtocolStore().aci().identities().setVerified(recipientId, remoteIdentity, TI_IdentityTable.VerifiedStatus.toVanilla(status));
+          AppDependencies.getProtocolStore().aci().identities().setVerified(recipientId, remoteIdentity, TI_IdentityTable.VerifiedStatus.toVanilla(status));
         }
 
         // For other devices but the Android phone, we map the finer statusses to verified or unverified.
-        ApplicationDependencies.getJobManager()
+        AppDependencies.getJobManager()
                                .add(new MultiDeviceVerifiedUpdateJob(recipientId,
                                                                      remoteIdentity,
                                                                      TI_IdentityTable.VerifiedStatus.toVanilla(status)));

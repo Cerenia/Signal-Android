@@ -17,8 +17,9 @@ import androidx.navigation.Navigation;
 import org.signal.core.util.concurrent.SimpleTask;
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.R;
-import org.thoughtcrime.securesms.registration.fragments.RestoreBackupFragment;
-import org.thoughtcrime.securesms.registration.fragments.RestoreBackupFragmentDirections;
+import org.thoughtcrime.securesms.restore.restorelocalbackup.RestoreLocalBackupFragmentDirections;
+import org.thoughtcrime.securesms.restore.restorelocalbackup.RestoreLocalBackupFragment;
+import org.thoughtcrime.securesms.restore.restorelocalbackup.RestoreLocalBackupFragment.postToastForBackupRestorationFailure;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
 import org.thoughtcrime.securesms.util.BackupUtil;
 import org.thoughtcrime.securesms.util.DateUtils;
@@ -27,15 +28,13 @@ import org.thoughtcrime.securesms.util.navigation.SafeNavigation;
 
 import java.util.Locale;
 
-import static org.thoughtcrime.securesms.registration.fragments.RestoreBackupFragment.postToastForBackupRestorationFailure;
+public interface RestoreLocalBackupFragmentGlue {
 
-public interface RestoreBackupFragmentGlue {
-
-  String TAG                       = String.format(TI_Utils.TI_LOG_TAG, org.signal.core.util.logging.Log.tag(RestoreBackupFragmentGlue.class));
+  String TAG                       = String.format(TI_Utils.TI_LOG_TAG, org.signal.core.util.logging.Log.tag(RestoreLocalBackupFragmentGlue.class));
 
   static void getFromUriTI(@NonNull Context context,
                            @Nullable Uri tiBackupUri,
-                           @Nullable RestoreBackupFragment.OnBackupSearchResultListener tiListener)
+                           @Nullable RestoreLocalBackupFragment.OnBackupSearchResultListener tiListener)
   {
     if(tiBackupUri != null) {
       SimpleTask.run(() -> {

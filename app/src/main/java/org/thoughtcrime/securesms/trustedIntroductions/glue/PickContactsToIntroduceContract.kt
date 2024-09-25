@@ -11,7 +11,7 @@ import android.content.Intent
 import androidx.activity.result.contract.ActivityResultContract
 import org.signal.core.util.logging.Log
 import org.signal.core.util.logging.Log.tag
-import org.thoughtcrime.securesms.dependencies.ApplicationDependencies
+import org.thoughtcrime.securesms.dependencies.AppDependencies
 import org.thoughtcrime.securesms.recipients.RecipientId
 import org.thoughtcrime.securesms.recipients.RecipientId.from
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils
@@ -37,7 +37,7 @@ class PickContactsToIntroduceContract {
       val idSet: HashSet<RecipientId> = HashSet(listOfIntroduceeIds)
       val sendJob = TrustedIntroductionSendJob(recipientId, idSet)
       // Starting job here, nothing else needs to happen in the Conversation Fragment so there is no callback defined in ConversationActivityResultContracts
-      ApplicationDependencies.getJobManager().add(sendJob)
+      AppDependencies.jobManager.add(sendJob)
       return Pair(recipientId, listOfIntroduceeIds)
       } else {
        Log.e(TAG, "PickContactsForTrustedIntroductionsActivity did not return with RESULT_OK!")
