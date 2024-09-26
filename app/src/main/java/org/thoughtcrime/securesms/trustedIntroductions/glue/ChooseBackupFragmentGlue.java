@@ -19,13 +19,15 @@ import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.keyvalue.SignalStore;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
 
+import kotlin.Unit;
+
 import static androidx.core.app.ActivityCompat.startActivityForResult;
 
 public interface ChooseBackupFragmentGlue {
   short  OPEN_TI_FILE_REQUEST_CODE = 3863; // New request code for TI backup
   String TAG                       = String.format(TI_Utils.TI_LOG_TAG, org.signal.core.util.logging.Log.tag(ChooseBackupFragmentGlue.class));
 
-  static void onChooseTIBackup(View     view, Context  context, Activity activity) {
+  static Unit onChooseTIBackup(View     view, Context  context, Activity activity) {
     Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
 
     intent.setType("application/octet-stream");
@@ -42,5 +44,6 @@ public interface ChooseBackupFragmentGlue {
       Toast.makeText(context, R.string.ChooseBackupFragment__no_file_browser_available, Toast.LENGTH_LONG).show();
       Log.w(TAG, "No matching activity!", e);
     }
+    return null;
   }
 }
