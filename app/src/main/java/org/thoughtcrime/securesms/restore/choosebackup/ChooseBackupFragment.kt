@@ -26,6 +26,7 @@ import org.thoughtcrime.securesms.databinding.FragmentChooseBackupBinding
 import org.thoughtcrime.securesms.keyvalue.SignalStore
 import org.thoughtcrime.securesms.registration.fragments.RegistrationViewDelegate
 import org.thoughtcrime.securesms.restore.RestoreViewModel
+import org.thoughtcrime.securesms.trustedIntroductions.backup.NowChooseNormalBackupDialogue
 // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
 import org.thoughtcrime.securesms.trustedIntroductions.glue.ChooseLocalTIBackupContract
 import org.thoughtcrime.securesms.util.navigation.safeNavigate
@@ -80,8 +81,7 @@ class ChooseBackupFragment : LoggingFragment(R.layout.fragment_choose_backup) {
 
   private fun onUserChoseTIBackupFile(backupFileUri: Uri) {
     sharedViewModel.setTIBackupFileUri(backupFileUri)
-    Toast.makeText(context, R.string.ChooseBackupFragment__now_choose_normal_backup, Toast.LENGTH_LONG).show()
-    onChooseTIBackupSelected()
+    NowChooseNormalBackupDialogue.show(requireContext(), ::onChooseBackupSelected, sharedViewModel)
   }
   // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 

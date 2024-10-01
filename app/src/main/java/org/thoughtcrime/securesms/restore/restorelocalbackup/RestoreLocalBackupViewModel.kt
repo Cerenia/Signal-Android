@@ -25,7 +25,7 @@ import org.thoughtcrime.securesms.restore.RestoreRepository
  * ViewModel for [RestoreLocalBackupFragment]
  */
 // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
-class RestoreLocalBackupViewModel(fileBackupUri: Uri, fileBackupUriTI: Uri) : ViewModel() {
+class RestoreLocalBackupViewModel(fileBackupUri: Uri, fileBackupUriTI: Uri?) : ViewModel() {
   private val store = MutableStateFlow(RestoreLocalBackupState(tiBackupUri = fileBackupUriTI, fileBackupUri))
   // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
   val uiState = store.asLiveData()
