@@ -5,9 +5,6 @@
 
 package org.thoughtcrime.securesms.restore.choosebackup
 
-// TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
-import android.R
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -16,10 +13,10 @@ import android.os.Bundle
 import android.provider.DocumentsContract
 import android.text.method.LinkMovementMethod
 import android.view.View
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.text.HtmlCompat
 import androidx.fragment.app.activityViewModels
-import androidx.navigation.Navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import org.signal.core.util.logging.Log
 import org.thoughtcrime.securesms.LoggingFragment
@@ -29,11 +26,9 @@ import org.thoughtcrime.securesms.databinding.FragmentChooseBackupBinding
 import org.thoughtcrime.securesms.keyvalue.SignalStore
 import org.thoughtcrime.securesms.registration.fragments.RegistrationViewDelegate
 import org.thoughtcrime.securesms.restore.RestoreViewModel
-import org.thoughtcrime.securesms.trustedIntroductions.glue.ChooseBackupFragmentGlue.OPEN_TI_FILE_REQUEST_CODE
-import org.thoughtcrime.securesms.trustedIntroductions.glue.ChooseBackupFragmentGlue.onChooseTIBackup
+// TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+import org.thoughtcrime.securesms.trustedIntroductions.glue.ChooseLocalTIBackupContract
 import org.thoughtcrime.securesms.util.navigation.safeNavigate
-
-
 // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 
 /**
@@ -51,37 +46,44 @@ class ChooseBackupFragment : LoggingFragment(R.layout.fragment_choose_backup) {
     }
   }
 
+  // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+  private val pickTIMedia = registerForActivityResult(ChooseLocalTIBackupContract()){
+    if (it != null) {
+      onUserChoseTIBackupFile(it)
+    } else {
+      Log.i(TAG, "Null URI returned for backup file selection.")
+    }
+  }
+  // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
+
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
     RegistrationViewDelegate.setDebugLogSubmitMultiTapView(binding.chooseBackupFragmentTitle)
     binding.chooseBackupFragmentButton.setOnClickListener { onChooseBackupSelected() }
 
     // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
-    binding.chooseTiBackupFragmentButton.setOnClickListener {onChooseTIBackup(binding.chooseTiBackupFragmentButton, requireContext(), activity) }
+    binding.chooseTiBackupFragmentButton.setOnClickListener { onChooseTIBackupSelected() }
     // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 
     binding.chooseBackupFragmentLearnMore.text = HtmlCompat.fromHtml(String.format("<a href=\"%s\">%s</a>", getString(R.string.backup_support_url), getString(R.string.ChooseBackupFragment__learn_more)), 0)
     binding.chooseBackupFragmentLearnMore.movementMethod = LinkMovementMethod.getInstance()
   }
 
-  // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
-  override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-    val OPEN_FILE_REQUEST_CODE = 3862;
-    val restore: ChooseBackupFragmentDirections.ActionRestore = ChooseBackupFragmentDirections.actionRestore()
-    if (resultCode == Activity.RESULT_OK && data != null) {
-      if (requestCode == OPEN_FILE_REQUEST_CODE) {
-        restore.setUri(data.data)
-      } else if (requestCode == OPEN_TI_FILE_REQUEST_CODE.toInt()) {
-        restore.setTiUri(data.data)
-      }
-      SafeNavigation.safeNavigate(findNavController(requireView()), restore)
-    }
-  }
-  // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
-
   private fun onChooseBackupSelected() {
     pickMedia.launch("application/octet-stream")
   }
+
+  // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+  private fun onChooseTIBackupSelected() {
+    pickTIMedia.launch("application/octet-stream")
+  }
+
+  private fun onUserChoseTIBackupFile(backupFileUri: Uri) {
+    sharedViewModel.setTIBackupFileUri(backupFileUri)
+    Toast.makeText(context, R.string.ChooseBackupFragment__now_choose_normal_backup, Toast.LENGTH_LONG).show()
+    onChooseTIBackupSelected()
+  }
+  // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 
   private fun onUserChoseBackupFile(backupFileUri: Uri) {
     sharedViewModel.setBackupFileUri(backupFileUri)
