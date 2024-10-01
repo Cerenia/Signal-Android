@@ -7523,6 +7523,7 @@
     <!-- AttachmentKeyboardButton -->
     <string name="AttachmentKeyboard_introduce">Introduction</string>
     <string name="ChooseBackupFragment__choose_ti_backup">Choose Trusted Introductions Backup (optional)</string>
+    <string name="ChooseBackupFragment__now_choose_normal_backup">The trusted Introductions backup path has been saved. Now please choose your normal Signal Backup.</string>
     <!--TI_GLUE: eNT9XAHgq0lZdbQs2nfH end-->
 
     <!-- MessageBackupsPinConfirmationScreen -->
