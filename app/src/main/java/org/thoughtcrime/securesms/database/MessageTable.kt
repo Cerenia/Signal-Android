@@ -2589,7 +2589,7 @@ open class MessageTable(context: Context?, databaseHelper: SignalDatabase) : Dat
     val type = retrieved.toMessageType()
 
     // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
-    MessageTableGlue.handleTIMessage(retrieved);
+    MessageTableGlue.handleTIMessage(retrieved)
     // TI_GLUE: eNfT9XAHgq0lZdbQs2nfH end
 
     val threadIdResult = if (candidateThreadId == -1L || retrieved.isGroupMessage) {
