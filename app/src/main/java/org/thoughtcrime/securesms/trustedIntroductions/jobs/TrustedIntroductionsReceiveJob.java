@@ -37,7 +37,7 @@ public class TrustedIntroductionsReceiveJob extends BaseJob {
   private final long timestamp;
   private final String messageBody;
   private boolean bodyParsed;
-  private final ArrayList<TI_Data> introductions;
+  private ArrayList<TI_Data> introductions = new ArrayList<>();
   // counter keeping track of which TI_DATA has made it's way to the database
   // allows to only serialize introductions that have not yet been done if process get's interrupted
   private int                 inserts_succeeded = 0;
@@ -69,7 +69,7 @@ public class TrustedIntroductionsReceiveJob extends BaseJob {
     this.timestamp = timestamp;
     this.messageBody = messageBody;
     this.bodyParsed = bodyParsed;
-    this.introductions = tiData != null ? tiData : new ArrayList<>();
+    this.introductions = !tiData.isEmpty() ? tiData : new ArrayList<>();
   }
 
   /**
@@ -112,6 +112,10 @@ public class TrustedIntroductionsReceiveJob extends BaseJob {
   @Override protected void onRun() throws Exception {
     if(!bodyParsed){
       List<TI_Data> tiData = parseTIMessage(messageBody, timestamp, introducerId);
+      if(tiData == null) {
+        Log.e(TAG, "Introduction did not parse correctly, aborting!");
+        return;
+      }
       introductions.addAll(tiData);
       bodyParsed = true;
     }

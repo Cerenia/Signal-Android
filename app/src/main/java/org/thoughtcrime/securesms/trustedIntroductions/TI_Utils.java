@@ -324,6 +324,10 @@ public class TI_Utils {
     AppDependencies.getJobManager().add(new TrustedIntroductionsReceiveJob(introducer, message, timestamp));
   }
 
+  public static void checkParsableTIMessage(String message){
+
+  }
+
   /**
    *
    * @param id recipient Id for which the cache should be queried.
@@ -405,7 +409,6 @@ public class TI_Utils {
       }
     } catch(JSONException e){
       Log.e(TAG, String.format("A JSON exception occured while trying to parse the TI message: %s", jsonDataS));
-      Log.e(TAG, e.toString());
       return null; // unsuccessful parse
     }
     return result;
