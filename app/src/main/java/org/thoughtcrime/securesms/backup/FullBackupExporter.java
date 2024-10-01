@@ -712,6 +712,26 @@ public class FullBackupExporter extends FullBackupBase {
     boolean isCanceled();
   }
 
+  // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+  public static class FinishedEventHandleWrapper {
+    boolean isTI;
+    BackupEvent event;
+
+    public FinishedEventHandleWrapper(BackupEvent e, boolean ti){
+      isTI = ti;
+      event = e;
+    }
+
+    public long getCount(){
+      if (isTI) {
+        return event.getTICount();
+      } else {
+        return event.getCount();
+      }
+    };
+  }
+  // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
+
   public static final class BackupCanceledException extends IOException {}
 
   public static final class InvalidBackupStreamException extends IOException {}
