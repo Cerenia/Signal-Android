@@ -152,10 +152,10 @@ public final class LocalBackupJobApi29 extends BaseJob {
                                                               this::isCanceled);
         stopwatch.split("backup-create");
 
-        boolean valid = verifyBackup(backupPassword, temporaryFile, finishedEvent);
         // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+        boolean valid = verifyBackup(backupPassword, temporaryFile, new FullBackupExporter.FinishedEventHandleWrapper(finishedEvent, false));
         // Same for TI file
-        boolean validTI = verifyBackup(backupPassword, temporaryTIFile, finishedEvent);
+        boolean validTI = verifyBackup(backupPassword, temporaryTIFile, new FullBackupExporter.FinishedEventHandleWrapper(finishedEvent, true));
         // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 
         stopwatch.split("backup-verify");
@@ -204,7 +204,7 @@ public final class LocalBackupJobApi29 extends BaseJob {
     }
   }
 
-  private boolean verifyBackup(String backupPassword, DocumentFile temporaryFile, BackupEvent finishedEvent) throws FullBackupExporter.BackupCanceledException {
+  private boolean verifyBackup(String backupPassword, DocumentFile temporaryFile, FullBackupExporter.FinishedEventHandleWrapper finishedEvent) throws FullBackupExporter.BackupCanceledException {
     OperationResult result = DocumentFileUtil.retryDocumentFileOperation((attempt, maxAttempts) -> {
       Log.i(TAG, "Verify attempt " + (attempt + 1) + "/" + maxAttempts);
 
