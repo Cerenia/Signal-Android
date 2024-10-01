@@ -2,6 +2,7 @@ package org.thoughtcrime.securesms.jobs;
 
 
 import android.annotation.SuppressLint;
+import android.media.VolumeShaper;
 import android.net.Uri;
 
 import androidx.annotation.NonNull;
@@ -153,7 +154,8 @@ public final class LocalBackupJobApi29 extends BaseJob {
 
         boolean valid = verifyBackup(backupPassword, temporaryFile, finishedEvent);
         // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
-        boolean validTI = verifyBackupTI(backupPassword, temporaryTIFile, finishedEvent);
+        // Same for TI file
+        boolean validTI = verifyBackup(backupPassword, temporaryTIFile, finishedEvent);
         // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 
         stopwatch.split("backup-verify");
@@ -232,39 +234,11 @@ public final class LocalBackupJobApi29 extends BaseJob {
       return OperationResult.Retry.INSTANCE;
     });
 
-    // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
     if (isCanceled()) {
       throw new FullBackupExporter.BackupCanceledException();
     }
 
     return result.isSuccess() && ((OperationResult.Success) result).getValue();
-  }
-
-  private boolean verifyBackupTI(String backupPassword, DocumentFile tempFile, BackupEvent finishedEvent) throws FullBackupExporter.BackupCanceledException {
-    Boolean valid    = null;
-    int     attempts = 0;
-
-    while (attempts < MAX_STORAGE_ATTEMPTS && valid == null && !isCanceled()) {
-      ThreadUtil.sleep(WAIT_FOR_SCOPED_STORAGE[attempts]);
-
-      try (InputStream cipherStream = context.getContentResolver().openInputStream(tempFile.getUri())) {
-        try {
-          valid = BackupVerifier.verifyFile(cipherStream, backupPassword, finishedEvent.getTICount(), this::isCanceled);
-        } catch (IOException e) {
-          Log.w(TAG, "Unable to verify backup", e);
-          valid = false;
-        }
-      } catch (SecurityException | IOException e) {
-        attempts++;
-        Log.w(TAG, "Unable to find backup file, attempt: " + attempts + "/" + MAX_STORAGE_ATTEMPTS, e);
-      }
-    }
-    // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
-    if (isCanceled()) {
-      throw new FullBackupExporter.BackupCanceledException();
-    }
-
-    return valid != null ? valid : false;
   }
 
   @SuppressLint("NewApi")
