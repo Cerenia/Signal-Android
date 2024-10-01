@@ -42,6 +42,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/choose_backup_fragment_message" />
 
+    <!--TI_GLUE: eNT9XAHgq0lZdbQs2nfH start-->
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/choose_backup_fragment_icon"
         android:layout_width="0dp"
@@ -50,7 +51,7 @@
         android:contentDescription="@string/ChooseBackupFragment__icon_content_description"
         android:padding="30dp"
         app:backgroundTint="@color/signal_colorSurfaceVariant"
-        app:layout_constraintBottom_toTopOf="@+id/choose_backup_fragment_button"
+        app:layout_constraintBottom_toTopOf="@+id/choose_ti_backup_fragment_button"
         app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHeight_max="120dp"
@@ -61,7 +62,6 @@
         app:srcCompat="@drawable/ic_backup_outline_60"
         app:tint="@color/signal_colorPrimary" />
 
-        <!--TI_GLUE: eNT9XAHgq0lZdbQs2nfH start-->
         <org.thoughtcrime.securesms.util.views.CircularProgressMaterialButton
         android:id="@+id/choose_ti_backup_fragment_button"
         android:layout_width="0dp"
