@@ -93,10 +93,12 @@ import org.thoughtcrime.securesms.util.StorageUtil
 import org.thoughtcrime.securesms.video.EncryptedMediaDataSource
 import org.whispersystems.signalservice.api.util.UuidUtil
 import org.whispersystems.signalservice.internal.util.JsonUtil
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.InputStream
+import java.nio.charset.Charset
 import java.security.DigestInputStream
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
@@ -913,7 +915,22 @@ class AttachmentTable(
 
     val existingPlaceholder: DatabaseAttachment = getAttachment(attachmentId) ?: throw MmsException("No attachment found for id: $attachmentId")
 
+    if(existingPlaceholder.fileName!!.contains(".trustedintro")){
+      val byteOutputStream = ByteArrayOutputStream()
+      inputStream.use {
+        byteOutputStream.use { output ->
+          inputStream.copyTo(output)
+        }
+      }
+      val text = byteOutputStream.toString(Charset.forName("UTF-8"))
+      Log.e(TAG, "Got the following message:\n" + text)
+      return
+    }
+
     val fileWriteResult: DataFileWriteResult = writeToDataFile(newDataFile(context), inputStream, TransformProperties.empty())
+    if (fileWriteResult.file.extension.equals(".trustedintro")){
+      Log.i(TAG,"Do something...")
+    }
     val transferFile: File? = getTransferFile(databaseHelper.signalReadableDatabase, attachmentId)
 
     val foundDuplicate = writableDatabase.withinTransaction { db ->
