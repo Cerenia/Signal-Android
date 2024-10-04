@@ -30,5 +30,4 @@ pkcs11.password
 dev.keystore
 maps.key
 /local/
-log.txt
-gradlew
+kls_database.db
