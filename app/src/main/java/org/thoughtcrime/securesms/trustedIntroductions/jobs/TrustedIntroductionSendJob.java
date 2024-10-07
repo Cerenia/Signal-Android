@@ -29,18 +29,21 @@ public class TrustedIntroductionSendJob extends BaseJob {
   // Factory Key
   public static final String KEY = "TISendJob";
 
+  private final RecipientId introducerRecipientId;
   private final RecipientId introductionRecipientId;
   private final Set<RecipientId>  introduceeIds;
 
   // Serialization Keys
+  private static final String KEY_INTRODUCER_RECIPIENT_ID = "introducer_recipient_id";
   private static final String KEY_INTRODUCTION_RECIPIENT_ID = "introduction_recipient_id";
   private static final String KEY_INTRODUCEE_IDS = "introducee_recipient_ids";
 
   // TODO: How about enforcing rate limiting?
   // I think I will just enforce ignoring the messages on the receiving side instead
 
-  public TrustedIntroductionSendJob(@NonNull RecipientId introductionRecipientId, @NonNull Set<RecipientId> introduceeIds){
-    this(introductionRecipientId,
+  public TrustedIntroductionSendJob(@NonNull RecipientId introducerRecipientId, @NonNull RecipientId introductionRecipientId, @NonNull Set<RecipientId> introduceeIds){
+    this(introducerRecipientId,
+        introductionRecipientId,
          introduceeIds,
          new Parameters.Builder()
                        .setQueue(introductionRecipientId.toQueueKey() + TI_Utils.serializeForQueue(introduceeIdSetToLong(introduceeIds)))
@@ -50,12 +53,13 @@ public class TrustedIntroductionSendJob extends BaseJob {
                        .build());
   }
 
-  private TrustedIntroductionSendJob(@NonNull RecipientId introductionRecipientId, @NonNull Set<RecipientId> introduceeIds, @NonNull Parameters parameters) {
+  private TrustedIntroductionSendJob(@NonNull RecipientId introducerRecipientId, @NonNull RecipientId introductionRecipientId, @NonNull Set<RecipientId> introduceeIds, @NonNull Parameters parameters) {
     super(parameters);
     if (introduceeIds.isEmpty()){
       // TODO: What do I do in this case? should not happen.
       throw new AssertionError();
     }
+    this.introducerRecipientId = introducerRecipientId;
     this.introductionRecipientId = introductionRecipientId;
     this.introduceeIds = introduceeIds;
   }
@@ -79,6 +83,7 @@ public class TrustedIntroductionSendJob extends BaseJob {
    */
   @NonNull @Override public byte[] serialize() {
     return Objects.requireNonNull(new JsonJobData.Builder()
+                                      .putString(KEY_INTRODUCER_RECIPIENT_ID, introducerRecipientId.serialize())
                                       .putString(KEY_INTRODUCTION_RECIPIENT_ID, introductionRecipientId.serialize())
                                       .putLongListAsArray(KEY_INTRODUCEE_IDS, introduceeIds.stream().map(RecipientId::toLong).collect(Collectors.toList()))
                                       .build().serialize());
@@ -100,7 +105,7 @@ public class TrustedIntroductionSendJob extends BaseJob {
 
 
   @Override protected void onRun() throws Exception {
-    String body = TI_Utils.buildMessageBody(introductionRecipientId, introduceeIds);
+    String body = TI_Utils.buildMessageBody(introducerRecipientId, introductionRecipientId, introduceeIds);
     LiveRecipient liveIntroductionRecipient = Recipient.live(introductionRecipientId);
     Recipient introductionRecipient = liveIntroductionRecipient.resolve();
     OutgoingMessage message =  OutgoingMessage.text(introductionRecipient, body, 0, System.currentTimeMillis(), null);
@@ -118,7 +123,8 @@ public class TrustedIntroductionSendJob extends BaseJob {
 
     @NonNull @Override public TrustedIntroductionSendJob create(@NonNull Parameters parameters, @Nullable byte[] serializedData) {
       JsonJobData data = JsonJobData.deserialize(serializedData);
-      return new TrustedIntroductionSendJob(RecipientId.from(data.getString(KEY_INTRODUCTION_RECIPIENT_ID)),
+      return new TrustedIntroductionSendJob(RecipientId.from(data.getString(KEY_INTRODUCER_RECIPIENT_ID)),
+                                            RecipientId.from(data.getString(KEY_INTRODUCTION_RECIPIENT_ID)),
                                             data.getLongArrayAsList(KEY_INTRODUCEE_IDS).stream().map(RecipientId::from).collect(Collectors.toSet()),
                                             parameters);
     }

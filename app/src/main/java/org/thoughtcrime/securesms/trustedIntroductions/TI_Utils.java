@@ -471,7 +471,7 @@ public class TI_Utils {
         }
       }
     } catch(JSONException e){
-      Log.e(TAG, String.format("A JSON exception occured while trying to parse the TI message: %s", jsonDataS));
+      Log.e(TAG, String.format("A JSON exception occured while trying to parse the TI message: %s", body));
       return null; // unsuccessful parse
     }
     return result;
