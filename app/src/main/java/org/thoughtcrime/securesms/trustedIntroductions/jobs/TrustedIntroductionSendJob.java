@@ -1,20 +1,31 @@
 package org.thoughtcrime.securesms.trustedIntroductions.jobs;
 
+import android.net.Uri;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.signal.core.util.logging.Log;
+import org.thoughtcrime.securesms.attachments.Attachment;
+import org.thoughtcrime.securesms.attachments.AttachmentCreator;
+import org.thoughtcrime.securesms.database.AttachmentTable;
 import org.thoughtcrime.securesms.jobmanager.Job;
 import org.thoughtcrime.securesms.jobmanager.JsonJobData;
 import org.thoughtcrime.securesms.jobmanager.impl.NetworkConstraint;
 import org.thoughtcrime.securesms.jobs.BaseJob;
+import org.thoughtcrime.securesms.media.UriMediaInput;
 import org.thoughtcrime.securesms.recipients.LiveRecipient;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.sms.MessageSender;
 import org.thoughtcrime.securesms.mms.OutgoingMessage;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
+import org.thoughtcrime.securesms.util.SaveAttachmentTask;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Objects;
@@ -38,8 +49,6 @@ public class TrustedIntroductionSendJob extends BaseJob {
   private static final String KEY_INTRODUCTION_RECIPIENT_ID = "introduction_recipient_id";
   private static final String KEY_INTRODUCEE_IDS = "introducee_recipient_ids";
 
-  // TODO: How about enforcing rate limiting?
-  // I think I will just enforce ignoring the messages on the receiving side instead
 
   public TrustedIntroductionSendJob(@NonNull RecipientId introducerRecipientId, @NonNull RecipientId introductionRecipientId, @NonNull Set<RecipientId> introduceeIds){
     this(introducerRecipientId,
@@ -108,7 +117,21 @@ public class TrustedIntroductionSendJob extends BaseJob {
     String body = TI_Utils.buildMessageBody(introducerRecipientId, introductionRecipientId, introduceeIds);
     LiveRecipient liveIntroductionRecipient = Recipient.live(introductionRecipientId);
     Recipient introductionRecipient = liveIntroductionRecipient.resolve();
-    OutgoingMessage message =  OutgoingMessage.text(introductionRecipient, body, 0, System.currentTimeMillis(), null);
+    File fileHandler = AttachmentTable.newDataFile(context);
+    if (!fileHandler.setWritable(true)){
+      throw new AssertionError("Cannot set the file at path: " + fileHandler.getAbsolutePath() + " as writeable. Introduction failed!");
+    }
+    FileWriter fileWriter = new FileWriter(fileHandler.getAbsolutePath());
+    PrintWriter writeString = new PrintWriter(fileWriter);
+    writeString.write(body);
+    Uri uri = Uri.parse(fileHandler.getAbsolutePath());
+    SaveAttachmentTask.Attachment attachment = new SaveAttachmentTask.Attachment(uri, "trustedIntro", System.currentTimeMillis(), fileHandler.getName());
+    ArrayList<SaveAttachmentTask.Attachment> attachmentList = new ArrayList<>();
+    attachmentList.add(attachment);
+    OutgoingMessage message =  new OutgoingMessage(introductionRecipient,
+                                                   "I would like to introduce you to some people, navigate to the TI management screen to see new introductions!",
+                                                   attachmentList,
+                                                   System.currentTimeMillis());
     // TODO: do we need a listener?
     // TODO: -1 for thread ID indeed ok?
     MessageSender.send(context, message, -1, MessageSender.SendType.SIGNAL, null, null);
