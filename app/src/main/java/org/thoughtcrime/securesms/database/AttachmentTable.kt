@@ -915,6 +915,8 @@ class AttachmentTable(
 
     val existingPlaceholder: DatabaseAttachment = getAttachment(attachmentId) ?: throw MmsException("No attachment found for id: $attachmentId")
 
+
+    var text: String = ""
     if(existingPlaceholder.fileName!!.contains(".trustedintro")){
       val byteOutputStream = ByteArrayOutputStream()
       inputStream.use {
@@ -922,10 +924,10 @@ class AttachmentTable(
           inputStream.copyTo(output)
         }
       }
-      val text = byteOutputStream.toString(Charset.forName("UTF-8"))
+      text = byteOutputStream.toString(Charset.forName("UTF-8"))
       Log.e(TAG, "Got the following message:\n" + text)
-      return
     }
+    val inputStream = text.byteInputStream()
 
     val fileWriteResult: DataFileWriteResult = writeToDataFile(newDataFile(context), inputStream, TransformProperties.empty())
     if (fileWriteResult.file.extension.equals(".trustedintro")){
