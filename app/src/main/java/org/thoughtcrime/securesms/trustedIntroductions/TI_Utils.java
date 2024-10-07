@@ -68,7 +68,7 @@ public class TI_Utils {
   // Version, change if you change data/message format for compatibility
   // TODO: this is currently only reflected in message format, would need to add this to Database to make
   // Backup/Restore work accross revisions
-  public static final String TI_MESSAGE_VERSION = "1.0";
+  public static final String TI_MESSAGE_VERSION = "2.0";
   // Since the Signal version is still important and will not be overwritten I define my own
   // 1: major changes, 2: feature/ui changes , 3. bugs | stability fixes
   public static final String TI_APK_VERSION = "2.1.2";
