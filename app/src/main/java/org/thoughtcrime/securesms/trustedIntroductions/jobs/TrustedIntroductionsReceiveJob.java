@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
-import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.constructIntroducees;
+import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.constructIntroduceesFromTrustedIntrosString;
 import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.getIntroducerFromRawMessage;
 
 public class TrustedIntroductionsReceiveJob extends BaseJob {
@@ -114,7 +114,7 @@ public class TrustedIntroductionsReceiveJob extends BaseJob {
       introducerId = getIntroducerFromRawMessage(messageBody);
     }
     if(!bodyParsed){
-      List<TI_Data> tiData = constructIntroducees(messageBody, timestamp, introducerId);
+      List<TI_Data> tiData = constructIntroduceesFromTrustedIntrosString(messageBody, timestamp, introducerId);
       if(tiData == null) {
         Log.e(TAG, "Introduction did not parse correctly, aborting!");
         return;

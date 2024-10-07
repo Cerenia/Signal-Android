@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -250,20 +251,42 @@ public class TI_Utils {
   }
 
   @SuppressLint("Range") @WorkerThread
-  public static String buildMessageBody(@NonNull RecipientId introductionRecipientId, @NonNull Set<RecipientId> introducees) throws JSONException {
+  public static String buildMessageBody(@NonNull RecipientId introducerRecipientId, @NonNull RecipientId introductionRecipientId, @NonNull Set<RecipientId> introducees) throws JSONException {
     if(introducees.size() <= 0){
-      throw new AssertionError(TAG + " buildMessageBody called with no Recipient Ids!");
+      throw new AssertionError(TAG + " buildMessageBody called with no Introducees!");
     }
-
-    // TODO: add the introducer to this mix
 
     JSONObject data = new JSONObject();
 
     Map<RecipientId, RecipientRecord> recipients = RecipientTableGlue.getRecordsForSendingTI(introducees);
-    JSONArray introduceeData = new JSONArray();
 
     data.put(TI_VERSION_J, TI_MESSAGE_VERSION);
-    // Loop over all the contacts you want to introduce
+
+    // create Introducer entry
+    JSONObject introducer = new JSONObject();
+    Recipient resolvedIntroducer = Recipient.live(introducerRecipientId).get();
+    introducer.put(NAME_J, getSomeNonNullName(introducerRecipientId, Objects.requireNonNull(recipients.get(introducerRecipientId))));
+    introducer.put(NUMBER_J, resolvedIntroducer.getE164().isEmpty() ? UNDISCLOSED_NUMBER : resolvedIntroducer.getE164());
+    introducer.put(SERVICE_ID_J, resolvedIntroducer.getServiceId().toString());
+    try{
+      introducer.put(PREDICTED_FINGERPRINT_J, predictFingerprint(introducerRecipientId,
+                                                                 introductionRecipientId,
+                                                                 Recipient.live(introductionRecipientId).get().requireServiceId().toString(),
+                                                                 getIdentityKey(introductionRecipientId)));
+    } catch (MissingIdentityException e){
+      // should never be the case with the introducer
+      throw new AssertionError(TAG + " My own identity key cannot be missing! ");
+    }
+    try {
+      introducer.put(IDENTITY_J, encodeIdentityKey(getIdentityKey(introducerRecipientId)));
+    } catch (MissingIdentityException e){
+      // should never be the case with the introducer
+      throw new AssertionError(TAG + " The introducers Identity cannot be missing! " + introducerRecipientId + " cannot be an introducer!");
+    }
+    data.put(INTRODUCER_J, introducer);
+
+    // Now do the same for all introducees and wrap them in an array
+    JSONArray introduceeData = new JSONArray();
     recipients.forEach((recipientId, recipientRecord) -> {
       try {
         JSONObject introducee = new JSONObject();
@@ -386,6 +409,7 @@ public class TI_Utils {
 
   /**
    * Parses an incoming TI message to create introduction data
+   * PRE: body is a valid TI message with the correct version.
    * @param body of the incoming message
    * @param timestamp when message was received
    * @param introducerId whom the message came from
@@ -393,11 +417,10 @@ public class TI_Utils {
    */
   @WorkerThread
   @SuppressLint("Range") // keywords exists
-  public static @Nullable List<TI_Data> constructIntroducees(String body, long timestamp, RecipientId introducerId){
-    if (!body.contains(TI_IDENTIFYER)){
+  public static @Nullable List<TI_Data> constructIntroduceesFromTrustedIntrosString(String body, long timestamp, RecipientId introducerId){
+    if (!body.contains(TI_IDENTIFYER) || !isCorrectTImessageVersion(body)){
       throw new AssertionError("Non TI message passed into constructIntroducees!");
     }
-    if(!isCorrectTImessageVersion(body)) return null;
     String introducerServiceId = getServiceIdFromRecipientId(introducerId);
     ArrayList<TI_Data> result = new ArrayList<>();
     try {
