@@ -86,6 +86,7 @@ import org.thoughtcrime.securesms.mms.MmsException
 import org.thoughtcrime.securesms.mms.PartAuthority
 import org.thoughtcrime.securesms.mms.SentMediaQuality
 import org.thoughtcrime.securesms.stickers.StickerLocator
+import org.thoughtcrime.securesms.trustedIntroductions.glue.AttachmentTableGlue
 import org.thoughtcrime.securesms.util.FileUtils
 import org.thoughtcrime.securesms.util.JsonUtils.SaneJSONObject
 import org.thoughtcrime.securesms.util.MediaUtil
@@ -915,19 +916,10 @@ class AttachmentTable(
 
     val existingPlaceholder: DatabaseAttachment = getAttachment(attachmentId) ?: throw MmsException("No attachment found for id: $attachmentId")
 
-
-    var text: String = ""
-    if(existingPlaceholder.fileName!!.contains(".trustedintro")){
-      val byteOutputStream = ByteArrayOutputStream()
-      inputStream.use {
-        byteOutputStream.use { output ->
-          inputStream.copyTo(output)
-        }
-      }
-      text = byteOutputStream.toString(Charset.forName("UTF-8"))
-      Log.e(TAG, "Got the following message:\n" + text)
-    }
-    val inputStream = text.byteInputStream()
+    // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+    // inputStream shadowed on purpose
+    val inputStream = AttachmentTableGlue.grabIntroductionData(existingPlaceholder, inputStream)
+    // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 
     val fileWriteResult: DataFileWriteResult = writeToDataFile(newDataFile(context), inputStream, TransformProperties.empty())
     if (fileWriteResult.file.extension.equals(".trustedintro")){
