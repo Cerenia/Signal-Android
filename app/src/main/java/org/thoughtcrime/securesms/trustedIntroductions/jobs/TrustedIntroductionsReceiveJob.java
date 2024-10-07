@@ -24,6 +24,7 @@ import java.util.Locale;
 import java.util.Objects;
 
 import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.constructIntroducees;
+import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.getIntroducerFromRawMessage;
 
 public class TrustedIntroductionsReceiveJob extends BaseJob {
 
@@ -32,7 +33,7 @@ public class TrustedIntroductionsReceiveJob extends BaseJob {
   // Factory Key
   public static final String KEY = "TIReceiveJob";
 
-  private final RecipientId introducerId;
+  private RecipientId introducerId;
   private final long timestamp;
   private final String messageBody;
   private boolean bodyParsed;
@@ -109,6 +110,9 @@ public class TrustedIntroductionsReceiveJob extends BaseJob {
 
 
   @Override protected void onRun() throws Exception {
+    if (introducerId == null){
+      introducerId = getIntroducerFromRawMessage(messageBody);
+    }
     if(!bodyParsed){
       List<TI_Data> tiData = constructIntroducees(messageBody, timestamp, introducerId);
       if(tiData == null) {
@@ -156,8 +160,11 @@ public class TrustedIntroductionsReceiveJob extends BaseJob {
           throw new AssertionError("JSON deserialization of introductions failed!");
         }
       }
-
-      return new TrustedIntroductionsReceiveJob(RecipientId.from(data.getString(KEY_INTRODUCER_ID)),
+      RecipientId introducer = null;
+      if (!data.getString(KEY_INTRODUCER_ID).equals("NULL")){
+        introducer = RecipientId.from(data.getString(KEY_INTRODUCER_ID));
+      }
+      return new TrustedIntroductionsReceiveJob(introducer,
                                                 data.getString(KEY_MESSAGE_BODY),
                                                 data.getBoolean(KEY_BODY_PARSED),
                                                 data.getLong(KEY_TIMESTAMP),

@@ -325,7 +325,7 @@ public class TI_Utils {
   // This structure allows for a oneliner in the processing logic to minimize additional code needed in there.
   public static void handleTIMessage(String message, long timestamp){
     // Schedule Reception Job
-    AppDependencies.getJobManager().add(new TrustedIntroductionsReceiveJob(introducer, message, timestamp));
+    AppDependencies.getJobManager().add(new TrustedIntroductionsReceiveJob(message, timestamp));
   }
 
 
