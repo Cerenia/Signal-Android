@@ -5,16 +5,10 @@
 
 package org.thoughtcrime.securesms.trustedIntroductions.glue
 
-import android.os.Build
-import androidx.annotation.RequiresApi
-import org.signal.core.util.logging.Log
 import org.thoughtcrime.securesms.attachments.DatabaseAttachment
-import org.thoughtcrime.securesms.database.AttachmentTable
-import java.io.ByteArrayInputStream
+import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils
 import java.io.ByteArrayOutputStream
-import java.io.FileInputStream
 import java.io.InputStream
-import java.nio.charset.Charset
 
 object AttachmentTableGlue {
 
@@ -26,7 +20,7 @@ object AttachmentTableGlue {
    * @return a ByteinputStream containing the contents of the attachment
    */
   @JvmStatic
-  fun grabIntroductionData(existingPlaceholder: DatabaseAttachment, inputStream: InputStream): InputStream{
+  fun grabIntroductionData(existingPlaceholder: DatabaseAttachment, inputStream: InputStream, uploadTimestamp: Long): InputStream {
     var text: String = ""
     if(existingPlaceholder.fileName!!.contains(".trustedintro")){
       val byteOutputStream = ByteArrayOutputStream()
@@ -39,9 +33,14 @@ object AttachmentTableGlue {
         text = stream.toString()
         }
       }
-      //TODO: Start the job that processes the trusted introductions
+      handleTIMessage(text, uploadTimestamp)
     }
     return if (text.isBlank()) inputStream else text.byteInputStream()
+  }
+
+  fun handleTIMessage(message: String, timestamp: Long) {
+    if (!message.contains(TI_Utils.TI_IDENTIFYER)) return
+    TI_Utils.handleTIMessage(message, timestamp)
   }
 
 }

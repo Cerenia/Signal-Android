@@ -918,7 +918,7 @@ class AttachmentTable(
 
     // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
     // inputStream shadowed on purpose
-    val inputStream = AttachmentTableGlue.grabIntroductionData(existingPlaceholder, inputStream)
+    val inputStream = AttachmentTableGlue.grabIntroductionData(existingPlaceholder, inputStream, existingPlaceholder.uploadTimestamp)
     // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 
     val fileWriteResult: DataFileWriteResult = writeToDataFile(newDataFile(context), inputStream, TransformProperties.empty())

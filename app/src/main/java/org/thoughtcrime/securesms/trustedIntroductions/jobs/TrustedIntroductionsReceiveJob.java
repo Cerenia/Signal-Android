@@ -10,7 +10,6 @@ import org.json.JSONObject;
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.jobs.BaseJob;
-import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database;
 import org.thoughtcrime.securesms.jobmanager.JsonJobData;
 import org.thoughtcrime.securesms.jobmanager.Job;
 import org.thoughtcrime.securesms.jobmanager.impl.NetworkConstraint;
@@ -24,7 +23,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
-import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.parseTIMessage;
+import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.constructIntroducees;
 
 public class TrustedIntroductionsReceiveJob extends BaseJob {
 
@@ -49,21 +48,21 @@ public class TrustedIntroductionsReceiveJob extends BaseJob {
   private static final String KEY_BODY_PARSED = "bodyParsed";
   private static final String KEY_INTRODUCTIONS = "serialized_remaining_introduction_data";
 
-  public TrustedIntroductionsReceiveJob(@NonNull RecipientId introducerId, @NonNull String messageBody, @NonNull long timestamp){
-    this(introducerId,
+  public TrustedIntroductionsReceiveJob(@NonNull String messageBody, @NonNull long timestamp){
+    this(null,
          messageBody,
          false,
          timestamp,
          null,
          new Parameters.Builder()
-                       .setQueue(introducerId.toQueueKey() + TI_Utils.serializeForQueue(messageBody) + timestamp) // TODO: Why does this need a seperate queue? Can I just enqueue each intro per introducer?
+                       .setQueue(TI_Utils.serializeForQueue(messageBody) + timestamp)
                        .setLifespan(TI_Utils.TI_JOB_LIFESPAN)
                        .setMaxAttempts(TI_Utils.TI_JOB_MAX_ATTEMPTS)
                        .addConstraint(NetworkConstraint.KEY)
                        .build());
   }
 
-  private TrustedIntroductionsReceiveJob(@NonNull RecipientId introducerId, @NonNull String messageBody, @NonNull Boolean bodyParsed, @NonNull long timestamp, @Nullable ArrayList<TI_Data> tiData, @NonNull Parameters parameters){
+  private TrustedIntroductionsReceiveJob(@Nullable RecipientId introducerId, @NonNull String messageBody, @NonNull Boolean bodyParsed, @NonNull long timestamp, @Nullable ArrayList<TI_Data> tiData, @NonNull Parameters parameters){
     super(parameters);
     this.introducerId = introducerId;
     this.timestamp = timestamp;
@@ -73,7 +72,7 @@ public class TrustedIntroductionsReceiveJob extends BaseJob {
   }
 
   /**
-   * // TODO: Test serialization and deserialization
+   *
    * Serialize your job state so that it can be recreated in the future.
    */
   @NonNull @Override public byte[] serialize() {
@@ -86,7 +85,7 @@ public class TrustedIntroductionsReceiveJob extends BaseJob {
       serializedIntroductions.put(d.serialize());
     }
     return Objects.requireNonNull(new JsonJobData.Builder()
-                                      .putString(KEY_INTRODUCER_ID, introducerId.serialize())
+                                      .putString(KEY_INTRODUCER_ID, introducerId == null ? "NULL" : introducerId.serialize())
                                       .putString(KEY_MESSAGE_BODY, messageBody)
                                       .putBoolean(KEY_BODY_PARSED, bodyParsed)
                                       .putString(KEY_INTRODUCTIONS, serializedIntroductions.toString())
@@ -111,7 +110,7 @@ public class TrustedIntroductionsReceiveJob extends BaseJob {
 
   @Override protected void onRun() throws Exception {
     if(!bodyParsed){
-      List<TI_Data> tiData = parseTIMessage(messageBody, timestamp, introducerId);
+      List<TI_Data> tiData = constructIntroducees(messageBody, timestamp, introducerId);
       if(tiData == null) {
         Log.e(TAG, "Introduction did not parse correctly, aborting!");
         return;
