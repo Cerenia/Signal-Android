@@ -254,7 +254,7 @@ public class TI_Utils {
 
     JSONObject data = new JSONObject();
 
-    Map<RecipientId, RecipientRecord> recipients = RecipientTableGlue.statics.getRecordsForSendingTI(introducees);
+    Map<RecipientId, RecipientRecord> recipients = RecipientTableGlue.getRecordsForSendingTI(introducees);
     JSONArray introduceeData = new JSONArray();
 
     data.put(TI_VERSION_J, TI_MESSAGE_VERSION);

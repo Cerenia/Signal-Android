@@ -735,7 +735,7 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
     // TODO: Simplify if you see that you finally never query this cursor with more than 1 recipient...
     Set<RecipientId> s = new HashSet<>();
     s.add(introduceeId);
-    return RecipientTableGlue.statics.getRecordsForSendingTI(s);
+    return RecipientTableGlue.getRecordsForSendingTI(s);
   }
 
   public static class IntroductionReader implements Closeable{
