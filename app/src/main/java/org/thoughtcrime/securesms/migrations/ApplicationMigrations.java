@@ -807,7 +807,7 @@ public class ApplicationMigrations {
     if (lastSeenVersion < Version.AVATAR_COLOR_MIGRATION_JOB) {
       jobs.put(Version.AVATAR_COLOR_MIGRATION_JOB, new AvatarColorStorageServiceMigrationJob());
     }
-    
+
     if (lastSeenVersion < Version.DUPLICATE_E164_FIX_2) {
       jobs.put(Version.DUPLICATE_E164_FIX_2, new DuplicateE164MigrationJob());
     }
