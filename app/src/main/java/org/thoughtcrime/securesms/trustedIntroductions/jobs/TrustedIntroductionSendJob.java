@@ -4,31 +4,43 @@ import android.net.Uri;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.FileProvider;
 
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.attachments.Attachment;
 import org.thoughtcrime.securesms.attachments.AttachmentCreator;
+import org.thoughtcrime.securesms.attachments.UriAttachment;
 import org.thoughtcrime.securesms.database.AttachmentTable;
+import org.thoughtcrime.securesms.database.ThreadTable;
+import org.thoughtcrime.securesms.database.model.StoryType;
 import org.thoughtcrime.securesms.jobmanager.Job;
 import org.thoughtcrime.securesms.jobmanager.JsonJobData;
 import org.thoughtcrime.securesms.jobmanager.impl.NetworkConstraint;
 import org.thoughtcrime.securesms.jobs.BaseJob;
 import org.thoughtcrime.securesms.media.UriMediaInput;
+import org.thoughtcrime.securesms.mediasend.Media;
+import org.thoughtcrime.securesms.mediasend.MediaUploadRepository;
 import org.thoughtcrime.securesms.recipients.LiveRecipient;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.sms.MessageSender;
 import org.thoughtcrime.securesms.mms.OutgoingMessage;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
+import org.thoughtcrime.securesms.util.FileProviderUtil;
+import org.thoughtcrime.securesms.util.FileUtils;
+import org.thoughtcrime.securesms.util.MediaUtil;
 import org.thoughtcrime.securesms.util.SaveAttachmentTask;
+import org.thoughtcrime.securesms.util.StorageUtil;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -125,13 +137,72 @@ public class TrustedIntroductionSendJob extends BaseJob {
     PrintWriter writeString = new PrintWriter(fileWriter);
     writeString.write(body);
     Uri uri = Uri.parse(fileHandler.getAbsolutePath());
-    SaveAttachmentTask.Attachment attachment = new SaveAttachmentTask.Attachment(uri, "trustedIntro", System.currentTimeMillis(), fileHandler.getName());
-    ArrayList<SaveAttachmentTask.Attachment> attachmentList = new ArrayList<>();
-    attachmentList.add(attachment);
+    String filename = fileHandler.getName();
+    //Media introductions = new Media(uri, MediaUtil.OCTET, 0, 0, 0, 0, 0, false, false, Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(filename));
+    //Attachment a = MediaUploadRepository.asAttachment(context.getApplicationContext(), introductions);
+    Attachment a = new UriAttachment(uri,
+                                     "text/plain",
+                                     AttachmentTable.TRANSFER_PROGRESS_PENDING,
+                                     0,
+                                     0,
+                                     0,
+                                     filename,
+                                     null,
+                                     false,
+                                     false,
+                                     false,
+                                     false,
+                                     null,
+                                     null,
+                                     null,
+                                     null,
+                                     null
+                                     );
+    /**
+     *  constructor(
+     *     dataUri: Uri,
+     *     contentType: String?,
+     *     transferState: Int,
+     *     size: Long,
+     *     width: Int,
+     *     height: Int,
+     *     fileName: String?,
+     *     fastPreflightId: String?,
+     *     voiceNote: Boolean,
+     *     borderless: Boolean,
+     *     videoGif: Boolean,
+     *     quote: Boolean,
+     *     caption: String?,
+     *     stickerLocator: StickerLocator?,
+     *     blurHash: BlurHash?,
+     *     audioHash: AudioHash?,
+     *     transformProperties: TransformProperties?,
+     *     uuid: UUID? = UUID.randomUUID()
+     */
+    ArrayList<Attachment> attachmentList = new ArrayList<>();
+    attachmentList.add(a);
     OutgoingMessage message =  new OutgoingMessage(introductionRecipient,
                                                    "I would like to introduce you to some people, navigate to the TI management screen to see new introductions!",
                                                    attachmentList,
-                                                   System.currentTimeMillis());
+                                                   System.currentTimeMillis(),
+                                                   0,
+                                                   1,
+                                                   false,
+                                                   ThreadTable.DistributionTypes.DEFAULT,
+                                                   StoryType.NONE,
+                                                   null,
+                                                   false,
+                                                   null,
+                                                   Collections.emptyList(),
+                                                   Collections.emptyList(),
+                                                   Collections.emptyList(),
+                                                   Collections.emptySet(),
+                                                   Collections.emptySet(),
+                                                   null,
+                                                   true,
+                                                   null,
+                                                   -1,
+                                                   0);
     // TODO: do we need a listener?
     // TODO: -1 for thread ID indeed ok?
     MessageSender.send(context, message, -1, MessageSender.SendType.SIGNAL, null, null);

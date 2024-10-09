@@ -33,16 +33,17 @@ class PickContactsToIntroduceContract {
 
     override fun parseResult(resultCode: Int, intent: Intent?): Pair<RecipientId?, ArrayList<RecipientId>?> {
       if (resultCode == Activity.RESULT_OK && intent != null) {
-      val introductionRecipientId = from(intent.getLongExtra(ContactsSelectionActivity.RECIPIENT_ID, -1))
-      val listOfIntroduceeIds:  ArrayList<RecipientId>? = intent.getParcelableArrayListExtra(ContactsSelectionActivity.SELECTED_CONTACTS_TO_FORWARD)
-      val idSet: HashSet<RecipientId> = HashSet(listOfIntroduceeIds)
-      val sendJob = TrustedIntroductionSendJob(Recipient.self().id, introductionRecipientId, idSet)
-      // Starting job here, nothing else needs to happen in the Conversation Fragment so there is no callback defined in ConversationActivityResultContracts
-      AppDependencies.jobManager.add(sendJob)
-      return Pair(introductionRecipientId, listOfIntroduceeIds)
+        val introductionRecipientId = from(intent.getLongExtra(ContactsSelectionActivity.RECIPIENT_ID, -1))
+        val listOfIntroduceeIds:  ArrayList<RecipientId>? = intent.getParcelableArrayListExtra(ContactsSelectionActivity.SELECTED_CONTACTS_TO_FORWARD)
+        val idSet: HashSet<RecipientId> = HashSet(listOfIntroduceeIds)
+        val myId = Recipient.self().id
+        val sendJob = TrustedIntroductionSendJob(myId, introductionRecipientId, idSet)
+        // Starting job here, nothing else needs to happen in the Conversation Fragment so there is no callback defined in ConversationActivityResultContracts
+        AppDependencies.jobManager.add(sendJob)
+        return Pair(introductionRecipientId, listOfIntroduceeIds)
       } else {
-       Log.e(TAG, "PickContactsForTrustedIntroductionsActivity did not return with RESULT_OK!")
-       return Pair(null, null)
+        Log.e(TAG, "PickContactsForTrustedIntroductionsActivity did not return with RESULT_OK!")
+        return Pair(null, null)
       }
     }
   }

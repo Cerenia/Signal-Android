@@ -104,8 +104,9 @@ public class TI_Utils {
   static final String PREDICTED_FINGERPRINT_J = "safety_number";
 
   // Job constants
-  public static final long TI_JOB_LIFESPAN = TimeUnit.DAYS.toMillis(1);
   // TODO: debugging
+  //public static final long TI_JOB_LIFESPAN = TimeUnit.DAYS.toMillis(1);
+  public static final long TI_JOB_LIFESPAN = TimeUnit.MINUTES.toMillis(1);
   //public static final int TI_JOB_MAX_ATTEMPTS = Job.Parameters.UNLIMITED;
   public static final int TI_JOB_MAX_ATTEMPTS = 1; // TODO: here to avoid infinite crashes for now..
 
@@ -265,7 +266,8 @@ public class TI_Utils {
     // create Introducer entry
     JSONObject introducer = new JSONObject();
     Recipient resolvedIntroducer = Recipient.live(introducerRecipientId).get();
-    introducer.put(NAME_J, getSomeNonNullName(introducerRecipientId, Objects.requireNonNull(recipients.get(introducerRecipientId))));
+
+    introducer.put(NAME_J, getSomeNonNullName(introducerRecipientId, SignalDatabase.recipients().getRecord(introducerRecipientId)));
     introducer.put(NUMBER_J, resolvedIntroducer.getE164().isEmpty() ? UNDISCLOSED_NUMBER : resolvedIntroducer.getE164());
     introducer.put(SERVICE_ID_J, resolvedIntroducer.getServiceId().toString());
     try{
