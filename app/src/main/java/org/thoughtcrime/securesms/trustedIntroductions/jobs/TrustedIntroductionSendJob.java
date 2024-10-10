@@ -20,6 +20,7 @@ import org.thoughtcrime.securesms.jobs.BaseJob;
 import org.thoughtcrime.securesms.media.UriMediaInput;
 import org.thoughtcrime.securesms.mediasend.Media;
 import org.thoughtcrime.securesms.mediasend.MediaUploadRepository;
+import org.thoughtcrime.securesms.providers.BlobProvider;
 import org.thoughtcrime.securesms.recipients.LiveRecipient;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
@@ -35,6 +36,7 @@ import org.thoughtcrime.securesms.util.StorageUtil;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -129,24 +131,14 @@ public class TrustedIntroductionSendJob extends BaseJob {
     String body = TI_Utils.buildMessageBody(introducerRecipientId, introductionRecipientId, introduceeIds);
     LiveRecipient liveIntroductionRecipient = Recipient.live(introductionRecipientId);
     Recipient introductionRecipient = liveIntroductionRecipient.resolve();
-    File fileHandler = AttachmentTable.newDataFile(context);
-    if (!fileHandler.setWritable(true)){
-      throw new AssertionError("Cannot set the file at path: " + fileHandler.getAbsolutePath() + " as writeable. Introduction failed!");
-    }
-    FileWriter fileWriter = new FileWriter(fileHandler.getAbsolutePath());
-    PrintWriter writeString = new PrintWriter(fileWriter);
-    writeString.write(body);
-    Uri uri = Uri.parse(fileHandler.getAbsolutePath());
-    String filename = fileHandler.getName();
-    //Media introductions = new Media(uri, MediaUtil.OCTET, 0, 0, 0, 0, 0, false, false, Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(filename));
-    //Attachment a = MediaUploadRepository.asAttachment(context.getApplicationContext(), introductions);
+    Uri uri = BlobProvider.getInstance().forData(body.getBytes(StandardCharsets.UTF_8)).withMimeType(TI_Utils.TI_MIME_TYPE).withFileName(TI_Utils.TI_MESSAGE_FILENAME).createForSingleUseInMemory();
     Attachment a = new UriAttachment(uri,
-                                     "text/plain",
+                                     TI_Utils.TI_MIME_TYPE,
                                      AttachmentTable.TRANSFER_PROGRESS_PENDING,
                                      0,
                                      0,
                                      0,
-                                     filename,
+                                     TI_Utils.TI_MESSAGE_FILENAME,
                                      null,
                                      false,
                                      false,
@@ -158,31 +150,10 @@ public class TrustedIntroductionSendJob extends BaseJob {
                                      null,
                                      null
                                      );
-    /**
-     *  constructor(
-     *     dataUri: Uri,
-     *     contentType: String?,
-     *     transferState: Int,
-     *     size: Long,
-     *     width: Int,
-     *     height: Int,
-     *     fileName: String?,
-     *     fastPreflightId: String?,
-     *     voiceNote: Boolean,
-     *     borderless: Boolean,
-     *     videoGif: Boolean,
-     *     quote: Boolean,
-     *     caption: String?,
-     *     stickerLocator: StickerLocator?,
-     *     blurHash: BlurHash?,
-     *     audioHash: AudioHash?,
-     *     transformProperties: TransformProperties?,
-     *     uuid: UUID? = UUID.randomUUID()
-     */
     ArrayList<Attachment> attachmentList = new ArrayList<>();
     attachmentList.add(a);
     OutgoingMessage message =  new OutgoingMessage(introductionRecipient,
-                                                   "I would like to introduce you to some people, navigate to the TI management screen to see new introductions!",
+                                                   "I would like to introduce you to some people, please navigate to the Trusted Introductions management screen to see the new introductions.",
                                                    attachmentList,
                                                    System.currentTimeMillis(),
                                                    0,
@@ -203,8 +174,6 @@ public class TrustedIntroductionSendJob extends BaseJob {
                                                    null,
                                                    -1,
                                                    0);
-    // TODO: do we need a listener?
-    // TODO: -1 for thread ID indeed ok?
     MessageSender.send(context, message, -1, MessageSender.SendType.SIGNAL, null, null);
   }
 

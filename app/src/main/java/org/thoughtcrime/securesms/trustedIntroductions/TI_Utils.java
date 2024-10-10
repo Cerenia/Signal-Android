@@ -72,6 +72,11 @@ public class TI_Utils {
   // Since the Signal version is still important and will not be overwritten I define my own
   // 1: major changes, 2: feature/ui changes , 3. bugs | stability fixes
   public static final String TI_APK_VERSION = "2.1.2";
+  // text is the interim solution. In the future a custom mimetype should be used such that we can release a
+  // custom interpreter that can be used by people that do not have the TI_extension installed.
+  public static final String TI_MIME_TYPE = "text/plain";
+  public static final String TI_MESSAGE_EXTENSION = ".trustedIntroduction";
+  public static final String TI_MESSAGE_FILENAME = "Signal" + TI_MESSAGE_EXTENSION;
 
   // Random String to mark a message as a trustedIntroduction, since I'm tunneling through normal messages
   public static final String TI_IDENTIFYER = "QOikEX9PPGIuXfiejT9nC2SsDB8d9AG0dUPQ9gERBQ8qHF30Xj --- This message is part of an experimental feature and not meant to be read by humans --- Introduction Data:\n";
