@@ -117,7 +117,7 @@ open class SignalDatabase(private val context: Application, databaseSecret: Data
     db.execSQL(CallLinkTable.CREATE_TABLE)
     db.execSQL(CallTable.CREATE_TABLE)
     db.execSQL(KyberPreKeyTable.CREATE_TABLE)
-    NameCollisionTables.createTables(db)
+    executeStatements(db, NameCollisionTables.CREATE_TABLE)
     db.execSQL(InAppPaymentTable.CREATE_TABLE)
     db.execSQL(InAppPaymentSubscriberTable.CREATE_TABLE)
     // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
@@ -152,11 +152,10 @@ open class SignalDatabase(private val context: Application, databaseSecret: Data
     executeStatements(db, ReactionTable.CREATE_INDEXES)
     executeStatements(db, KyberPreKeyTable.CREATE_INDEXES)
     executeStatements(db, ChatFolderTables.CREATE_INDEXES)
+    executeStatements(db, NameCollisionTables.CREATE_INDEXES)
 
     executeStatements(db, SearchTable.CREATE_TRIGGERS)
     executeStatements(db, MessageSendLogTables.CREATE_TRIGGERS)
-
-    NameCollisionTables.createIndexes(db)
 
     DistributionListTables.insertInitialDistributionListAtCreationTime(db)
     ChatFolderTables.insertInitialChatFoldersAtCreationTime(db)
