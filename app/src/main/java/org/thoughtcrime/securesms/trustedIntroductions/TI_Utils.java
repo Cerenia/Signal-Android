@@ -41,7 +41,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -95,7 +94,7 @@ public class TI_Utils {
   // @See length of codes in VerifyDisplayFragment
   static final int SEGMENTS = 12;
 
-  static final String UNDISCLOSED_NUMBER = "undisclosed";
+  static final String UNDISCLOSED = "undisclosed";
 
   // Json keys
   // TODO: May want to add that to be part of the introduction at some point. This way we can avoid crashed on importing old backups with version missmatches
@@ -273,8 +272,8 @@ public class TI_Utils {
     Recipient resolvedIntroducer = Recipient.live(introducerRecipientId).get();
 
     introducer.put(NAME_J, getSomeNonNullName(introducerRecipientId, SignalDatabase.recipients().getRecord(introducerRecipientId)));
-    introducer.put(NUMBER_J, resolvedIntroducer.getE164().isEmpty() ? UNDISCLOSED_NUMBER : resolvedIntroducer.getE164());
-    introducer.put(SERVICE_ID_J, resolvedIntroducer.getServiceId().toString());
+    introducer.put(NUMBER_J, resolvedIntroducer.getE164().isEmpty() ? UNDISCLOSED : resolvedIntroducer.getE164().get());
+    introducer.put(SERVICE_ID_J, resolvedIntroducer.getServiceId().isEmpty() ? UNDISCLOSED : resolvedIntroducer.getServiceId().get().toString());
     try{
       introducer.put(PREDICTED_FINGERPRINT_J, predictFingerprint(introducerRecipientId,
                                                                  introductionRecipientId,
@@ -298,7 +297,7 @@ public class TI_Utils {
       try {
         JSONObject introducee = new JSONObject();
         introducee.put(NAME_J, getSomeNonNullName(recipientId, recipientRecord));
-        String introduceeE164 = recipientRecord.getE164() == null ? UNDISCLOSED_NUMBER : recipientRecord.getE164();
+        String introduceeE164 = recipientRecord.getE164() == null ? UNDISCLOSED : recipientRecord.getE164();
         introducee.put(NUMBER_J, introduceeE164);
         ServiceId introduceeServiceId =  recipientRecord.getAci();
         if (introduceeServiceId == null){
@@ -454,7 +453,7 @@ public class TI_Utils {
           String introduceeServiceId = recipientRecord.getAci().toString();
           knownIds.add(introduceeServiceId);
           String name = getSomeNonNullName(recipientID, recipientRecord);
-          String phone = recipientRecord.getE164() == UNDISCLOSED_NUMBER ? null : recipientRecord.getE164();
+          String phone = recipientRecord.getE164() == UNDISCLOSED ? null : recipientRecord.getE164();
           String identityKey = IdKeyPair.findCorrespondingKeyInList(introduceeServiceId, idKeyPairs);
           TI_Data d = new TI_Data(null, TI_Database.State.PENDING, introducerServiceId, introduceeServiceId, name, phone, identityKey, null, timestamp);
           result.add(d);
