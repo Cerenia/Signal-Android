@@ -69,7 +69,7 @@ public class TrustedIntroductionsReceiveJob extends BaseJob {
     this.timestamp = timestamp;
     this.messageBody = messageBody;
     this.bodyParsed = bodyParsed;
-    this.introductions = !tiData.isEmpty() ? tiData : new ArrayList<>();
+    this.introductions = !(tiData == null || tiData.isEmpty()) ? tiData : new ArrayList<>();
   }
 
   /**
