@@ -126,7 +126,12 @@ public class TrustedIntroductionSendJob extends BaseJob {
     Log.e(TAG, String.format(Locale.ENGLISH,"Failed to introduce %d contacts to %s", introduceeIds.size(), introductionRecipientId.toString()));
   }
 
-
+  /**
+   * Builds a Trusted Introduction with the data passed through the constructor of the job.
+   * If it succeeds to build the body (would, e.g., fail if invalid Recipient IDs were passed for any entity),
+   * the data gets tunneled through Signal's document Attachment mechanism.
+   *
+   */
   @Override protected void onRun() throws Exception {
     String body = TI_Utils.buildMessageBody(introducerRecipientId, introductionRecipientId, introduceeIds);
     LiveRecipient liveIntroductionRecipient = Recipient.live(introductionRecipientId);
