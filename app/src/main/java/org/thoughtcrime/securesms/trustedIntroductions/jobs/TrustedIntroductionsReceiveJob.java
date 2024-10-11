@@ -63,6 +63,14 @@ public class TrustedIntroductionsReceiveJob extends BaseJob {
                        .build());
   }
 
+  /**
+  * Because the tunneling mechanism was changed from using a plain text message to an attachment, we now only instantiate this job when processing the attachment in the AttachmentTable. The Recipient from which the message
+  * came from is not as easily accessible as it was when we were instantiating this job in the `IncomingMessageProcessor` and is now parsed from the message body. Thus the introducerId will first be null and only be instantiated
+  * after the body was parsed.
+  * This has the additional advantage that we could in principle write a standalone viewer for introductions, that eats '*.trustedIntroduction' files, since the introducer is no longer assumed based on the thread the message
+  * was forwarded on, making it more useful for users that do not have the modified Client of Signal installed.
+  *
+  **/
   private TrustedIntroductionsReceiveJob(@Nullable RecipientId introducerId, @NonNull String messageBody, @NonNull Boolean bodyParsed, @NonNull long timestamp, @Nullable ArrayList<TI_Data> tiData, @NonNull Parameters parameters){
     super(parameters);
     this.introducerId = introducerId;
