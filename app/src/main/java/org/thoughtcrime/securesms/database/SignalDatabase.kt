@@ -76,6 +76,7 @@ open class SignalDatabase(private val context: Application, databaseSecret: Data
   val nameCollisionTables: NameCollisionTables = NameCollisionTables(context, this)
   val inAppPaymentTable: InAppPaymentTable = InAppPaymentTable(context, this)
   val inAppPaymentSubscriberTable: InAppPaymentSubscriberTable = InAppPaymentSubscriberTable(context, this)
+  val chatFoldersTable: ChatFolderTables = ChatFolderTables(context, this)
   // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
   val tiDatabase: org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue =  org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue.createSingleton(context, this)
   val tiIdentityTable: org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue =  org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue.createSingleton(context, this)
@@ -128,6 +129,7 @@ open class SignalDatabase(private val context: Application, databaseSecret: Data
     executeStatements(db, MessageSendLogTables.CREATE_TABLE)
     executeStatements(db, NotificationProfileDatabase.CREATE_TABLE)
     executeStatements(db, DistributionListTables.CREATE_TABLE)
+    executeStatements(db, ChatFolderTables.CREATE_TABLE)
 
     executeStatements(db, RecipientTable.CREATE_INDEXS)
     executeStatements(db, MessageTable.CREATE_INDEXS)
@@ -149,6 +151,7 @@ open class SignalDatabase(private val context: Application, databaseSecret: Data
     executeStatements(db, CallTable.CREATE_INDEXES)
     executeStatements(db, ReactionTable.CREATE_INDEXES)
     executeStatements(db, KyberPreKeyTable.CREATE_INDEXES)
+    executeStatements(db, ChatFolderTables.CREATE_INDEXES)
 
     executeStatements(db, SearchTable.CREATE_TRIGGERS)
     executeStatements(db, MessageSendLogTables.CREATE_TRIGGERS)
@@ -156,6 +159,7 @@ open class SignalDatabase(private val context: Application, databaseSecret: Data
     NameCollisionTables.createIndexes(db)
 
     DistributionListTables.insertInitialDistributionListAtCreationTime(db)
+    ChatFolderTables.insertInitialChatFoldersAtCreationTime(db)
 
     if (context.getDatabasePath(ClassicOpenHelper.NAME).exists()) {
       val legacyHelper = ClassicOpenHelper(context)
@@ -566,6 +570,12 @@ open class SignalDatabase(private val context: Application, databaseSecret: Data
     @get:JvmName("inAppPaymentSubscribers")
     val inAppPaymentSubscribers: InAppPaymentSubscriberTable
       get() = instance!!.inAppPaymentSubscriberTable
+
+    @get:JvmStatic
+    @get:JvmName("chatFolders")
+    val chatFolders: ChatFolderTables
+      get() = instance!!.chatFoldersTable
+
     // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH start"
     @get:JvmStatic
     @get:JvmName("tiDatabase")
