@@ -15,7 +15,10 @@ object AttachmentTableGlue {
 
 
   /**
-   * TODO
+   * Given a message attachment, checks if it might be trusted introduction data (by checking file extension)
+   * and if yes attempts to read the data and pass it to the handler.
+   * Finally we return an inputstream since we don't want to disturb the control flow of the caller 
+   * (and any given inputstream can only be read once).
    *
    * @param attachment the attachment to be evaluated
    * @return a ByteinputStream containing the contents of the attachment
