@@ -63,4 +63,8 @@ object ChatFoldersRepository {
     SignalDatabase.chatFolders.markNeedsSync(id)
     StorageSyncHelper.scheduleSyncForDataChange()
   }
+
+  fun getFolder(id: Long): ChatFolderRecord {
+    return SignalDatabase.chatFolders.getChatFolder(id)
+  }
 }
