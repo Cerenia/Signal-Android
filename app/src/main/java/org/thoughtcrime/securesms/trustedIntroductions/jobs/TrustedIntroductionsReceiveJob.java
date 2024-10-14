@@ -10,7 +10,6 @@ import org.json.JSONObject;
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.jobs.BaseJob;
-import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database;
 import org.thoughtcrime.securesms.jobmanager.JsonJobData;
 import org.thoughtcrime.securesms.jobmanager.Job;
 import org.thoughtcrime.securesms.jobmanager.impl.NetworkConstraint;
@@ -24,7 +23,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
-import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.parseTIMessage;
+import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.constructIntroduceesFromTrustedIntrosString;
+import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.getIntroducerFromRawMessage;
 
 public class TrustedIntroductionsReceiveJob extends BaseJob {
 
@@ -33,7 +33,7 @@ public class TrustedIntroductionsReceiveJob extends BaseJob {
   // Factory Key
   public static final String KEY = "TIReceiveJob";
 
-  private final RecipientId introducerId;
+  private RecipientId introducerId;
   private final long timestamp;
   private final String messageBody;
   private boolean bodyParsed;
@@ -49,31 +49,39 @@ public class TrustedIntroductionsReceiveJob extends BaseJob {
   private static final String KEY_BODY_PARSED = "bodyParsed";
   private static final String KEY_INTRODUCTIONS = "serialized_remaining_introduction_data";
 
-  public TrustedIntroductionsReceiveJob(@NonNull RecipientId introducerId, @NonNull String messageBody, @NonNull long timestamp){
-    this(introducerId,
+  public TrustedIntroductionsReceiveJob(@NonNull String messageBody, @NonNull long timestamp){
+    this(null,
          messageBody,
          false,
          timestamp,
          null,
          new Parameters.Builder()
-                       .setQueue(introducerId.toQueueKey() + TI_Utils.serializeForQueue(messageBody) + timestamp) // TODO: Why does this need a seperate queue? Can I just enqueue each intro per introducer?
+                       .setQueue(TI_Utils.serializeForQueue(messageBody) + timestamp)
                        .setLifespan(TI_Utils.TI_JOB_LIFESPAN)
                        .setMaxAttempts(TI_Utils.TI_JOB_MAX_ATTEMPTS)
                        .addConstraint(NetworkConstraint.KEY)
                        .build());
   }
 
-  private TrustedIntroductionsReceiveJob(@NonNull RecipientId introducerId, @NonNull String messageBody, @NonNull Boolean bodyParsed, @NonNull long timestamp, @Nullable ArrayList<TI_Data> tiData, @NonNull Parameters parameters){
+  /**
+  * Because the tunneling mechanism was changed from using a plain text message to an attachment, we now only instantiate this job when processing the attachment in the AttachmentTable. The Recipient from which the message
+  * came from is not as easily accessible as it was when we were instantiating this job in the `IncomingMessageProcessor` and is now parsed from the message body. Thus the introducerId will first be null and only be instantiated
+  * after the body was parsed.
+  * This has the additional advantage that we could in principle write a standalone viewer for introductions, that eats '*.trustedIntroduction' files, since the introducer is no longer assumed based on the thread the message
+  * was forwarded on, making it more useful for users that do not have the modified Client of Signal installed.
+  *
+  **/
+  private TrustedIntroductionsReceiveJob(@Nullable RecipientId introducerId, @NonNull String messageBody, @NonNull Boolean bodyParsed, @NonNull long timestamp, @Nullable ArrayList<TI_Data> tiData, @NonNull Parameters parameters){
     super(parameters);
     this.introducerId = introducerId;
     this.timestamp = timestamp;
     this.messageBody = messageBody;
     this.bodyParsed = bodyParsed;
-    this.introductions = !tiData.isEmpty() ? tiData : new ArrayList<>();
+    this.introductions = !(tiData == null || tiData.isEmpty()) ? tiData : new ArrayList<>();
   }
 
   /**
-   * // TODO: Test serialization and deserialization
+   *
    * Serialize your job state so that it can be recreated in the future.
    */
   @NonNull @Override public byte[] serialize() {
@@ -86,7 +94,7 @@ public class TrustedIntroductionsReceiveJob extends BaseJob {
       serializedIntroductions.put(d.serialize());
     }
     return Objects.requireNonNull(new JsonJobData.Builder()
-                                      .putString(KEY_INTRODUCER_ID, introducerId.serialize())
+                                      .putString(KEY_INTRODUCER_ID, introducerId == null ? "NULL" : introducerId.serialize())
                                       .putString(KEY_MESSAGE_BODY, messageBody)
                                       .putBoolean(KEY_BODY_PARSED, bodyParsed)
                                       .putString(KEY_INTRODUCTIONS, serializedIntroductions.toString())
@@ -110,8 +118,11 @@ public class TrustedIntroductionsReceiveJob extends BaseJob {
 
 
   @Override protected void onRun() throws Exception {
+    if (introducerId == null){
+      introducerId = getIntroducerFromRawMessage(messageBody);
+    }
     if(!bodyParsed){
-      List<TI_Data> tiData = parseTIMessage(messageBody, timestamp, introducerId);
+      List<TI_Data> tiData = constructIntroduceesFromTrustedIntrosString(messageBody, timestamp, introducerId);
       if(tiData == null) {
         Log.e(TAG, "Introduction did not parse correctly, aborting!");
         return;
@@ -157,8 +168,11 @@ public class TrustedIntroductionsReceiveJob extends BaseJob {
           throw new AssertionError("JSON deserialization of introductions failed!");
         }
       }
-
-      return new TrustedIntroductionsReceiveJob(RecipientId.from(data.getString(KEY_INTRODUCER_ID)),
+      RecipientId introducer = null;
+      if (!data.getString(KEY_INTRODUCER_ID).equals("NULL")){
+        introducer = RecipientId.from(data.getString(KEY_INTRODUCER_ID));
+      }
+      return new TrustedIntroductionsReceiveJob(introducer,
                                                 data.getString(KEY_MESSAGE_BODY),
                                                 data.getBoolean(KEY_BODY_PARSED),
                                                 data.getLong(KEY_TIMESTAMP),

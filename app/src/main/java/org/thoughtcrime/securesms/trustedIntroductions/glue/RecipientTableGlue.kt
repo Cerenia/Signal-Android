@@ -16,9 +16,8 @@ import org.thoughtcrime.securesms.database.model.RecipientRecord
 import org.thoughtcrime.securesms.recipients.RecipientId
 import org.whispersystems.signalservice.api.push.ServiceId
 
-interface RecipientTableGlue {
+object RecipientTableGlue {
 
-  companion object statics{
     val SERVICE_ID: String = RecipientTable.ACI_COLUMN
     // All the values returned in the search projection
     val ID: String = RecipientTable.ID
@@ -45,6 +44,7 @@ interface RecipientTableGlue {
     // -> as SORT_NAME
     val SORT_NAME: String = RecipientTable.SORT_NAME
 
+    @JvmStatic
     fun getRecordsForSendingTI(recipientIds: Set<RecipientId>): Map<RecipientId, RecipientRecord> {
       return SignalDatabase.recipients.getRecords(recipientIds)
     }
@@ -65,6 +65,7 @@ interface RecipientTableGlue {
       return getRecipientIdsFromACIs(cursorForTIUnlocked)
     }
 
+    @JvmStatic
     @SuppressLint("Range")
     private fun getRecipientIdsFromACIs(cursor: Cursor? = null, acis: Collection<String>? = null): Map<RecipientId, RecipientRecord>{
       val serviceIdentifyers = arrayListOf<String>()
@@ -94,5 +95,4 @@ interface RecipientTableGlue {
       }
       return SignalDatabase.recipients.getRecords(recipientIds)
     }
-  }
 }

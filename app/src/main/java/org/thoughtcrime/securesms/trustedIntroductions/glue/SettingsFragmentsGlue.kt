@@ -13,21 +13,23 @@ import org.thoughtcrime.securesms.trustedIntroductions.receive.ManageActivity
 
 interface SettingsFragmentsGlue {
 
-  companion object{
-    fun addTrustedIntroductionNavigation(state: ConversationSettingsState,
-                                         context: Context,
-                                         clickPref: (
-                                           title: DSLSettingsText,
-                                           summary: DSLSettingsText?,
-                                           icon: DSLSettingsIcon?,
-                                           iconEnd: DSLSettingsIcon?,
-                                           isEnabled: Boolean,
-                                           onClick: () -> Unit,
-                                           onLongClick: (() -> Boolean)?
-                                         ) -> Unit,
-                                         startActivity: (intent: Intent) -> Unit){
+  companion object {
+    fun addTrustedIntroductionNavigation(
+      state: ConversationSettingsState,
+      context: Context,
+      clickPref: (
+        title: DSLSettingsText,
+        summary: DSLSettingsText?,
+        icon: DSLSettingsIcon?,
+        iconEnd: DSLSettingsIcon?,
+        isEnabled: Boolean,
+        onClick: () -> Unit,
+        onLongClick: (() -> Boolean)?
+      ) -> Unit,
+      startActivity: (intent: Intent) -> Unit
+    ) {
       // Trusted Introductions
-      if (!state.recipient.isReleaseNotes && !state.recipient.isSelf){
+      if (!state.recipient.isReleaseNotes && !state.recipient.isSelf) {
         clickPref(
           DSLSettingsText.from(R.string.ConversationSettingsFragment__Introductions),
           null,
@@ -43,7 +45,7 @@ interface SettingsFragmentsGlue {
     }
 
     @Composable
-    fun AddTextPref(title: String, summary: String){
+    fun AddTextPref(title: String, summary: String) {
       return Rows.TextRow(
         text = title,
         label = summary
