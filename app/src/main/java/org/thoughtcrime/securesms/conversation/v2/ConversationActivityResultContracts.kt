@@ -32,7 +32,9 @@ import org.thoughtcrime.securesms.mediasend.camerax.CameraXUtil
 import org.thoughtcrime.securesms.mediasend.v2.MediaSelectionActivity
 import org.thoughtcrime.securesms.permissions.Permissions
 import org.thoughtcrime.securesms.recipients.RecipientId
+// TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
 import org.thoughtcrime.securesms.trustedIntroductions.glue.PickContactsToIntroduceContract
+// TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 
 /**
  * This encapsulates the logic for interacting with other activities used throughout a conversation. The gist

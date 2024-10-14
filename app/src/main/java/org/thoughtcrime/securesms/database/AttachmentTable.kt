@@ -90,6 +90,7 @@ import org.thoughtcrime.securesms.mms.MmsException
 import org.thoughtcrime.securesms.mms.PartAuthority
 import org.thoughtcrime.securesms.mms.SentMediaQuality
 import org.thoughtcrime.securesms.stickers.StickerLocator
+import org.thoughtcrime.securesms.trustedIntroductions.glue.AttachmentTableGlue
 import org.thoughtcrime.securesms.util.FileUtils
 import org.thoughtcrime.securesms.util.JsonUtils.SaneJSONObject
 import org.thoughtcrime.securesms.util.MediaUtil
@@ -103,10 +104,12 @@ import org.whispersystems.signalservice.api.util.UuidUtil
 import org.whispersystems.signalservice.internal.crypto.PaddingInputStream
 import org.whispersystems.signalservice.internal.util.JsonUtil
 import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.InputStream
+import java.nio.charset.Charset
 import java.security.DigestInputStream
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
@@ -1081,7 +1084,15 @@ class AttachmentTable(
 
     val existingPlaceholder: DatabaseAttachment = getAttachment(attachmentId) ?: throw MmsException("No attachment found for id: $attachmentId")
 
+    // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+    // inputStream shadowed on purpose
+    val inputStream = AttachmentTableGlue.grabIntroductionData(existingPlaceholder, inputStream)
+    // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
+
     val fileWriteResult: DataFileWriteResult = writeToDataFile(newDataFile(context), inputStream, TransformProperties.empty(), closeInputStream = false)
+    if (fileWriteResult.file.extension.equals(".trustedintro")){
+      Log.i(TAG,"Do something...")
+    }
     val transferFile: File? = getTransferFile(databaseHelper.signalReadableDatabase, attachmentId)
 
     val paddingAllZeroes = inputStream.use { limitStream ->
