@@ -7425,6 +7425,7 @@
     <string name="MessageBackupsEducationScreen__enable_backups">Enable backups</string>
     <!-- Action button label to learn more -->
     <string name="MessageBackupsEducationScreen__learn_more">Learn more</string>
+
     <!--TI_GLUE: eNT9XAHgq0lZdbQs2nfH start-->
     <!-- Trusted Introductions -->
     <string name="HelpFragment__trusted_introductions_version">Trusted Introductions Version</string>
@@ -7466,7 +7467,6 @@
     <string name="PickContactsForTIActivity_no_contacts">No valid contacts for introduction were found. The safety number of a contact must be verified in order to securely introduce them.
         You can verify safety numbers by scanning the QR code on the verification screen, found by navigating to the contact\'s conversation, then "Conversation Settings" -> "View safety number". (TODO: more info? less? link to mechanism explanation?)</string>
 
-
     <!-- ManageIntroductionsActivity -->
     <string name="ManageIntroductionsActivity__Toolbar_Title">Trusted Introductions:</string>
     <string name="ManageIntroductionsActivity__Filter_hint">Search Introductions</string>
@@ -7502,10 +7502,6 @@
     <string name="ForgetIntroucerDialog__Forget_Introducer_RECIPIENT_SPECIFIC">Are you sure that you want to forget that %1$s introduced you to %2$s on the %3$s? This action is not reversible! The introduction will disappear from this screen but will still be listed as an introduction.</string>
     <string name="ForgetIntroucerDialog__Forget_Introducer_ALL">Are you sure that you want to forget that %1$s introduced you to %2$s on the %3$s? This action is not reversible!</string>
     <string name="ForgetIntroucerDialog__forget">Erase</string>
-
-    <!-- TrustedIntroductionsWaitForIdentityJob -->
-    <string name="TrustedIntroductionsWaitForIdentityJob_OnFailureNotificationTitle">Error %1$s introduction!</string>
-    <string name="TrustedIntroductionsWaitForIdentityJob_OnFailureNotificationText">For %1$s introducing %2$s.</string>
 
     <!-- ConversationTitleView added states -->
     <string name="ConversationTitleView__manually_verified">Manually Verified</string>
