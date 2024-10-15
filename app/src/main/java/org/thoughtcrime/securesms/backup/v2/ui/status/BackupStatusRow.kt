@@ -57,6 +57,7 @@ fun BackupStatusRow(
     if (backupStatusData !is BackupStatusData.CouldNotCompleteBackup &&
       backupStatusData !is BackupStatusData.BackupFailed
     ) {
+    if (backupStatusData !is BackupStatusData.CouldNotCompleteBackup) {
       Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.padding(horizontal = dimensionResource(CoreUiR.dimen.gutter))
