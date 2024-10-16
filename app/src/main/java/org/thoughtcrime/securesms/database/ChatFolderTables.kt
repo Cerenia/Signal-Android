@@ -724,6 +724,40 @@ class ChatFolderTables(context: Context?, databaseHelper: SignalDatabase?) : Dat
     }
   }
 
+  /**
+   * Removes a thread from a chat folder
+   */
+  fun removeFromFolder(folderId: Long, threadId: Long) {
+    writableDatabase.withinTransaction { db ->
+      db.insertInto(ChatFolderMembershipTable.TABLE_NAME)
+        .values(
+          ChatFolderMembershipTable.CHAT_FOLDER_ID to folderId,
+          ChatFolderMembershipTable.THREAD_ID to threadId,
+          ChatFolderMembershipTable.MEMBERSHIP_TYPE to MembershipType.EXCLUDED.value
+        )
+        .run(SQLiteDatabase.CONFLICT_REPLACE)
+
+      AppDependencies.databaseObserver.notifyChatFolderObservers()
+    }
+  }
+
+  /**
+   * Adds a thread to a chat folder
+   */
+  fun addToFolder(folderId: Long, threadId: Long) {
+    writableDatabase.withinTransaction { db ->
+      db.insertInto(ChatFolderMembershipTable.TABLE_NAME)
+        .values(
+          ChatFolderMembershipTable.CHAT_FOLDER_ID to folderId,
+          ChatFolderMembershipTable.THREAD_ID to threadId,
+          ChatFolderMembershipTable.MEMBERSHIP_TYPE to MembershipType.INCLUDED.value
+        )
+        .run(SQLiteDatabase.CONFLICT_REPLACE)
+
+      AppDependencies.databaseObserver.notifyChatFolderObservers()
+    }
+  }
+
   private fun Collection<Long>.toContentValues(chatFolderId: Long, membershipType: MembershipType): List<ContentValues> {
     return map {
       contentValuesOf(
