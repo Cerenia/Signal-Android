@@ -1091,6 +1091,14 @@ object RemoteConfig {
     hotSwappable = true
   )
 
+  /** Whether or not to show chat folders. */
+  @JvmStatic
+  val showChatFolders: Boolean by remoteBoolean(
+    key = "android.showChatFolders",
+    defaultValue = false,
+    hotSwappable = true
+  )
+
   @JvmStatic
   @get:JvmName("newCallUi")
   val newCallUi: Boolean by remoteBoolean(
