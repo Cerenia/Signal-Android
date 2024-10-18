@@ -7,6 +7,6 @@
 	remote = git@github.com:Cerenia/trusted-introductions.git
 	branch = master
 	commit = e13d5405570b1a57bb6e569775c219f5bbb0b9d1
-	parent = 7937c04ace058faa26a02515007d57889969ef08
+	parent = bc8383574541b2af4f3c243300d9c52b4ab73882
 	method = merge
 	cmdver = 0.4.6
