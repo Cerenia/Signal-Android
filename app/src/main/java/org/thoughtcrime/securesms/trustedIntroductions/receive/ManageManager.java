@@ -17,6 +17,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import static org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.UNKNOWN_INTRODUCER_SERVICE_ID;
 import static org.webrtc.ContextUtils.getApplicationContext;
 
 public class ManageManager {
@@ -46,7 +47,7 @@ public class ManageManager {
       ArrayList<Pair<TI_Data, ManageViewModel.IntroducerInformation>> result = new ArrayList<>();
       ManageViewModel.IntroducerInformation i = null;
       for (TI_Data d: introductions) {
-        if(d.getIntroducerServiceId() == null){
+        if(d.getIntroducerServiceId() == UNKNOWN_INTRODUCER_SERVICE_ID){
           i = new ManageViewModel.IntroducerInformation(forgottenPlaceholder, forgottenPlaceholder);
         } else {
           try {

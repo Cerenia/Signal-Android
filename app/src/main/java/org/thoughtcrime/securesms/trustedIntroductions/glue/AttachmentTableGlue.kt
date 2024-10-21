@@ -6,6 +6,8 @@
 package org.thoughtcrime.securesms.trustedIntroductions.glue
 
 import androidx.annotation.NonNull
+import org.signal.core.util.bytes
+import org.signal.core.util.stream.LimitedInputStream
 import org.thoughtcrime.securesms.attachments.Attachment
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils
 import java.io.ByteArrayOutputStream
@@ -24,7 +26,7 @@ object AttachmentTableGlue {
    * @return a ByteinputStream containing the contents of the attachment
    */
   @JvmStatic
-  fun grabIntroductionData(attachment: Attachment, inputStream: InputStream): InputStream {
+  fun grabIntroductionData(attachment: Attachment, inputStream: LimitedInputStream): LimitedInputStream {
     var text = ""
     if(attachment.fileName!!.contains(TI_Utils.TI_MESSAGE_EXTENSION)){
       val byteOutputStream = ByteArrayOutputStream()
@@ -36,7 +38,7 @@ object AttachmentTableGlue {
       text = byteOutputStream.toString()
       handleTIMessage(text, attachment.uploadTimestamp)
     }
-    return if (text.isBlank()) inputStream else text.byteInputStream()
+    return if (text.isBlank()) inputStream else LimitedInputStream(text.byteInputStream(), text.length.bytes.bytes)
   }
 
   fun handleTIMessage(message: String, timestamp: Long) {
