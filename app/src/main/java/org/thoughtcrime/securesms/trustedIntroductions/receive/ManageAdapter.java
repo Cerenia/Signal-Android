@@ -132,8 +132,13 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
       introduceeNumber.setText(data.getIntroduceeNumber());
       introduceeName.setVisibility(VISIBLE);
       introduceeNumber.setVisibility(VISIBLE);
-      introducerNumber.setText(introducerInformation.number);
-      introducerName.setText(introducerInformation.name);
+      if(introducerInformation == null){
+        introducerName.setText(R.string.ManageIntroductionsListItem__Unknown_Value);
+        introducerNumber.setText(R.string.ManageIntroductionsListItem__Unknown_Value);
+      } else {
+        introducerNumber.setText(introducerInformation.number);
+        introducerName.setText(introducerInformation.name);
+      }
       introducerNumber.setVisibility(VISIBLE);
       introducerName.setVisibility(VISIBLE);
       guideline.setGuidelinePercent(0.5f);
