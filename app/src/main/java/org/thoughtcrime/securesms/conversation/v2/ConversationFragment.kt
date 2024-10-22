@@ -296,6 +296,7 @@ import org.thoughtcrime.securesms.stickers.StickerManagementActivity
 import org.thoughtcrime.securesms.stickers.StickerPackInstallEvent
 import org.thoughtcrime.securesms.stickers.StickerPackPreviewActivity
 import org.thoughtcrime.securesms.stories.StoryViewerArgs
+import org.thoughtcrime.securesms.stories.tabs.ConversationListTab
 import org.thoughtcrime.securesms.stories.viewer.StoryViewerActivity
 import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue
 import org.thoughtcrime.securesms.trustedIntroductions.send.CanNotIntroduceDialog
@@ -3021,6 +3022,8 @@ class ConversationFragment :
         checkoutLauncher.launch(InAppPaymentType.ONE_TIME_GIFT)
       } else if ("username_edit" == action) {
         startActivity(EditProfileActivity.getIntentForUsernameEdit(requireContext()))
+      } else if ("calls_tab" == action) {
+        startActivity(MainActivity.clearTopAndOpenTab(requireContext(), ConversationListTab.CALLS))
       }
     }
 
