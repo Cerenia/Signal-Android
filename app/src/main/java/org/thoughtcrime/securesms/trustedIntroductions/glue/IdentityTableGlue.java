@@ -146,9 +146,9 @@ public interface IdentityTableGlue {
     }
 
     /**
-     * Convenience function with id instead of status. Queries Disk.
+     * Convenience function with id instead of status. Hits Disk.
      * @param id recipientID to be queried.
-     * @return
+     * @return true if verified, otherwise false.
      */
     public static boolean isVerified(RecipientId id){
       VerifiedStatus status = SignalDatabase.getInstance().getTiIdentityTable().getVerifiedStatus(id);
@@ -161,7 +161,7 @@ public interface IdentityTableGlue {
      * in order not to propagate malicious verifications further than one connection.
      *
      * @param status the verification status to be checked
-     * @return true if strongly enough verified to unlock forwarding this contact as a
+     * @return true if verification status suffices to forward this contact as a
      * trusted introduction, false otherwise
      */
     public static Boolean ti_forwardUnlocked(VerifiedStatus status){
