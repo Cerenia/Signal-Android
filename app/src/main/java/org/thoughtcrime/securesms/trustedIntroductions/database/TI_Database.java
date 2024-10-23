@@ -120,7 +120,7 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
    * All states in the FSM for Introductions.
    */
   public enum State {
-    PENDING, ACCEPTED, REJECTED, PENDING_CONFLICTING, ACCEPTED_CONFLICTING, REJECTED_CONFLICTING, STALE_PENDING, STALE_ACCEPTED,
+    PENDING, ACCEPTED, REJECTED, PENDING_UNKNOWN, ACCEPTED_UNKNOWN, REJECTED_UNKNOWN, PENDING_CONFLICTING, ACCEPTED_CONFLICTING, REJECTED_CONFLICTING, STALE_PENDING, STALE_ACCEPTED,
     STALE_REJECTED, STALE_PENDING_CONFLICTING, STALE_ACCEPTED_CONFLICTING, STALE_REJECTED_CONFLICTING;
 
     public int toInt() {
@@ -128,15 +128,18 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
         case PENDING -> 0;
         case ACCEPTED -> 1;
         case REJECTED -> 2;
-        case PENDING_CONFLICTING -> 3;
-        case ACCEPTED_CONFLICTING -> 4;
-        case REJECTED_CONFLICTING -> 5;
-        case STALE_PENDING -> 6;
-        case STALE_ACCEPTED -> 7;
-        case STALE_REJECTED -> 8;
-        case STALE_PENDING_CONFLICTING -> 9;
-        case STALE_ACCEPTED_CONFLICTING -> 10;
-        case STALE_REJECTED_CONFLICTING -> 11;
+        case PENDING_UNKNOWN -> 3;
+        case ACCEPTED_UNKNOWN -> 4;
+        case REJECTED_UNKNOWN -> 5;
+        case PENDING_CONFLICTING -> 6;
+        case ACCEPTED_CONFLICTING -> 7;
+        case REJECTED_CONFLICTING -> 8;
+        case STALE_PENDING -> 9;
+        case STALE_ACCEPTED -> 10;
+        case STALE_REJECTED -> 11;
+        case STALE_PENDING_CONFLICTING -> 12;
+        case STALE_ACCEPTED_CONFLICTING -> 13;
+        case STALE_REJECTED_CONFLICTING -> 14;
       };
     }
 
@@ -145,15 +148,18 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
         case 0 -> PENDING;
         case 1 -> ACCEPTED;
         case 2 -> REJECTED;
-        case 3 -> PENDING_CONFLICTING;
-        case 4 -> ACCEPTED_CONFLICTING;
-        case 5 -> REJECTED_CONFLICTING;
-        case 6 -> STALE_PENDING;
-        case 7 -> STALE_ACCEPTED;
-        case 8 -> STALE_REJECTED;
-        case 9 -> STALE_PENDING_CONFLICTING;
-        case 10 -> STALE_ACCEPTED_CONFLICTING;
-        case 11 -> STALE_REJECTED_CONFLICTING;
+        case 3 -> PENDING_UNKNOWN;
+        case 4 -> ACCEPTED_UNKNOWN;
+        case 5 -> REJECTED_UNKNOWN;
+        case 6 -> PENDING_CONFLICTING;
+        case 7 -> ACCEPTED_CONFLICTING;
+        case 8 -> REJECTED_CONFLICTING;
+        case 9 -> STALE_PENDING;
+        case 10 -> STALE_ACCEPTED;
+        case 11 -> STALE_REJECTED;
+        case 12 -> STALE_PENDING_CONFLICTING;
+        case 13 -> STALE_ACCEPTED_CONFLICTING;
+        case 14 -> STALE_REJECTED_CONFLICTING;
         default -> throw new AssertionError("No such state: " + state);
       };
     }
@@ -167,7 +173,7 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
 
     public boolean isPending(){
       return switch (this) {
-        case PENDING, PENDING_CONFLICTING, STALE_PENDING, STALE_PENDING_CONFLICTING -> true;
+        case PENDING, PENDING_CONFLICTING, PENDING_UNKNOWN ,STALE_PENDING, STALE_PENDING_CONFLICTING -> true;
         default -> false;
       };
     }
@@ -181,14 +187,14 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
 
     public boolean isTrusted(){
       return switch (this) {
-        case ACCEPTED, ACCEPTED_CONFLICTING, STALE_ACCEPTED, STALE_ACCEPTED_CONFLICTING -> true;
+        case ACCEPTED, ACCEPTED_UNKNOWN, ACCEPTED_CONFLICTING, STALE_ACCEPTED, STALE_ACCEPTED_CONFLICTING -> true;
         default -> false;
       };
     }
 
     public boolean isDistrusted(){
       return switch (this){
-        case REJECTED, REJECTED_CONFLICTING, STALE_REJECTED, STALE_REJECTED_CONFLICTING -> true;
+        case REJECTED, REJECTED_UNKNOWN ,REJECTED_CONFLICTING, STALE_REJECTED, STALE_REJECTED_CONFLICTING -> true;
         default -> false;
       };
     }
