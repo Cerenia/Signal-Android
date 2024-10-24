@@ -13,6 +13,7 @@ import org.signal.core.util.Base64;
 import org.signal.libsignal.protocol.IdentityKey;
 import org.signal.libsignal.protocol.fingerprint.Fingerprint;
 import org.signal.libsignal.protocol.fingerprint.NumericFingerprintGenerator;
+import org.signal.libsignal.protocol.state.PreKeyBundle;
 import org.thoughtcrime.securesms.crypto.ReentrantSessionLock;
 import org.thoughtcrime.securesms.database.IdentityTable;
 import org.thoughtcrime.securesms.database.RecipientTable;
@@ -51,6 +52,7 @@ import org.thoughtcrime.securesms.storage.StorageSyncHelper;
 import org.thoughtcrime.securesms.util.IdentityUtil;
 import org.whispersystems.signalservice.api.SignalSessionLock;
 import org.whispersystems.signalservice.api.push.ServiceId;
+import org.whispersystems.signalservice.api.push.SignalServiceAddress;
 import org.whispersystems.signalservice.api.util.Preconditions;
 
 import static org.webrtc.ContextUtils.getApplicationContext;
@@ -243,6 +245,23 @@ public class TI_Utils {
       throw new MissingIdentityException(TAG + " No identity found for the recipient with id: " + id);
     }
     return identityRecord.get().getIdentityKey();
+  }
+
+  /**
+   * Hits network to fetch the identity key of this unknown receiver.
+   * @param serviceId the service ID of the receiver we are initiating a conversation with
+   * @return Their IdentityKey or null if it failed.
+   */
+  @WorkerThread
+  public static @Nullable IdentityKey fetchIdentityKeyFromRemoteBundle(SignalServiceAddress serviceId){
+    try {
+      List<PreKeyBundle> bundles = AppDependencies.getSignalServiceMessageSender().getPreKeys(serviceId, null, SignalServiceAddress.DEFAULT_DEVICE_ID, false);
+      return bundles.get(0).getIdentityKey();
+    } catch (IOException e) {
+      Log.e(TAG, "Could not fetch Bundle for " + serviceId.getServiceId());
+      e.printStackTrace();
+      return null;
+    }
   }
 
   public static String encodeIdentityKey(IdentityKey key){

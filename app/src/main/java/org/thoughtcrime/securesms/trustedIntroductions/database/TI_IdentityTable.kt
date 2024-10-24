@@ -126,13 +126,12 @@ class TI_IdentityTable internal constructor(context: Context?, databaseHelper: S
    * PRE: introducee exists in recipient and identity table
    * @param introduceeServiceId The service ID of the recipient whose verification status may change
    * @param previousIntroduceeVerification the previous verification status of the introducee.
-   * @param newIntroductionState the new state of the introduction that changed. PRE: May not be PENDING
+   * @param newIntroductionState the new state of the introduction that changed.
    * @param logmessage what to print to logcat iff verification status of introducee was modified
    */
   @WorkerThread
   override fun modifyIntroduceeVerification(introduceeServiceId: String, previousIntroduceeVerification: VerifiedStatus, newIntroductionState: TI_Database.State, logmessage: String) {
     val newIntroduceeVerification = when (newIntroductionState) {
-        TI_Database.State.PENDING -> throw AssertionError("$TAG Precondition violation! newState may not be PENDING")
         // Any stale state leads to unverified
         TI_Database.State.STALE_PENDING, TI_Database.State.STALE_ACCEPTED, TI_Database.State.STALE_REJECTED, TI_Database.State.STALE_ACCEPTED_CONFLICTING,
         TI_Database.State.STALE_REJECTED_CONFLICTING, TI_Database.State.STALE_PENDING_CONFLICTING -> VerifiedStatus.UNVERIFIED
