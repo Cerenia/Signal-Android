@@ -23,10 +23,8 @@ public interface MessageRequestRepositoryGlue {
 
   String logmsg = "New Recipient: %s had an %s introduction and was thus marked as %s";
 
-  //TODO: The same thing must happen in the reverse direction when we initiate a conversation!!!
 
   /**
-   * TODO: Relocate this to TI_Utils because we will have to call it from different places.
    *
    * When a new conversation is initiated by someone else, check the introduction database for existing introductions.
    * Adjust verification state if an accepted introduction is present.

@@ -126,17 +126,18 @@ class TI_IdentityTable internal constructor(context: Context?, databaseHelper: S
    * PRE: introducee exists in recipient and identity table
    * @param introduceeServiceId The service ID of the recipient whose verification status may change
    * @param previousIntroduceeVerification the previous verification status of the introducee.
-   * @param newIntroductionState the new state of the introduction that changed.
+   * @param newIntroductionState the new state of the introduction that changed. PRE: Can't be PENDING or PENDING_UNKNOWN
    * @param logmessage what to print to logcat iff verification status of introducee was modified
    */
   @WorkerThread
   override fun modifyIntroduceeVerification(introduceeServiceId: String, previousIntroduceeVerification: VerifiedStatus, newIntroductionState: TI_Database.State, logmessage: String) {
     val newIntroduceeVerification = when (newIntroductionState) {
+      TI_Database.State.PENDING, TI_Database.State.PENDING_UNKNOWN -> AssertionError(TAG + " Precondition Violation! State was: " + newIntroductionState.name);
         // Any stale state leads to unverified
         TI_Database.State.STALE_PENDING, TI_Database.State.STALE_ACCEPTED, TI_Database.State.STALE_REJECTED, TI_Database.State.STALE_ACCEPTED_CONFLICTING,
         TI_Database.State.STALE_REJECTED_CONFLICTING, TI_Database.State.STALE_PENDING_CONFLICTING -> VerifiedStatus.UNVERIFIED
         // An accepted introduction may lead to the introducee verification state:
-        TI_Database.State.ACCEPTED -> when (previousIntroduceeVerification) {
+        TI_Database.State.ACCEPTED, TI_Database.State.ACCEPTED_UNKNOWN -> when (previousIntroduceeVerification) {
             // Becoming or staying strongly verified
             VerifiedStatus.DUPLEX_VERIFIED, VerifiedStatus.DIRECTLY_VERIFIED -> VerifiedStatus.DUPLEX_VERIFIED
             // Staying or becoming introduced
@@ -145,7 +146,7 @@ class TI_IdentityTable internal constructor(context: Context?, databaseHelper: S
             VerifiedStatus.SUSPECTED_COMPROMISE -> VerifiedStatus.SUSPECTED_COMPROMISE
           }
         // A rejected introduction may lead to the introducee verification state:
-        TI_Database.State.REJECTED -> when (previousIntroduceeVerification) {
+        TI_Database.State.REJECTED, TI_Database.State.REJECTED_UNKNOWN -> when (previousIntroduceeVerification) {
             // Staying the same
             VerifiedStatus.DIRECTLY_VERIFIED, VerifiedStatus.MANUALLY_VERIFIED, VerifiedStatus.DEFAULT, VerifiedStatus.UNVERIFIED -> previousIntroduceeVerification
             // Potentially degrading in status
@@ -175,7 +176,7 @@ class TI_IdentityTable internal constructor(context: Context?, databaseHelper: S
             VerifiedStatus.DUPLEX_VERIFIED -> previousIntroduceeVerification
           }
         TI_Database.State.PENDING_CONFLICTING -> previousIntroduceeVerification
-      }
+    }
     // Finally update the verification state and log
     val rid = RecipientId.fromSidOrE164(introduceeServiceId)
     TI_Utils.updateContactsVerifiedStatus(rid, TI_Utils.getIdentityKey(rid) , newIntroduceeVerification)
