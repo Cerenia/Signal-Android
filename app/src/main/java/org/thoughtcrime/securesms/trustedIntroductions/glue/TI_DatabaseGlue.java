@@ -13,6 +13,7 @@ import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database;
 
+import java.util.List;
 import java.util.Map;
 
 public interface TI_DatabaseGlue {
@@ -55,7 +56,9 @@ public interface TI_DatabaseGlue {
 
   boolean rejectIntroduction(TI_Data introduction);
 
-  boolean atLeastOneIntroductionIs(TI_Database.State state, @NotNull String introduceeServiceId);
+  boolean atLeastOneIntroductionIs(TI_Database.State states, @NotNull String introduceeServiceId);
+
+  boolean atLeastOneIntroductionIsUnknown(@NotNull String introduceeServiceId);
 
   void handleDanglingIntroductions(String serviceId, String encodedIdentityKey);
 }

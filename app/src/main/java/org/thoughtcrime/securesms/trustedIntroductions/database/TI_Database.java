@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.annotation.WorkerThread;
 
+import org.jetbrains.annotations.NotNull;
 import org.signal.core.util.SqlUtil;
 import org.signal.core.util.logging.Log;
 import org.thoughtcrime.securesms.database.DatabaseTable;
@@ -545,6 +546,21 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
 
     return c.getCount() >= 1;
    }
+
+  /**
+   * Check if there is at least one introduction for this introducee that of the 'unknown' kind (we did not know the person when they were introduced).
+   * @param introduceeServiceId the service ID of the introducee.
+   * @return true if there is at least one introduction for this introducee that meets the 'unknown' state criteria.
+   */
+  @Override public boolean atLeastOneIntroductionIsUnknown(@NotNull String introduceeServiceId) {
+    final String selection = String.format("%s=?", INTRODUCEE_SERVICE_ID)
+                 + " AND " + String.format("%s=?", STATE) +" IN (%s, %s, %s)";
+    String[] args = SqlUtil.buildArgs(introduceeServiceId, State.ACCEPTED_UNKNOWN, State.REJECTED_UNKNOWN, State.PENDING_UNKNOWN);
+    SQLiteDatabase writeableDatabase = getSignalWritableDatabase();
+    Cursor c = writeableDatabase.query(TABLE_NAME, TI_ALL_PROJECTION, selection, args, null, null, null);
+
+    return c.getCount() >= 1;
+  }
 
   /**
    * Check database for any preexisting introduction and modify verification state of the introducee if appropriate.
