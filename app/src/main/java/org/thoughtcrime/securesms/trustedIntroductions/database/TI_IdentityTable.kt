@@ -132,7 +132,7 @@ class TI_IdentityTable internal constructor(context: Context?, databaseHelper: S
   @WorkerThread
   override fun modifyIntroduceeVerification(introduceeServiceId: String, previousIntroduceeVerification: VerifiedStatus, newIntroductionState: TI_Database.State, logmessage: String) {
     val newIntroduceeVerification = when (newIntroductionState) {
-      TI_Database.State.PENDING, TI_Database.State.PENDING_UNKNOWN -> AssertionError(TAG + " Precondition Violation! State was: " + newIntroductionState.name);
+      TI_Database.State.PENDING, TI_Database.State.PENDING_UNKNOWN -> throw AssertionError(TAG + " Precondition Violation! State was: " + newIntroductionState.name);
         // Any stale state leads to unverified
         TI_Database.State.STALE_PENDING, TI_Database.State.STALE_ACCEPTED, TI_Database.State.STALE_REJECTED, TI_Database.State.STALE_ACCEPTED_CONFLICTING,
         TI_Database.State.STALE_REJECTED_CONFLICTING, TI_Database.State.STALE_PENDING_CONFLICTING -> VerifiedStatus.UNVERIFIED

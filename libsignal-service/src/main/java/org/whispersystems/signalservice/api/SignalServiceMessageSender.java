@@ -2681,7 +2681,9 @@ public class SignalServiceMessageSender {
     }
   }
 
-  private List<PreKeyBundle> getPreKeys(SignalServiceAddress recipient, @Nullable SealedSenderAccess sealedSenderAccess, int deviceId, boolean story) throws IOException {
+  //TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+  public List<PreKeyBundle> getPreKeys(SignalServiceAddress recipient, @Nullable SealedSenderAccess sealedSenderAccess, int deviceId, boolean story) throws IOException {
+  //TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
     try {
       // If it's only unrestricted because it's a story send, then we know it'll fail
       if (story && SealedSenderAccess.isUnrestrictedForStory(sealedSenderAccess)) {
