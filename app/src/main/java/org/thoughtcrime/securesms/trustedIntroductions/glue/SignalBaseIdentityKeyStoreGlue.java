@@ -21,10 +21,4 @@ public interface SignalBaseIdentityKeyStoreGlue {
       }
     });
   }
-
-  static void handleDanglingIntroductions(String serviceID, String encodedIdentityKey) {
-    SignalExecutors.BOUNDED.execute(() -> {
-      SignalDatabase.tiDatabase().handleDanglingIntroductions(serviceID, encodedIdentityKey);
-    });
-  }
 }
