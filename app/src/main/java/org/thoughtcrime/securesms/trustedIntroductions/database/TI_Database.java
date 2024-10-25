@@ -617,6 +617,10 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
     // Keep count of any introductions that were interacted with that have not turned stale
     boolean hasTrusted = false;
     boolean hasRejected = false;
+    boolean hasPending = false;
+    boolean hasStalePending = false;
+    boolean hasStaleTrusted = false;
+    boolean hasStaleRejected = false;
     if (c.getCount() >= 1) {
       IntroductionReader reader = new IntroductionReader(c);
       TI_Data current;
@@ -629,10 +633,14 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
         if(!encodedIdentityKey.equals(current.getIntroduceeIdentityKey())){
           // Add this datapoint to the introductions that must be turned stale
           staleIntroductions.add(current);
+          if(current.getState().equals(State.ACCEPTED_UNKNOWN)) hasStaleTrusted = true;
+          if(current.getState().equals(State.REJECTED_UNKNOWN)) hasStaleRejected = true;
+          if(current.getState().equals(State.PENDING_UNKNOWN)) hasStalePending = true;
         } else {
           upToDateIntroductions.add(current);
-          if(current.getState().equals(State.ACCEPTED)) hasTrusted = true;
-          if(current.getState().equals(State.REJECTED)) hasRejected = true;
+          if(current.getState().equals(State.ACCEPTED_UNKNOWN)) hasTrusted = true;
+          if(current.getState().equals(State.REJECTED_UNKNOWN)) hasRejected = true;
+          if(current.getState().equals(State.PENDING_UNKNOWN)) hasPending = true;
         }
       } while (reader.hasNext());
       try {
@@ -656,12 +664,20 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
         writeableDatabase.update(TABLE_NAME, cv, where, SqlUtil.buildArgs(unknownIntro.getId()));
       }
     }
-    // Priority defined here
-    if (!(hasTrusted || hasRejected)) return State.PENDING;
+    // Priority defined here w.r.t which introduction state should be considered:
+    if (!(hasTrusted || hasRejected || hasStaleTrusted || hasStaleRejected || hasStalePending || hasPending)) return null;
     if (hasTrusted) {
       return State.ACCEPTED;
-    } else {
+    } else if (hasStaleTrusted){
+      return State.STALE_ACCEPTED;
+    } else if (hasRejected){
       return State.REJECTED;
+    } else if (hasStaleRejected){
+      return State.STALE_REJECTED;
+    } else if (hasPending){
+      return State.PENDING;
+    } else {
+      return State.STALE_PENDING;
     }
   }
 

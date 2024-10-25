@@ -46,8 +46,9 @@ import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import kotlin.Unit;
-
+// TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
 import static org.thoughtcrime.securesms.trustedIntroductions.glue.MessageRequestRepositoryGlue.handleNewUnknownRecipient;
+// TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 
 public final class MessageRequestRepository {
 

@@ -48,17 +48,18 @@ public interface MessageRequestRepositoryGlue {
       List<PreKeyBundle> bundles;
       try {
         bundles = AppDependencies.getSignalServiceMessageSender().getPreKeys(new SignalServiceAddress(serviceId), null, SignalServiceAddress.DEFAULT_DEVICE_ID, false);
-        SignalDatabase.tiDatabase().handleUnknownIntroductions(serviceId.toString(), TI_Utils.encodeIdentityKey(bundles.get(0).getIdentityKey()));
-        // Now check if the verified status needs to be updated.
-        IdentityTableGlue.VerifiedStatus previousVerificationState = SignalDatabase.tiIdentityDatabase().getVerifiedStatus(recipient.getId());
-        // Decide which new introduction state has priority:
-
-        SignalDatabase.tiIdentityDatabase().modifyIntroduceeVerification(serviceId,
-                                                                         previousVerificationState,
-                                                                         TI_Database.State.ACCEPTED,
-                                                                         String.format(logmsg,
-                                                                                       recipient.getDisplayName(getApplicationContext())),
-                                                                         );
+        TI_Database.State s = SignalDatabase.tiDatabase().handleUnknownIntroductions(serviceId.toString(), TI_Utils.encodeIdentityKey(bundles.get(0).getIdentityKey()));
+        // at least one 'unknown' introduction for this service ID existed and this is the highest priority state (as defined in TI_DB handleUnknownIntroductions)
+        if (s != null){
+          // Now check if the verified status needs to be updated.
+          IdentityTableGlue.VerifiedStatus previousVerificationState = SignalDatabase.tiIdentityDatabase().getVerifiedStatus(recipient.getId());
+          SignalDatabase.tiIdentityDatabase().modifyIntroduceeVerification(serviceId.toString(),
+                                                                           previousVerificationState,
+                                                                           s,
+                                                                           String.format(logmsg,
+                                                                                         recipient.getDisplayName(getApplicationContext()))
+                                                                           );
+        }
       } catch (IOException e){
         Log.e(TAG, "Could not fetch keys for recipient %s though there wer preexisting introductions...");
         e.printStackTrace();
