@@ -179,6 +179,13 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
       };
     }
 
+    public boolean isUnknownRecipient(){
+      return switch (this) {
+        case PENDING_UNKNOWN, ACCEPTED_UNKNOWN, REJECTED_UNKNOWN -> true;
+        default -> false;
+      };
+    }
+
     public boolean isConflicting(){
       return switch (this) {
         case PENDING_CONFLICTING, ACCEPTED_CONFLICTING, REJECTED_CONFLICTING, STALE_PENDING_CONFLICTING, STALE_ACCEPTED_CONFLICTING, STALE_REJECTED_CONFLICTING -> true;
@@ -376,7 +383,7 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
    * @param introduction PRE: none of it's fields (except nr.) may be null, state != stale.
    * @return A populated contentValues object, to use when turning introductions stale.
    */
-  private @NonNull ContentValues buildContentValuesForStale(@NonNull TI_Data introduction){
+  private @NonNull ContentValues buildContentValuesForStale(@NonNull TI_Data introduction) {
     Preconditions.checkNotNull(introduction.getId());
     Preconditions.checkNotNull(introduction.getState());
     Preconditions.checkNotNull(introduction.getIntroducerServiceId());
@@ -390,6 +397,37 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
       case PENDING_CONFLICTING -> State.STALE_PENDING_CONFLICTING;
       case ACCEPTED_CONFLICTING -> State.STALE_ACCEPTED_CONFLICTING;
       case REJECTED_CONFLICTING -> State.STALE_REJECTED_CONFLICTING;
+      default -> throw new AssertionError("State: " + introduction.getState() + " was illegal or already stale.");
+    };
+
+    return buildContentValuesForUpdate(introduction.getId(),
+                                       newState,
+                                       introduction.getIntroducerServiceId(),
+                                       introduction.getIntroduceeServiceId(),
+                                       introduction.getIntroduceeName(),
+                                       introduction.getIntroduceeNumber(),
+                                       introduction.getIntroduceeIdentityKey(),
+                                       introduction.getPredictedSecurityNumber(),
+                                       introduction.getTimestamp());
+  }
+
+
+  /**
+   * PRE: No null fields (except nr.) and the state must be one of the 'unknowns'
+   * @param introduction the introduction for the previously unknown recipient.
+   * @return content Values executing the appropriate state transitions for the introduction
+   */
+  private @NonNull ContentValues buildContentValuesForUnknownTransition(@NonNull TI_Data introduction) {
+    Preconditions.checkNotNull(introduction.getId());
+    Preconditions.checkNotNull(introduction.getState());
+    Preconditions.checkNotNull(introduction.getIntroducerServiceId());
+    Preconditions.checkNotNull(introduction.getPredictedSecurityNumber());
+    Preconditions.checkArgument(introduction.getState().isUnknownRecipient());
+    // Unknown state transitions
+    State newState = switch (introduction.getState()) {
+      case PENDING_UNKNOWN -> State.PENDING;
+      case ACCEPTED_UNKNOWN -> State.ACCEPTED;
+      case REJECTED_UNKNOWN -> State.REJECTED;
       default -> throw new AssertionError("State: " + introduction.getState() + " was illegal or already stale.");
     };
 
@@ -563,24 +601,32 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
   }
 
   /**
-   * Check database for any preexisting introduction and modify verification state of the introducee if appropriate.
+   * Check database for any 'unknown' introductions and execute the state transitions.
+   * PRE: When this is called, none of the returned introductions should be in the 'known' state.
    * @param serviceId the service ID of the new contact
    */
   @WorkerThread
-  @Override public void handleDanglingIntroductions(String serviceId, String encodedIdentityKey) {
+  @Override public void handleUnknownIntroductions(String serviceId, String encodedIdentityKey) {
     final String selection = String.format("%s=?", INTRODUCEE_SERVICE_ID);
     String[] args = SqlUtil.buildArgs(serviceId);
     SQLiteDatabase writeableDatabase = getSignalWritableDatabase();
     Cursor c = writeableDatabase.query(TABLE_NAME, TI_ALL_PROJECTION, selection, args, null, null, null);
     ArrayList<TI_Data> staleIntroductions = new ArrayList<>();
+    ArrayList<TI_Data> upToDateIntroductions = new ArrayList<>();
     if (c.getCount() >= 1) {
       IntroductionReader reader = new IntroductionReader(c);
       TI_Data current;
       do {
         current = reader.getNext();
+        // TODO: double check if this is correct
+        if(!(current.getState().isUnknownRecipient())){
+          throw new AssertionError(TAG + "encountered an illegal introduction state: " + current.getState() + "\n for an unknown recipient with service ID: " + serviceId);
+        }
         if(!encodedIdentityKey.equals(current.getIntroduceeIdentityKey())){
           // Add this datapoint to the introductions that must be turned stale
           staleIntroductions.add(current);
+        } else {
+          upToDateIntroductions.add(current);
         }
       } while (reader.hasNext());
       try {
@@ -590,12 +636,18 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
         throw new AssertionError("Error occured while trying to close the cursor to dangling Introductions for " + current.getIntroduceeName());
       }
       // Turn all introductions stale that had the incorrect identity key
+      String where = ID + " = ?";
       for (TI_Data staleIntro: staleIntroductions) {
         ContentValues cv = buildContentValuesForStale(staleIntro.getIntroduction());
-        long result = writeableDatabase.update(TABLE_NAME, cv, ID + " = ?", SqlUtil.buildArgs(staleIntro.getId()));
+        long result = writeableDatabase.update(TABLE_NAME, cv, where, SqlUtil.buildArgs(staleIntro.getId()));
         if (result < 0){
           throw new AssertionError(TAG + " Could not turn introduction for " + staleIntro.getIntroduceeName() + " stale!");
         }
+      }
+      // Transition all the unknown introductions with the correct identity key to their known counterparts.
+      for (TI_Data unknownIntro: upToDateIntroductions) {
+        ContentValues cv = buildContentValuesForUnknownTransition(unknownIntro.getIntroduction());
+        long result = writeableDatabase.update(TABLE_NAME, cv, where, SqlUtil.buildArgs(unknownIntro.getId()));
       }
     }
   }
