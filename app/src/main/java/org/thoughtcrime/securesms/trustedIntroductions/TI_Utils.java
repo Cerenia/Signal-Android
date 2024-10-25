@@ -247,23 +247,6 @@ public class TI_Utils {
     return identityRecord.get().getIdentityKey();
   }
 
-  /**
-   * Hits network to fetch the identity key of this unknown receiver.
-   * @param serviceId the service ID of the receiver we are initiating a conversation with
-   * @return Their IdentityKey or null if it failed.
-   */
-  @WorkerThread
-  public static @Nullable IdentityKey fetchIdentityKeyFromRemoteBundle(SignalServiceAddress serviceId){
-    try {
-      List<PreKeyBundle> bundles = AppDependencies.getSignalServiceMessageSender().getPreKeys(serviceId, null, SignalServiceAddress.DEFAULT_DEVICE_ID, false);
-      return bundles.get(0).getIdentityKey();
-    } catch (IOException e) {
-      Log.e(TAG, "Could not fetch Bundle for " + serviceId.getServiceId());
-      e.printStackTrace();
-      return null;
-    }
-  }
-
   public static String encodeIdentityKey(IdentityKey key){
     return Base64.encodeWithoutPadding(key.serialize());
   }

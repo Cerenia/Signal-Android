@@ -59,5 +59,5 @@ public interface TI_DatabaseGlue {
 
   boolean atLeastOneIntroductionIsUnknown(@NotNull String introduceeServiceId);
 
-  void handleUnknownIntroductions(String serviceId, String encodedIdentityKey);
+  TI_Database.State handleUnknownIntroductions(String serviceId, String encodedIdentityKey);
 }

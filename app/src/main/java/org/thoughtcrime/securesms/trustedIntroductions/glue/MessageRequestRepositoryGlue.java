@@ -12,6 +12,7 @@ import org.signal.libsignal.protocol.state.PreKeyBundle;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.dependencies.AppDependencies;
 import org.thoughtcrime.securesms.recipients.Recipient;
+import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
 import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database;
 import org.whispersystems.signalservice.api.push.ServiceId;
 import org.whispersystems.signalservice.api.push.SignalServiceAddress;
@@ -47,19 +48,22 @@ public interface MessageRequestRepositoryGlue {
       List<PreKeyBundle> bundles;
       try {
         bundles = AppDependencies.getSignalServiceMessageSender().getPreKeys(new SignalServiceAddress(serviceId), null, SignalServiceAddress.DEFAULT_DEVICE_ID, false);
+        SignalDatabase.tiDatabase().handleUnknownIntroductions(serviceId.toString(), TI_Utils.encodeIdentityKey(bundles.get(0).getIdentityKey()));
+        // Now check if the verified status needs to be updated.
+        IdentityTableGlue.VerifiedStatus previousVerificationState = SignalDatabase.tiIdentityDatabase().getVerifiedStatus(recipient.getId());
+        // Decide which new introduction state has priority:
+
+        SignalDatabase.tiIdentityDatabase().modifyIntroduceeVerification(serviceId,
+                                                                         previousVerificationState,
+                                                                         TI_Database.State.ACCEPTED,
+                                                                         String.format(logmsg,
+                                                                                       recipient.getDisplayName(getApplicationContext())),
+                                                                         );
       } catch (IOException e){
         Log.e(TAG, "Could not fetch keys for recipient %s though there wer preexisting introductions...");
         e.printStackTrace();
         // TODO: This should probably schedule a job that retries this in the background as we may have consistency issues further down the line if it does not happen here.
       }
-
-      IdentityTableGlue.VerifiedStatus previousVerificationState = SignalDatabase.tiIdentityDatabase().getVerifiedStatus(recipient.getId());
-      SignalDatabase.tiIdentityDatabase().modifyIntroduceeVerification(serviceId,
-                                                                       previousVerificationState,
-                                                                       TI_Database.State.ACCEPTED,
-                                                                       String.format(logmsg,
-                                                                                     recipient.getDisplayName(getApplicationContext()),
-                                                                                     ??));
     }
   }
 }
