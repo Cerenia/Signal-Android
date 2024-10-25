@@ -145,6 +145,7 @@ class BackupMessagesJob private constructor(
       override fun shouldCancel(): Boolean = isCanceled
     }
 
+    // TODO [backup] Need to make this resumable
     FileInputStream(tempBackupFile).use {
       when (val result = BackupRepository.uploadBackupFile(backupSpec, it, tempBackupFile.length(), progressListener)) {
         is NetworkResult.Success -> {
