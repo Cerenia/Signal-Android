@@ -604,15 +604,19 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
    * Check database for any 'unknown' introductions and execute the state transitions.
    * PRE: When this is called, none of the returned introductions should be in the 'known' state.
    * @param serviceId the service ID of the new contact
+   * @return the state with the highest priority.
    */
   @WorkerThread
-  @Override public void handleUnknownIntroductions(String serviceId, String encodedIdentityKey) {
+  @Override public @Nullable State handleUnknownIntroductions(String serviceId, String encodedIdentityKey) {
     final String selection = String.format("%s=?", INTRODUCEE_SERVICE_ID);
     String[] args = SqlUtil.buildArgs(serviceId);
     SQLiteDatabase writeableDatabase = getSignalWritableDatabase();
     Cursor c = writeableDatabase.query(TABLE_NAME, TI_ALL_PROJECTION, selection, args, null, null, null);
     ArrayList<TI_Data> staleIntroductions = new ArrayList<>();
     ArrayList<TI_Data> upToDateIntroductions = new ArrayList<>();
+    // Keep count of any introductions that were interacted with that have not turned stale
+    boolean hasTrusted = false;
+    boolean hasRejected = false;
     if (c.getCount() >= 1) {
       IntroductionReader reader = new IntroductionReader(c);
       TI_Data current;
@@ -627,6 +631,8 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
           staleIntroductions.add(current);
         } else {
           upToDateIntroductions.add(current);
+          if(current.getState().equals(State.ACCEPTED)) hasTrusted = true;
+          if(current.getState().equals(State.REJECTED)) hasRejected = true;
         }
       } while (reader.hasNext());
       try {
@@ -647,8 +653,15 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
       // Transition all the unknown introductions with the correct identity key to their known counterparts.
       for (TI_Data unknownIntro: upToDateIntroductions) {
         ContentValues cv = buildContentValuesForUnknownTransition(unknownIntro.getIntroduction());
-        long result = writeableDatabase.update(TABLE_NAME, cv, where, SqlUtil.buildArgs(unknownIntro.getId()));
+        writeableDatabase.update(TABLE_NAME, cv, where, SqlUtil.buildArgs(unknownIntro.getId()));
       }
+    }
+    // Priority defined here
+    if (!(hasTrusted || hasRejected)) return State.PENDING;
+    if (hasTrusted) {
+      return State.ACCEPTED;
+    } else {
+      return State.REJECTED;
     }
   }
 
