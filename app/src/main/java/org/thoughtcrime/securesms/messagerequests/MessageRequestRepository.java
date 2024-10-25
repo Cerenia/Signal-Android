@@ -47,7 +47,7 @@ import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import kotlin.Unit;
 
-import static org.thoughtcrime.securesms.trustedIntroductions.glue.MessageRequestRepositoryGlue.adjustVerificationStatus;
+import static org.thoughtcrime.securesms.trustedIntroductions.glue.MessageRequestRepositoryGlue.handleNewUnknownRecipient;
 
 public final class MessageRequestRepository {
 
@@ -237,7 +237,7 @@ public final class MessageRequestRepository {
           null
       );
       // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
-      adjustVerificationStatus(recipient);
+      handleNewUnknownRecipient(recipient);
       // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
     } catch (MmsException e) {
       Log.w(TAG, "Unable to insert message request accept message", e);
