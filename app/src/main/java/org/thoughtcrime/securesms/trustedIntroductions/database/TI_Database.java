@@ -25,6 +25,7 @@ import org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
+import org.thoughtcrime.securesms.util.IdentityUtil;
 import org.whispersystems.signalservice.api.push.ServiceId;
 import org.whispersystems.signalservice.api.util.Preconditions;
 
@@ -35,6 +36,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+
+import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.getRecipientIdOrUnknown;
 
 /**
  *
@@ -554,7 +557,7 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
       // Log message on success
       Log.i(TAG, logMessage);
       // Check if a recipient may change verification status as a result of this operation
-      RecipientId introduceeID = TI_Utils.getRecipientIdOrUnknown(introduction.getIntroduceeServiceId());
+      RecipientId introduceeID = getRecipientIdOrUnknown(introduction.getIntroduceeServiceId());
       if(!introduceeID.isUnknown()){
         TI_IdentityTable.VerifiedStatus previousIntroduceeVerification = SignalDatabase.tiIdentityDatabase().getVerifiedStatus(introduceeID);
         if (previousIntroduceeVerification == null){
@@ -680,6 +683,10 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
     }
   }
 
+  private boolean isRecipientUnknown(String serviceID){
+    RecipientId rid = getRecipientIdOrUnknown(serviceID);
+    return !rid.equals(RecipientId.UNKNOWN);
+  }
 
   /**
    * Expects the introducee to have been fetched.
@@ -691,7 +698,8 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
   @Override
   public boolean acceptIntroduction(TI_Data introduction){
     Preconditions.checkArgument(introduction.getId() != null);
-    return changeIntroductionState(introduction, State.ACCEPTED, "Accepted introduction for: " + introduction.getIntroduceeName());
+    State newState = isRecipientUnknown(introduction.getIntroduceeServiceId()) ? State.ACCEPTED : State.ACCEPTED_UNKNOWN;
+    return changeIntroductionState(introduction, newState, "Accepted introduction for: " + introduction.getIntroduceeName());
   }
 
   /**
@@ -704,7 +712,8 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
   @Override
   public boolean rejectIntroduction(TI_Data introduction){
     Preconditions.checkArgument(introduction.getId() != null);
-    return changeIntroductionState(introduction, State.REJECTED, "Rejected introduction for: " + introduction.getIntroduceeName());
+    State newState = isRecipientUnknown(introduction.getIntroduceeServiceId()) ? State.REJECTED : State.REJECTED_UNKNOWN;
+    return changeIntroductionState(introduction, newState, "Rejected introduction for: " + introduction.getIntroduceeName());
   }
 
   @WorkerThread
@@ -772,7 +781,7 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
 
   private boolean turnAllIntroductionsStaleInternal(String serviceId){
     boolean updateSucceeded = true;
-    Preconditions.checkArgument(!TI_Utils.getRecipientIdOrUnknown(serviceId).equals(RecipientId.UNKNOWN));
+    Preconditions.checkArgument(!getRecipientIdOrUnknown(serviceId).equals(RecipientId.UNKNOWN));
     String query = INTRODUCEE_SERVICE_ID + " = ?";
     String[] args = SqlUtil.buildArgs(serviceId);
 
