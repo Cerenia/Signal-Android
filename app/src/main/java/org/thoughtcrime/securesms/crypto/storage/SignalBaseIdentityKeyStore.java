@@ -80,6 +80,9 @@ public class SignalBaseIdentityKeyStore {
       if (identityRecord == null) {
         Log.i(TAG, "Saving new identity for " + address);
         cache.save(address.getName(), recipientId, identityKey, VerifiedStatus.DEFAULT, true, System.currentTimeMillis(), nonBlockingApproval);
+        //TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+        SignalDatabase.tiIdentityDatabase().saveIdentity(address.getName(), IdentityTableGlue.VerifiedStatus.UNVERIFIED);
+        //TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
         return SaveResult.NEW;
       }
 
