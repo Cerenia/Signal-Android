@@ -592,11 +592,10 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
    */
   @Override public boolean atLeastOneIntroductionIsUnknown(@NotNull String introduceeServiceId) {
     final String selection = String.format("%s=?", INTRODUCEE_SERVICE_ID)
-                 + " AND " + String.format("%s=?", STATE) +" IN (%s, %s, %s)";
+                 + " AND " + String.format("%s", STATE) +" IN (?, ?, ?)";
     String[] args = SqlUtil.buildArgs(introduceeServiceId, State.ACCEPTED_UNKNOWN, State.REJECTED_UNKNOWN, State.PENDING_UNKNOWN);
     SQLiteDatabase writeableDatabase = getSignalWritableDatabase();
     Cursor c = writeableDatabase.query(TABLE_NAME, TI_ALL_PROJECTION, selection, args, null, null, null);
-
     return c.getCount() >= 1;
   }
 
