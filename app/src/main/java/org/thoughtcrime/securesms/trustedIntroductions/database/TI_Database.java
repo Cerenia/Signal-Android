@@ -632,6 +632,7 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
         if(!(current.getState().isUnknownRecipient())){
           throw new AssertionError(TAG + "encountered an illegal introduction state: " + current.getState() + "\n for an unknown recipient with service ID: " + serviceId);
         }
+        // todo: check WTF is going on here, is the COMPARISON good?
         if(!encodedIdentityKey.equals(current.getIntroduceeIdentityKey())){
           // Add this datapoint to the introductions that must be turned stale
           staleIntroductions.add(current);
