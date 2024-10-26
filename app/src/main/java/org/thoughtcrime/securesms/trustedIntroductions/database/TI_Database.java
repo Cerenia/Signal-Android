@@ -394,9 +394,9 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
     Preconditions.checkArgument(!introduction.getState().isStale());
     // Find stale state
     State newState = switch (introduction.getState()) {
-      case PENDING -> State.STALE_PENDING;
-      case ACCEPTED -> State.STALE_ACCEPTED;
-      case REJECTED -> State.STALE_REJECTED;
+      case PENDING, PENDING_UNKNOWN -> State.STALE_PENDING;
+      case ACCEPTED, ACCEPTED_UNKNOWN -> State.STALE_ACCEPTED;
+      case REJECTED, REJECTED_UNKNOWN -> State.STALE_REJECTED;
       case PENDING_CONFLICTING -> State.STALE_PENDING_CONFLICTING;
       case ACCEPTED_CONFLICTING -> State.STALE_ACCEPTED_CONFLICTING;
       case REJECTED_CONFLICTING -> State.STALE_REJECTED_CONFLICTING;
@@ -594,9 +594,9 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
    * @return true if there is at least one introduction for this introducee that meets the 'unknown' state criteria.
    */
   @Override public boolean atLeastOneIntroductionIsUnknown(@NotNull String introduceeServiceId) {
-    final String selection = String.format("%s=?", INTRODUCEE_SERVICE_ID)
-                 + " AND " + String.format("%s", STATE) +" IN (?, ?, ?)";
-    String[] args = SqlUtil.buildArgs(introduceeServiceId, State.ACCEPTED_UNKNOWN, State.REJECTED_UNKNOWN, State.PENDING_UNKNOWN);
+    String selection = String.format("%s=?", INTRODUCEE_SERVICE_ID)
+                 + " AND " + STATE +  " IN (3,4,5)"; // todo: grump at this later
+    String[] args = SqlUtil.buildArgs(introduceeServiceId);
     SQLiteDatabase writeableDatabase = getSignalWritableDatabase();
     Cursor c = writeableDatabase.query(TABLE_NAME, TI_ALL_PROJECTION, selection, args, null, null, null);
     return c.getCount() >= 1;
