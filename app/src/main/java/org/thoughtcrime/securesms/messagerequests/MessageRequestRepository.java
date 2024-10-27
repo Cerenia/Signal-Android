@@ -91,6 +91,10 @@ public final class MessageRequestRepository {
       SignalDatabase.recipients().clearHasGroupsInCommon(recipient.getId());
     }
 
+    // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+    handleNewUnknownRecipient(recipient);
+    // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
+
     return new MessageRequestRecipientInfo(
         recipient,
         groupInfo,
