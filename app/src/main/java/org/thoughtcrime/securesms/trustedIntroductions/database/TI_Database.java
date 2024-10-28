@@ -521,17 +521,13 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
    * @param introduction the new introduction this was matched against.
    * @return the update result. Negative if something went wrong, row index of the introduction otherwise.
    */
-  private long updateDuplicateIntroduction(Cursor c, TI_Data introduction){
+  private long updateDuplicateIntroduction(Cursor c, TI_Data data){
     c.moveToFirst();
-    /** Commented for now as we debug and decide what we do with matching intros...
     SQLiteDatabase writeableDatabase = databaseHelper.getSignalWritableDatabase();
     long result = writeableDatabase.update(TABLE_NAME, buildContentValuesForTimestampUpdate(c, data.getTimestamp()), ID + " = ?", SqlUtil.buildArgs(c.getInt(c.getColumnIndex(ID))));
     Log.i(TAG, "Updated timestamp of introduction " + result + " to: " + TI_Utils.INTRODUCTION_DATE_PATTERN.format(data.getTimestamp()));
-     **/
     c.close();
-
-    //return result;
-    return 1; // just needs to be positive
+    return result;
   }
 
   /**
@@ -553,13 +549,16 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
     // We found a matching introduction, we will update it and not insert a new one.
     if (c.getCount() == 1){
       // this closes the cursor
-      return updateDuplicateIntroduction(c, data);
+      //TODO: Debugging, uncomment at some point
+      //return updateDuplicateIntroduction(c, data);
     }
+    /**
     if(c.getCount() != 0) {
       // If we don't call updateDuplicateIntroduction, we need to close it ourselves.
       c.close();
+      // TODO: This assertion is no longer true, when we aren't checking for duplicates and just inserting any intro
       throw new AssertionError(TAG + " When checking for existing Introductions, there is one entry or none, nothing else is valid.");
-    }
+    } **/
     c.close();
     return insertKnownNewIntroduction(data);
   }
