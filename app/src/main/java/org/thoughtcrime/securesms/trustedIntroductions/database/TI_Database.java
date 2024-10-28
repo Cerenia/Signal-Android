@@ -492,19 +492,11 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
   }
 
   /**
-   *
-   *  We first check if an introduction with the same introducer service id, introducee service id, and identity key
-   *  already exists in the database to avoid duplication.
-   *  If we find a duplicate, we simply update the timestamp to the most recent one.
-   *  Otherwise the start of the introduction FSM is reached.
-   *
-   *  @param data the incoming introduction
-   * @return insertion id of introduction.
+   * Decides which fields must match to count as a duplicate introduction.
+   * @param data the introduction to check agains.
+   * @returna cursor populated with all the matches it found.
    */
-  @SuppressLint("Range")
-  @WorkerThread
-  @Override
-  public long incomingIntroduction(@NonNull TI_Data data){
+  private Cursor checkForDuplicates(@NonNull TI_Data data){
     // Fetch Data to compare if present
     // TODO: Adapt when we are more clear about what the data will be...
     // TODO: reimplment...
@@ -519,17 +511,51 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
                                       data.getIntroduceeIdentityKey());
 
     SQLiteDatabase writeableDatabase = databaseHelper.getSignalWritableDatabase();
-    Cursor c = writeableDatabase.query(TABLE_NAME, TI_ALL_PROJECTION, selectionBuilder.toString(), args, null, null, null);
+    return writeableDatabase.query(TABLE_NAME, TI_ALL_PROJECTION, selectionBuilder.toString(), args, null, null, null);
+  }
+
+  /**
+   * Logic to update any duplicate introductions with the new available data.
+   * Closes the cursor.
+   * @param c the cursor populated with the duplicate introductions.
+   * @param introduction the new introduction this was matched against.
+   * @return the update result. Negative if something went wrong, row index of the introduction otherwise.
+   */
+  private long updateDuplicateIntroduction(Cursor c, TI_Data introduction){
+    c.moveToFirst();
+    SQLiteDatabase writeableDatabase = databaseHelper.getSignalWritableDatabase();
+    long result = writeableDatabase.update(TABLE_NAME, buildContentValuesForTimestampUpdate(c, data.getTimestamp()), ID + " = ?", SqlUtil.buildArgs(c.getInt(c.getColumnIndex(ID))));
+    Log.i(TAG, "Updated timestamp of introduction " + result + " to: " + TI_Utils.INTRODUCTION_DATE_PATTERN.format(data.getTimestamp()));
+    c.close();
+    return result;
+  }
+
+  /**
+   *
+   *  We first check if an introduction with the same introducer service id, introducee service id, and identity key
+   *  already exists in the database to avoid duplication.
+   *  If we find a duplicate, we simply update the timestamp to the most recent one.
+   *  Otherwise the start of the introduction FSM is reached.
+   *
+   *  @param data the incoming introduction
+   * @return insertion id of introduction.
+   */
+  @SuppressLint("Range")
+  @WorkerThread
+  @Override
+  public long incomingIntroduction(@NonNull TI_Data data){
+    // Fetch Data to compare if present
+    Cursor c = checkForDuplicates(data);
     // We found a matching introduction, we will update it and not insert a new one.
     if (c.getCount() == 1){
-      c.moveToFirst();
-      long result = writeableDatabase.update(TABLE_NAME, buildContentValuesForTimestampUpdate(c, data.getTimestamp()), ID + " = ?", SqlUtil.buildArgs(c.getInt(c.getColumnIndex(ID))));
-      Log.i(TAG, "Updated timestamp of introduction " + result + " to: " + TI_Utils.INTRODUCTION_DATE_PATTERN.format(data.getTimestamp()));
-      c.close();
-      return result;
+      // this closes the cursor
+      return updateDuplicateIntroduction(c, data);
     }
-    if(c.getCount() != 0)
+    if(c.getCount() != 0) {
+      // If we don't call updateDuplicateIntroduction, we need to close it ourselves.
+      c.close();
       throw new AssertionError(TAG + " When checking for existing Introductions, there is one entry or none, nothing else is valid.");
+    }
     c.close();
     return insertKnownNewIntroduction(data);
   }
