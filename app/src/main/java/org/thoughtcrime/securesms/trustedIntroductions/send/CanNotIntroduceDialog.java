@@ -48,7 +48,6 @@ public final class CanNotIntroduceDialog {
                 builder.setMessage(R.string.CanNotIntroduceDialog__direct_verification_needed_for_trusted_introduction);
                 builder.setNegativeButton(android.R.string.cancel, (dialog, which) -> dialog.dismiss())
                         .setPositiveButton(R.string.CanNotIntroduceDialog__verify, (dialog, which) -> {
-                            dialog.dismiss();
                             if (identityRecord != null){
                                 Intent intent = VerifyIdentityActivity.newIntent(context, identityRecord);
                                 context.startActivity(intent);
