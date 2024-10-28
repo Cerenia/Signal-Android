@@ -25,7 +25,6 @@ import org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
-import org.thoughtcrime.securesms.util.IdentityUtil;
 import org.whispersystems.signalservice.api.push.ServiceId;
 import org.whispersystems.signalservice.api.util.Preconditions;
 
@@ -297,7 +296,7 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
                                                              @NonNull String introduceeIdentityKey,
                                                              @NonNull String predictedSecurityNumber,
                                                              long timestamp) {
-    Preconditions.checkArgument(state == State.PENDING || state == State.PENDING_CONFLICTING);
+    Preconditions.checkArgument(state == State.PENDING || state == State.PENDING_CONFLICTING || state == State.PENDING_UNKNOWN);
     ContentValues cv = new ContentValues();
     cv.put(STATE, state.toInt());
     cv.put(INTRODUCER_SERVICE_ID, introducerServiceId);
@@ -449,7 +448,7 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
   // or the thing turned stale in the meantime when a session is initiated. Thus we must turn it stale immediately from whatever state it was in...
 
   private long insertIntroduction(TI_Data data, State state){
-    Preconditions.checkArgument(state == State.PENDING || state == State.PENDING_CONFLICTING);
+    Preconditions.checkArgument(state == State.PENDING || state == State.PENDING_CONFLICTING || state == State.PENDING_UNKNOWN);
     TI_DatabaseGlue db = SignalDatabase.tiDatabase();
     ContentValues values = db.buildContentValuesForInsert(state,
                                                           data.getIntroducerServiceId(),
@@ -465,6 +464,9 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
     return id;
   }
 
+  private long insertUnknownIntroduction(TI_Data data){
+    return insertIntroduction(data, State.PENDING_UNKNOWN);
+  }
   /**
    * This is the START state of the introduction FSM.
    * Check if there is a detectable conflict (only possible if the service ID maps to a recipient ID)
@@ -560,7 +562,11 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
       throw new AssertionError(TAG + " When checking for existing Introductions, there is one entry or none, nothing else is valid.");
     } **/
     c.close();
-    return insertKnownNewIntroduction(data);
+    if (isRecipientUnknown(data.getIntroducerServiceId())){
+      // todo: this should throw of course
+      throw new AssertionError(TAG + " We have received an introduction from an unknown contact " + data.getIntroducerServiceId());
+    }
+    return isRecipientUnknown(data.getIntroduceeServiceId()) ? insertUnknownIntroduction(data) : insertKnownNewIntroduction(data);
   }
 
 
@@ -715,7 +721,7 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
 
   private boolean isRecipientUnknown(String serviceID){
     RecipientId rid = getRecipientIdOrUnknown(serviceID);
-    return !rid.equals(RecipientId.UNKNOWN);
+    return rid.equals(RecipientId.UNKNOWN);
   }
 
   /**
