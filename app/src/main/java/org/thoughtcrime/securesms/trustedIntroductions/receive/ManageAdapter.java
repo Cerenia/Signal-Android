@@ -38,10 +38,13 @@ import static android.view.View.INVISIBLE;
 import static android.view.View.VISIBLE;
 import static org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.ACCEPTED;
 import static org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.ACCEPTED_CONFLICTING;
+import static org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.ACCEPTED_UNKNOWN;
 import static org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.PENDING;
 import static org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.PENDING_CONFLICTING;
+import static org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.PENDING_UNKNOWN;
 import static org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.REJECTED;
 import static org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.REJECTED_CONFLICTING;
+import static org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.REJECTED_UNKNOWN;
 import static org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.STALE_ACCEPTED;
 import static org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.STALE_PENDING;
 import static org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.STALE_PENDING_CONFLICTING;
@@ -61,18 +64,28 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
         return oldItem.first.getId().compareTo(newItem.first.getId()) == 0;
       }
 
+      private boolean areNullableFieldsEqual(@Nullable Object field1, @Nullable Object field2){
+        if(field1 == null && field2 == null){
+          return true;
+        } else if (field1 == null || field2 == null){
+          return false;
+        } else {
+          return field1.equals(field2);
+        }
+      }
+      // TODO: Similar question to check for duplicates..
       @Override public boolean areContentsTheSame(@NonNull Pair<TI_Data, ManageViewModel.IntroducerInformation> oldPair, @NonNull Pair<TI_Data, ManageViewModel.IntroducerInformation> newPair) {
         TI_Data oldItem = oldPair.first;
         TI_Data newItem = newPair.first;
         // This list is not loaded live.. The only things that will differ are the state, depending on what the user chooses to do.
         return oldItem.getState().equals(newItem.getState()) &&
-              oldItem.getId().equals(newItem.getId()) &&
+               areNullableFieldsEqual(oldItem.getId(), newItem.getId()) &&
                (oldItem.getIntroducerServiceId() == null || newItem.getIntroducerServiceId() == null || oldItem.getIntroducerServiceId().equals(newItem.getIntroducerServiceId())) &&
                oldItem.getIntroduceeServiceId().equals(newItem.getIntroduceeServiceId()) &&
-               oldItem.getIntroduceeName().equals(newItem.getIntroduceeName()) &&
-               oldItem.getIntroduceeNumber().equals(newItem.getIntroduceeNumber()) &&
+               areNullableFieldsEqual(oldItem.getIntroduceeName(), newItem.getIntroduceeName()) &&
+               areNullableFieldsEqual(oldItem.getIntroduceeNumber(), newItem.getIntroduceeNumber())&&
                oldItem.getIntroduceeIdentityKey().equals(newItem.getIntroduceeIdentityKey()) &&
-               oldItem.getPredictedSecurityNumber().equals(newItem.getPredictedSecurityNumber()) &&
+               areNullableFieldsEqual(oldItem.getPredictedSecurityNumber(), newItem.getPredictedSecurityNumber()) &&
                oldItem.getTimestamp() == newItem.getTimestamp();
       }
     });
@@ -155,10 +168,6 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
       return new Date(data.getTimestamp());
     }
 
-    TI_Database.State getState(){
-      return data.getState();
-    }
-
     /**
      * PRE: data.id may not be null (should never happen once it was written to the database.)
      */
@@ -193,14 +202,18 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
           newState = TI_Database.State.ACCEPTED;
         else if(s == PENDING_CONFLICTING || s == REJECTED_CONFLICTING)
           newState = ACCEPTED_CONFLICTING;
-        else throw new AssertionError(TAG + "Illegal statemachine transition for state: " + s.name() + " and new trust: " + trust);
+        else if(s == PENDING_UNKNOWN || s == REJECTED_UNKNOWN)
+          newState = ACCEPTED_UNKNOWN;
+        else throw new AssertionError(TAG + "  Illegal state-machine transition for state: " + s.name() + " and new trust: true (accept)");
         listener.accept(Objects.requireNonNull(data.getId()));
       } else {
         if(s == PENDING || s == ACCEPTED)
           newState = REJECTED;
         else if(s == PENDING_CONFLICTING || s == ACCEPTED_CONFLICTING)
           newState = REJECTED_CONFLICTING;
-        else throw new AssertionError(TAG + "Illegal statemachine transition for state: " + s.name() + " and new trust: " + trust);
+        else if(s == PENDING_UNKNOWN || s == ACCEPTED_UNKNOWN)
+          newState = REJECTED_UNKNOWN;
+        else throw new AssertionError(TAG + "  Illegal state-machine transition for state: " + s.name() + " and new trust: false (reject)");
         listener.reject(Objects.requireNonNull(data.getId()));
       }
       newIntro = changeState(data, newState);
