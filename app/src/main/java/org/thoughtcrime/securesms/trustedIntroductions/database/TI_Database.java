@@ -523,11 +523,15 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
    */
   private long updateDuplicateIntroduction(Cursor c, TI_Data introduction){
     c.moveToFirst();
+    /** Commented for now as we debug and decide what we do with matching intros...
     SQLiteDatabase writeableDatabase = databaseHelper.getSignalWritableDatabase();
     long result = writeableDatabase.update(TABLE_NAME, buildContentValuesForTimestampUpdate(c, data.getTimestamp()), ID + " = ?", SqlUtil.buildArgs(c.getInt(c.getColumnIndex(ID))));
     Log.i(TAG, "Updated timestamp of introduction " + result + " to: " + TI_Utils.INTRODUCTION_DATE_PATTERN.format(data.getTimestamp()));
+     **/
     c.close();
-    return result;
+
+    //return result;
+    return 1; // just needs to be positive
   }
 
   /**
