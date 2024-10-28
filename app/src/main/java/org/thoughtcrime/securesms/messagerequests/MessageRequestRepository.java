@@ -23,6 +23,7 @@ import org.thoughtcrime.securesms.groups.ui.GroupChangeFailureReason;
 import org.thoughtcrime.securesms.jobs.MultiDeviceMessageRequestResponseJob;
 import org.thoughtcrime.securesms.jobs.ReportSpamJob;
 import org.thoughtcrime.securesms.jobs.SendViewedReceiptJob;
+import org.thoughtcrime.securesms.keyvalue.SignalStore;
 import org.thoughtcrime.securesms.mms.MmsException;
 import org.thoughtcrime.securesms.mms.OutgoingMessage;
 import org.thoughtcrime.securesms.notifications.MarkReadReceiver;
@@ -214,7 +215,7 @@ public final class MessageRequestRepository {
 
         SendViewedReceiptJob.enqueue(threadId, recipientId, viewedInfos);
 
-        if (TextSecurePreferences.isMultiDevice(context)) {
+        if (SignalStore.account().hasLinkedDevices()) {
           AppDependencies.getJobManager().add(MultiDeviceMessageRequestResponseJob.forAccept(recipientId));
         }
 
@@ -276,7 +277,7 @@ public final class MessageRequestRepository {
         }
       }
 
-      if (TextSecurePreferences.isMultiDevice(context)) {
+      if (SignalStore.account().hasLinkedDevices()) {
         AppDependencies.getJobManager().add(MultiDeviceMessageRequestResponseJob.forDelete(recipientId));
       }
 
@@ -314,7 +315,7 @@ public final class MessageRequestRepository {
       }
       Recipient.live(recipientId).refresh();
 
-      if (TextSecurePreferences.isMultiDevice(context)) {
+      if (SignalStore.account().hasLinkedDevices()) {
         AppDependencies.getJobManager().add(MultiDeviceMessageRequestResponseJob.forBlock(recipientId));
       }
 
@@ -374,7 +375,7 @@ public final class MessageRequestRepository {
 
       AppDependencies.getJobManager().add(new ReportSpamJob(threadId, System.currentTimeMillis()));
 
-      if (TextSecurePreferences.isMultiDevice(context)) {
+      if (SignalStore.account().hasLinkedDevices()) {
         AppDependencies.getJobManager().add(MultiDeviceMessageRequestResponseJob.forBlockAndReportSpam(recipientId));
       }
 
@@ -401,7 +402,7 @@ public final class MessageRequestRepository {
 
       AppDependencies.getJobManager().add(new ReportSpamJob(threadId, System.currentTimeMillis()));
 
-      if (TextSecurePreferences.isMultiDevice(context)) {
+      if (SignalStore.account().hasLinkedDevices()) {
         AppDependencies.getJobManager().add(MultiDeviceMessageRequestResponseJob.forReportSpam(recipientId));
       }
 
@@ -426,7 +427,7 @@ public final class MessageRequestRepository {
 
       RecipientUtil.unblock(recipient);
 
-      if (TextSecurePreferences.isMultiDevice(context)) {
+      if (SignalStore.account().hasLinkedDevices()) {
         AppDependencies.getJobManager().add(MultiDeviceMessageRequestResponseJob.forAccept(recipientId));
       }
 
