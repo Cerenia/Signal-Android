@@ -259,7 +259,7 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
 
       // Label text, visibility && radio group checking state
       switch (s){
-        case PENDING, PENDING_CONFLICTING:
+        case PENDING, PENDING_CONFLICTING, PENDING_UNKNOWN:
           radioGroupLabel.setVisibility(VISIBLE);
           radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Pending);
           break;
@@ -295,13 +295,13 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
             reject.setChecked(true);
           }
           break;
-        case ACCEPTED:
+        case ACCEPTED, ACCEPTED_UNKNOWN:
           radioGroupLabel.setVisibility(GONE);
           if (!accept.isChecked()) {
             accept.setChecked(true);
           }
           break;
-        case REJECTED:
+        case REJECTED, REJECTED_UNKNOWN:
           radioGroupLabel.setVisibility(GONE);
           if (!reject.isChecked()){
             reject.setChecked(true);
