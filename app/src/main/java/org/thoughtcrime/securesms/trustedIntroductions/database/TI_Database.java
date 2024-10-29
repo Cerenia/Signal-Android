@@ -276,6 +276,7 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
 
   /**
    * id not yet known, state either pending or conflicting
+   *
    * @param state
    * @param introducerServiceId
    * @param introduceeServiceId
@@ -339,7 +340,6 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
                                 !introducerServiceId.isEmpty() &&
                                 !introduceeServiceId.isEmpty() &&
                                 !name.isEmpty() &&
-                                !number.isEmpty() &&
                                 !identityKey.isEmpty() &&
                                 !predictedFingerprint.isEmpty() &&
                                 !timestamp.isEmpty());
@@ -768,13 +768,12 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
   /**
    * Fetches All displayable Introduction data.
    * Introductions with null introducerServiceId are omitted
+   *
    * @return IntroductionReader which can be used as an iterator.
    */
   @WorkerThread
   @Override
   public IntroductionReader getAllDisplayableIntroductions() {
-    String query = "SELECT * FROM " + TABLE_NAME + " WHERE " + INTRODUCER_SERVICE_ID + " IS NOT NULL";
-    SQLiteDatabase db = databaseHelper.getSignalReadableDatabase();
     String         query = "SELECT * FROM " + TABLE_NAME + " WHERE " + INTRODUCER_SERVICE_ID + " IS NOT NULL";
     SQLiteDatabase db    = databaseHelper.getSignalReadableDatabase();
     return new IntroductionReader(db.rawQuery(query, null));
