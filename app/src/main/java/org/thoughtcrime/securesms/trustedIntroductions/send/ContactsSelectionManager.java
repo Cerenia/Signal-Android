@@ -4,7 +4,6 @@ import androidx.core.util.Consumer;
 
 import org.signal.core.util.concurrent.SignalExecutors;
 import org.thoughtcrime.securesms.database.model.RecipientRecord;
-import org.thoughtcrime.securesms.recipients.LiveRecipient;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
 import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue;
@@ -27,32 +26,32 @@ public class ContactsSelectionManager {
   // Dependency injection makes the class testable
   private final @NonNull IdentityTableGlue idb;
 
-  ContactsSelectionManager(@NonNull RecipientId recipientId, @NonNull IdentityTableGlue idb){
+  ContactsSelectionManager(@NonNull RecipientId recipientId, @NonNull IdentityTableGlue idb) {
     this.recipientId = recipientId;
-    this.idb = idb;
+    this.idb         = idb;
   }
 
-  void getValidContacts(@NonNull Consumer<List<Recipient>> introducableContacts){
+  void getValidContacts(@NonNull Consumer<List<Recipient>> introducibleContacts) {
     SignalExecutors.BOUNDED.execute(() -> {
-      Map<RecipientId, RecipientRecord> elligibleCandidates = RecipientTableGlue.getValidTI_Candidates(idb.getCursorForTIUnlocked());
-      int count = elligibleCandidates.size();
-      if (count == 0){
-        introducableContacts.accept(Collections.emptyList());
+      Map<RecipientId, RecipientRecord> eligibleCandidates = RecipientTableGlue.getValidTICandidates(idb.getCursorForTIUnlocked());
+      int                               count              = eligibleCandidates.size();
+      if (count == 0) {
+        introducibleContacts.accept(Collections.emptyList());
       } else {
         List<Recipient> contacts = new ArrayList<>();
-        elligibleCandidates.forEach((recipientID, recipientRecord) -> {
-          if (recipientID.compareTo(this.recipientId) != 0){
+        eligibleCandidates.forEach((recipientID, recipientRecord) -> {
+          if (recipientID.compareTo(this.recipientId) != 0) {
             contacts.add(Recipient.resolved(recipientID));
           }
         });
         // sort ascending
         Collections.sort(contacts, Comparator.comparing((Recipient recipient) -> recipient.getProfileName().toString()));
-        introducableContacts.accept(contacts);
+        introducibleContacts.accept(contacts);
       }
     });
   }
 
-  RecipientId getRecipientId(){
+  RecipientId getRecipientId() {
     return this.recipientId;
   }
 }

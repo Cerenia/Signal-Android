@@ -34,7 +34,6 @@ import java.util.Date;
 import java.util.Objects;
 
 import static android.view.View.GONE;
-import static android.view.View.INVISIBLE;
 import static android.view.View.VISIBLE;
 import static org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.ACCEPTED;
 import static org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.ACCEPTED_CONFLICTING;
@@ -55,24 +54,25 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
 
   private static final String TAG = String.format(TI_Utils.TI_LOG_TAG, Log.tag(ManageAdapter.class));
 
-  private final LayoutInflater layoutInflater;
+  private final LayoutInflater                    layoutInflater;
   private final ManageAdapter.InteractionListener listener;
 
-  ManageAdapter(@NonNull Context context, @NonNull ManageAdapter.InteractionListener listener){
+  ManageAdapter(@NonNull Context context, @NonNull ManageAdapter.InteractionListener listener) {
     super(new DiffUtil.ItemCallback<Pair<TI_Data, ManageViewModel.IntroducerInformation>>() {
       @Override public boolean areItemsTheSame(@NonNull Pair<TI_Data, ManageViewModel.IntroducerInformation> oldItem, @NonNull Pair<TI_Data, ManageViewModel.IntroducerInformation> newItem) {
         return oldItem.first.getId().compareTo(newItem.first.getId()) == 0;
       }
 
-      private boolean areNullableFieldsEqual(@Nullable Object field1, @Nullable Object field2){
-        if(field1 == null && field2 == null){
+      private boolean areNullableFieldsEqual(@Nullable Object field1, @Nullable Object field2) {
+        if (field1 == null && field2 == null) {
           return true;
-        } else if (field1 == null || field2 == null){
+        } else if (field1 == null || field2 == null) {
           return false;
         } else {
           return field1.equals(field2);
         }
       }
+
       // TODO: Similar question to check for duplicates..
       @Override public boolean areContentsTheSame(@NonNull Pair<TI_Data, ManageViewModel.IntroducerInformation> oldPair, @NonNull Pair<TI_Data, ManageViewModel.IntroducerInformation> newPair) {
         TI_Data oldItem = oldPair.first;
@@ -83,14 +83,14 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
                (oldItem.getIntroducerServiceId() == null || newItem.getIntroducerServiceId() == null || oldItem.getIntroducerServiceId().equals(newItem.getIntroducerServiceId())) &&
                oldItem.getIntroduceeServiceId().equals(newItem.getIntroduceeServiceId()) &&
                areNullableFieldsEqual(oldItem.getIntroduceeName(), newItem.getIntroduceeName()) &&
-               areNullableFieldsEqual(oldItem.getIntroduceeNumber(), newItem.getIntroduceeNumber())&&
+               areNullableFieldsEqual(oldItem.getIntroduceeNumber(), newItem.getIntroduceeNumber()) &&
                oldItem.getIntroduceeIdentityKey().equals(newItem.getIntroduceeIdentityKey()) &&
                areNullableFieldsEqual(oldItem.getPredictedSecurityNumber(), newItem.getPredictedSecurityNumber()) &&
                oldItem.getTimestamp() == newItem.getTimestamp();
       }
     });
     this.layoutInflater = LayoutInflater.from(context);
-    this.listener = listener;
+    this.listener       = listener;
   }
 
   @NonNull @Override public IntroductionViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -105,37 +105,37 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
 
   static class IntroductionViewHolder extends RecyclerView.ViewHolder {
 
-    private final Context context;
-    private ManageAdapter.InteractionListener listener;
+    private final Context                           context;
+    private       ManageAdapter.InteractionListener listener;
 
-    private TI_Data     data;
-    private final TextView    timestampDate = itemView.findViewById(R.id.timestamp_date);
-    private final TextView    timestampTime = itemView.findViewById(R.id.timestamp_time);
-    private final TextView introducerName = itemView.findViewById(R.id.introducerName);
-    private final TextView introducerNumber = itemView.findViewById(R.id.introducerNumber);
-    private final TextView                                         introduceeName = itemView.findViewById(R.id.introduceeName);
-    private final TextView    introduceeNumber = itemView.findViewById(R.id.introduceeNumber);
-    private final RadioButton accept = itemView.findViewById(R.id.accept);
-    private final RadioButton reject = itemView.findViewById(R.id.reject);
-    private final RadioGroup  radioGroup = itemView.findViewById(R.id.trust_distrust);
-    private final TextView    radioGroupLabel = itemView.findViewById(R.id.radio_group_label);
-    private final Guideline guideline = itemView.findViewById(R.id.guideline_right);
-    private final ImageView      mask           = itemView.findViewById(R.id.maskedImage);
-    private final MaterialButton maskIntroducer = itemView.findViewById(R.id.mask);
-    private final MaterialButton delete = itemView.findViewById(R.id.delete);
+    private       TI_Data        data;
+    private final TextView       timestampDate    = itemView.findViewById(R.id.timestamp_date);
+    private final TextView       timestampTime    = itemView.findViewById(R.id.timestamp_time);
+    private final TextView       introducerName   = itemView.findViewById(R.id.introducerName);
+    private final TextView       introducerNumber = itemView.findViewById(R.id.introducerNumber);
+    private final TextView       introduceeName   = itemView.findViewById(R.id.introduceeName);
+    private final TextView       introduceeNumber = itemView.findViewById(R.id.introduceeNumber);
+    private final RadioButton    accept           = itemView.findViewById(R.id.accept);
+    private final RadioButton    reject           = itemView.findViewById(R.id.reject);
+    private final RadioGroup     radioGroup       = itemView.findViewById(R.id.trust_distrust);
+    private final TextView       radioGroupLabel  = itemView.findViewById(R.id.radio_group_label);
+    private final Guideline      guideline        = itemView.findViewById(R.id.guideline_right);
+    private final ImageView      mask             = itemView.findViewById(R.id.maskedImage);
+    private final MaterialButton maskIntroducer   = itemView.findViewById(R.id.mask);
+    private final MaterialButton delete           = itemView.findViewById(R.id.delete);
 
     public IntroductionViewHolder(@NonNull View itemView, ManageAdapter.InteractionListener listener, Context c) {
       super(itemView);
       this.listener = listener;
-      context = c;
+      context       = c;
       radioGroup.setOnCheckedChangeListener((b, id) -> {
         changeTrust(id == this.accept.getId());
       });
     }
 
-    @SuppressLint("RestrictedApi") public void bind(@Nullable TI_Data d, @Nullable ManageViewModel.IntroducerInformation introducerInformation){
+    @SuppressLint("RestrictedApi") public void bind(@Nullable TI_Data d, @Nullable ManageViewModel.IntroducerInformation introducerInformation) {
       this.data = d;
-      Date   date       = new Date(data.getTimestamp());
+      Date   date    = new Date(data.getTimestamp());
       String dString = INTRODUCTION_DATE_PATTERN.format(date);
 
       timestampDate.setText(dString.split(" ")[0]);
@@ -145,7 +145,7 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
       introduceeNumber.setText(data.getIntroduceeNumber());
       introduceeName.setVisibility(VISIBLE);
       introduceeNumber.setVisibility(VISIBLE);
-      if(introducerInformation == null){
+      if (introducerInformation == null) {
         introducerName.setText(R.string.ManageIntroductionsListItem__Unknown_Value);
         introducerNumber.setText(R.string.ManageIntroductionsListItem__Unknown_Value);
       } else {
@@ -155,31 +155,31 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
       introducerNumber.setVisibility(VISIBLE);
       introducerName.setVisibility(VISIBLE);
       guideline.setGuidelinePercent(0.5f);
-      changeListitemAppearanceByState(data.getState());
+      changeListItemAppearanceByState(data.getState());
       maskIntroducer.setOnClickListener((b) -> listener.mask(this, data.getIntroducerServiceId()));
       delete.setOnClickListener((b) -> listener.delete(this, data.getIntroducerServiceId()));
     }
 
-    String getIntroduceeName(){
+    String getIntroduceeName() {
       return data.getIntroduceeName();
     }
 
-    Date getDate(){
+    Date getDate() {
       return new Date(data.getTimestamp());
     }
 
     /**
      * PRE: data.id may not be null (should never happen once it was written to the database.)
      */
-    long getIntroductionId(){
+    long getIntroductionId() {
       Preconditions.checkArgument(data.getId() != null);
       return data.getId();
     }
 
 
-    @Nullable String getIntroducerName(Context c){
+    @Nullable String getIntroducerName(Context c) {
       String introducerId = data.getIntroducerServiceId();
-      if(introducerId == null || introducerId.equals(RecipientId.UNKNOWN.toString())){
+      if (introducerId == null || introducerId.equals(RecipientId.UNKNOWN.toString())) {
         return c.getString(R.string.ManageIntroductionsListItem__Forgotten_Introducer);
       }
       Recipient r = Recipient.live(TI_Utils.getRecipientIdOrUnknown(introducerId)).resolve();
@@ -189,44 +189,45 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
 
     /**
      * Introduction FSM triggered by user interaction implemented here.
+     *
      * @param trust true if the user trusts the introduction, false otherwise.
      */
-    public void changeTrust(boolean trust){
+    public void changeTrust(boolean trust) {
       TI_Database.State s = data.getState();
       if (s.isStale()) return; // may not interact with stale intros
       if (s.isTrusted() && trust || s.isDistrusted() && !trust) return; // nothing to change
       TI_Data           newIntro;
       TI_Database.State newState;
-      if (trust){
-        if(s == PENDING || s == REJECTED)
+      if (trust) {
+        if (s == PENDING || s == REJECTED)
           newState = TI_Database.State.ACCEPTED;
-        else if(s == PENDING_CONFLICTING || s == REJECTED_CONFLICTING)
+        else if (s == PENDING_CONFLICTING || s == REJECTED_CONFLICTING)
           newState = ACCEPTED_CONFLICTING;
-        else if(s == PENDING_UNKNOWN || s == REJECTED_UNKNOWN)
+        else if (s == PENDING_UNKNOWN || s == REJECTED_UNKNOWN)
           newState = ACCEPTED_UNKNOWN;
         else throw new AssertionError(TAG + "  Illegal state-machine transition for state: " + s.name() + " and new trust: true (accept)");
         listener.accept(Objects.requireNonNull(data.getId()));
       } else {
-        if(s == PENDING || s == ACCEPTED)
+        if (s == PENDING || s == ACCEPTED)
           newState = REJECTED;
-        else if(s == PENDING_CONFLICTING || s == ACCEPTED_CONFLICTING)
+        else if (s == PENDING_CONFLICTING || s == ACCEPTED_CONFLICTING)
           newState = REJECTED_CONFLICTING;
-        else if(s == PENDING_UNKNOWN || s == ACCEPTED_UNKNOWN)
+        else if (s == PENDING_UNKNOWN || s == ACCEPTED_UNKNOWN)
           newState = REJECTED_UNKNOWN;
         else throw new AssertionError(TAG + "  Illegal state-machine transition for state: " + s.name() + " and new trust: false (reject)");
         listener.reject(Objects.requireNonNull(data.getId()));
       }
       newIntro = changeState(data, newState);
-      data = newIntro; // the only thing that will change based on user interactions is check/uncheck or masking...
+      data     = newIntro; // the only thing that will change based on user interactions is check/uncheck or masking...
     }
 
 
     /**
      * Introducer service ID may not be null. (No incomplete intro should be displayed in receive screen).
      */
-    private void setForgetIntroducerComponentVisibility(){
+    private void setForgetIntroducerComponentVisibility() {
       Preconditions.checkArgument(data.getIntroducerServiceId() != null);
-      if(data.getIntroducerServiceId().equals(TI_Database.UNKNOWN_INTRODUCER_SERVICE_ID)){
+      if (data.getIntroducerServiceId().equals(TI_Database.UNKNOWN_INTRODUCER_SERVICE_ID)) {
         maskIntroducer.setVisibility(GONE);
         introducerNumber.setVisibility(GONE);
         introducerName.setVisibility(GONE);
@@ -238,16 +239,16 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
     }
 
     /**
+     * Updates UI state for introduction
      * Also changes the border/background colour and positioning accordingly.
-     * @return
      */
-    private void changeListitemAppearanceByState(TI_Database.State s){
+    private void changeListItemAppearanceByState(TI_Database.State s) {
       // Background
-      if (s.isStale() && s.isConflicting()){
+      if (s.isStale() && s.isConflicting()) {
         this.itemView.setBackground(ContextCompat.getDrawable(context, R.drawable.ti_manage_listview_background_stale_conflicting));
-      } else if (s.isStale()){
+      } else if (s.isStale()) {
         this.itemView.setBackground(ContextCompat.getDrawable(context, R.drawable.ti_manage_listview_background_stale));
-      } else if (s.isConflicting()){
+      } else if (s.isConflicting()) {
         this.itemView.setBackground(ContextCompat.getDrawable(context, R.drawable.ti_manage_listview_background_conflicting));
       } else {
         this.itemView.setBackground(ContextCompat.getDrawable(context, R.drawable.ti_manage_listview_background_default));
@@ -261,7 +262,7 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
 
       // Masking can only happen after introduction was interacted with or it turned stale
       maskIntroducer.setVisibility(VISIBLE);
-      if (s == STALE_PENDING || s == STALE_PENDING_CONFLICTING){
+      if (s == STALE_PENDING || s == STALE_PENDING_CONFLICTING) {
         maskIntroducer.setEnabled(true);
         maskIntroducer.setClickable(true);
       } else {
@@ -271,7 +272,7 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
       }
 
       // Label text, visibility && radio group checking state
-      switch (s){
+      switch (s) {
         case PENDING, PENDING_CONFLICTING, PENDING_UNKNOWN:
           radioGroupLabel.setVisibility(VISIBLE);
           radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Pending);
@@ -286,11 +287,11 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
         case REJECTED_CONFLICTING:
           radioGroupLabel.setVisibility(VISIBLE);
           radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Conflicting);
-          if (!reject.isChecked()){
+          if (!reject.isChecked()) {
             reject.setChecked(true);
           }
           break;
-        case  STALE_PENDING,  STALE_PENDING_CONFLICTING:
+        case STALE_PENDING, STALE_PENDING_CONFLICTING:
           radioGroupLabel.setVisibility(VISIBLE);
           radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Stale);
           break;
@@ -304,7 +305,7 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
         case STALE_REJECTED, STALE_REJECTED_CONFLICTING:
           radioGroupLabel.setVisibility(VISIBLE);
           radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Stale);
-          if (!reject.isChecked()){
+          if (!reject.isChecked()) {
             reject.setChecked(true);
           }
           break;
@@ -316,7 +317,7 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
           break;
         case REJECTED, REJECTED_UNKNOWN:
           radioGroupLabel.setVisibility(GONE);
-          if (!reject.isChecked()){
+          if (!reject.isChecked()) {
             reject.setChecked(true);
           }
           break;
@@ -324,11 +325,11 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
     }
 
 
-    private TI_Data changeState(TI_Data d, TI_Database.State s){
+    private TI_Data changeState(TI_Data d, TI_Database.State s) {
       return new TI_Data(d.getId(), s, d.getIntroducerServiceId(), d.getIntroduceeServiceId(), d.getIntroduceeName(), d.getIntroduceeNumber(), d.getIntroduceeIdentityKey(), d.getPredictedSecurityNumber(), d.getTimestamp());
     }
 
-    public void setEnabled(boolean enabled){
+    public void setEnabled(boolean enabled) {
       itemView.setEnabled(enabled);
     }
 
@@ -352,10 +353,13 @@ public class ManageAdapter extends ListAdapter<Pair<TI_Data, ManageViewModel.Int
 
   }
 
-  interface InteractionListener{
+  interface InteractionListener {
     void accept(@NonNull Long introductionID);
+
     void reject(@NonNull Long introductionID);
+
     void mask(@NonNull ManageAdapter.IntroductionViewHolder item, String introducerServiceID);
+
     void delete(@NonNull ManageAdapter.IntroductionViewHolder item, String introducerServiceID);
   }
 

@@ -11,8 +11,6 @@ import org.signal.core.util.concurrent.SimpleTask;
 import org.thoughtcrime.securesms.database.SignalDatabase;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
-import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue;
-import org.thoughtcrime.securesms.trustedIntroductions.glue.RecipientTableGlue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,20 +19,19 @@ import java.util.Objects;
 public class ContactsSelectionViewModel extends ViewModel {
   private final ContactsSelectionManager            manager;
   private final ArrayList<SelectedTIContacts.Model> selectedContacts;
-  private final MutableLiveData<List<Recipient>>    introducableContacts;
+  private final MutableLiveData<List<Recipient>>    introducibleContacts;
   private final MutableLiveData<String>             filter;
 
   ContactsSelectionViewModel(ContactsSelectionManager manager) {
     this.manager         = manager;
-    introducableContacts = new MutableLiveData<>();
+    introducibleContacts = new MutableLiveData<>();
     selectedContacts     = new ArrayList<>();
     filter               = new MutableLiveData<>("");
     loadValidContacts();
   }
 
   boolean addSelectedContact(@NonNull Recipient contact) {
-    boolean added = selectedContacts.add(new SelectedTIContacts.Model(contact, contact.getId()));
-    return added;
+    return selectedContacts.add(new SelectedTIContacts.Model(contact, contact.getId()));
   }
 
   int removeSelectedContact(@NonNull Recipient contact) {
@@ -75,11 +72,11 @@ public class ContactsSelectionViewModel extends ViewModel {
   }
 
   private void loadValidContacts() {
-    manager.getValidContacts(introducableContacts::postValue);
+    manager.getValidContacts(introducibleContacts::postValue);
   }
 
   public LiveData<List<Recipient>> getContacts() {
-    return introducableContacts;
+    return introducibleContacts;
   }
 
   void getDialogStateForSelectedContacts(@NonNull Consumer<IntroduceDialogMessageState> callback) {
@@ -95,11 +92,11 @@ public class ContactsSelectionViewModel extends ViewModel {
   // TODO: Opted to use recipients directly instead of the SelectedContact class..
   // May need to reconsider if there are performance issues during integration testing.
   static final class IntroduceDialogMessageState {
-    private final Recipient recipient;
+    private final Recipient       recipient;
     private final List<Recipient> toIntroduce;
 
     private IntroduceDialogMessageState(@NonNull Recipient recipient, List<Recipient> toIntroduce) {
-      this.recipient      = recipient;
+      this.recipient   = recipient;
       this.toIntroduce = toIntroduce;
     }
 
@@ -107,7 +104,7 @@ public class ContactsSelectionViewModel extends ViewModel {
       return recipient;
     }
 
-    List<Recipient> getToIntroduce(){
+    List<Recipient> getToIntroduce() {
       return toIntroduce;
     }
 

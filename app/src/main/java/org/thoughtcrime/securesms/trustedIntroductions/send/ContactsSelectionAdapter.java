@@ -41,9 +41,9 @@ public class ContactsSelectionAdapter extends ListAdapter<Recipient, ContactsSel
         return oldItem.equals(newItem);
       }
     });
-    this.layoutInflater  = LayoutInflater.from(context);
-    this.glide   = glide;
-    this.clickListener   = clickListener;
+    this.layoutInflater = LayoutInflater.from(context);
+    this.glide          = glide;
+    this.clickListener  = clickListener;
   }
 
   @NonNull public TIContactViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -80,10 +80,10 @@ public class ContactsSelectionAdapter extends ListAdapter<Recipient, ContactsSel
   static class TIContactViewHolder extends RecyclerView.ViewHolder {
 
     private final AvatarImageView contactPhotoImage = itemView.findViewById(R.id.contact_photo_image);
-    private final    TextView        nameView  = itemView.findViewById(R.id.name);
-    private  final   TextView        numberView  = itemView.findViewById(R.id.number);
-    private final    CheckBox        checkbox  = itemView.findViewById(R.id.check_box);
-    private    Recipient       recipient;
+    private final TextView        nameView          = itemView.findViewById(R.id.name);
+    private final TextView        numberView        = itemView.findViewById(R.id.number);
+    private final CheckBox        checkbox          = itemView.findViewById(R.id.check_box);
+    private       Recipient       recipient;
 
 
     TIContactViewHolder(@NonNull final View itemView,
@@ -95,7 +95,8 @@ public class ContactsSelectionAdapter extends ListAdapter<Recipient, ContactsSel
       });
       ViewUtil.setTextViewGravityStart(this.nameView, itemView.getContext());
     }
-    public void bind(@NonNull Glide glide, Recipient recipient){
+
+    public void bind(@NonNull Glide glide, Recipient recipient) {
 
       this.recipient = recipient;
       this.nameView.setText(recipient.getDisplayName(itemView.getContext()));
@@ -103,11 +104,11 @@ public class ContactsSelectionAdapter extends ListAdapter<Recipient, ContactsSel
       this.numberView.setText(recipient.getE164().orElse(""));
     }
 
-    public void setEnabled(boolean enabled){
+    public void setEnabled(boolean enabled) {
       itemView.setEnabled(enabled);
     }
 
-    public RecipientId getRecipientId(){
+    public RecipientId getRecipientId() {
       return this.recipient.getId();
     }
 
@@ -115,13 +116,14 @@ public class ContactsSelectionAdapter extends ListAdapter<Recipient, ContactsSel
       return this.recipient;
     }
 
-    public void setCheckboxChecked(boolean checked){
+    public void setCheckboxChecked(boolean checked) {
       checkbox.setChecked(checked);
     }
 
   }
 
   public interface ItemClickListener {
+    // naughty: This does not not know about TIContactViewHolder
     void onItemClick(TIContactViewHolder item);
   }
 }
