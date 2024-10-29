@@ -18,37 +18,37 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
+import static org.thoughtcrime.securesms.dependencies.AppDependencies.getApplication;
 import static org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.UNKNOWN_INTRODUCER_SERVICE_ID;
-import static org.webrtc.ContextUtils.getApplicationContext;
 
 public class ManageManager {
 
-  private static final String TAG =  String.format(TI_Utils.TI_LOG_TAG, Log.tag(ManageManager.class));
+  private static final String TAG = String.format(TI_Utils.TI_LOG_TAG, Log.tag(ManageManager.class));
 
-  @NonNull private final String      forgottenPlaceholder;
+  @NonNull private final String          forgottenPlaceholder;
   // Dependency injection
   private final          TI_DatabaseGlue tdb;
 
-  ManageManager(@NonNull TI_DatabaseGlue tdb, @NonNull String forgottenPlaceholder){
-    this.tdb = tdb;
+  ManageManager(@NonNull TI_DatabaseGlue tdb, @NonNull String forgottenPlaceholder) {
+    this.tdb                  = tdb;
     this.forgottenPlaceholder = forgottenPlaceholder;
   }
 
-  void getIntroductions(@NonNull Consumer<List<Pair<TI_Data, ManageViewModel.IntroducerInformation>>> listConsumer){
+  void getIntroductions(@NonNull Consumer<List<Pair<TI_Data, ManageViewModel.IntroducerInformation>>> listConsumer) {
     SignalExecutors.BOUNDED.execute(() -> {
 
       // Pull introductions out of the database
       TI_Database.IntroductionReader reader        = tdb.getAllDisplayableIntroductions();
       ArrayList<TI_Data>             introductions = new ArrayList<>();
-      while(reader.hasNext()){
+      while (reader.hasNext()) {
         introductions.add(reader.getNext());
       }
       // sort by date
       Collections.sort(introductions, Comparator.comparing(TI_Data::getTimestamp));
       ArrayList<Pair<TI_Data, ManageViewModel.IntroducerInformation>> result = new ArrayList<>();
-      ManageViewModel.IntroducerInformation i = null;
-      for (TI_Data d: introductions) {
-        if(Objects.equals(d.getIntroducerServiceId(), UNKNOWN_INTRODUCER_SERVICE_ID)){
+      ManageViewModel.IntroducerInformation                           i      = null;
+      for (TI_Data d : introductions) {
+        if (Objects.equals(d.getIntroducerServiceId(), UNKNOWN_INTRODUCER_SERVICE_ID)) {
           i = new ManageViewModel.IntroducerInformation(forgottenPlaceholder, forgottenPlaceholder);
         } else {
           try {
@@ -56,7 +56,7 @@ public class ManageManager {
             String    number = r.getE164().orElse("");
             // TODO: using getApplication context because the context doesn't matter... (22-10-06)
             // It just circularly gets passed around between methods in the Recipient but is never used for anything.
-            i = new ManageViewModel.IntroducerInformation(r.getDisplayName(getApplicationContext()), number);
+            i = new ManageViewModel.IntroducerInformation(r.getDisplayName(getApplication().getApplicationContext()), number);
           } catch (Exception e) {
             e.printStackTrace();
             Log.e(TAG, e.getMessage());

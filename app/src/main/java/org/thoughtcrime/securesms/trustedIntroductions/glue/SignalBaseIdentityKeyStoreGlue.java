@@ -9,7 +9,7 @@ import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
 
 public interface SignalBaseIdentityKeyStoreGlue {
 
-  String TAG                       = String.format(TI_Utils.TI_LOG_TAG, org.signal.core.util.logging.Log.tag(SignalBaseIdentityKeyStoreGlue.class));
+  String TAG = String.format(TI_Utils.TI_LOG_TAG, org.signal.core.util.logging.Log.tag(SignalBaseIdentityKeyStoreGlue.class));
 
   static void turnAllIntroductionsStale(RecipientId recipientId) {
     // Security nr. changed, change all introductions for this introducee to stale
@@ -17,7 +17,7 @@ public interface SignalBaseIdentityKeyStoreGlue {
       Recipient recipient = Recipient.resolved(recipientId);
       boolean   res       = SignalDatabase.tiDatabase().turnAllIntroductionsStale(recipient.requireServiceId().toString());
       if (!res) {
-        Log.e(TAG, "Error occured while turning all introductions stale for recipient: " + recipientId);
+        Log.e(TAG, "Error occurred while turning all introductions stale for recipient: " + recipientId);
       }
     });
   }

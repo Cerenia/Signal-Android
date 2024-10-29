@@ -8,7 +8,11 @@ import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.TABL
 object RecipientServiceIdMigration {
   // Idempotent call on backup files to make sure the datatype is right and constraint removed
   fun migrate(context: Application, db: SQLiteDatabase) {
-    val sql = "ALTER TABLE $TABLE_NAME MODIFY COLUMN $INTRODUCER_SERVICE_ID TEXT;"
-    db.execSQL(sql)
+    /**
+     * sqlite does not allow to alter tables: https://www.sqlite.org/lang_altertable.html
+     */
+    throw RuntimeException("This code is DEAD, please remove it: ");
+//    val sql = "ALTER TABLE $TABLE_NAME MODIFY COLUMN $INTRODUCER_SERVICE_ID TEXT;"
+//    db.execSQL(sql)
   }
 }

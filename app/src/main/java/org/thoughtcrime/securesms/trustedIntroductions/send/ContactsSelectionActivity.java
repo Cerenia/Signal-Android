@@ -42,16 +42,16 @@ public final class ContactsSelectionActivity extends PassphraseRequiredActivity 
   private final DynamicTheme dynamicTheme = new DynamicNoActionBarTheme();
 
   // when done picking contacts (button)
-  private View                          done;
-  private ContactsSelectionListFragment ti_contacts;
-  private ContactsSelectionViewModel    viewModel;
+  private View                       done;
+  //  private ContactsSelectionListFragment ti_contacts;
+  private ContactsSelectionViewModel viewModel;
   // Alternative text when no contacts are verified
-  private TextView                      no_valid_contacts;
-  private ContactFilterView                         contactFilterView;
-  private Toolbar           toolbar;
+  private TextView                   no_valid_contacts;
+  private ContactFilterView          contactFilterView;
+  private Toolbar                    toolbar;
 
 
-  public static @NonNull Intent createIntent(@NonNull Context context, @NonNull RecipientId id){
+  public static @NonNull Intent createIntent(@NonNull Context context, @NonNull RecipientId id) {
     Intent intent = new Intent(context, ContactsSelectionActivity.class);
     intent.putExtra(RECIPIENT_ID, id.toLong());
     return intent;
@@ -70,7 +70,7 @@ public final class ContactsSelectionActivity extends PassphraseRequiredActivity 
     toolbar           = findViewById(R.id.toolbar);
     contactFilterView = findViewById(R.id.contact_filter_edit_text);
     no_valid_contacts = findViewById(R.id.ti_no_contacts);
-    ti_contacts = (ContactsSelectionListFragment) getSupportFragmentManager().findFragmentById(R.id.trusted_introduction_contacts_fragment);
+    ContactsSelectionListFragment ti_contacts = (ContactsSelectionListFragment) getSupportFragmentManager().findFragmentById(R.id.trusted_introduction_contacts_fragment);
     done = findViewById(R.id.done);
 
     // Initialize
@@ -82,13 +82,12 @@ public final class ContactsSelectionActivity extends PassphraseRequiredActivity 
 
     // # of valid contacts
     viewModel.getContacts().observe(this, contacts -> {
-      if(contacts.size() > 0){
+      if (!contacts.isEmpty()) {
         no_valid_contacts.setVisibility(View.GONE);
       } else {
         no_valid_contacts.setVisibility(View.VISIBLE);
       }
     });
-
 
 
     done.setOnClickListener(v ->
@@ -127,12 +126,12 @@ public final class ContactsSelectionActivity extends PassphraseRequiredActivity 
   }
 
   @Override
-  public void onContactSelected(Optional<RecipientId> recipientId, @Nullable String number){
+  public void onContactSelected(Optional<RecipientId> recipientId, @Nullable String number) {
     int selectedContactsCount = viewModel.getSelectedContactsCount();
     if (selectedContactsCount == 0) {
       toolbar.setTitle(getString(R.string.PickContactsForTIActivity_introduce_contacts));
       disableDone();
-    } if (selectedContactsCount > 0){
+    } if (selectedContactsCount > 0) {
       enableDone();
       toolbar.setTitle(getResources().getQuantityString(R.plurals.PickContactsForTIActivity_d_contacts, selectedContactsCount, selectedContactsCount));
     } else {
@@ -140,7 +139,7 @@ public final class ContactsSelectionActivity extends PassphraseRequiredActivity 
     }
   }
 
-  private RecipientId getRecipientID(){
+  private RecipientId getRecipientID() {
     return RecipientId.from(getIntent().getLongExtra(RECIPIENT_ID, -1));
   }
 
@@ -155,10 +154,10 @@ public final class ContactsSelectionActivity extends PassphraseRequiredActivity 
   }
 
   private void displayAlertMessage(@NonNull ContactsSelectionViewModel.IntroduceDialogMessageState state) {
-    Recipient recipient = Util.firstNonNull(state.getRecipient(), Recipient.UNKNOWN);
+    Recipient       recipient = Util.firstNonNull(state.getRecipient(), Recipient.UNKNOWN);
     List<Recipient> selection = state.getToIntroduce();
-    int count = selection.size();
-    if(count == 1){
+    int             count     = selection.size();
+    if (count == 1) {
       displayAlertForSingleIntroduction(recipient, selection.get(0), state);
     } else {
       assert count != 0 : "No contacts selected to introduce!";
@@ -166,20 +165,20 @@ public final class ContactsSelectionActivity extends PassphraseRequiredActivity 
     }
   }
 
-  private void displayAlertForSingleIntroduction(Recipient recipient, Recipient introducee, @NonNull ContactsSelectionViewModel.IntroduceDialogMessageState state){
+  private void displayAlertForSingleIntroduction(Recipient recipient, Recipient introducee, @NonNull ContactsSelectionViewModel.IntroduceDialogMessageState state) {
     String message = getResources().getQuantityString(R.plurals.PickContactsForTIActivity__introduce_d_contacts_to_s, 1,
                                                       introducee.getDisplayName(getApplicationContext()), recipient.getDisplayName(this));
     displayAlert(message, state);
   }
 
-  private void displayAlertForMultiIntroduction(Recipient recipient, @NonNull ContactsSelectionViewModel.IntroduceDialogMessageState state){
+  private void displayAlertForMultiIntroduction(Recipient recipient, @NonNull ContactsSelectionViewModel.IntroduceDialogMessageState state) {
     int count = state.getToIntroduce().size();
     String message = getResources().getQuantityString(R.plurals.PickContactsForTIActivity__introduce_d_contacts_to_s, count,
                                                       count, recipient.getDisplayName(this));
     displayAlert(message, state);
   }
 
-  private void displayAlert(String message, @NonNull ContactsSelectionViewModel.IntroduceDialogMessageState state){
+  private void displayAlert(String message, @NonNull ContactsSelectionViewModel.IntroduceDialogMessageState state) {
     new AlertDialog.Builder(this)
         .setMessage(message)
         .setNegativeButton(android.R.string.cancel, (dialog, which) -> dialog.cancel())
@@ -192,7 +191,7 @@ public final class ContactsSelectionActivity extends PassphraseRequiredActivity 
   }
 
   private void onFinishedSelection(@NonNull ContactsSelectionViewModel.IntroduceDialogMessageState state) {
-    Intent           resultIntent = getIntent();
+    Intent                 resultIntent = getIntent();
     ArrayList<RecipientId> recipientIds = state.getToIntroduce().stream().map(Recipient::getId).collect(Collectors.toCollection(ArrayList::new));
 
     resultIntent.putParcelableArrayListExtra(SELECTED_CONTACTS_TO_FORWARD, recipientIds);

@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import kotlin.Unit;
@@ -50,17 +49,17 @@ public class ContactsSelectionListFragment extends Fragment implements ContactFi
   private ProgressWheel              showContactsProgress;
   private ContactsSelectionViewModel viewModel;
   private ContactsSelectionAdapter   TIRecyclerViewAdapter;
-  private RecyclerView                  TIContactsRecycler;
-  private RecyclerView                                           chipRecycler;
-  private MappingAdapter contactChipAdapter;
+  private RecyclerView               TIContactsRecycler;
+  private RecyclerView               chipRecycler;
+  private MappingAdapter             contactChipAdapter;
 
 
   @Override
   public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
     View view = inflater.inflate(R.layout.ti_contact_selection_fragment, container, false);
 
-    TIContactsRecycler   = view.findViewById(R.id.recycler_view);
-    chipRecycler = view.findViewById(R.id.chipRecycler);
+    TIContactsRecycler = view.findViewById(R.id.recycler_view);
+    chipRecycler       = view.findViewById(R.id.chipRecycler);
 
     TIContactsRecycler.setItemAnimator(null);
 
@@ -70,7 +69,7 @@ public class ContactsSelectionListFragment extends Fragment implements ContactFi
     chipRecycler.setAdapter(contactChipAdapter);
 
     // Default values for now
-    boolean recyclerViewClipping  = true;
+    boolean recyclerViewClipping = true;
 
     TIContactsRecycler.setClipToPadding(recyclerViewClipping);
 
@@ -82,9 +81,10 @@ public class ContactsSelectionListFragment extends Fragment implements ContactFi
 
   /**
    * Called by activity containing the Fragment.
+   *
    * @param viewModel The underlying persistent data storage (throughout Activity and Fragment Lifecycle).
    */
-  public void setViewModel(ContactsSelectionViewModel viewModel){
+  public void setViewModel(ContactsSelectionViewModel viewModel) {
     this.viewModel = viewModel;
     initializeAdapter();
     this.viewModel.getContacts().observe(getViewLifecycleOwner(), users -> {
@@ -107,7 +107,7 @@ public class ContactsSelectionListFragment extends Fragment implements ContactFi
 
   @MainThread
   @CallSuper
-  public void onViewStateRestored(@Nullable Bundle savedInstanceState){
+  public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
     super.onViewStateRestored(savedInstanceState);
     loadSelection();
   }
@@ -115,14 +115,14 @@ public class ContactsSelectionListFragment extends Fragment implements ContactFi
   /**
    * Saved state to be restored from viewModel.
    */
-  private void loadSelection(){
-    if(this.viewModel != null) {
+  private void loadSelection() {
+    if (this.viewModel != null) {
       updateChips();
       restoreCheckboxState();
     } // Do nothing if viewModel is null, should never happen
   }
 
-  private boolean restoreCheckboxState(){
+  private boolean restoreCheckboxState() {
     for (SelectedTIContacts.Model model : this.viewModel.listSelectedContactModels()) {
       RecipientId selected = model.getRecipientId();
       for (int i = 0; i < TIContactsRecycler.getChildCount(); i++) {
@@ -136,15 +136,16 @@ public class ContactsSelectionListFragment extends Fragment implements ContactFi
     return true;
   }
 
-  private List<Recipient> getFiltered(List<Recipient> contacts, @Nullable String filter){
+  private List<Recipient> getFiltered(List<Recipient> contacts, @Nullable String filter) {
     List<Recipient> filtered = new ArrayList<>(contacts);
-    filter = (filter==null)? Objects.requireNonNull(viewModel.getFilter().getValue()): filter;
-    if (!filter.isEmpty() && filter.compareTo("") != 0){
-      for (Recipient c: contacts) {
+    filter = (filter == null) ? Objects.requireNonNull(viewModel.getFilter().getValue()) : filter;
+    if (!filter.isEmpty() && filter.compareTo("") != 0) {
+      for (Recipient c : contacts) {
         // Choose appropriate string representation
         Pattern filterPattern = Pattern.compile(Pattern.quote(filter), Pattern.CASE_INSENSITIVE);
-        if(!filterPattern.matcher(c.getDisplayName(requireContext())).find() &&
-           !filterPattern.matcher(c.getE164().orElse("")).find()){
+        if (!filterPattern.matcher(c.getDisplayName(requireContext())).find() &&
+            !filterPattern.matcher(c.getE164().orElse("")).find())
+        {
           filtered.remove(c);
         }
       }
@@ -202,16 +203,16 @@ public class ContactsSelectionListFragment extends Fragment implements ContactFi
   }
 
   private void markContactUnselected(@NonNull Recipient selectedContact) {
-    if(viewModel.removeSelectedContact(selectedContact) < 0){
-      Log.w(TAG, String.format(Locale.US,"%s could not be removed from selection!", selectedContact));
+    if (viewModel.removeSelectedContact(selectedContact) < 0) {
+      Log.w(TAG, String.format(Locale.US, "%s could not be removed from selection!", selectedContact));
     } else {
-      Log.i(TAG, String.format(Locale.US,"%s was removed from selection.", selectedContact));
+      Log.i(TAG, String.format(Locale.US, "%s was removed from selection.", selectedContact));
       updateChips();
     }
   }
 
   private void markContactSelected(@NonNull Recipient selectedContact) {
-    if(!viewModel.addSelectedContact(selectedContact)){
+    if (!viewModel.addSelectedContact(selectedContact)) {
       Log.i(TAG, String.format("Contact %s was already part of the selection.", selectedContact));
     } else {
       updateChips();

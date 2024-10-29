@@ -39,13 +39,11 @@ import java.util.Set;
 import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.getRecipientIdOrUnknown;
 
 /**
- *
  * Database holding received trusted Introductions.
  * We are consciously trying to have the sending Introduction ephemeral since we want to maximize privacy,
  * (think an Informant that forwards someone to a Journalist, you don't want that information hanging around)
- *
- * This implementation currently does not support multidevice.
- *
+ * <p>
+ * This implementation currently does not support multi-device.
  */
 public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
 
@@ -54,14 +52,14 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
   private static TI_DatabaseGlue instance = null;
 
   public static void setInstance(TI_DatabaseGlue inst) throws Exception {
-    if (instance != null){
+    if (instance != null) {
       throw new Exception("Attempted to reassign Singleton instance of TI_Database");
     }
     instance = inst;
   }
 
   public static TI_DatabaseGlue getInstance() {
-    if (instance == null){
+    if (instance == null) {
       throw new AssertionError("Attempted to fetch Singleton TI_Database before initializing it.");
     }
     return instance;
@@ -69,21 +67,21 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
 
   public static final String TABLE_NAME = "trusted_introductions";
 
-  private static final String ID                      = "_id";
-  public static final String INTRODUCER_SERVICE_ID   = "introducer_service_id";
-  private static final String INTRODUCEE_SERVICE_ID          = "introducee_service_id";
-  private static final String INTRODUCEE_PUBLIC_IDENTITY_KEY = "introducee_identity_key"; // The one contained in the Introduction
-  private static final String INTRODUCEE_NAME                = "introducee_name"; // TODO: snapshot when introduction happened. Necessary? Or wrong approach?
-  private static final String INTRODUCEE_NUMBER     = "introducee_number"; // TODO: snapshot when introduction happened. Necessary? Or wrong approach?
-  private static final String PREDICTED_FINGERPRINT = "predicted_fingerprint";
-  private static final String TIMESTAMP             = "timestamp";
-  private static final String STATE                          = "state";
-  public static final long UNKNOWN_INTRODUCEE_RECIPIENT_ID = -1; //TODO: need to search through database for serviceID when new recipient is added in order to initialize.
-  public static final String UNKNOWN_INTRODUCER_SERVICE_ID = "-1";
+  private static final String ID                              = "_id";
+  public static final  String INTRODUCER_SERVICE_ID           = "introducer_service_id";
+  private static final String INTRODUCEE_SERVICE_ID           = "introducee_service_id";
+  private static final String INTRODUCEE_PUBLIC_IDENTITY_KEY  = "introducee_identity_key"; // The one contained in the Introduction
+  private static final String INTRODUCEE_NAME                 = "introducee_name"; // TODO: snapshot when introduction happened. Necessary? Or wrong approach?
+  private static final String INTRODUCEE_NUMBER               = "introducee_number"; // TODO: snapshot when introduction happened. Necessary? Or wrong approach?
+  private static final String PREDICTED_FINGERPRINT           = "predicted_fingerprint";
+  private static final String TIMESTAMP                       = "timestamp";
+  private static final String STATE                           = "state";
+  public static final  long   UNKNOWN_INTRODUCEE_RECIPIENT_ID = -1; //TODO: need to search through database for serviceID when new recipient is added in order to initialize.
+  public static final  String UNKNOWN_INTRODUCER_SERVICE_ID   = "-1";
 
   // Service ID was an Integer mistakenly + had a nonnull constraint, ignore and execute correct statement instead
   public static final String PREVIOUS_PARTIAL_CREATE_TABLE = "CREATE TABLE " + TABLE_NAME + " (" + ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                                                     INTRODUCER_SERVICE_ID;
+                                                             INTRODUCER_SERVICE_ID;
 
   public static final String CREATE_TABLE =
       "CREATE TABLE " + TABLE_NAME + " (" + ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -99,13 +97,13 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
   private static final String CLEAR_TABLE = "DELETE FROM " + TABLE_NAME + ";";
 
   @VisibleForTesting
-  public void clearTable(){
+  public void clearTable() {
     // Debugging
     SQLiteDatabase db  = databaseHelper.getSignalWritableDatabase();
-    int            res = db.delete(TABLE_NAME, "", new String[]{});
+    int            res = db.delete(TABLE_NAME, "", new String[] {});
   }
 
-  private static final String[] TI_ALL_PROJECTION = new String[]{
+  private static final String[] TI_ALL_PROJECTION = new String[] {
       ID,
       INTRODUCER_SERVICE_ID,
       INTRODUCEE_SERVICE_ID,
@@ -116,7 +114,6 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
       TIMESTAMP,
       STATE
   };
-
 
 
   /**
@@ -167,44 +164,44 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
       };
     }
 
-    public boolean isStale(){
+    public boolean isStale() {
       return switch (this) {
         case STALE_PENDING, STALE_ACCEPTED, STALE_REJECTED, STALE_PENDING_CONFLICTING, STALE_ACCEPTED_CONFLICTING, STALE_REJECTED_CONFLICTING -> true;
         default -> false;
       };
     }
 
-    public boolean isPending(){
+    public boolean isPending() {
       return switch (this) {
-        case PENDING, PENDING_CONFLICTING, PENDING_UNKNOWN ,STALE_PENDING, STALE_PENDING_CONFLICTING -> true;
+        case PENDING, PENDING_CONFLICTING, PENDING_UNKNOWN, STALE_PENDING, STALE_PENDING_CONFLICTING -> true;
         default -> false;
       };
     }
 
-    public boolean isUnknownRecipient(){
+    public boolean isUnknownRecipient() {
       return switch (this) {
         case PENDING_UNKNOWN, ACCEPTED_UNKNOWN, REJECTED_UNKNOWN -> true;
         default -> false;
       };
     }
 
-    public boolean isConflicting(){
+    public boolean isConflicting() {
       return switch (this) {
         case PENDING_CONFLICTING, ACCEPTED_CONFLICTING, REJECTED_CONFLICTING, STALE_PENDING_CONFLICTING, STALE_ACCEPTED_CONFLICTING, STALE_REJECTED_CONFLICTING -> true;
         default -> false;
       };
     }
 
-    public boolean isTrusted(){
+    public boolean isTrusted() {
       return switch (this) {
         case ACCEPTED, ACCEPTED_UNKNOWN, ACCEPTED_CONFLICTING, STALE_ACCEPTED, STALE_ACCEPTED_CONFLICTING -> true;
         default -> false;
       };
     }
 
-    public boolean isDistrusted(){
-      return switch (this){
-        case REJECTED, REJECTED_UNKNOWN ,REJECTED_CONFLICTING, STALE_REJECTED, STALE_REJECTED_CONFLICTING -> true;
+    public boolean isDistrusted() {
+      return switch (this) {
+        case REJECTED, REJECTED_UNKNOWN, REJECTED_CONFLICTING, STALE_REJECTED, STALE_REJECTED_CONFLICTING -> true;
         default -> false;
       };
     }
@@ -215,21 +212,21 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
   }
 
 
-
-
   /**
    * Used to update a database entry. Pass all the data that should stay the same and change what needs to be updated.
+   *
    * @return Content Values for the updated entry
    */
   private @NonNull ContentValues buildContentValuesForUpdate(@NonNull Long introductionId,
-                                                    @NonNull State state,
-                                                    @Nullable String introducerServiceId,
-                                                    @NonNull String serviceId,
-                                                    @NonNull String name,
-                                                    @Nullable String number,
-                                                    @NonNull String identityKey,
-                                                    @NonNull String predictedFingerprint,
-                                                    @NonNull Long timestamp){
+                                                             @NonNull State state,
+                                                             @Nullable String introducerServiceId,
+                                                             @NonNull String serviceId,
+                                                             @NonNull String name,
+                                                             @Nullable String number,
+                                                             @NonNull String identityKey,
+                                                             @NonNull String predictedFingerprint,
+                                                             @NonNull Long timestamp)
+  {
     ContentValues cv = new ContentValues();
     cv.put(ID, introductionId);
     cv.put(STATE, state.toInt());
@@ -244,10 +241,10 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
   }
 
   /**
-   * @param c a cursor pointing to a fully populated query result in the database.
+   * @param c         a cursor pointing to a fully populated query result in the database.
    * @param timestamp the new timestamp to insert.
    */
-  @SuppressLint("Range") private @NonNull ContentValues buildContentValuesForTimestampUpdate(Cursor c, long timestamp){
+  @SuppressLint("Range") private @NonNull ContentValues buildContentValuesForTimestampUpdate(Cursor c, long timestamp) {
     return buildContentValuesForUpdate(c.getString(c.getColumnIndex(ID)),
                                        c.getString(c.getColumnIndex(STATE)),
                                        c.getString(c.getColumnIndex(INTRODUCER_SERVICE_ID)),
@@ -261,11 +258,12 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
 
   /**
    * Convenience function when changing state of an introduction
+   *
    * @param introduction the introduction to change the state of
-   * @param s new state
+   * @param s            new state
    * @return Correctly populated ContentValues
    */
-  @SuppressLint("Range") public @NonNull ContentValues buildContentValuesForStateUpdate(TI_Data introduction, State s){
+  @SuppressLint("Range") public @NonNull ContentValues buildContentValuesForStateUpdate(TI_Data introduction, State s) {
     ContentValues values = buildContentValuesForUpdate(introduction);
     values.remove(STATE);
     values.put(STATE, s.toInt());
@@ -295,7 +293,8 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
                                                              @Nullable String introduceeNumber,
                                                              @NonNull String introduceeIdentityKey,
                                                              @NonNull String predictedSecurityNumber,
-                                                             long timestamp) {
+                                                             long timestamp)
+  {
     Preconditions.checkArgument(state == State.PENDING || state == State.PENDING_CONFLICTING || state == State.PENDING_UNKNOWN);
     ContentValues cv = new ContentValues();
     cv.put(STATE, state.toInt());
@@ -314,16 +313,16 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
    * Meant for values pulled directly from the Database through a Query.
    * PRE: None of the Strings may be empty or Null.
    *
-   * @param introductionId Expected to represent a Long > 0.
-   * @param state Expected to represent an Int between 0 and 7 (inclusive).
+   * @param introductionId       Expected to represent a Long > 0.
+   * @param state                Expected to represent an Int between 0 and 7 (inclusive).
    * @param introducerServiceId
    * @param introduceeServiceId
    * @param name
    * @param number
    * @param identityKey
    * @param predictedFingerprint
-   * @param timestamp Expected to represent a Long.
-   * @return Propperly populated content values, NumberFormatException/AssertionError if a value was invalid.
+   * @param timestamp            Expected to represent a Long.
+   * @return Properly populated content values, NumberFormatException/AssertionError if a value was invalid.
    */
   private @NonNull ContentValues buildContentValuesForUpdate(@NonNull String introductionId,
                                                              @NonNull String state,
@@ -333,7 +332,8 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
                                                              @Nullable String number,
                                                              @NonNull String identityKey,
                                                              @NonNull String predictedFingerprint,
-                                                             @NonNull String timestamp) throws NumberFormatException{
+                                                             @NonNull String timestamp) throws NumberFormatException
+  {
     Preconditions.checkArgument(!introductionId.isEmpty() &&
                                 !state.isEmpty() &&
                                 !introducerServiceId.isEmpty() &&
@@ -361,19 +361,19 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
   }
 
   /**
-   *
    * @param introduction PRE: none of it's fields may be null, except introducerServiceId (forgotten introducer)
    * @return A populated contentValues object, to use for updates.
    */
-  private @NonNull ContentValues buildContentValuesForUpdate(@NonNull TI_Data introduction){
+  private @NonNull ContentValues buildContentValuesForUpdate(@NonNull TI_Data introduction) {
     Preconditions.checkNotNull(introduction.getId());
     Preconditions.checkNotNull(introduction.getState());
     Preconditions.checkNotNull(introduction.getPredictedSecurityNumber());
+    final String introduceeName = introduction.getIntroduceeName() != null ? introduction.getIntroduceeName() : "";
     return buildContentValuesForUpdate(introduction.getId(),
                                        introduction.getState(),
                                        introduction.getIntroducerServiceId(),
                                        introduction.getIntroduceeServiceId(),
-                                       introduction.getIntroduceeName(),
+                                       introduceeName,
                                        introduction.getIntroduceeNumber(),
                                        introduction.getIntroduceeIdentityKey(),
                                        introduction.getPredictedSecurityNumber(),
@@ -381,7 +381,6 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
   }
 
   /**
-   *
    * @param introduction PRE: none of it's fields (except nr.) may be null, state != stale.
    * @return A populated contentValues object, to use when turning introductions stale.
    */
@@ -402,11 +401,13 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
       default -> throw new AssertionError("State: " + introduction.getState() + " was illegal or already stale.");
     };
 
+    final String introduceeName = introduction.getIntroduceeName() != null ? introduction.getIntroduceeName() : "";
+
     return buildContentValuesForUpdate(introduction.getId(),
                                        newState,
                                        introduction.getIntroducerServiceId(),
                                        introduction.getIntroduceeServiceId(),
-                                       introduction.getIntroduceeName(),
+                                       introduceeName,
                                        introduction.getIntroduceeNumber(),
                                        introduction.getIntroduceeIdentityKey(),
                                        introduction.getPredictedSecurityNumber(),
@@ -416,6 +417,7 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
 
   /**
    * PRE: No null fields (except nr.) and the state must be one of the 'unknowns'
+   *
    * @param introduction the introduction for the previously unknown recipient.
    * @return content Values executing the appropriate state transitions for the introduction
    */
@@ -447,7 +449,7 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
   // TODO: Given a contact that cannot be contacted (hidden, no username/phone nr.) we cannot determine from the pending introduction, if there was a conflict
   // or the thing turned stale in the meantime when a session is initiated. Thus we must turn it stale immediately from whatever state it was in...
 
-  private long insertIntroduction(TI_Data data, State state){
+  private long insertIntroduction(TI_Data data, State state) {
     Preconditions.checkArgument(state == State.PENDING || state == State.PENDING_CONFLICTING || state == State.PENDING_UNKNOWN);
     TI_DatabaseGlue db = SignalDatabase.tiDatabase();
     ContentValues values = db.buildContentValuesForInsert(state,
@@ -459,14 +461,15 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
                                                           data.getPredictedSecurityNumber(),
                                                           data.getTimestamp());
     SQLiteDatabase writeableDatabase = db.getSignalWritableDatabase();
-    long id = writeableDatabase.insert(TABLE_NAME, null, values);
+    long           id                = writeableDatabase.insert(TABLE_NAME, null, values);
     Log.i(TAG, "Inserted new introduction for: " + data.getIntroduceeName() + ", with id: " + id);
     return id;
   }
 
-  private long insertUnknownIntroduction(TI_Data data){
+  private long insertUnknownIntroduction(TI_Data data) {
     return insertIntroduction(data, State.PENDING_UNKNOWN);
   }
+
   /**
    * This is the START state of the introduction FSM.
    * Check if there is a detectable conflict (only possible if the service ID maps to a recipient ID)
@@ -475,18 +478,18 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
    * @param data the new introduction to insert.
    * @return insertion id of introduction.
    */
-  private long insertKnownNewIntroduction(TI_Data data){
-    Optional<RecipientId> introduceeOpt =  SignalDatabase.recipients().getByServiceId(ServiceId.parseOrThrow(data.getIntroduceeServiceId()));
-    RecipientId introduceeId = introduceeOpt.orElse(null);
-    if(introduceeId != null) {
+  private long insertKnownNewIntroduction(TI_Data data) {
+    Optional<RecipientId> introduceeOpt = SignalDatabase.recipients().getByServiceId(ServiceId.parseOrThrow(data.getIntroduceeServiceId()));
+    RecipientId           introduceeId  = introduceeOpt.orElse(null);
+    if (introduceeId != null) {
       // The recipient already exists, check if the identity key matches what we already have in the database
       String identityKey;
       try {
         identityKey = TI_Utils.getEncodedIdentityKey(introduceeId);
-        if(!data.getIntroduceeIdentityKey().equals(identityKey)){
+        if (!data.getIntroduceeIdentityKey().equals(identityKey)) {
           return insertIntroduction(data, State.PENDING_CONFLICTING);
         }
-      } catch (MissingIdentityException e){
+      } catch (MissingIdentityException e) {
         // Continue to end condition, recipient is unknown.
       }
     }
@@ -495,74 +498,79 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
 
   /**
    * Decides which fields must match to count as a duplicate introduction.
-   * @param data the introduction to check agains.
-   * @returna cursor populated with all the matches it found.
+   *
+   * @param data the introduction to check against.
+   * @return a cursor populated with all the matches it found.
    */
-  private Cursor checkForDuplicates(@NonNull TI_Data data){
+  private Cursor checkForDuplicates(@NonNull TI_Data data) {
     // Fetch Data to compare if present
     // TODO: Adapt when we are more clear about what the data will be...
-    // TODO: reimplment...
-    StringBuilder selectionBuilder = new StringBuilder();
-    selectionBuilder.append(String.format("%s=?", INTRODUCER_SERVICE_ID));
+    // TODO: reimplement...
     String andAppend = " AND %s=?";
-    selectionBuilder.append(String.format(andAppend, INTRODUCEE_SERVICE_ID));
-    selectionBuilder.append(String.format(andAppend, INTRODUCEE_PUBLIC_IDENTITY_KEY));
+    final String selectionBuilder = String.format("%s=?", INTRODUCER_SERVICE_ID)
+                                    + String.format(andAppend, INTRODUCEE_SERVICE_ID)
+                                    + String.format(andAppend, INTRODUCEE_PUBLIC_IDENTITY_KEY);
 
     String[] args = SqlUtil.buildArgs(data.getIntroducerServiceId(),
                                       data.getIntroduceeServiceId(),
                                       data.getIntroduceeIdentityKey());
 
     SQLiteDatabase writeableDatabase = databaseHelper.getSignalWritableDatabase();
-    return writeableDatabase.query(TABLE_NAME, TI_ALL_PROJECTION, selectionBuilder.toString(), args, null, null, null);
+    return writeableDatabase.query(TABLE_NAME, TI_ALL_PROJECTION, selectionBuilder, args, null, null, null);
   }
 
   /**
    * Logic to update any duplicate introductions with the new available data.
    * Closes the cursor.
-   * @param c the cursor populated with the duplicate introductions.
-   * @param introduction the new introduction this was matched against.
+   *
+   * @param c    the cursor populated with the duplicate introductions.
+   * @param data the new introduction this was matched against.
    * @return the update result. Negative if something went wrong, row index of the introduction otherwise.
    */
-  private long updateDuplicateIntroduction(Cursor c, TI_Data data){
+  private long updateDuplicateIntroduction(Cursor c, TI_Data data) {
     c.moveToFirst();
     SQLiteDatabase writeableDatabase = databaseHelper.getSignalWritableDatabase();
-    long result = writeableDatabase.update(TABLE_NAME, buildContentValuesForTimestampUpdate(c, data.getTimestamp()), ID + " = ?", SqlUtil.buildArgs(c.getInt(c.getColumnIndex(ID))));
+    int            id_column         = c.getColumnIndex(ID);
+    if (id_column < 0) {
+      return id_column;
+    }
+    long result = writeableDatabase.update(TABLE_NAME, buildContentValuesForTimestampUpdate(c, data.getTimestamp()), ID + " = ?", SqlUtil.buildArgs(c.getInt(id_column)));
     Log.i(TAG, "Updated timestamp of introduction " + result + " to: " + TI_Utils.INTRODUCTION_DATE_PATTERN.format(data.getTimestamp()));
     c.close();
     return result;
   }
 
   /**
+   * We first check if an introduction with the same introducer service id, introducee service id, and identity key
+   * already exists in the database to avoid duplication.
+   * If we find a duplicate, we simply update the timestamp to the most recent one.
+   * Otherwise the start of the introduction FSM is reached.
    *
-   *  We first check if an introduction with the same introducer service id, introducee service id, and identity key
-   *  already exists in the database to avoid duplication.
-   *  If we find a duplicate, we simply update the timestamp to the most recent one.
-   *  Otherwise the start of the introduction FSM is reached.
-   *
-   *  @param data the incoming introduction
+   * @param data the incoming introduction
    * @return insertion id of introduction.
    */
   @SuppressLint("Range")
   @WorkerThread
   @Override
-  public long incomingIntroduction(@NonNull TI_Data data){
+  public long incomingIntroduction(@NonNull TI_Data data) {
     // Fetch Data to compare if present
     Cursor c = checkForDuplicates(data);
     // We found a matching introduction, we will update it and not insert a new one.
-    if (c.getCount() == 1){
+    if (c.getCount() == 1) {
       // this closes the cursor
       //TODO: Debugging, uncomment at some point
-      //return updateDuplicateIntroduction(c, data);
+      return updateDuplicateIntroduction(c, data);
     }
-    /**
-    if(c.getCount() != 0) {
-      // If we don't call updateDuplicateIntroduction, we need to close it ourselves.
-      c.close();
-      // TODO: This assertion is no longer true, when we aren't checking for duplicates and just inserting any intro
-      throw new AssertionError(TAG + " When checking for existing Introductions, there is one entry or none, nothing else is valid.");
-    } **/
+    /*
+     if(c.getCount() != 0) {
+     // If we don't call updateDuplicateIntroduction, we need to close it ourselves.
+     c.close();
+     // TODO: This assertion is no longer true, when we aren't checking for duplicates and just inserting any intro
+     throw new AssertionError(TAG + " When checking for existing Introductions, there is one entry or none, nothing else is valid.");
+     } */
+
     c.close();
-    if (isRecipientUnknown(data.getIntroducerServiceId())){
+    if (isRecipientUnknown(data.getIntroducerServiceId())) {
       // todo: this should throw of course
       throw new AssertionError(TAG + " We have received an introduction from an unknown contact " + data.getIntroducerServiceId());
     }
@@ -572,10 +580,11 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
 
   /**
    * Modify the state of an introduction and call to modify the verified state of the introducee if appropriate
+   *
    * @param introduction the introduction to be modified. Their state cannot be any of the PENDING states as they are final. ID =! null.
-   * @param newState the new state for the introduction. Cannot be PENDING
-   * @param logMessage what should be written on the logcat for the modification.
-   * @return  if the insertion succeeded or failed
+   * @param newState     the new state for the introduction. Cannot be PENDING
+   * @param logMessage   what should be written on the logcat for the modification.
+   * @return if the insertion succeeded or failed
    */
   @WorkerThread
   private boolean changeIntroductionState(@NonNull TI_Data introduction, @NonNull State newState, @NonNull String logMessage) {
@@ -584,22 +593,22 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
     Preconditions.checkArgument(introduction.getId() != null);
 
     // Modify introduction
-    ContentValues newValues = buildContentValuesForStateUpdate(introduction, newState);
+    ContentValues  newValues         = buildContentValuesForStateUpdate(introduction, newState);
     SQLiteDatabase writeableDatabase = getSignalWritableDatabase();
-    long result = writeableDatabase.update(TABLE_NAME, newValues, ID + " = ?", SqlUtil.buildArgs(introduction.getId()));
+    long           result            = writeableDatabase.update(TABLE_NAME, newValues, ID + " = ?", SqlUtil.buildArgs(introduction.getId()));
 
-    if ( result > 0 ){
+    if (result > 0) {
       // Log message on success
       Log.i(TAG, logMessage);
       // Check if a recipient may change verification status as a result of this operation
       RecipientId introduceeID = getRecipientIdOrUnknown(introduction.getIntroduceeServiceId());
-      if(!introduceeID.isUnknown()){
+      if (!introduceeID.isUnknown()) {
         TI_IdentityTable.VerifiedStatus previousIntroduceeVerification = SignalDatabase.tiIdentityDatabase().getVerifiedStatus(introduceeID);
-        if (previousIntroduceeVerification == null){
+        if (previousIntroduceeVerification == null) {
           throw new AssertionError("Unexpected missing verification status for " + introduction.getIntroduceeName());
         }
         SignalDatabase.tiIdentityDatabase().modifyIntroduceeVerification(introduction.getIntroduceeServiceId(), previousIntroduceeVerification, newState, logMessage);
-      } // if introduceeID is unknnown we do not have the recipient as a conversation partner yet and can skip any verification modification
+      } // if introduceeID is unknown we do not have the recipient as a conversation partner yet and can skip any verification modification
       return true;
     }
     // don't touch the verification state of the introducee if the modification failed
@@ -608,96 +617,98 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
   }
 
   /**
-   * @param state which state to query for
+   * @param state               which state to query for
    * @param introduceeServiceId The serviceID of the recipient whose verification status may change
    */
   @WorkerThread
-  public boolean atLeastOneIntroductionIs(State state, String introduceeServiceId){
+  public boolean atLeastOneIntroductionIs(State state, String introduceeServiceId) {
     final String selection = String.format("%s=?", INTRODUCEE_SERVICE_ID)
-                                    + String.format(" AND %s=?", STATE);
+                             + String.format(" AND %s=?", STATE);
     String[] args = SqlUtil.buildArgs(introduceeServiceId,
                                       state.toInt());
     SQLiteDatabase writeableDatabase = getSignalWritableDatabase();
-    Cursor c = writeableDatabase.query(TABLE_NAME, TI_ALL_PROJECTION, selection, args, null, null, null);
+    Cursor         c                 = writeableDatabase.query(TABLE_NAME, TI_ALL_PROJECTION, selection, args, null, null, null);
 
     return c.getCount() >= 1;
-   }
+  }
 
   /**
    * Check if there is at least one introduction for this introducee that of the 'unknown' kind (we did not know the person when they were introduced).
+   *
    * @param introduceeServiceId the service ID of the introducee.
    * @return true if there is at least one introduction for this introducee that meets the 'unknown' state criteria.
    */
   @Override public boolean atLeastOneIntroductionIsUnknown(@NotNull String introduceeServiceId) {
     String selection = String.format("%s=?", INTRODUCEE_SERVICE_ID)
-                 + " AND " + STATE +  " IN (3,4,5)"; // todo: grump at this later
-    String[] args = SqlUtil.buildArgs(introduceeServiceId);
+                       + " AND " + STATE + " IN (3,4,5)"; // todo: grump at this later
+    String[]       args              = SqlUtil.buildArgs(introduceeServiceId);
     SQLiteDatabase writeableDatabase = getSignalWritableDatabase();
-    Cursor c = writeableDatabase.query(TABLE_NAME, TI_ALL_PROJECTION, selection, args, null, null, null);
+    Cursor         c                 = writeableDatabase.query(TABLE_NAME, TI_ALL_PROJECTION, selection, args, null, null, null);
     return c.getCount() >= 1;
   }
 
   /**
    * Check database for any 'unknown' introductions and execute the state transitions.
    * PRE: When this is called, none of the returned introductions should be in the 'known' state.
+   *
    * @param serviceId the service ID of the new contact
    * @return the state with the highest priority.
    */
   @WorkerThread
   @Override public @Nullable State handleUnknownIntroductions(String serviceId, String encodedIdentityKey) {
-    final String selection = String.format("%s=?", INTRODUCEE_SERVICE_ID);
-    String[] args = SqlUtil.buildArgs(serviceId);
-    SQLiteDatabase writeableDatabase = getSignalWritableDatabase();
-    Cursor c = writeableDatabase.query(TABLE_NAME, TI_ALL_PROJECTION, selection, args, null, null, null);
-    ArrayList<TI_Data> staleIntroductions = new ArrayList<>();
+    final String       selection             = String.format("%s=?", INTRODUCEE_SERVICE_ID);
+    String[]           args                  = SqlUtil.buildArgs(serviceId);
+    SQLiteDatabase     writeableDatabase     = getSignalWritableDatabase();
+    Cursor             c                     = writeableDatabase.query(TABLE_NAME, TI_ALL_PROJECTION, selection, args, null, null, null);
+    ArrayList<TI_Data> staleIntroductions    = new ArrayList<>();
     ArrayList<TI_Data> upToDateIntroductions = new ArrayList<>();
     // Keep count of any introductions that were interacted with that have not turned stale
-    boolean hasTrusted = false;
-    boolean hasRejected = false;
-    boolean hasPending = false;
-    boolean hasStalePending = false;
-    boolean hasStaleTrusted = false;
+    boolean hasTrusted       = false;
+    boolean hasRejected      = false;
+    boolean hasPending       = false;
+    boolean hasStalePending  = false;
+    boolean hasStaleTrusted  = false;
     boolean hasStaleRejected = false;
     if (c.getCount() >= 1) {
       IntroductionReader reader = new IntroductionReader(c);
-      TI_Data current;
+      TI_Data            current;
       do {
         current = reader.getNext();
         // TODO: double check if this is correct
-        if(!(current.getState().isUnknownRecipient())){
+        if (!(current.getState().isUnknownRecipient())) {
           throw new AssertionError(TAG + "encountered an illegal introduction state: " + current.getState() + "\n for an unknown recipient with service ID: " + serviceId);
         }
         // todo: check WTF is going on here, is the COMPARISON good?
-        if(!encodedIdentityKey.equals(current.getIntroduceeIdentityKey())){
+        if (!encodedIdentityKey.equals(current.getIntroduceeIdentityKey())) {
           // Add this datapoint to the introductions that must be turned stale
           staleIntroductions.add(current);
-          if(current.getState().equals(State.ACCEPTED_UNKNOWN)) hasStaleTrusted = true;
-          if(current.getState().equals(State.REJECTED_UNKNOWN)) hasStaleRejected = true;
-          if(current.getState().equals(State.PENDING_UNKNOWN)) hasStalePending = true;
+          if (current.getState().equals(State.ACCEPTED_UNKNOWN)) hasStaleTrusted = true;
+          if (current.getState().equals(State.REJECTED_UNKNOWN)) hasStaleRejected = true;
+          if (current.getState().equals(State.PENDING_UNKNOWN)) hasStalePending = true;
         } else {
           upToDateIntroductions.add(current);
-          if(current.getState().equals(State.ACCEPTED_UNKNOWN)) hasTrusted = true;
-          if(current.getState().equals(State.REJECTED_UNKNOWN)) hasRejected = true;
-          if(current.getState().equals(State.PENDING_UNKNOWN)) hasPending = true;
+          if (current.getState().equals(State.ACCEPTED_UNKNOWN)) hasTrusted = true;
+          if (current.getState().equals(State.REJECTED_UNKNOWN)) hasRejected = true;
+          if (current.getState().equals(State.PENDING_UNKNOWN)) hasPending = true;
         }
       } while (reader.hasNext());
       try {
         reader.close();
       } catch (IOException e) {
         e.printStackTrace();
-        throw new AssertionError("Error occured while trying to close the cursor to dangling Introductions for " + current.getIntroduceeName());
+        throw new AssertionError("Error occurred while trying to close the cursor to dangling Introductions for " + current.getIntroduceeName());
       }
       // Turn all introductions stale that had the incorrect identity key
       String where = ID + " = ?";
-      for (TI_Data staleIntro: staleIntroductions) {
-        ContentValues cv = buildContentValuesForStale(staleIntro.getIntroduction());
-        long result = writeableDatabase.update(TABLE_NAME, cv, where, SqlUtil.buildArgs(staleIntro.getId()));
-        if (result < 0){
+      for (TI_Data staleIntro : staleIntroductions) {
+        ContentValues cv     = buildContentValuesForStale(staleIntro.getIntroduction());
+        long          result = writeableDatabase.update(TABLE_NAME, cv, where, SqlUtil.buildArgs(staleIntro.getId()));
+        if (result < 0) {
           throw new AssertionError(TAG + " Could not turn introduction for " + staleIntro.getIntroduceeName() + " stale!");
         }
       }
       // Transition all the unknown introductions with the correct identity key to their known counterparts.
-      for (TI_Data unknownIntro: upToDateIntroductions) {
+      for (TI_Data unknownIntro : upToDateIntroductions) {
         ContentValues cv = buildContentValuesForUnknownTransition(unknownIntro.getIntroduction());
         writeableDatabase.update(TABLE_NAME, cv, where, SqlUtil.buildArgs(unknownIntro.getId()));
       }
@@ -706,20 +717,20 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
     if (!(hasTrusted || hasRejected || hasStaleTrusted || hasStaleRejected || hasStalePending || hasPending)) return null;
     if (hasTrusted) {
       return State.ACCEPTED;
-    } else if (hasStaleTrusted){
+    } else if (hasStaleTrusted) {
       return State.STALE_ACCEPTED;
-    } else if (hasRejected){
+    } else if (hasRejected) {
       return State.REJECTED;
-    } else if (hasStaleRejected){
+    } else if (hasStaleRejected) {
       return State.STALE_REJECTED;
-    } else if (hasPending){
+    } else if (hasPending) {
       return State.PENDING;
     } else {
       return State.STALE_PENDING;
     }
   }
 
-  private boolean isRecipientUnknown(String serviceID){
+  private boolean isRecipientUnknown(String serviceID) {
     RecipientId rid = getRecipientIdOrUnknown(serviceID);
     return rid.equals(RecipientId.UNKNOWN);
   }
@@ -727,12 +738,13 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
   /**
    * Expects the introducee to have been fetched.
    * Expects introduction to already be present in database
+   *
    * @param introduction PRE: introduction.id cannot be null
    * @return true if success, false otherwise
    */
   @WorkerThread
   @Override
-  public boolean acceptIntroduction(TI_Data introduction){
+  public boolean acceptIntroduction(TI_Data introduction) {
     Preconditions.checkArgument(introduction.getId() != null);
     State newState = isRecipientUnknown(introduction.getIntroduceeServiceId()) ? State.ACCEPTED : State.ACCEPTED_UNKNOWN;
     return changeIntroductionState(introduction, newState, "Accepted introduction for: " + introduction.getIntroduceeName());
@@ -741,69 +753,73 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
   /**
    * Expects the introducee to have been fetched.
    * Expects introduction to already be present in database.
+   *
    * @param introduction PRE: introduction.id cannot be null
    * @return true if success, false otherwise
    */
   @WorkerThread
   @Override
-  public boolean rejectIntroduction(TI_Data introduction){
+  public boolean rejectIntroduction(TI_Data introduction) {
     Preconditions.checkArgument(introduction.getId() != null);
     State newState = isRecipientUnknown(introduction.getIntroduceeServiceId()) ? State.REJECTED : State.REJECTED_UNKNOWN;
     return changeIntroductionState(introduction, newState, "Rejected introduction for: " + introduction.getIntroduceeName());
   }
 
-  @WorkerThread
   /**
    * Fetches All displayable Introduction data.
    * Introductions with null introducerServiceId are omitted
    * @return IntroductionReader which can be used as an iterator.
    */
+  @WorkerThread
   @Override
   public IntroductionReader getAllDisplayableIntroductions() {
     String query = "SELECT * FROM " + TABLE_NAME + " WHERE " + INTRODUCER_SERVICE_ID + " IS NOT NULL";
     SQLiteDatabase db = databaseHelper.getSignalReadableDatabase();
+    String         query = "SELECT * FROM " + TABLE_NAME + " WHERE " + INTRODUCER_SERVICE_ID + " IS NOT NULL";
+    SQLiteDatabase db    = databaseHelper.getSignalReadableDatabase();
     return new IntroductionReader(db.rawQuery(query, null));
   }
 
- @WorkerThread
- /**
-  * PRE: introductionId may not be null, IntroducerServiceId must be null
-  * Updates the entry in the database accordingly.
-  * Effectively "forget" who did this introduction.
-  *
-  * @return true if success, false otherwise
-  */
- @Override
- public boolean clearIntroducer(TI_Data introduction){
-   Preconditions.checkArgument(introduction.getIntroducerServiceId().equals(UNKNOWN_INTRODUCER_SERVICE_ID));
-   Preconditions.checkArgument(introduction.getId() != null);
-   SQLiteDatabase database = databaseHelper.getSignalWritableDatabase();
-   String query = ID + " = ?";
-   String[] args = SqlUtil.buildArgs(introduction.getId());
-
-   ContentValues values = buildContentValuesForUpdate(introduction);
-
-   int update = database.update(TABLE_NAME, values, query, args);
-   Log.i(TAG, "Forgot introducer for introduction with id: " + introduction.getId());
-   if( update > 0 ){
-     // TODO: For multidevice, syncing would be handled here
-     return true;
-   }
-   return false;
- }
-
+  /**
+   * PRE: introductionId may not be null, IntroducerServiceId must be null
+   * Updates the entry in the database accordingly.
+   * Effectively "forget" who did this introduction.
+   *
+   * @return true if success, false otherwise
+   */
   @WorkerThread
   @Override
+  public boolean clearIntroducer(TI_Data introduction) {
+    Preconditions.checkArgument(introduction.getIntroducerServiceId().equals(UNKNOWN_INTRODUCER_SERVICE_ID));
+    Preconditions.checkArgument(introduction.getId() != null);
+    SQLiteDatabase database = databaseHelper.getSignalWritableDatabase();
+    String         query    = ID + " = ?";
+    String[]       args     = SqlUtil.buildArgs(introduction.getId());
+
+    ContentValues values = buildContentValuesForUpdate(introduction);
+
+    int update = database.update(TABLE_NAME, values, query, args);
+    Log.i(TAG, "Forgot introducer for introduction with id: " + introduction.getId());
+    if (update > 0) {
+      // TODO: For multi-device, syncing would be handled here
+      return true;
+    }
+    return false;
+  }
+
   /**
    * Turns all introductions for the introducee named by id stale.
    * If this succeeds attempts to update the verification status of the introducee
+   *
    * @param serviceId the introducee whose security nr. changed.
    * @return true if all updates succeeded, false otherwise
    */
-  public boolean turnAllIntroductionsStale(String serviceId){
-    boolean success = turnAllIntroductionsStaleInternal(serviceId);
-    Recipient recipient =  Recipient.live(RecipientId.fromSidOrE164(serviceId)).get();
-    if(!success){
+  @WorkerThread
+  @Override
+  public boolean turnAllIntroductionsStale(String serviceId) {
+    boolean   success   = turnAllIntroductionsStaleInternal(serviceId);
+    Recipient recipient = Recipient.live(RecipientId.fromSidOrE164(serviceId)).get();
+    if (!success) {
       // This should hopefully never happen... if it does we need to investigate how to handle this inconsistent state.
       // Maybe turn it into a job and try again?
       throw new AssertionError("At least one introduction for: " + recipient.getDisplayName(context) + " could not be turned stale! Verification state will not be updated!");
@@ -815,53 +831,55 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
     return true;
   }
 
-  private boolean turnAllIntroductionsStaleInternal(String serviceId){
+  private boolean turnAllIntroductionsStaleInternal(String serviceId) {
     boolean updateSucceeded = true;
     Preconditions.checkArgument(!getRecipientIdOrUnknown(serviceId).equals(RecipientId.UNKNOWN));
-    String query = INTRODUCEE_SERVICE_ID + " = ?";
-    String[] args = SqlUtil.buildArgs(serviceId);
+    String   query = INTRODUCEE_SERVICE_ID + " = ?";
+    String[] args  = SqlUtil.buildArgs(serviceId);
 
-    SQLiteDatabase writeableDatabase = databaseHelper.getSignalWritableDatabase();
-    Cursor c = writeableDatabase.query(TABLE_NAME, TI_ALL_PROJECTION, query, args, null, null, null);
-    IntroductionReader reader = new IntroductionReader(c);
-    TI_Data introduction;
-    while((introduction = reader.getNext()) != null){
+    SQLiteDatabase     writeableDatabase = databaseHelper.getSignalWritableDatabase();
+    Cursor             c                 = writeableDatabase.query(TABLE_NAME, TI_ALL_PROJECTION, query, args, null, null, null);
+    IntroductionReader reader            = new IntroductionReader(c);
+    TI_Data            introduction;
+    while ((introduction = reader.getNext()) != null) {
       // If the intro is already stale, we don't need to do anything.
-      if(!introduction.getState().isStale()){
-        ContentValues cv = buildContentValuesForStale(introduction);
-        int res = writeableDatabase.update(TABLE_NAME, cv, ID + " = ?", SqlUtil.buildArgs(introduction.getId()));
-        if (res < 0){
+      if (!introduction.getState().isStale()) {
+        ContentValues cv  = buildContentValuesForStale(introduction);
+        int           res = writeableDatabase.update(TABLE_NAME, cv, ID + " = ?", SqlUtil.buildArgs(introduction.getId()));
+        if (res < 0) {
           Log.e(TAG, "Introduction " + introduction.getId() + " for " + introduction.getIntroduceeName() + " with state " + introduction.getState() + " could not be turned stale!");
           updateSucceeded = false;
         } else {
           Log.i(TAG, "Introduction " + introduction.getId() + " for " + introduction.getIntroduceeName() + " with state " + introduction.getState() + " was turned stale!");
-          // TODO: For multidevice, syncing would be handled here
+          // TODO: For multi-device, syncing would be handled here
         }
       }
     }
     return updateSucceeded;
   }
 
-  @WorkerThread
+
   /**
    * PRE: introductionId must be > 0
    * Deletes an introduction out of the database.
    *
    * @return true if success, false otherwise
    */
+  @SuppressLint("DefaultLocale")
+  @WorkerThread
   @Override
-  public boolean deleteIntroduction(long introductionId){
+  public boolean deleteIntroduction(long introductionId) {
     Preconditions.checkArgument(introductionId > 0);
     SQLiteDatabase database = databaseHelper.getSignalWritableDatabase();
-    String query = ID + " = ?";
-    String[] args = SqlUtil.buildArgs(introductionId);
+    String         query    = ID + " = ?";
+    String[]       args     = SqlUtil.buildArgs(introductionId);
 
     int count = database.delete(TABLE_NAME, query, args);
 
-    if(count == 1){
+    if (count == 1) {
       Log.i(TAG, String.format("Deleted introduction with id: %d from the database.", introductionId));
       return true;
-    } else if(count > 1){
+    } else if (count > 1) {
       // matching with id, which must be unique
       throw new AssertionError();
     } else {
@@ -878,54 +896,54 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
    * @return Cursor pointing to query result.
    */
   @WorkerThread
-  @Override public Map<RecipientId, RecipientRecord> fetchRecipientRecord(RecipientId introduceeId){
+  @Override public Map<RecipientId, RecipientRecord> fetchRecipientRecord(RecipientId introduceeId) {
     // TODO: Simplify if you see that you finally never query this cursor with more than 1 recipient...
     Set<RecipientId> s = new HashSet<>();
     s.add(introduceeId);
     return RecipientTableGlue.getRecordsForSendingTI(s);
   }
 
-  public static class IntroductionReader implements Closeable{
+  public static class IntroductionReader implements Closeable {
     private final Cursor cursor;
 
     // TODO: Make it slightly more flexible in terms of which data you pass around.
     // A cursor pointing to the result of a query using TI_DATA_PROJECTION
-    IntroductionReader(Cursor c){
+    IntroductionReader(Cursor c) {
       cursor = c;
       cursor.moveToFirst();
     }
 
     // This is now has a guarantee w.r.t. calling the constructor
     @SuppressLint("Range")
-    private @Nullable TI_Data getCurrent(){
-      if(cursor.isAfterLast() || cursor.isBeforeFirst()){
+    private @Nullable TI_Data getCurrent() {
+      if (cursor.isAfterLast() || cursor.isBeforeFirst()) {
         return null;
       }
-      Long introductionId = cursor.getLong(cursor.getColumnIndex(ID));
-      int s = cursor.getInt(cursor.getColumnIndex(STATE));
-      State       state = State.forState(s);
-      String   introducerServiceId = (cursor.getString(cursor.getColumnIndex(INTRODUCER_SERVICE_ID)));
+      Long   introductionId      = cursor.getLong(cursor.getColumnIndex(ID));
+      int    s                   = cursor.getInt(cursor.getColumnIndex(STATE));
+      State  state               = State.forState(s);
+      String introducerServiceId = (cursor.getString(cursor.getColumnIndex(INTRODUCER_SERVICE_ID)));
       String introduceeServiceId = (cursor.getString(cursor.getColumnIndex(INTRODUCEE_SERVICE_ID)));
       // Do I need to hit the Recipient Database to check the name?
       // TODO: Name changes in introducees should get reflected in database (needs to happen when the name changes, not on query)
-      String introduceeName = cursor.getString(cursor.getColumnIndex(INTRODUCEE_NAME));
-      String introduceeNumber = cursor.getString(cursor.getColumnIndex(INTRODUCEE_NUMBER));
+      String introduceeName        = cursor.getString(cursor.getColumnIndex(INTRODUCEE_NAME));
+      String introduceeNumber      = cursor.getString(cursor.getColumnIndex(INTRODUCEE_NUMBER));
       String introduceeIdentityKey = cursor.getString(cursor.getColumnIndex(INTRODUCEE_PUBLIC_IDENTITY_KEY));
-      String           securityNr = cursor.getString(cursor.getColumnIndex(PREDICTED_FINGERPRINT));
-      long timestamp = cursor.getLong(cursor.getColumnIndex(TIMESTAMP));
+      String securityNr            = cursor.getString(cursor.getColumnIndex(PREDICTED_FINGERPRINT));
+      long   timestamp             = cursor.getLong(cursor.getColumnIndex(TIMESTAMP));
       return new TI_Data(introductionId, state, introducerServiceId, introduceeServiceId, introduceeName, introduceeNumber, introduceeIdentityKey, securityNr, timestamp);
     }
 
     /**
      * advances one row and returns it, null if empty, or cursor after last.
      */
-    public @Nullable TI_Data getNext(){
+    public @Nullable TI_Data getNext() {
       TI_Data current = getCurrent();
       cursor.moveToNext();
       return current;
     }
 
-    public boolean hasNext(){
+    public boolean hasNext() {
       return !cursor.isAfterLast();
     }
 

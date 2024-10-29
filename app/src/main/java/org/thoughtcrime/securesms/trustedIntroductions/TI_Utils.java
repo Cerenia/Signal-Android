@@ -13,7 +13,6 @@ import org.signal.core.util.Base64;
 import org.signal.libsignal.protocol.IdentityKey;
 import org.signal.libsignal.protocol.fingerprint.Fingerprint;
 import org.signal.libsignal.protocol.fingerprint.NumericFingerprintGenerator;
-import org.signal.libsignal.protocol.state.PreKeyBundle;
 import org.thoughtcrime.securesms.crypto.ReentrantSessionLock;
 import org.thoughtcrime.securesms.database.IdentityTable;
 import org.thoughtcrime.securesms.database.RecipientTable;
@@ -42,6 +41,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -52,7 +52,6 @@ import org.thoughtcrime.securesms.storage.StorageSyncHelper;
 import org.thoughtcrime.securesms.util.IdentityUtil;
 import org.whispersystems.signalservice.api.SignalSessionLock;
 import org.whispersystems.signalservice.api.push.ServiceId;
-import org.whispersystems.signalservice.api.push.SignalServiceAddress;
 import org.whispersystems.signalservice.api.util.Preconditions;
 
 import static org.webrtc.ContextUtils.getApplicationContext;
@@ -68,8 +67,8 @@ public class TI_Utils {
 
   // Version, change if you change data/message format for compatibility
   // TODO: this is currently only reflected in message format, would need to add this to Database to make
-  // Backup/Restore work accross revisions
-  public static final String TI_MESSAGE_VERSION = "2.0";
+  // Backup/Restore work across revisions
+  public static final String TI_MESSAGE_VERSION   = "2.0";
   // Since the Signal version is still important and will not be overwritten I define my own
   // 1: major changes, 2: feature/ui changes , 3. bugs | stability fixes
   public static final String TI_APK_VERSION = "2.1.2";
@@ -80,15 +79,15 @@ public class TI_Utils {
   public static final String TI_MESSAGE_FILENAME = "Signal" + TI_MESSAGE_EXTENSION;
 
   // Random String to mark a message as a trustedIntroduction, since I'm tunneling through normal messages
-  public static final String TI_IDENTIFYER = "QOikEX9PPGIuXfiejT9nC2SsDB8d9AG0dUPQ9gERBQ8qHF30Xj --- This message is part of an experimental feature and not meant to be read by humans --- Introduction Data:\n";
+  public static final String TI_IDENTIFIER = "QOikEX9PPGIuXfiejT9nC2SsDB8d9AG0dUPQ9gERBQ8qHF30Xj --- This message is part of an experimental feature and not meant to be read by humans --- Introduction Data:\n";
   // This should be added as a comment above and below each executed glue line in the Signal codebase
   // will aid in applying glue logic mechanically further down the line.
   // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
   // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end"
-  static final String TI_GLUE_START = "TI_GLUE: eNT9XAHgq0lZdbQs2nfH start";
-  static final String TI_GLUE_END = "TI_GLUE: eNT9XAHgq0lZdbQs2nfH end";
-  static final String TI_SEPARATOR = "\n"; // marks start of JsonArray, human friendly
-  static final int INDENT_SPACES = 1; // pretty printing for human readableness
+  static final        String TI_GLUE_START = "TI_GLUE: eNT9XAHgq0lZdbQs2nfH start";
+  static final        String TI_GLUE_END   = "TI_GLUE: eNT9XAHgq0lZdbQs2nfH end";
+  static final        String TI_SEPARATOR  = "\n"; // marks start of JsonArray, human friendly
+  static final        int    INDENT_SPACES = 1; // pretty printing for human readableness
 
   // For safety_number generation
   // @see VerifyDisplayFragment, iterations hardcoded there
@@ -99,14 +98,14 @@ public class TI_Utils {
   static final String UNDISCLOSED = "undisclosed";
 
   // Json keys
-  // TODO: May want to add that to be part of the introduction at some point. This way we can avoid crashed on importing old backups with version missmatches
-  static final String TI_VERSION_J = "ti_version";
-  static final String INTRODUCER_J = "introducer";
-  static final String INTRODUCEE_DATA_J = "introducees";
-  static final String SERVICE_ID_J      = "service_ID";
-  static final String NAME_J            = "name";
-  static final String NUMBER_J = "number";
-  static final String IDENTITY_J = "identity_key_base64";
+  // TODO: May want to add that to be part of the introduction at some point. This way we can avoid crashed on importing old backups with version mismatches
+  static final String TI_VERSION_J            = "ti_version";
+  static final String INTRODUCER_J            = "introducer";
+  static final String INTRODUCEE_DATA_J       = "introducees";
+  static final String SERVICE_ID_J            = "service_ID";
+  static final String NAME_J                  = "name";
+  static final String NUMBER_J                = "number";
+  static final String IDENTITY_J              = "identity_key_base64";
   static final String PREDICTED_FINGERPRINT_J = "safety_number";
 
   // Job constants
@@ -187,11 +186,12 @@ public class TI_Utils {
    * Recreates the safety number that is generated between two recipients.
    * (used when sending intro, and to conveniently compute difference on conflict to expose in UI)
    * PRE: Nullable parameters must either ALL BE NULL or NONE BE NULL.
+   *
    * @param introductionRecipientId first Recipient
-   * @param introduceeId second Recipient (introducee) => Must be present in the local database!
-   * @param introduceeServiceId, fetched if null and needed
-   * @param introduceeIdentityKey fetched if null
-   * @return The expected safety number as a String, formated into segments identical to the VerifyDisplayFragment TODO: fix whacky formatting (some whitespaces missing)
+   * @param introduceeId            second Recipient (introducee) => Must be present in the local database!
+   * @param introduceeServiceId,    fetched if null and needed
+   * @param introduceeIdentityKey   fetched if null
+   * @return The expected safety number as a String, formated into segments identical to the VerifyDisplayFragment TODO: fix wacky formatting (some whitespaces missing)
    */
   public static String predictFingerprint(@NonNull RecipientId introductionRecipientId, @NonNull RecipientId introduceeId, @Nullable String introduceeServiceId, @Nullable IdentityKey introduceeIdentityKey) {
     if(introduceeServiceId == null && introduceeIdentityKey == null){
@@ -257,7 +257,7 @@ public class TI_Utils {
 
   @SuppressLint("Range") @WorkerThread
   public static String buildMessageBody(@NonNull RecipientId introducerRecipientId, @NonNull RecipientId introductionRecipientId, @NonNull Set<RecipientId> introducees) throws JSONException {
-    if(introducees.size() <= 0){
+    if (introducees.isEmpty()) {
       throw new AssertionError(TAG + " buildMessageBody called with no Introducees!");
     }
 
@@ -318,10 +318,10 @@ public class TI_Utils {
         data.put(INTRODUCEE_DATA_J, introduceeData);
       } catch (JSONException e){
         e.printStackTrace();
-        throw new AssertionError(TAG + "Json Error occured while building TI_message body.\n");
+        throw new AssertionError(TAG + "Json Error occurred while building TI_message body.\n");
       }
     });
-    return TI_IDENTIFYER + TI_SEPARATOR + data.toString(INDENT_SPACES);
+    return TI_IDENTIFIER + TI_SEPARATOR + data.toString(INDENT_SPACES);
   }
 
 
@@ -341,11 +341,11 @@ public class TI_Utils {
     }
     Recipient rp = Recipient.resolved(id);
     name = rp.getDisplayName(getApplicationContext());
-    if(name != null && !name.isEmpty()){
+    if (!name.isEmpty()) {
       return name;
     }
     name = rp.getProfileName().toString();
-    if(name != null && !name.isEmpty()){
+    if (!name.isEmpty()) {
       return name;
     }
     return "¯\\_(ツ)_/¯";
@@ -371,14 +371,15 @@ public class TI_Utils {
   }
 
   /**
-   * PRE: message is a valid TI message (contains identifyer)
+   * PRE: message is a valid TI message (contains identifier)
+   *
    * @param message the body of the .trustedintro attachment
-   * @return a parsed JSONObject or null if there was a version missmatch
+   * @return a parsed JSONObject or null if there was a version mismatch
    */
-  private static @Nullable JSONObject getPureJson(String message) throws JSONException{
-    Preconditions.checkArgument(message.contains(TI_IDENTIFYER));
-    if (isCorrectTImessageVersion(message)){
-      return new JSONObject(message.replace(TI_IDENTIFYER, ""));
+  private static @Nullable JSONObject getPureJson(String message) throws JSONException {
+    Preconditions.checkArgument(message.contains(TI_IDENTIFIER));
+    if (isCorrectTImessageVersion(message)) {
+      return new JSONObject(message.replace(TI_IDENTIFIER, ""));
     } else {
      Log.e(TAG, "Invalid TI_message for the following body:\n" + message +  "\n\n--> The current version should be: " + TI_MESSAGE_VERSION + "\n");
      return null;
@@ -389,8 +390,8 @@ public class TI_Utils {
    * @param message the TI message (content of .trustedintro file)
    * @return True if the current TI_version is present in the message, false otherwise
    */
-  private static boolean isCorrectTImessageVersion(String message){
-    return message.contains(String.format(Locale.getDefault(), "\"ti_version\": \"%s\"", TI_MESSAGE_VERSION)) && message.contains(TI_IDENTIFYER);
+  private static boolean isCorrectTImessageVersion(String message) {
+    return message.contains(String.format(Locale.getDefault(), "\"ti_version\": \"%s\"", TI_MESSAGE_VERSION)) && message.contains(TI_IDENTIFIER);
   }
 
   /**
@@ -405,8 +406,8 @@ public class TI_Utils {
         JSONObject introducer = new JSONObject(jsonData.getString(INTRODUCER_J));
         return RecipientId.from(ServiceId.parseOrThrow(introducer.getString(SERVICE_ID_J)));
       }
-    } catch (JSONException e){
-      Log.e(TAG, "A JsonException occured for the following TI message body: \n" + message);
+    } catch (JSONException e) {
+      Log.e(TAG, "A JsonException occurred for the following TI message body: \n" + message);
       e.printStackTrace();
     }
     return null;
@@ -419,12 +420,12 @@ public class TI_Utils {
    * @param body of the incoming message
    * @param timestamp when message was received
    * @param introducerId whom the message came from
-   * @return populated List<TI_Data> if successfull, null otherwise
+   * @return populated List<TI_Data> if successful, null otherwise
    */
   @WorkerThread
   @SuppressLint("Range") // keywords exists
-  public static @Nullable List<TI_Data> constructIntroduceesFromTrustedIntrosString(String body, long timestamp, RecipientId introducerId){
-    if (!body.contains(TI_IDENTIFYER) || !isCorrectTImessageVersion(body)){
+  public static @Nullable List<TI_Data> constructIntroduceesFromTrustedIntrosString(String body, long timestamp, RecipientId introducerId) {
+    if (!body.contains(TI_IDENTIFIER) || !isCorrectTImessageVersion(body)) {
       throw new AssertionError("Non TI message passed into constructIntroducees!");
     }
     String introducerServiceId = getServiceIdFromRecipientId(introducerId);
@@ -435,13 +436,13 @@ public class TI_Utils {
         // For now we just ignore introductions with mismatched versions or invalid bodies
         return null;
       }
-      JSONArray introducees = data.getJSONArray(INTRODUCEE_DATA_J);
-      ArrayList<IdKeyPair> idKeyPairs = new ArrayList<>();
-      List<String> recipientServiceIds = new ArrayList<>();
-      // Get all SerciveIds of introducees first to minimize database Queries
-      for (int i = 0; i < introducees.length(); i++){
-        JSONObject o = introducees.getJSONObject(i);
-        String introduceeServiceId = o.getString(SERVICE_ID_J);
+      JSONArray            introducees         = data.getJSONArray(INTRODUCEE_DATA_J);
+      ArrayList<IdKeyPair> idKeyPairs          = new ArrayList<>();
+      List<String>         recipientServiceIds = new ArrayList<>();
+      // Get all ServiceIds of introducees first to minimize database Queries
+      for (int i = 0; i < introducees.length(); i++) {
+        JSONObject o                   = introducees.getJSONObject(i);
+        String     introduceeServiceId = o.getString(SERVICE_ID_J);
         idKeyPairs.add(new IdKeyPair(introduceeServiceId, o.getString(IDENTITY_J)));
         recipientServiceIds.add(introduceeServiceId);
       }
@@ -476,8 +477,8 @@ public class TI_Utils {
           result.add(d);
         }
       }
-    } catch(JSONException e){
-      Log.e(TAG, String.format("A JSON exception occured while trying to parse the TI message: %s", body));
+    } catch (JSONException e) {
+      Log.e(TAG, String.format("A JSON exception occurred while trying to parse the TI message: %s", body));
       return null; // unsuccessful parse
     }
     return result;
@@ -577,7 +578,7 @@ public class TI_Utils {
         } else {
           AppDependencies.getProtocolStore().aci().identities().setVerified(recipientId, remoteIdentity, IdentityTable.VerifiedStatus.forState(TI_IdentityTable.VerifiedStatus.toVanilla(status.toInt())));
         }
-        // For other devices but the Android phone, we map the finer statusses to verified or unverified.
+        // For other devices but the Android phone, we map the finer statuses to verified or unverified.
         // TODO: Change once we add new devices for TI
         AppDependencies.getJobManager()
                                .add(new MultiDeviceVerifiedUpdateJob(recipientId,

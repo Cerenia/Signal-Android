@@ -47,7 +47,7 @@ import java.util.Locale
 import kotlin.math.max
 // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
 import org.thoughtcrime.securesms.trustedIntroductions.glue.VerifyDisplayFragmentGlue;
-import org.thoughtcrime.securesms.trustedIntroductions.send.ContactsSelectionActivity
+
 // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 
 /**
@@ -140,11 +140,13 @@ class VerifyDisplayFragment : Fragment(), OnScrollChangedListener {
     // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
     val recipient: LiveRecipient = viewModel.recipient
     val remoteIdentity: IdentityKey = viewModel.getRemoteIdentity()
-    VerifyDisplayFragmentGlue.initializeVerifyButton(requireArguments().getBoolean(VerifyDisplayFragmentGlue.VERIFIED_STATE, false),
+    VerifyDisplayFragmentGlue.initializeVerifyButton(
+      requireArguments().getBoolean(VerifyDisplayFragmentGlue.VERIFIED_STATE, false),
       this.binding.verifyButton,
       recipient.id,
       activity,
-      remoteIdentity)
+      remoteIdentity
+    )
     // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 
   }
@@ -167,7 +169,7 @@ class VerifyDisplayFragment : Fragment(), OnScrollChangedListener {
         animateSuccess(selectedSnapshot)
       }
       // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
-      VerifyDisplayFragmentGlue.onSuccessfullVerification(viewModel.recipient.id, viewModel.getRemoteIdentity(), binding.verifyButton);
+      VerifyDisplayFragmentGlue.onSuccessfulVerification(viewModel.recipient.id, viewModel.getRemoteIdentity(), binding.verifyButton);
       // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
       ThreadUtil.postToMain {
         binding.verifyViewPager.currentItem = selectedSnapshot

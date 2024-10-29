@@ -28,69 +28,67 @@ import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.getIntrod
 
 public class TrustedIntroductionsReceiveJob extends BaseJob {
 
-  private static final String TAG =  String.format(TI_Utils.TI_LOG_TAG, Log.tag(TrustedIntroductionsReceiveJob.class));
+  private static final String TAG = String.format(TI_Utils.TI_LOG_TAG, Log.tag(TrustedIntroductionsReceiveJob.class));
 
   // Factory Key
   public static final String KEY = "TIReceiveJob";
 
-  private RecipientId introducerId;
-  private final long timestamp;
-  private final String messageBody;
-  private boolean bodyParsed;
-  private ArrayList<TI_Data> introductions = new ArrayList<>();
+  private       RecipientId        introducerId;
+  private final long               timestamp;
+  private final String             messageBody;
+  private       boolean            bodyParsed;
+  private       ArrayList<TI_Data> introductions;
   // counter keeping track of which TI_DATA has made it's way to the database
-  // allows to only serialize introductions that have not yet been done if process get's interrupted
-  private int                 inserts_succeeded = 0;
+  // allows to only serialize introductions that have not yet been done if process gets interrupted
+  private       int                inserts_succeeded = 0;
 
   // Serialization Keys
   private static final String KEY_INTRODUCER_ID = "introducer_id";
-  private static final String KEY_TIMESTAMP = "timestamp";
-  private static final String KEY_MESSAGE_BODY = "messageBody";
-  private static final String KEY_BODY_PARSED = "bodyParsed";
+  private static final String KEY_TIMESTAMP     = "timestamp";
+  private static final String KEY_MESSAGE_BODY  = "messageBody";
+  private static final String KEY_BODY_PARSED   = "bodyParsed";
   private static final String KEY_INTRODUCTIONS = "serialized_remaining_introduction_data";
 
-  public TrustedIntroductionsReceiveJob(@NonNull String messageBody, @NonNull long timestamp){
+  public TrustedIntroductionsReceiveJob(@NonNull String messageBody, @NonNull long timestamp) {
     this(null,
          messageBody,
          false,
          timestamp,
          null,
          new Parameters.Builder()
-                       .setQueue(TI_Utils.serializeForQueue(messageBody) + timestamp)
-                       .setLifespan(TI_Utils.TI_JOB_LIFESPAN)
-                       .setMaxAttempts(TI_Utils.TI_JOB_MAX_ATTEMPTS)
-                       .addConstraint(NetworkConstraint.KEY)
-                       .build());
+             .setQueue(TI_Utils.serializeForQueue(messageBody) + timestamp)
+             .setLifespan(TI_Utils.TI_JOB_LIFESPAN)
+             .setMaxAttempts(TI_Utils.TI_JOB_MAX_ATTEMPTS)
+             .addConstraint(NetworkConstraint.KEY)
+             .build());
   }
 
   /**
-  * Because the tunneling mechanism was changed from using a plain text message to an attachment, we now only instantiate this job when processing the attachment in the AttachmentTable. The Recipient from which the message
-  * came from is not as easily accessible as it was when we were instantiating this job in the `IncomingMessageProcessor` and is now parsed from the message body. Thus the introducerId will first be null and only be instantiated
-  * after the body was parsed.
-  * This has the additional advantage that we could in principle write a standalone viewer for introductions, that eats '*.trustedIntroduction' files, since the introducer is no longer assumed based on the thread the message
-  * was forwarded on, making it more useful for users that do not have the modified Client of Signal installed.
-  *
-  **/
-  private TrustedIntroductionsReceiveJob(@Nullable RecipientId introducerId, @NonNull String messageBody, @NonNull Boolean bodyParsed, @NonNull long timestamp, @Nullable ArrayList<TI_Data> tiData, @NonNull Parameters parameters){
+   * Because the tunneling mechanism was changed from using a plain text message to an attachment, we now only instantiate this job when processing the attachment in the AttachmentTable. The Recipient from which the message
+   * came from is not as easily accessible as it was when we were instantiating this job in the `IncomingMessageProcessor` and is now parsed from the message body. Thus the introducerId will first be null and only be instantiated
+   * after the body was parsed.
+   * This has the additional advantage that we could in principle write a standalone viewer for introductions, that eats '*.trustedIntroduction' files, since the introducer is no longer assumed based on the thread the message
+   * was forwarded on, making it more useful for users that do not have the modified Client of Signal installed.
+   **/
+  private TrustedIntroductionsReceiveJob(@Nullable RecipientId introducerId, @NonNull String messageBody, @NonNull Boolean bodyParsed, @NonNull long timestamp, @Nullable ArrayList<TI_Data> tiData, @NonNull Parameters parameters) {
     super(parameters);
-    this.introducerId = introducerId;
-    this.timestamp = timestamp;
-    this.messageBody = messageBody;
-    this.bodyParsed = bodyParsed;
+    this.introducerId  = introducerId;
+    this.timestamp     = timestamp;
+    this.messageBody   = messageBody;
+    this.bodyParsed    = bodyParsed;
     this.introductions = !(tiData == null || tiData.isEmpty()) ? tiData : new ArrayList<>();
   }
 
   /**
-   *
    * Serialize your job state so that it can be recreated in the future.
    */
   @NonNull @Override public byte[] serialize() {
-    while (inserts_succeeded > 0){
+    while (inserts_succeeded > 0) {
       introductions.remove(0);
       inserts_succeeded--;
     }
     JSONArray serializedIntroductions = new JSONArray();
-    for (TI_Data d: introductions){
+    for (TI_Data d : introductions) {
       serializedIntroductions.put(d.serialize());
     }
     return Objects.requireNonNull(new JsonJobData.Builder()
@@ -118,12 +116,12 @@ public class TrustedIntroductionsReceiveJob extends BaseJob {
 
 
   @Override protected void onRun() throws Exception {
-    if (introducerId == null){
+    if (introducerId == null) {
       introducerId = getIntroducerFromRawMessage(messageBody);
     }
-    if(!bodyParsed){
+    if (!bodyParsed) {
       List<TI_Data> tiData = constructIntroduceesFromTrustedIntrosString(messageBody, timestamp, introducerId);
-      if(tiData == null) {
+      if (tiData == null) {
         Log.e(TAG, "Introduction did not parse correctly, aborting!");
         return;
       }
@@ -131,9 +129,9 @@ public class TrustedIntroductionsReceiveJob extends BaseJob {
       bodyParsed = true;
     }
     TI_DatabaseGlue db = SignalDatabase.tiDatabase();
-    for(TI_Data introduction: introductions){
+    for (TI_Data introduction : introductions) {
       long result = db.incomingIntroduction(introduction);
-      if (result == -1){
+      if (result == -1) {
         // TODO: How to fail gracefully?
         Log.e(TAG, String.format("Introduction insertion for %s failed...", introduction.getIntroduceeName()));
         //throw new AssertionError(TAG + String.format("Introduction insertion for %s failed...", introduction.getIntroduceeName()));
@@ -152,14 +150,14 @@ public class TrustedIntroductionsReceiveJob extends BaseJob {
 
     @NonNull @Override public TrustedIntroductionsReceiveJob create(@NonNull Parameters parameters, @Nullable byte[] serializedData) {
       // Deserialize introduction_data if present
-      JsonJobData data = JsonJobData.deserialize(serializedData);
-      String serializedIntroductions = data.getString(KEY_INTRODUCTIONS);
-      ArrayList<TI_Data> tiData = new ArrayList<>();
+      JsonJobData        data                    = JsonJobData.deserialize(serializedData);
+      String             serializedIntroductions = data.getString(KEY_INTRODUCTIONS);
+      ArrayList<TI_Data> tiData                  = new ArrayList<>();
       Log.i(TAG, serializedIntroductions);
       if (!serializedIntroductions.isEmpty()) {
-        try{
+        try {
           JSONArray arr = new JSONArray(serializedIntroductions);
-          for (int i = 0; i < arr.length(); i++){
+          for (int i = 0; i < arr.length(); i++) {
             tiData.add(TI_Data.Deserializer.deserialize(new JSONObject(arr.getString(i))));
           }
         } catch (JSONException | NullPointerException e) {
@@ -169,7 +167,7 @@ public class TrustedIntroductionsReceiveJob extends BaseJob {
         }
       }
       RecipientId introducer = null;
-      if (!data.getString(KEY_INTRODUCER_ID).equals("NULL")){
+      if (!data.getString(KEY_INTRODUCER_ID).equals("NULL")) {
         introducer = RecipientId.from(data.getString(KEY_INTRODUCER_ID));
       }
       return new TrustedIntroductionsReceiveJob(introducer,

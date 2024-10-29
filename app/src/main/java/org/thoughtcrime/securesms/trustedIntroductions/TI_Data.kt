@@ -4,13 +4,23 @@ import org.json.JSONObject
 import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database
 import org.thoughtcrime.securesms.trustedIntroductions.jobs.TI_Serialize
 
-// TODO: predictedSecurityNumber only needs to be nullable because I parse the TI_Message somewhat awkardly... maybe change at some point? Not super critical...
+// TODO: predictedSecurityNumber only needs to be nullable because I parse the TI_Message somewhat awkwardly... maybe change at some point? Not super critical...
 // IntroduceeRecipientId and Introducer
 // introduceeIdentityKey is encoded in Base64 (this is how it is currently stored in the Identity Database) @see TI_Utils.encodeIdentityKey
 // Service ID == ACI. PNI may be used to query profiles but once a chat is established we always have an ACI.
-data class TI_Data (val id: Long?, val state: TI_Database.State, val introducerServiceId: String?, val introduceeServiceId: String, val introduceeName: String?, val introduceeNumber: String?, val introduceeIdentityKey: String, var predictedSecurityNumber: String?, val timestamp: Long) : TI_Serialize {
+data class TI_Data(
+  val id: Long?,
+  val state: TI_Database.State,
+  val introducerServiceId: String?,
+  val introduceeServiceId: String,
+  val introduceeName: String?,
+  val introduceeNumber: String?,
+  val introduceeIdentityKey: String,
+  var predictedSecurityNumber: String?,
+  val timestamp: Long
+) : TI_Serialize {
 
-  override fun serialize() : JSONObject {
+  override fun serialize(): JSONObject {
     // Absence of key signifies null
     val builder = JSONObject()
     // does nothing iff id == null see: https://developer.android.com/reference/kotlin/org/json/JSONObject
@@ -26,7 +36,7 @@ data class TI_Data (val id: Long?, val state: TI_Database.State, val introducerS
     return builder
   }
 
-  override fun deserialize(serialized: JSONObject) : TI_Data{
+  override fun deserialize(serialized: JSONObject): TI_Data {
     return Deserializer.deserialize(serialized)
   }
 
@@ -38,38 +48,33 @@ data class TI_Data (val id: Long?, val state: TI_Database.State, val introducerS
     // factory from serialized String
     fun deserialize(serialized: JSONObject): TI_Data {
       // Absence of key signifies null
-      val id: Long?
-      if (serialized.has("id")){
-        id = serialized.getLong("id")
-      } else{
-        id = null
+      val id: Long? = if (serialized.has("id")) {
+        serialized.getLong("id")
+      } else {
+        null
       }
       val state = TI_Database.State.forState(serialized.getInt("state"))
-      val introducerServiceId: String?
-      if (serialized.has("introducerServiceId")){
-        introducerServiceId = serialized.getString("introducerServiceId")
+      val introducerServiceId: String? = if (serialized.has("introducerServiceId")) {
+        serialized.getString("introducerServiceId")
       } else {
-        introducerServiceId = null
+        null
       }
       val introduceeServiceId = serialized.getString("introduceeServiceId")
-      val introduceeName: String?
-      if (serialized.has("introduceeName")) {
-        introduceeName = serialized.getString("introduceeName")
+      val introduceeName: String? = if (serialized.has("introduceeName")) {
+        serialized.getString("introduceeName")
       } else {
-        introduceeName = null
+        null
       }
-      val introduceeNumber: String?
-      if (serialized.has("introduceeNumber")){
-        introduceeNumber = serialized.getString("introduceeNumber")
+      val introduceeNumber: String? = if (serialized.has("introduceeNumber")) {
+        serialized.getString("introduceeNumber")
       } else {
-        introduceeNumber = null
+        null
       }
       val introduceeIdentityKey = serialized.getString("introduceeIdentityKey")
-      val predictedSecurityNumber: String?
-      if (serialized.has("predictedSecurityNumber")){
-        predictedSecurityNumber = serialized.getString("predictedSecurityNumber")
-      } else{
-        predictedSecurityNumber = null
+      val predictedSecurityNumber: String? = if (serialized.has("predictedSecurityNumber")) {
+        serialized.getString("predictedSecurityNumber")
+      } else {
+        null
       }
       val timestamp = serialized.getLong("timestamp")
       return TI_Data(id, state, introducerServiceId, introduceeServiceId, introduceeName, introduceeNumber, introduceeIdentityKey, predictedSecurityNumber, timestamp)
