@@ -73,9 +73,9 @@ public class TI_Utils {
   public static final String TI_APK_VERSION       = "2.1.2";
   // text is the interim solution. In the future a custom mimetype should be used such that we can release a
   // custom interpreter that can be used by people that do not have the TI_extension installed.
-  public static final String TI_MIME_TYPE = "text/plain";
-  public static final String TI_MESSAGE_EXTENSION = ".trustedIntroduction";
-  public static final String TI_MESSAGE_FILENAME = "Signal" + TI_MESSAGE_EXTENSION;
+  public static final String TI_MIME_TYPE         = "text/plain";
+  public static final String TI_MESSAGE_EXTENSION = ".trustedintro";
+  public static final String TI_MESSAGE_FILENAME  = "Signal" + TI_MESSAGE_EXTENSION;
 
   // Random String to mark a message as a trustedIntroduction, since I'm tunneling through normal messages
   public static final String TI_IDENTIFIER = "QOikEX9PPGIuXfiejT9nC2SsDB8d9AG0dUPQ9gERBQ8qHF30Xj --- This message is part of an experimental feature and not meant to be read by humans --- Introduction Data:\n";
@@ -419,8 +419,9 @@ public class TI_Utils {
   /**
    * Parses an incoming TI message to create introduction data
    * PRE: body is a valid TI message with the correct version.
-   * @param body of the incoming message
-   * @param timestamp when message was received
+   *
+   * @param body         of the incoming message
+   * @param timestamp    when message was received
    * @param introducerId whom the message came from
    * @return populated List<TI_Data> if successful, null otherwise
    */
@@ -537,8 +538,6 @@ public class TI_Utils {
     public String id;
     public String key;
 
-    public IdKeyPair(String id, String key){
-      this.id = id;
     public IdKeyPair(String id, String key) {
       this.id  = id;
       this.key = key;

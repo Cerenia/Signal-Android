@@ -1135,14 +1135,18 @@ class AttachmentTable(
     val existingPlaceholder: DatabaseAttachment = getAttachment(attachmentId) ?: throw MmsException("No attachment found for id: $attachmentId")
 
     // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
-    // inputStream shadowed on purpose
+    if (existingPlaceholder.contentType.equals(AttachmentTableGlue.INTRODUCTION_CONTENT_TYPE)) {
+      Log.i(TAG, "Do something since we know we deal with an introduction ;)")
+      // maybe process here and return early ;)
+    }
+    // inputStream shadowed on purpose: we need a copy to hand over
     val inputStream = AttachmentTableGlue.grabIntroductionData(existingPlaceholder, inputStream)
     // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 
     val fileWriteResult: DataFileWriteResult = writeToDataFile(newDataFile(context), inputStream, TransformProperties.empty(), closeInputStream = false)
-    if (fileWriteResult.file.extension.equals(".trustedintro")){
-      Log.i(TAG,"Do something...")
-    }
+//    if (fileWriteResult.file.extension == AttachmentTableGlue.INTRODUCTION_EXTENSION) {
+//      Log.i(TAG, "Do something...")
+//    }
     val transferFile: File? = getTransferFile(databaseHelper.signalReadableDatabase, attachmentId)
 
     val paddingAllZeroes = inputStream.use { limitStream ->
@@ -2411,9 +2415,11 @@ class AttachmentTable(
           hashMatch.hashStart -> {
             Log.i(TAG, "[insertAttachmentWithData] Found that the new attachment hash matches the DATA_HASH_START of ${hashMatch.id}. Using all of it's fields. (MessageId: $messageId, ${attachment.uri})")
           }
+
           hashMatch.hashEnd -> {
             Log.i(TAG, "[insertAttachmentWithData] Found that the new attachment hash matches the DATA_HASH_END of ${hashMatch.id}. Using all of it's fields. (MessageId: $messageId, ${attachment.uri})")
           }
+
           else -> {
             throw IllegalStateException("Should not be possible based on query.")
           }
@@ -2451,7 +2457,10 @@ class AttachmentTable(
       }
 
       if (uploadTemplate != null) {
-        Log.i(TAG, "[insertAttachmentWithData] Found a valid template we could use to skip upload. Template: ${uploadTemplate.attachmentId}, TemplateUploadTimestamp: ${hashMatch?.uploadTimestamp}, CurrentTime: ${System.currentTimeMillis()}, InsertingAttachment: (MessageId: $messageId, ${attachment.uri})")
+        Log.i(
+          TAG,
+          "[insertAttachmentWithData] Found a valid template we could use to skip upload. Template: ${uploadTemplate.attachmentId}, TemplateUploadTimestamp: ${hashMatch?.uploadTimestamp}, CurrentTime: ${System.currentTimeMillis()}, InsertingAttachment: (MessageId: $messageId, ${attachment.uri})"
+        )
         transformProperties = (uploadTemplate.transformProperties ?: transformProperties).copy(skipTransform = true)
       }
 
