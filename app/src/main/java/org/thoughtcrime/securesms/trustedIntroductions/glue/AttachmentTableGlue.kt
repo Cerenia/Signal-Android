@@ -13,6 +13,9 @@ import java.io.ByteArrayOutputStream
 
 object AttachmentTableGlue {
 
+  //  const val INTRODUCTION_CONTENT_TYPE = "text/x-meep-introduction";
+  const val INTRODUCTION_CONTENT_TYPE = TI_Utils.TI_MIME_TYPE;
+  const val INTRODUCTION_EXTENSION = TI_Utils.TI_MESSAGE_EXTENSION;
 
   /**
    * Given a (maybe?) message attachment, checks if it might be trusted introduction data (by checking file extension)
@@ -26,7 +29,10 @@ object AttachmentTableGlue {
   @JvmStatic
   fun grabIntroductionData(attachment: Attachment, inputStream: LimitedInputStream): LimitedInputStream {
     var text = ""
-    if(attachment.fileName!!.contains(TI_Utils.TI_MESSAGE_EXTENSION)){
+    if (attachment.fileName == null) {
+      return inputStream;
+    }
+    if (attachment.fileName.contains(INTRODUCTION_EXTENSION)) {
       val byteOutputStream = ByteArrayOutputStream()
       inputStream.use {
         byteOutputStream.use { output ->
