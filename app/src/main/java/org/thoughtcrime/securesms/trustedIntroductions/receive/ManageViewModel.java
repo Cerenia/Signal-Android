@@ -133,8 +133,9 @@ public class ManageViewModel extends ViewModel {
   void acceptIntroduction(@NonNull Long introductionId) {
     iterateAndModify(introductionId, new Modify() {
       @Nullable @Override public Pair<TI_Data, IntroducerInformation> modifyIntroductionItem(Pair<TI_Data, IntroducerInformation> introductionItem) {
-        TI_Data oldIntroduction = introductionItem.first;
-        TI_Data newIntroduction = new TI_Data(oldIntroduction.getId(), TI_Database.State.ACCEPTED, oldIntroduction.getIntroducerServiceId(), oldIntroduction.getIntroduceeServiceId(), oldIntroduction
+        TI_Data           oldIntroduction = introductionItem.first;
+        TI_Database.State newAcceptState  = SignalDatabase.tiDatabase().isRecipientUnknown(oldIntroduction.getIntroduceeServiceId()) ? TI_Database.State.ACCEPTED_UNKNOWN : TI_Database.State.ACCEPTED;
+        TI_Data newIntroduction = new TI_Data(oldIntroduction.getId(), newAcceptState, oldIntroduction.getIntroducerServiceId(), oldIntroduction.getIntroduceeServiceId(), oldIntroduction
             .getIntroduceeName(), oldIntroduction.getIntroduceeNumber(), oldIntroduction.getIntroduceeIdentityKey(), oldIntroduction.getPredictedSecurityNumber(), oldIntroduction.getTimestamp());
         return new Pair<>(newIntroduction, introductionItem.second);
       }
@@ -153,7 +154,8 @@ public class ManageViewModel extends ViewModel {
     iterateAndModify(introductionId, new Modify() {
       @Nullable @Override public Pair<TI_Data, IntroducerInformation> modifyIntroductionItem(Pair<TI_Data, IntroducerInformation> introductionItem) {
         TI_Data oldIntroduction = introductionItem.first;
-        TI_Data newIntroduction = new TI_Data(oldIntroduction.getId(), TI_Database.State.REJECTED, oldIntroduction.getIntroducerServiceId(), oldIntroduction.getIntroduceeServiceId(), oldIntroduction
+        TI_Database.State newRejectedState  = SignalDatabase.tiDatabase().isRecipientUnknown(oldIntroduction.getIntroduceeServiceId()) ? TI_Database.State.REJECTED_UNKNOWN : TI_Database.State.REJECTED;
+        TI_Data newIntroduction = new TI_Data(oldIntroduction.getId(), newRejectedState, oldIntroduction.getIntroducerServiceId(), oldIntroduction.getIntroduceeServiceId(), oldIntroduction
             .getIntroduceeName(), oldIntroduction.getIntroduceeNumber(), oldIntroduction.getIntroduceeIdentityKey(), oldIntroduction.getPredictedSecurityNumber(), oldIntroduction.getTimestamp());
         return new Pair<>(newIntroduction, introductionItem.second);
       }
