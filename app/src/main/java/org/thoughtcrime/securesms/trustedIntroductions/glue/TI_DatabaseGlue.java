@@ -20,7 +20,7 @@ public interface TI_DatabaseGlue {
     db.execSQL(TI_Database.CREATE_TABLE);
   }
   static TI_DatabaseGlue getTIDatabase(@Nullable SignalDatabase db){
-    if (db == null){ // check for nullpointer to equal rest of Kotlin code in Signals Identity table
+    if (db == null){ // check for null pointer to equal rest of Kotlin code in Signals Identity table
       throw new NullPointerException();
     }
     return TI_Database.getInstance();
@@ -50,6 +50,8 @@ public interface TI_DatabaseGlue {
   boolean clearIntroducer(TI_Data introduction);
 
   TI_Database.IntroductionReader getAllDisplayableIntroductions();
+
+  boolean isRecipientUnknown(String serviceID);
 
   boolean acceptIntroduction(TI_Data introduction);
 
