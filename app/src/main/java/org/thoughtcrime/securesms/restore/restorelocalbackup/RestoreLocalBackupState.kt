@@ -25,7 +25,6 @@ data class RestoreLocalBackupState(
   val backupVerifyingInProgress: Boolean = false,
   val backupProgressCount: Long = -1,
   val backupEstimatedTotalCount: Long = -1,
-  val backupRestoreComplete: Boolean = false,
   val backupImportResult: RestoreRepository.BackupImportResult? = null,
   val abort: Boolean = false
 )

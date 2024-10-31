@@ -32,7 +32,7 @@ class RestoreLocalBackupViewModel(fileBackupUri: Uri, fileBackupUriTI: Uri?) : V
 
   val backupReadError = store.map { it.backupFileStateError }.asLiveData()
 
-  val backupComplete = store.map { Pair(it.backupRestoreComplete, it.backupImportResult) }.asLiveData()
+  val importResult = store.map { it.backupImportResult }.asLiveData()
 
   fun prepareRestore(context: Context) {
     val backupFileUri = store.value.uri
@@ -103,9 +103,8 @@ class RestoreLocalBackupViewModel(fileBackupUri: Uri, fileBackupUriTI: Uri?) : V
 
       store.update {
         it.copy(
-          backupImportResult = if (importResult == RestoreRepository.BackupImportResult.SUCCESS) null else importResult,
+          backupImportResult = importResult,
           restoreInProgress = false,
-          backupRestoreComplete = importResult == RestoreRepository.BackupImportResult.SUCCESS,
           backupEstimatedTotalCount = -1L,
           backupProgressCount = -1L,
           backupVerifyingInProgress = false
