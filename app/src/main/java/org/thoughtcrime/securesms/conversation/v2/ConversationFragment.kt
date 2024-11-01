@@ -4343,7 +4343,7 @@ class ConversationFragment :
             if (recipient.isGroup) {
               conversationType = CanNotIntroduceDialog.ConversationType.GROUP
               CanNotIntroduceDialog.show(context!!, recipientRecord.get(), conversationType)
-            } else if (!(recipientRecord.isPresent && IdentityTableGlue.VerifiedStatus.ti_recipientUnlocked(recipientRecord.get().recipientId))){
+            } else if (!(recipientRecord.isPresent && IdentityTableGlue.VerifiedStatus.tiRecipientUnlocked(recipientRecord.get().recipientId))){
               // Unverified signal contact (or empty recipient record)
               // Guaranteed to have a recipient Record at this point and be unverified
               conversationType = CanNotIntroduceDialog.ConversationType.SINGLE_SECURE_TEXT;

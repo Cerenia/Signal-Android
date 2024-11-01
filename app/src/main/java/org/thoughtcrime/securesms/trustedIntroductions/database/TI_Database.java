@@ -31,6 +31,7 @@ import org.whispersystems.signalservice.api.util.Preconditions;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -717,7 +718,7 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
       try {
         reader.close();
       } catch (IOException e) {
-        e.printStackTrace();
+        Log.e(TAG, Arrays.toString(e.getStackTrace()));
         throw new AssertionError("Error occurred while trying to close the cursor to dangling Introductions for " + current.getIntroduceeName());
       }
       // Turn all introductions stale that had the incorrect identity key
