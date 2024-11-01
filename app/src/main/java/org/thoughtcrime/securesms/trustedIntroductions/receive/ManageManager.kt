@@ -30,7 +30,7 @@ class ManageManager(
       val introductions = ArrayList<TI_Data>()
 
       while (reader.hasNext()) {
-        introductions.add(reader.getNext()!!)
+        introductions.add(reader.next!!)
       }
 
       // Sort by date

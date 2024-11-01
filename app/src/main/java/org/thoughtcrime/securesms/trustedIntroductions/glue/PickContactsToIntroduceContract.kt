@@ -42,7 +42,6 @@ class PickContactsToIntroduceContract {
         } else {
           intent.getParcelableArrayListExtra(ContactsSelectionActivity.SELECTED_CONTACTS_TO_FORWARD) ?: return Pair(null, null)
         }
-//        = intent.getParcelableArrayListExtra(ContactsSelectionActivity.SELECTED_CONTACTS_TO_FORWARD, RecipientId::class.java)
         val idSet: HashSet<RecipientId> = HashSet(listOfIntroduceeIds)
         val myId = Recipient.self().id
         val sendJob = TrustedIntroductionSendJob(myId, introductionRecipientId, idSet)

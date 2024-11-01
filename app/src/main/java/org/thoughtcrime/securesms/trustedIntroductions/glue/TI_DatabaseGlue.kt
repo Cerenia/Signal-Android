@@ -47,7 +47,7 @@ interface TI_DatabaseGlue {
 
   fun atLeastOneIntroductionIsUnknown(introduceeServiceId: String): Boolean
 
-  fun handleUnknownIntroductions(serviceId: String, encodedIdentityKey: String): TI_Database.State
+  fun handleUnknownIntroductions(serviceId: String, encodedIdentityKey: String): TI_Database.State?
 
   companion object {
     @JvmStatic
@@ -58,7 +58,7 @@ interface TI_DatabaseGlue {
     @JvmStatic
     fun getTIDatabase(db: SignalDatabase?): TI_DatabaseGlue {
       requireNotNull(db) { "SignalDatabase cannot be null" }
-      return TI_Database.getInstance()
+      return TI_Database.instance!!
     }
 
     @JvmStatic

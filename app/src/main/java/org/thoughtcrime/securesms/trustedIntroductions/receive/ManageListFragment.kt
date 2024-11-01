@@ -191,18 +191,18 @@ class ManageListFragment(
   private fun isDisplayed(p: Pair<TI_Data, ManageViewModel.IntroducerInformation>): Boolean {
     val s = p.first.state
     return when (tab) {
-      NEW -> s.isPending() && !s.isStale() && !userFiltered(s)
-      ActiveTab.LIBRARY -> !s.isPending() && !userFiltered(s)
+      NEW -> s.isPending && !s.isStale && !userFiltered(s)
+      ActiveTab.LIBRARY -> !s.isPending && !userFiltered(s)
       else -> true
     }
   }
 
   private fun userFiltered(s: TI_Database.State): Boolean {
     return when {
-      viewModel.showConflicting().value == false && s.isConflicting() -> true
-      viewModel.showStale().value == false && s.isStale() -> true
-      viewModel.showTrusted().value == false && s.isTrusted() -> true
-      viewModel.showDistrusted().value == false && s.isDistrusted() -> true
+      viewModel.showConflicting().value == false && s.isConflicting -> true
+      viewModel.showStale().value == false && s.isStale -> true
+      viewModel.showTrusted().value == false && s.isTrusted -> true
+      viewModel.showDistrusted().value == false && s.isDistrusted -> true
       else -> false
     }
   }
@@ -296,10 +296,10 @@ class ManageListFragment(
       if (introducerServiceId != TI_Database.UNKNOWN_INTRODUCER_SERVICE_ID) {
         ForgetIntroducerDialog.show(
           context,
-          item.introductionId,
-          item.introduceeName,
-          item.getIntroducerName(context)!!, // todo: this might fail :c
-          item.date,
+          item.getIntroductionId(),
+          item.getIntroduceeName().toString(),
+          item.getIntroducerName(context), // todo: this might fail :c
+          item.getDate()!!,
           forgetHandler
         )
       }
@@ -315,10 +315,10 @@ class ManageListFragment(
 
       DeleteIntroductionDialog.show(
         context,
-        item.introductionId,
-        item.introduceeName,
+        item.getIntroductionId(),
+        item.getIntroduceeName().toString(),
         introducerName,
-        item.date,
+        item.getDate()!!,
         deleteHandler
       )
     }
