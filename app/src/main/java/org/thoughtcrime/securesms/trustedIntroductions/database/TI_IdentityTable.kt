@@ -129,13 +129,13 @@ class TI_IdentityTable internal constructor(context: Context?, databaseHelper: S
    * PRE: introducee exists in recipient and identity table
    * @param introduceeServiceId The service ID of the recipient whose verification status may change
    * @param previousIntroduceeVerification the previous verification status of the introducee.
-   * @param newIntroductionState the new state of the introduction that changed. PRE: Can't be PENDING or PENDING_UNKNOWN
+   * @param newState the new state of the introduction that changed. PRE: Can't be PENDING or PENDING_UNKNOWN
    * @param logMessage what to print to logcat iff verification status of introducee was modified
    */
   @WorkerThread
-  override fun modifyIntroduceeVerification(introduceeServiceId: String, previousIntroduceeVerification: VerifiedStatus, newIntroductionState: TI_Database.State, logMessage: String) {
-    val newIntroduceeVerification = when (newIntroductionState) {
-      TI_Database.State.PENDING, TI_Database.State.PENDING_UNKNOWN -> throw AssertionError(TAG + " Precondition Violation! State was: " + newIntroductionState.name)
+  override fun modifyIntroduceeVerification(introduceeServiceId: String, previousIntroduceeVerification: VerifiedStatus, newState: TI_Database.State, logMessage: String) {
+    val newIntroduceeVerification = when (newState) {
+      TI_Database.State.PENDING, TI_Database.State.PENDING_UNKNOWN -> throw AssertionError(TAG + " Precondition Violation! State was: " + newState.name)
       // Any stale state leads to unverified
       TI_Database.State.STALE_PENDING, TI_Database.State.STALE_ACCEPTED, TI_Database.State.STALE_REJECTED, TI_Database.State.STALE_ACCEPTED_CONFLICTING,
       TI_Database.State.STALE_REJECTED_CONFLICTING, TI_Database.State.STALE_PENDING_CONFLICTING -> VerifiedStatus.UNVERIFIED

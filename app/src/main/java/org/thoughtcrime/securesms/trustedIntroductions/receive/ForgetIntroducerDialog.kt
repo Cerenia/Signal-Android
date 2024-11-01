@@ -1,42 +1,35 @@
-package org.thoughtcrime.securesms.trustedIntroductions.receive;
+package org.thoughtcrime.securesms.trustedIntroductions.receive
 
-import android.app.AlertDialog;
-import android.content.Context;
-
-import androidx.annotation.NonNull;
-
-import org.signal.core.util.logging.Log;
-import org.thoughtcrime.securesms.R;
-import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
-
-import java.util.Date;
-
-import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.INTRODUCTION_DATE_PATTERN;
+import android.app.AlertDialog
+import android.content.Context
+import android.content.DialogInterface
+import org.signal.core.util.logging.Log.tag
+import org.thoughtcrime.securesms.R
+import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils
+import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.INTRODUCTION_DATE_PATTERN
+import java.util.Date
 
 /**
  * Asks user if they really want to forget who made an introduction.
  */
-public final class ForgetIntroducerDialog {
+object ForgetIntroducerDialog {
+  private val TAG = String.format(TI_Utils.TI_LOG_TAG, tag(ForgetIntroducerDialog::class.java))
 
-    private static final String TAG = String.format(TI_Utils.TI_LOG_TAG, Log.tag(ForgetIntroducerDialog.class));
+  @JvmStatic
+  fun show(context: Context, introductionId: Long, introduceeName: String, introducerName: String, date: Date, f: ForgetIntroducer) {
+    val builder = AlertDialog.Builder(context).setTitle(R.string.ForgetIntroucerDialog__Title)
+    // TODO: do we still want to differentiate? or can we get rid of t?
+    val text = context.getString(R.string.ForgetIntroucerDialog__Forget_Introducer_ALL, introducerName, introduceeName, INTRODUCTION_DATE_PATTERN.format(date))
+    builder.setMessage(text)
+    builder.setNegativeButton(android.R.string.no) { dialog: DialogInterface, which: Int -> dialog.dismiss() }
+      .setPositiveButton(R.string.ForgetIntroucerDialog__forget) { dialog: DialogInterface, which: Int ->
+        dialog.dismiss()
+        f.forgetIntroducer(introductionId)
+      }
+    builder.show()
+  }
 
-    public interface ForgetIntroducer {
-        void forgetIntroducer(@NonNull Long introductionId);
-    }
-
-    private ForgetIntroducerDialog() {
-    }
-
-    public static void show(@NonNull Context context, @NonNull Long introductionId, @NonNull String introduceeName, @NonNull String introducerName, @NonNull Date date, ForgetIntroducer f) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(context).setTitle(R.string.ForgetIntroucerDialog__Title);
-        // TODO: do we still want to differentiate? or can we get rid of t?
-        String text = context.getString(R.string.ForgetIntroucerDialog__Forget_Introducer_ALL, introducerName, introduceeName, INTRODUCTION_DATE_PATTERN.format(date));
-        builder.setMessage(text);
-        builder.setNegativeButton(android.R.string.no, (dialog, which) -> dialog.dismiss())
-               .setPositiveButton(R.string.ForgetIntroucerDialog__forget, (dialog, which) -> {
-                   dialog.dismiss();
-                   f.forgetIntroducer(introductionId);
-               });
-        builder.show();
-    }
+  interface ForgetIntroducer {
+    fun forgetIntroducer(introductionId: Long)
+  }
 }
