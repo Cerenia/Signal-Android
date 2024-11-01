@@ -34,16 +34,19 @@ class TI_IdentityTable internal constructor(context: Context?, databaseHelper: S
     """
   }
 
+  override val cursorForTIUnlocked: Cursor
+    get() = cursorForTIUnlocked()
+
   /**
    *
    * @return Returns a Cursor which iterates through all recipientIds that are unlocked for
    * trusted introductions (for which @see VerifiedStatus.tiUnlocked returns true)
    */
-  override fun getCursorForTIUnlocked(): Cursor {
+  private fun cursorForTIUnlocked(): Cursor {
     val validStates: ArrayList<String> = ArrayList()
     // dynamically compute the valid states and query the Signal database for these contacts
     for (e in VerifiedStatus.entries) {
-      if (VerifiedStatus.ti_forwardUnlocked(e)) {
+      if (VerifiedStatus.tiForwardUnlocked(e)) {
         validStates.add(e.toInt().toString())
       }
     }
@@ -105,6 +108,7 @@ class TI_IdentityTable internal constructor(context: Context?, databaseHelper: S
     return true
   }
 
+
   override fun setVerifiedStatus(id: RecipientId, newStatus: VerifiedStatus): Boolean {
     val serviceID = Recipient.live(id).resolve().requireServiceId().toString()
     val contentValues = contentValuesOf(
@@ -126,10 +130,10 @@ class TI_IdentityTable internal constructor(context: Context?, databaseHelper: S
    * @param introduceeServiceId The service ID of the recipient whose verification status may change
    * @param previousIntroduceeVerification the previous verification status of the introducee.
    * @param newIntroductionState the new state of the introduction that changed. PRE: Can't be PENDING or PENDING_UNKNOWN
-   * @param logmessage what to print to logcat iff verification status of introducee was modified
+   * @param logMessage what to print to logcat iff verification status of introducee was modified
    */
   @WorkerThread
-  override fun modifyIntroduceeVerification(introduceeServiceId: String, previousIntroduceeVerification: VerifiedStatus, newIntroductionState: TI_Database.State, logmessage: String) {
+  override fun modifyIntroduceeVerification(introduceeServiceId: String, previousIntroduceeVerification: VerifiedStatus, newIntroductionState: TI_Database.State, logMessage: String) {
     val newIntroduceeVerification = when (newIntroductionState) {
       TI_Database.State.PENDING, TI_Database.State.PENDING_UNKNOWN -> throw AssertionError(TAG + " Precondition Violation! State was: " + newIntroductionState.name)
       // Any stale state leads to unverified
@@ -182,6 +186,6 @@ class TI_IdentityTable internal constructor(context: Context?, databaseHelper: S
     // Finally update the verification state and log
     val rid = RecipientId.fromSidOrE164(introduceeServiceId)
     TI_Utils.updateContactsVerifiedStatus(rid, TI_Utils.getIdentityKey(rid), newIntroduceeVerification)
-    Log.i(TAG, logmessage)
+    Log.i(TAG, logMessage)
   }
 }

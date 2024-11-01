@@ -15,8 +15,8 @@ class ContactsSelectionManager internal constructor(// This is the person which 
 
   fun getValidContacts(introducibleContacts: Consumer<List<Recipient>>) {
     SignalExecutors.BOUNDED.execute {
-      val eligibleCandidates = getValidTICandidates(idb.getCursorForTIUnlocked())
-
+      // todo: cursor should never be null here
+      val eligibleCandidates = getValidTICandidates(idb.cursorForTIUnlocked!!)
       if (eligibleCandidates.isEmpty()) {
         introducibleContacts.accept(emptyList())
         return@execute

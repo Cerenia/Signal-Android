@@ -54,8 +54,8 @@ object ClearVerificationDialog {
       .show()
   }
 
-  fun onClearVerification(recipientId: RecipientId?, remoteIdentity: IdentityKey?, verifyButton: Button?) {
-    if (recipientId == null || remoteIdentity == null) {
+  private fun onClearVerification(recipientId: RecipientId?, remoteIdentity: IdentityKey?, verifyButton: Button?) {
+    if (recipientId == null || remoteIdentity == null || verifyButton == null) {
       Log.w(TAG, "could not clear verification, empty recipientId or remoteIdentity")
       return
     }

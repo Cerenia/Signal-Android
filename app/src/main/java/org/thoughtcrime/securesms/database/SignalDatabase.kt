@@ -121,7 +121,7 @@ open class SignalDatabase(private val context: Application, databaseSecret: Data
     db.execSQL(InAppPaymentSubscriberTable.CREATE_TABLE)
     // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
     db.execSQL(org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue.getCreateTable())
-    db.execSQL(org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue.getCreateTable())
+    db.execSQL(org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue.createTable)
     // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
     executeStatements(db, SearchTable.CREATE_TABLE)
     executeStatements(db, RemappedRecordTables.CREATE_TABLE)
