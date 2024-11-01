@@ -1,255 +1,229 @@
-package org.thoughtcrime.securesms.trustedIntroductions.receive;
+package org.thoughtcrime.securesms.trustedIntroductions.receive
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.annotation.WorkerThread;
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModel;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.core.util.Pair;
+import androidx.annotation.WorkerThread
+import androidx.core.util.Pair
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import org.signal.core.util.concurrent.SignalExecutors
+import org.signal.core.util.logging.Log
+import org.thoughtcrime.securesms.database.SignalDatabase
+import org.thoughtcrime.securesms.trustedIntroductions.TI_Data
+import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils
+import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database
+import org.whispersystems.signalservice.api.util.Preconditions
+import java.util.Objects
 
-import org.signal.core.util.concurrent.SignalExecutors;
-import org.signal.core.util.logging.Log;
-import org.thoughtcrime.securesms.database.SignalDatabase;
-import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database;
-import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
-import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
-import org.whispersystems.signalservice.api.util.Preconditions;
+class ManageViewModel(
+  private val manager: ManageManager,
+  @get:JvmName("getForgottenPlaceholder") val forgottenPlaceholder: String
+) : ViewModel() {
 
-import java.util.List;
-import java.util.Objects;
-
-
-public class ManageViewModel extends ViewModel {
-
-  private static final String TAG = String.format(TI_Utils.TI_LOG_TAG, Log.tag(ManageViewModel.class));
-
-  private final ManageManager                                               manager;
-  private final MutableLiveData<String>                                     filter;
-  private final MutableLiveData<List<Pair<TI_Data, IntroducerInformation>>> introductions;
-  @NonNull      String                                                      forgottenPlaceholder;
-  private       boolean                                                     introductionsLoaded;
-  // Filters
-  private final MutableLiveData<Boolean>                                    showTrusted     = new MutableLiveData<>(true);
-  private final MutableLiveData<Boolean>                                    showDistrusted  = new MutableLiveData<>(true);
-  private final MutableLiveData<Boolean>                                    showStale       = new MutableLiveData<>(true);
-  private final MutableLiveData<Boolean>                                    showConflicting = new MutableLiveData<>(true);
-
-  ManageViewModel(ManageManager manager, @NonNull String forgottenPlaceholder) {
-    this.manager              = manager;
-    filter                    = new MutableLiveData<>("");
-    introductions             = new MutableLiveData<>();
-    introductionsLoaded       = false;
-    this.forgottenPlaceholder = forgottenPlaceholder;
+  companion object {
+    private val TAG = String.format(TI_Utils.TI_LOG_TAG, Log.tag(ManageViewModel::class.java))
   }
+
+  private val filter = MutableLiveData("")
+  private val introductions = MutableLiveData<List<Pair<TI_Data, IntroducerInformation>>>()
+  private var introductionsLoaded = false
+
+  // Filters
+  private val showTrusted = MutableLiveData(true)
+  private val showDistrusted = MutableLiveData(true)
+  private val showStale = MutableLiveData(true)
+  private val showConflicting = MutableLiveData(true)
 
   // UI filters
-  public void setShowTrusted(Boolean state) {
-    showTrusted.postValue(state);
+  fun setShowTrusted(state: Boolean) {
+    showTrusted.postValue(state)
   }
 
-  public void setShowDistrusted(Boolean state) {
-    showDistrusted.postValue(state);
+  fun setShowDistrusted(state: Boolean) {
+    showDistrusted.postValue(state)
   }
 
-  public void setShowStale(Boolean state) {
-    showStale.postValue(state);
+  fun setShowStale(state: Boolean) {
+    showStale.postValue(state)
   }
 
-  public void setShowConflicting(Boolean state) {
-    showConflicting.postValue(state);
+  fun setShowConflicting(state: Boolean) {
+    showConflicting.postValue(state)
   }
 
-  public LiveData<Boolean> showConflicting() {
-    return showConflicting;
+  fun showConflicting(): LiveData<Boolean> = showConflicting
+  fun showStale(): LiveData<Boolean> = showStale
+  fun showTrusted(): LiveData<Boolean> = showTrusted
+  fun showDistrusted(): LiveData<Boolean> = showDistrusted
+
+  fun setTextFilter(filter: String) {
+    this.filter.value = filter
   }
 
-  public LiveData<Boolean> showStale() {
-    return showStale;
-  }
-
-  public LiveData<Boolean> showTrusted() {
-    return showTrusted;
-  }
-
-  public LiveData<Boolean> showDistrusted() {
-    return showDistrusted;
-  }
-
-  public void setTextFilter(String filter) {
-    this.filter.setValue(filter);
-  }
-
-  public LiveData<String> getTextFilter() {
-    return this.filter;
-  }
+  fun getTextFilter(): LiveData<String> = filter
 
   // Introductions
-  public void loadIntroductions() {
-    manager.getIntroductions(introductions::postValue);
-    introductionsLoaded = true;
+  fun loadIntroductions() {
+    manager.getIntroductions { introductions.postValue(it) }
+    introductionsLoaded = true
   }
 
-  public boolean introductionsLoaded() {
-    return introductionsLoaded;
+  fun introductionsLoaded() = introductionsLoaded
+
+  fun deleteIntroduction(introductionId: Long) {
+    iterateAndModify(introductionId, object : Modify {
+      override fun modifyIntroductionItem(introductionItem: Pair<TI_Data, IntroducerInformation>): Pair<TI_Data, IntroducerInformation>? = null
+
+      override fun databaseCall(introduction: TI_Data): Boolean {
+        Preconditions.checkArgument(introduction.id != null)
+        return SignalDatabase.tiDatabase.deleteIntroduction(introduction.id!!)
+      }
+
+      override fun errorMessage(introductionId: Long): String {
+        return "The deletion of introduction $introductionId did not succeed!"
+      }
+    })
   }
 
-  void deleteIntroduction(@NonNull Long introductionId) {
-    iterateAndModify(introductionId, new Modify() {
-      @Nullable @Override public Pair<TI_Data, IntroducerInformation> modifyIntroductionItem(Pair<TI_Data, IntroducerInformation> introductionItem) {
-        return null;
+  fun forgetIntroducer(introductionId: Long) {
+    iterateAndModify(introductionId, object : Modify {
+      override fun modifyIntroductionItem(introductionItem: Pair<TI_Data, IntroducerInformation>): Pair<TI_Data, IntroducerInformation> {
+        val oldIntro = introductionItem.first
+        val newIntroduction = TI_Data(
+          oldIntro.id, oldIntro.state, TI_Database.UNKNOWN_INTRODUCER_SERVICE_ID,
+          oldIntro.introduceeServiceId, oldIntro.introduceeName, oldIntro.introduceeNumber,
+          oldIntro.introduceeIdentityKey, oldIntro.predictedSecurityNumber, oldIntro.timestamp
+        )
+        return Pair(newIntroduction, IntroducerInformation(forgottenPlaceholder, forgottenPlaceholder))
       }
 
-      @Override public boolean databaseCall(TI_Data introduction) {
-        Preconditions.checkArgument(introduction.getId() != null);
-        return SignalDatabase.tiDatabase().deleteIntroduction(introduction.getId());
+      @WorkerThread
+      override fun databaseCall(introduction: TI_Data): Boolean {
+        return SignalDatabase.tiDatabase.clearIntroducer(introduction)
       }
 
-      @NonNull @Override public String errorMessage(Long introductionId) {
-        return "The deletion of introduction " + introductionId + "did not succeed!";
+      override fun errorMessage(introductionId: Long): String {
+        return "Error while trying to forget Introducer for introduction: $introductionId"
       }
-    });
+    })
   }
 
-  void forgetIntroducer(@NonNull Long introductionId) {
-    iterateAndModify(introductionId, new Modify() {
-      @Nullable @Override public Pair<TI_Data, IntroducerInformation> modifyIntroductionItem(Pair<TI_Data, IntroducerInformation> introductionItem) {
-        TI_Data oldIntro        = introductionItem.first;
-        TI_Data newIntroduction = new TI_Data(oldIntro.getId(), oldIntro.getState(), TI_Database.UNKNOWN_INTRODUCER_SERVICE_ID, oldIntro.getIntroduceeServiceId(), oldIntro.getIntroduceeName(), oldIntro.getIntroduceeNumber(), oldIntro.getIntroduceeIdentityKey(), oldIntro.getPredictedSecurityNumber(), oldIntro.getTimestamp());
-        return new Pair<>(newIntroduction, new IntroducerInformation(forgottenPlaceholder, forgottenPlaceholder));
+  fun acceptIntroduction(introductionId: Long) {
+    iterateAndModify(introductionId, object : Modify {
+      override fun modifyIntroductionItem(introductionItem: Pair<TI_Data, IntroducerInformation>): Pair<TI_Data, IntroducerInformation> {
+        val oldIntroduction = introductionItem.first
+        val newAcceptState = if (SignalDatabase.tiDatabase.isRecipientUnknown(oldIntroduction.introduceeServiceId))
+          TI_Database.State.ACCEPTED_UNKNOWN else TI_Database.State.ACCEPTED
+
+        val newIntroduction = TI_Data(
+          oldIntroduction.id, newAcceptState, oldIntroduction.introducerServiceId,
+          oldIntroduction.introduceeServiceId, oldIntroduction.introduceeName,
+          oldIntroduction.introduceeNumber, oldIntroduction.introduceeIdentityKey,
+          oldIntroduction.predictedSecurityNumber, oldIntroduction.timestamp
+        )
+        return Pair(newIntroduction, introductionItem.second)
       }
 
-      @WorkerThread @Override public boolean databaseCall(TI_Data introduction) {
-        return SignalDatabase.tiDatabase().clearIntroducer(introduction);
+      override fun databaseCall(introduction: TI_Data): Boolean {
+        return SignalDatabase.tiDatabase.acceptIntroduction(introduction)
       }
 
-      @NonNull @Override public String errorMessage(Long introductionId) {
-        return "Error while trying to forget Introducer for introduction: " + introductionId;
+      override fun errorMessage(introductionId: Long): String {
+        return "Failed to accept introduction: $introductionId"
       }
-    });
+    })
   }
 
-  void acceptIntroduction(@NonNull Long introductionId) {
-    iterateAndModify(introductionId, new Modify() {
-      @Nullable @Override public Pair<TI_Data, IntroducerInformation> modifyIntroductionItem(Pair<TI_Data, IntroducerInformation> introductionItem) {
-        TI_Data           oldIntroduction = introductionItem.first;
-        TI_Database.State newAcceptState  = SignalDatabase.tiDatabase().isRecipientUnknown(oldIntroduction.getIntroduceeServiceId()) ? TI_Database.State.ACCEPTED_UNKNOWN : TI_Database.State.ACCEPTED;
-        TI_Data newIntroduction = new TI_Data(oldIntroduction.getId(), newAcceptState, oldIntroduction.getIntroducerServiceId(), oldIntroduction.getIntroduceeServiceId(), oldIntroduction
-            .getIntroduceeName(), oldIntroduction.getIntroduceeNumber(), oldIntroduction.getIntroduceeIdentityKey(), oldIntroduction.getPredictedSecurityNumber(), oldIntroduction.getTimestamp());
-        return new Pair<>(newIntroduction, introductionItem.second);
+  fun rejectIntroduction(introductionId: Long) {
+    iterateAndModify(introductionId, object : Modify {
+      override fun modifyIntroductionItem(introductionItem: Pair<TI_Data, IntroducerInformation>): Pair<TI_Data, IntroducerInformation> {
+        val oldIntroduction = introductionItem.first
+        val newRejectedState = if (SignalDatabase.tiDatabase.isRecipientUnknown(oldIntroduction.introduceeServiceId))
+          TI_Database.State.REJECTED_UNKNOWN else TI_Database.State.REJECTED
+
+        val newIntroduction = TI_Data(
+          oldIntroduction.id, newRejectedState, oldIntroduction.introducerServiceId,
+          oldIntroduction.introduceeServiceId, oldIntroduction.introduceeName,
+          oldIntroduction.introduceeNumber, oldIntroduction.introduceeIdentityKey,
+          oldIntroduction.predictedSecurityNumber, oldIntroduction.timestamp
+        )
+        return Pair(newIntroduction, introductionItem.second)
       }
 
-      @Override public boolean databaseCall(TI_Data introduction) {
-        return SignalDatabase.tiDatabase().acceptIntroduction(introduction);
+      override fun databaseCall(introduction: TI_Data): Boolean {
+        return SignalDatabase.tiDatabase.rejectIntroduction(introduction)
       }
 
-      @NonNull @Override public String errorMessage(Long introductionId) {
-        return "Failed to accept introduction: " + introductionId;
+      override fun errorMessage(introductionId: Long): String {
+        return "Failed to reject introduction: $introductionId"
       }
-    });
-  }
-
-  void rejectIntroduction(@NonNull Long introductionId) {
-    iterateAndModify(introductionId, new Modify() {
-      @Nullable @Override public Pair<TI_Data, IntroducerInformation> modifyIntroductionItem(Pair<TI_Data, IntroducerInformation> introductionItem) {
-        TI_Data oldIntroduction = introductionItem.first;
-        TI_Database.State newRejectedState  = SignalDatabase.tiDatabase().isRecipientUnknown(oldIntroduction.getIntroduceeServiceId()) ? TI_Database.State.REJECTED_UNKNOWN : TI_Database.State.REJECTED;
-        TI_Data newIntroduction = new TI_Data(oldIntroduction.getId(), newRejectedState, oldIntroduction.getIntroducerServiceId(), oldIntroduction.getIntroduceeServiceId(), oldIntroduction
-            .getIntroduceeName(), oldIntroduction.getIntroduceeNumber(), oldIntroduction.getIntroduceeIdentityKey(), oldIntroduction.getPredictedSecurityNumber(), oldIntroduction.getTimestamp());
-        return new Pair<>(newIntroduction, introductionItem.second);
-      }
-
-      @Override public boolean databaseCall(TI_Data introduction) {
-        return SignalDatabase.tiDatabase().rejectIntroduction(introduction);
-      }
-
-      @NonNull @Override public String errorMessage(Long introductionId) {
-        return "Failed to reject introduction: " + introductionId;
-      }
-    });
+    })
   }
 
   /**
    * Generic iterator for manipulating the introductions list
    *
    * @param introductionId which introduction to manipulate
-   * @param m              function handles for modification and database call
-   *                       Does not modify the original introduction
+   * @param m function handles for modification and database call
+   * Does not modify the original introduction
    */
-  private void iterateAndModify(@NonNull Long introductionId, Modify m) {
-    List<Pair<TI_Data, IntroducerInformation>> all     = introductions.getValue();
-    Pair<TI_Data, IntroducerInformation>       current = all.get(0);
-    int                                        i       = 1;
-    while (!current.first.getId().equals(introductionId) && i < all.size()) {
-      current = all.get(i++);
+  private fun iterateAndModify(introductionId: Long, m: Modify) {
+    val all = introductions.value ?: return
+    var current = all[0]
+    var i = 1
+    while (current.first.id != introductionId && i < all.size) {
+      current = all[i++]
     }
-    i--;
-    if (!current.first.getId().equals(introductionId)) {
-      throw new AssertionError(TAG + ": the introduction id was not present in the viewModels List");
+    i--
+
+    if (current.first.id != introductionId) {
+      throw AssertionError("$TAG: the introduction id was not present in the viewModels List")
     }
-    all.remove(i);
-    // This needs to happen before current is potentially deleted
-    TI_Data modifiedIntroduction = current.first;
-    current = m.modifyIntroductionItem(current);
-    if (current != null) {
-      // only reassign if current was not deleted
-      modifiedIntroduction = current.first;
-      // TODO: Missing differentiation between NEW and other two screen types
-      all.add(current);
-    } // else don't add back to list
-    final TI_Data finalIntroduction = modifiedIntroduction;
-    introductions.postValue(all);
-    Log.i(TAG, "Introduction modification complete!");
-    SignalExecutors.BOUNDED.execute(() -> {
-      boolean res = m.databaseCall(finalIntroduction);
+
+    val mutableAll = all.toMutableList()
+    mutableAll.removeAt(i)
+
+    val modifiedIntroduction = current.first
+    val modifiedCurrent = m.modifyIntroductionItem(current)
+
+    if (modifiedCurrent != null) {
+      mutableAll.add(modifiedCurrent)
+    }
+
+    val finalIntroduction = modifiedCurrent?.first ?: modifiedIntroduction
+    introductions.postValue(mutableAll)
+
+    Log.i(TAG, "Introduction modification complete!")
+    SignalExecutors.BOUNDED.execute {
+      val res = m.databaseCall(finalIntroduction)
       if (!res) {
-        Log.e(TAG, m.errorMessage(introductionId));
+        Log.e(TAG, m.errorMessage(introductionId))
       }
-    });
+    }
   }
+
+  fun getIntroductions(): LiveData<List<Pair<TI_Data, IntroducerInformation>>> = introductions
 
   private interface Modify {
     /**
      * @param introductionItem the item to be modified. Implementations must return a modified copy and leave the original item untouched.
      * @return a modified introduction list item
      */
-    @Nullable Pair<TI_Data, IntroducerInformation> modifyIntroductionItem(Pair<TI_Data, IntroducerInformation> introductionItem);
+    fun modifyIntroductionItem(introductionItem: Pair<TI_Data, IntroducerInformation>): Pair<TI_Data, IntroducerInformation>?
 
-    @WorkerThread boolean databaseCall(TI_Data introduction);
+    @WorkerThread
+    fun databaseCall(introduction: TI_Data): Boolean
 
-    @NonNull String errorMessage(Long introductionId);
+    fun errorMessage(introductionId: Long): String
   }
 
-  public LiveData<List<Pair<TI_Data, IntroducerInformation>>> getIntroductions() {
-    // this is naughty!!! IntroducerInformation is not scoped here
-    return introductions;
-  }
+  data class IntroducerInformation(public val name: String, public val number: String)
 
-  static class IntroducerInformation {
-    String name;
-    String number;
+  class Factory(private val forgottenPlaceholder: String) : ViewModelProvider.Factory {
+    private val manager = ManageManager(SignalDatabase.tiDatabase, forgottenPlaceholder)
 
-    public IntroducerInformation(String name, String number) {
-      this.name   = name;
-      this.number = number;
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+      return Objects.requireNonNull(modelClass.cast(ManageViewModel(manager, forgottenPlaceholder))) as T
     }
   }
-
-  static class Factory implements ViewModelProvider.Factory {
-
-    private final ManageManager manager;
-    private final String        forgottenPlaceholder;
-
-    Factory(@NonNull String forgottenPlaceholder) {
-      this.manager              = new ManageManager(SignalDatabase.tiDatabase(), forgottenPlaceholder);
-      this.forgottenPlaceholder = forgottenPlaceholder;
-    }
-
-    @Override
-    public @NonNull <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
-      return Objects.requireNonNull(modelClass.cast(new ManageViewModel(manager, forgottenPlaceholder)));
-    }
-  }
-
 }

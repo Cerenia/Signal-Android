@@ -1,18 +1,11 @@
-package org.thoughtcrime.securesms.trustedIntroductions.receive;
+package org.thoughtcrime.securesms.trustedIntroductions.receive
 
-import android.content.Context;
-import android.util.AttributeSet;
+import android.content.Context
+import android.util.AttributeSet
+import androidx.constraintlayout.widget.ConstraintLayout
 
-import androidx.annotation.NonNull;
-import androidx.constraintlayout.widget.ConstraintLayout;
+class ManageListHeader : ConstraintLayout {
+  constructor(context: Context, attrs: AttributeSet?) : super(context, attrs)
 
-public class ManageListHeader extends ConstraintLayout {
-
-  public ManageListHeader(Context context, AttributeSet attrs) {
-    super(context, attrs);
-  }
-
-  public ManageListHeader(@NonNull Context context) {
-    super(context);
-  }
+  constructor(context: Context) : super(context)
 }

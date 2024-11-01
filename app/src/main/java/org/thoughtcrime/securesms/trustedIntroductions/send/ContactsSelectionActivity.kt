@@ -113,7 +113,7 @@ class ContactsSelectionActivity : PassphraseRequiredActivity(), ContactsSelectio
     contactFilterView = findViewById(R.id.contact_filter_edit_text)
   }
 
-  override fun onContactSelected(recipientId: Optional<RecipientId>, number: String?) {
+  override fun onContactSelected(recipientId: Optional<RecipientId?>?, number: String?) {
     val selectedContactsCount = viewModel.selectedContactsCount
     when {
       selectedContactsCount == 0 -> {

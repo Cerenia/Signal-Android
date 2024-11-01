@@ -263,8 +263,8 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
           boolean matchSeconds          = filterPattern.matcher(timestampParts.seconds).find();
           boolean matchIntroduceeName   = filterPattern.matcher(d.getIntroduceeName()).find();
           boolean matchIntroduceeNumber = filterPattern.matcher(d.getIntroduceeNumber()).find();
-          boolean matchIntroducerName   = filterPattern.matcher(p.second.name).find();
-          boolean matchIntroducerNumber = filterPattern.matcher(p.second.number).find();
+          boolean matchIntroducerName   = filterPattern.matcher(p.second.getName()).find();
+          boolean matchIntroducerNumber = filterPattern.matcher(p.second.getNumber()).find();
           if (!(matchYear || matchMonth || matchDay || matchHours || !matchMinutes || matchSeconds || matchIntroduceeName || matchIntroduceeNumber
                 || matchIntroducerName || matchIntroducerNumber))
           {
@@ -330,7 +330,7 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
    *
    * @param introductionId the introduction to delete.
    */
-  @Override public void deleteIntroduction(@NonNull Long introductionId) {
+  @Override public void deleteIntroduction(long introductionId) {
     viewModel.deleteIntroduction(introductionId);
   }
 
@@ -339,7 +339,7 @@ public class ManageListFragment extends Fragment implements DeleteIntroductionDi
    *
    * @param introductionId the introduction for which to mask the introducer.
    */
-  @Override public void forgetIntroducer(@NonNull Long introductionId) {
+  @Override public void forgetIntroducer(long introductionId) {
     viewModel.forgetIntroducer(introductionId);
   }
 
