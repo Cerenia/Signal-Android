@@ -22,7 +22,6 @@ interface MessageRequestRepositoryGlue {
     /**
      * TODO: Do I need some kind of callback to modify the banner as the results come in?
      *
-     *
      * When a new conversation is initiated by us, we need to check the introduction database for existing introductions for that service ID.
      * For each introduction that was present, we must shift them from the 'unknown' state to their 'known' counterpart (FSM transitions in TI_Database) &
      * check if they must be turned stale, by comparing the current Identity Key (hits the network) with what we have in the introductions.

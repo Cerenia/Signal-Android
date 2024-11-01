@@ -84,7 +84,7 @@ interface VerifyDisplayFragmentGlue {
       }
     }
 
-    fun updateVerifyButtonLogic(verifyButton: Button, recipientId: RecipientId, activity: FragmentActivity?, remoteIdentity: IdentityKey) {
+    private fun updateVerifyButtonLogic(verifyButton: Button, recipientId: RecipientId, activity: FragmentActivity?, remoteIdentity: IdentityKey) {
       // TODO: This needs a good refactoring since I want to be close to the original. I completely mangled this class.
       // Check the current verification status
       val previousStatus = tiIdentityTable.getVerifiedStatus(recipientId)

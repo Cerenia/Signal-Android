@@ -1,283 +1,221 @@
-package org.thoughtcrime.securesms.trustedIntroductions.database;
+package org.thoughtcrime.securesms.trustedIntroductions.database
 
-import android.annotation.SuppressLint;
-import android.content.ContentValues;
-import android.content.Context;
-import android.database.Cursor;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.annotation.VisibleForTesting;
-import androidx.annotation.WorkerThread;
-
-import org.jetbrains.annotations.NotNull;
-import org.signal.core.util.SqlUtil;
-import org.signal.core.util.logging.Log;
-import org.thoughtcrime.securesms.database.DatabaseTable;
-import org.thoughtcrime.securesms.database.SQLiteDatabase;
-import org.thoughtcrime.securesms.database.SignalDatabase;
-import org.thoughtcrime.securesms.database.model.RecipientRecord;
-import org.thoughtcrime.securesms.recipients.Recipient;
-import org.thoughtcrime.securesms.trustedIntroductions.MissingIdentityException;
-import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue;
-import org.thoughtcrime.securesms.trustedIntroductions.glue.RecipientTableGlue;
-import org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue;
-import org.thoughtcrime.securesms.recipients.RecipientId;
-import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
-import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
-import org.whispersystems.signalservice.api.push.ServiceId;
-import org.whispersystems.signalservice.api.util.Preconditions;
-
-import java.io.Closeable;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-
-import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.getRecipientIdOrUnknown;
+import android.annotation.SuppressLint
+import android.content.ContentValues
+import android.content.Context
+import android.database.Cursor
+import androidx.annotation.VisibleForTesting
+import androidx.annotation.WorkerThread
+import org.signal.core.util.SqlUtil.buildArgs
+import org.signal.core.util.logging.Log.e
+import org.signal.core.util.logging.Log.i
+import org.signal.core.util.logging.Log.tag
+import org.signal.core.util.logging.Log.w
+import org.thoughtcrime.securesms.database.DatabaseTable
+import org.thoughtcrime.securesms.database.SQLiteDatabase
+import org.thoughtcrime.securesms.database.SignalDatabase
+import org.thoughtcrime.securesms.database.SignalDatabase.Companion.recipients
+import org.thoughtcrime.securesms.database.SignalDatabase.Companion.tiDatabase
+import org.thoughtcrime.securesms.database.SignalDatabase.Companion.tiIdentityTable
+import org.thoughtcrime.securesms.database.model.RecipientRecord
+import org.thoughtcrime.securesms.recipients.Recipient
+import org.thoughtcrime.securesms.recipients.Recipient.Companion.live
+import org.thoughtcrime.securesms.recipients.RecipientId
+import org.thoughtcrime.securesms.trustedIntroductions.MissingIdentityException
+import org.thoughtcrime.securesms.trustedIntroductions.TI_Data
+import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils
+import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.getEncodedIdentityKey
+import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.getRecipientIdOrUnknown
+import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue
+import org.thoughtcrime.securesms.trustedIntroductions.glue.RecipientTableGlue.getRecordsForSendingTI
+import org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue
+import org.whispersystems.signalservice.api.push.ServiceId.Companion.parseOrThrow
+import org.whispersystems.signalservice.api.util.Preconditions
+import java.io.Closeable
+import java.io.IOException
+import java.util.Optional
 
 /**
  * Database holding received trusted Introductions.
  * We are consciously trying to have the sending Introduction ephemeral since we want to maximize privacy,
  * (think an Informant that forwards someone to a Journalist, you don't want that information hanging around)
- * <p>
+ *
+ *
  * This implementation currently does not support multi-device.
  */
-public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
-
-  private static final String TAG = String.format(TI_Utils.TI_LOG_TAG, Log.tag(TI_Database.class));
-
-  private static TI_DatabaseGlue instance = null;
-
-  public static void setInstance(TI_DatabaseGlue inst) throws Exception {
-    if (instance != null) {
-      throw new Exception("Attempted to reassign Singleton instance of TI_Database");
-    }
-    instance = inst;
-  }
-
-  public static TI_DatabaseGlue getInstance() {
-    if (instance == null) {
-      throw new AssertionError("Attempted to fetch Singleton TI_Database before initializing it.");
-    }
-    return instance;
-  }
-
-  public static final String TABLE_NAME = "trusted_introductions";
-
-  private static final String ID                              = "_id";
-  public static final  String INTRODUCER_SERVICE_ID           = "introducer_service_id";
-  private static final String INTRODUCEE_SERVICE_ID           = "introducee_service_id";
-  private static final String INTRODUCEE_PUBLIC_IDENTITY_KEY  = "introducee_identity_key"; // The one contained in the Introduction
-  private static final String INTRODUCEE_NAME                 = "introducee_name"; // TODO: snapshot when introduction happened. Necessary? Or wrong approach?
-  private static final String INTRODUCEE_NUMBER               = "introducee_number"; // TODO: snapshot when introduction happened. Necessary? Or wrong approach?
-  private static final String PREDICTED_FINGERPRINT           = "predicted_fingerprint";
-  private static final String TIMESTAMP                       = "timestamp";
-  private static final String STATE                           = "state";
-  public static final  long   UNKNOWN_INTRODUCEE_RECIPIENT_ID = -1; //TODO: need to search through database for serviceID when new recipient is added in order to initialize.
-  public static final  String UNKNOWN_INTRODUCER_SERVICE_ID   = "-1";
-
-  // Service ID was an Integer mistakenly + had a nonnull constraint, ignore and execute correct statement instead
-  public static final String PREVIOUS_PARTIAL_CREATE_TABLE = "CREATE TABLE " + TABLE_NAME + " (" + ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                                                             INTRODUCER_SERVICE_ID;
-
-  public static final String CREATE_TABLE =
-      "CREATE TABLE " + TABLE_NAME + " (" + ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-      INTRODUCER_SERVICE_ID + " TEXT, " +
-      INTRODUCEE_SERVICE_ID + " TEXT NOT NULL, " +
-      INTRODUCEE_PUBLIC_IDENTITY_KEY + " TEXT NOT NULL, " +
-      INTRODUCEE_NAME + " TEXT NOT NULL, " +
-      INTRODUCEE_NUMBER + " TEXT, " +
-      PREDICTED_FINGERPRINT + " TEXT NOT NULL, " +
-      TIMESTAMP + " INTEGER NOT NULL, " +
-      STATE + " INTEGER NOT NULL);";
-
-  private static final String CLEAR_TABLE = "DELETE FROM " + TABLE_NAME + ";";
-
+class TI_Database(context: Context?, databaseHelper: SignalDatabase?) : DatabaseTable(context, databaseHelper), TI_DatabaseGlue {
   @VisibleForTesting
-  public void clearTable() {
+  fun clearTable() {
     // Debugging
-    SQLiteDatabase db  = databaseHelper.getSignalWritableDatabase();
-    int            res = db.delete(TABLE_NAME, "", new String[] {});
+    val db: SQLiteDatabase = databaseHelper.signalWritableDatabase
+    val res: Int = db.delete(TABLE_NAME, "", arrayOf())
     if (res < 0) {
-      Log.w(TAG, "Failed to clear table: " + TABLE_NAME);
+      w(TAG, "Failed to clear table: $TABLE_NAME")
     }
   }
-
-  private static final String[] TI_ALL_PROJECTION = new String[] {
-      ID,
-      INTRODUCER_SERVICE_ID,
-      INTRODUCEE_SERVICE_ID,
-      INTRODUCEE_PUBLIC_IDENTITY_KEY,
-      INTRODUCEE_NAME,
-      INTRODUCEE_NUMBER,
-      PREDICTED_FINGERPRINT,
-      TIMESTAMP,
-      STATE
-  };
-
 
   /**
    * All states in the FSM for Introductions.
    */
-  public enum State {
+  enum class State {
     PENDING, ACCEPTED, REJECTED, PENDING_UNKNOWN, ACCEPTED_UNKNOWN, REJECTED_UNKNOWN, PENDING_CONFLICTING, ACCEPTED_CONFLICTING, REJECTED_CONFLICTING, STALE_PENDING, STALE_ACCEPTED,
     STALE_REJECTED, STALE_PENDING_CONFLICTING, STALE_ACCEPTED_CONFLICTING, STALE_REJECTED_CONFLICTING;
 
-    public int toInt() {
-      return switch (this) {
-        case PENDING -> 0;
-        case ACCEPTED -> 1;
-        case REJECTED -> 2;
-        case PENDING_UNKNOWN -> 3;
-        case ACCEPTED_UNKNOWN -> 4;
-        case REJECTED_UNKNOWN -> 5;
-        case PENDING_CONFLICTING -> 6;
-        case ACCEPTED_CONFLICTING -> 7;
-        case REJECTED_CONFLICTING -> 8;
-        case STALE_PENDING -> 9;
-        case STALE_ACCEPTED -> 10;
-        case STALE_REJECTED -> 11;
-        case STALE_PENDING_CONFLICTING -> 12;
-        case STALE_ACCEPTED_CONFLICTING -> 13;
-        case STALE_REJECTED_CONFLICTING -> 14;
-      };
+    fun toInt(): Int {
+      return when (this) {
+        PENDING -> 0
+        ACCEPTED -> 1
+        REJECTED -> 2
+        PENDING_UNKNOWN -> 3
+        ACCEPTED_UNKNOWN -> 4
+        REJECTED_UNKNOWN -> 5
+        PENDING_CONFLICTING -> 6
+        ACCEPTED_CONFLICTING -> 7
+        REJECTED_CONFLICTING -> 8
+        STALE_PENDING -> 9
+        STALE_ACCEPTED -> 10
+        STALE_REJECTED -> 11
+        STALE_PENDING_CONFLICTING -> 12
+        STALE_ACCEPTED_CONFLICTING -> 13
+        STALE_REJECTED_CONFLICTING -> 14
+      }
     }
 
-    public static State forState(int state) {
-      return switch (state) {
-        case 0 -> PENDING;
-        case 1 -> ACCEPTED;
-        case 2 -> REJECTED;
-        case 3 -> PENDING_UNKNOWN;
-        case 4 -> ACCEPTED_UNKNOWN;
-        case 5 -> REJECTED_UNKNOWN;
-        case 6 -> PENDING_CONFLICTING;
-        case 7 -> ACCEPTED_CONFLICTING;
-        case 8 -> REJECTED_CONFLICTING;
-        case 9 -> STALE_PENDING;
-        case 10 -> STALE_ACCEPTED;
-        case 11 -> STALE_REJECTED;
-        case 12 -> STALE_PENDING_CONFLICTING;
-        case 13 -> STALE_ACCEPTED_CONFLICTING;
-        case 14 -> STALE_REJECTED_CONFLICTING;
-        default -> throw new AssertionError("No such state: " + state);
-      };
-    }
+    val isStale: Boolean
+      get() = when (this) {
+        STALE_PENDING, STALE_ACCEPTED, STALE_REJECTED, STALE_PENDING_CONFLICTING, STALE_ACCEPTED_CONFLICTING, STALE_REJECTED_CONFLICTING -> true
+        else -> false
+      }
 
-    public boolean isStale() {
-      return switch (this) {
-        case STALE_PENDING, STALE_ACCEPTED, STALE_REJECTED, STALE_PENDING_CONFLICTING, STALE_ACCEPTED_CONFLICTING, STALE_REJECTED_CONFLICTING -> true;
-        default -> false;
-      };
-    }
+    val isPending: Boolean
+      get() {
+        return when (this) {
+          PENDING, PENDING_CONFLICTING, PENDING_UNKNOWN, STALE_PENDING, STALE_PENDING_CONFLICTING -> true
+          else -> false
+        }
+      }
 
-    public boolean isPending() {
-      return switch (this) {
-        case PENDING, PENDING_CONFLICTING, PENDING_UNKNOWN, STALE_PENDING, STALE_PENDING_CONFLICTING -> true;
-        default -> false;
-      };
-    }
+    val isUnknownRecipient: Boolean
+      get() {
+        return when (this) {
+          PENDING_UNKNOWN, ACCEPTED_UNKNOWN, REJECTED_UNKNOWN -> true
+          else -> false
+        }
+      }
 
-    public boolean isUnknownRecipient() {
-      return switch (this) {
-        case PENDING_UNKNOWN, ACCEPTED_UNKNOWN, REJECTED_UNKNOWN -> true;
-        default -> false;
-      };
-    }
+    val isConflicting: Boolean
+      get() {
+        return when (this) {
+          PENDING_CONFLICTING, ACCEPTED_CONFLICTING, REJECTED_CONFLICTING, STALE_PENDING_CONFLICTING, STALE_ACCEPTED_CONFLICTING, STALE_REJECTED_CONFLICTING -> true
+          else -> false
+        }
+      }
 
-    public boolean isConflicting() {
-      return switch (this) {
-        case PENDING_CONFLICTING, ACCEPTED_CONFLICTING, REJECTED_CONFLICTING, STALE_PENDING_CONFLICTING, STALE_ACCEPTED_CONFLICTING, STALE_REJECTED_CONFLICTING -> true;
-        default -> false;
-      };
-    }
+    val isTrusted: Boolean
+      get() {
+        return when (this) {
+          ACCEPTED, ACCEPTED_UNKNOWN, ACCEPTED_CONFLICTING, STALE_ACCEPTED, STALE_ACCEPTED_CONFLICTING -> true
+          else -> false
+        }
+      }
 
-    public boolean isTrusted() {
-      return switch (this) {
-        case ACCEPTED, ACCEPTED_UNKNOWN, ACCEPTED_CONFLICTING, STALE_ACCEPTED, STALE_ACCEPTED_CONFLICTING -> true;
-        default -> false;
-      };
-    }
+    val isDistrusted: Boolean
+      get() {
+        return when (this) {
+          REJECTED, REJECTED_UNKNOWN, REJECTED_CONFLICTING, STALE_REJECTED, STALE_REJECTED_CONFLICTING -> true
+          else -> false
+        }
+      }
 
-    public boolean isDistrusted() {
-      return switch (this) {
-        case REJECTED, REJECTED_UNKNOWN, REJECTED_CONFLICTING, STALE_REJECTED, STALE_REJECTED_CONFLICTING -> true;
-        default -> false;
-      };
+    companion object {
+      fun forState(state: Int): State {
+        return when (state) {
+          0 -> PENDING
+          1 -> ACCEPTED
+          2 -> REJECTED
+          3 -> PENDING_UNKNOWN
+          4 -> ACCEPTED_UNKNOWN
+          5 -> REJECTED_UNKNOWN
+          6 -> PENDING_CONFLICTING
+          7 -> ACCEPTED_CONFLICTING
+          8 -> REJECTED_CONFLICTING
+          9 -> STALE_PENDING
+          10 -> STALE_ACCEPTED
+          11 -> STALE_REJECTED
+          12 -> STALE_PENDING_CONFLICTING
+          13 -> STALE_ACCEPTED_CONFLICTING
+          14 -> STALE_REJECTED_CONFLICTING
+          else -> throw AssertionError("No such state: $state")
+        }
+      }
     }
   }
-
-  public TI_Database(Context context, SignalDatabase databaseHelper) {
-    super(context, databaseHelper);
-  }
-
 
   /**
    * Used to update a database entry. Pass all the data that should stay the same and change what needs to be updated.
    *
    * @return Content Values for the updated entry
    */
-  private @NonNull ContentValues buildContentValuesForUpdate(@NonNull Long introductionId,
-                                                             @NonNull State state,
-                                                             @Nullable String introducerServiceId,
-                                                             @NonNull String serviceId,
-                                                             @NonNull String name,
-                                                             @Nullable String number,
-                                                             @NonNull String identityKey,
-                                                             @NonNull String predictedFingerprint,
-                                                             @NonNull Long timestamp)
-  {
-    ContentValues cv = new ContentValues();
-    cv.put(ID, introductionId);
-    cv.put(STATE, state.toInt());
-    cv.put(INTRODUCER_SERVICE_ID, introducerServiceId);
-    cv.put(INTRODUCEE_SERVICE_ID, serviceId);
-    cv.put(INTRODUCEE_NAME, name);
-    cv.put(INTRODUCEE_NUMBER, number);
-    cv.put(INTRODUCEE_PUBLIC_IDENTITY_KEY, identityKey);
-    cv.put(PREDICTED_FINGERPRINT, predictedFingerprint);
-    cv.put(TIMESTAMP, timestamp);
-    return cv;
+  private fun buildContentValuesForUpdate(
+    introductionId: Long,
+    state: State,
+    introducerServiceId: String?,
+    serviceId: String,
+    name: String,
+    number: String?,
+    identityKey: String,
+    predictedFingerprint: String,
+    timestamp: Long
+  ): ContentValues {
+    val cv = ContentValues()
+    cv.put(ID, introductionId)
+    cv.put(STATE, state.toInt())
+    cv.put(INTRODUCER_SERVICE_ID, introducerServiceId)
+    cv.put(INTRODUCEE_SERVICE_ID, serviceId)
+    cv.put(INTRODUCEE_NAME, name)
+    cv.put(INTRODUCEE_NUMBER, number)
+    cv.put(INTRODUCEE_PUBLIC_IDENTITY_KEY, identityKey)
+    cv.put(PREDICTED_FINGERPRINT, predictedFingerprint)
+    cv.put(TIMESTAMP, timestamp)
+    return cv
   }
 
   /**
    * @param c         a cursor pointing to a fully populated query result in the database.
    * @param timestamp the new timestamp to insert.
    */
-  @SuppressLint("Range") private @NonNull ContentValues buildContentValuesForTimestampUpdate(Cursor c, long timestamp) {
-    return buildContentValuesForUpdate(c.getString(c.getColumnIndex(ID)),
-                                       c.getString(c.getColumnIndex(STATE)),
-                                       c.getString(c.getColumnIndex(INTRODUCER_SERVICE_ID)),
-                                       c.getString(c.getColumnIndex(INTRODUCEE_SERVICE_ID)),
-                                       c.getString(c.getColumnIndex(INTRODUCEE_NAME)),
-                                       c.getString(c.getColumnIndex(INTRODUCEE_NUMBER)),
-                                       c.getString(c.getColumnIndex(INTRODUCEE_PUBLIC_IDENTITY_KEY)),
-                                       c.getString(c.getColumnIndex(PREDICTED_FINGERPRINT)),
-                                       String.valueOf(timestamp));
+  @SuppressLint("Range")
+  private fun buildContentValuesForTimestampUpdate(c: Cursor, timestamp: Long): ContentValues {
+    return buildContentValuesForUpdate(
+      c.getString(c.getColumnIndex(ID)),
+      c.getString(c.getColumnIndex(STATE)),
+      c.getString(c.getColumnIndex(INTRODUCER_SERVICE_ID)),
+      c.getString(c.getColumnIndex(INTRODUCEE_SERVICE_ID)),
+      c.getString(c.getColumnIndex(INTRODUCEE_NAME)),
+      c.getString(c.getColumnIndex(INTRODUCEE_NUMBER)),
+      c.getString(c.getColumnIndex(INTRODUCEE_PUBLIC_IDENTITY_KEY)),
+      c.getString(c.getColumnIndex(PREDICTED_FINGERPRINT)),
+      timestamp.toString()
+    )
   }
 
   /**
    * Convenience function when changing state of an introduction
    *
    * @param introduction the introduction to change the state of
-   * @param s            new state
+   * @param newState            new state
    * @return Correctly populated ContentValues
    */
-  @SuppressLint("Range") public @NonNull ContentValues buildContentValuesForStateUpdate(TI_Data introduction, State s) {
-    ContentValues values = buildContentValuesForUpdate(introduction);
-    values.remove(STATE);
-    values.put(STATE, s.toInt());
-    return values;
+  @SuppressLint("Range")
+  override fun buildContentValuesForStateUpdate(introduction: TI_Data, newState: State): ContentValues {
+    val values: ContentValues = buildContentValuesForUpdate(introduction)
+    values.remove(STATE)
+    values.put(STATE, newState.toInt())
+    return values
   }
 
-  @Override public SQLiteDatabase getSignalWritableDatabase() {
-    return this.databaseHelper.getSignalWritableDatabase();
+  override fun getSignalWritableDatabase(): SQLiteDatabase {
+    return databaseHelper.signalWritableDatabase
   }
 
   /**
@@ -293,26 +231,27 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
    * @param timestamp               when was the introduction made
    * @return populated content values ready for insertion
    */
-  @Override public ContentValues buildContentValuesForInsert(@NonNull State state,
-                                                             @NonNull String introducerServiceId,
-                                                             @NonNull String introduceeServiceId,
-                                                             @NonNull String introduceeName,
-                                                             @Nullable String introduceeNumber,
-                                                             @NonNull String introduceeIdentityKey,
-                                                             @NonNull String predictedSecurityNumber,
-                                                             long timestamp)
-  {
-    Preconditions.checkArgument(state == State.PENDING || state == State.PENDING_CONFLICTING || state == State.PENDING_UNKNOWN);
-    ContentValues cv = new ContentValues();
-    cv.put(STATE, state.toInt());
-    cv.put(INTRODUCER_SERVICE_ID, introducerServiceId);
-    cv.put(INTRODUCEE_SERVICE_ID, introduceeServiceId);
-    cv.put(INTRODUCEE_NAME, introduceeName);
-    cv.put(INTRODUCEE_NUMBER, introduceeNumber);
-    cv.put(INTRODUCEE_PUBLIC_IDENTITY_KEY, introduceeIdentityKey);
-    cv.put(PREDICTED_FINGERPRINT, predictedSecurityNumber);
-    cv.put(TIMESTAMP, timestamp);
-    return cv;
+  override fun buildContentValuesForInsert(
+    state: State,
+    introducerServiceId: String,
+    introduceeServiceId: String,
+    introduceeName: String,
+    introduceeNumber: String,
+    introduceeIdentityKey: String,
+    predictedSecurityNumber: String,
+    timestamp: Long
+  ): ContentValues {
+    Preconditions.checkArgument(state == State.PENDING || state == State.PENDING_CONFLICTING || state == State.PENDING_UNKNOWN)
+    val cv = ContentValues()
+    cv.put(STATE, state.toInt())
+    cv.put(INTRODUCER_SERVICE_ID, introducerServiceId)
+    cv.put(INTRODUCEE_SERVICE_ID, introduceeServiceId)
+    cv.put(INTRODUCEE_NAME, introduceeName)
+    cv.put(INTRODUCEE_NUMBER, introduceeNumber)
+    cv.put(INTRODUCEE_PUBLIC_IDENTITY_KEY, introduceeIdentityKey)
+    cv.put(PREDICTED_FINGERPRINT, predictedSecurityNumber)
+    cv.put(TIMESTAMP, timestamp)
+    return cv
   }
 
 
@@ -331,93 +270,103 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
    * @param timestamp            Expected to represent a Long.
    * @return Properly populated content values, NumberFormatException/AssertionError if a value was invalid.
    */
-  private @NonNull ContentValues buildContentValuesForUpdate(@NonNull String introductionId,
-                                                             @NonNull String state,
-                                                             @NonNull String introducerServiceId,
-                                                             @NonNull String introduceeServiceId,
-                                                             @NonNull String name,
-                                                             @Nullable String number,
-                                                             @NonNull String identityKey,
-                                                             @NonNull String predictedFingerprint,
-                                                             @NonNull String timestamp) throws NumberFormatException
-  {
-    Preconditions.checkArgument(!introductionId.isEmpty() &&
-                                !state.isEmpty() &&
-                                !introducerServiceId.isEmpty() &&
-                                !introduceeServiceId.isEmpty() &&
-                                !name.isEmpty() &&
-                                !identityKey.isEmpty() &&
-                                !predictedFingerprint.isEmpty() &&
-                                !timestamp.isEmpty());
-    long introId = Long.parseLong(introductionId);
-    Preconditions.checkArgument(introId > 0);
-    int s = Integer.parseInt(state);
-    Preconditions.checkArgument(s >= 0 && s <= 7);
-    long timestampLong = Long.parseLong(timestamp);
-    Preconditions.checkArgument(timestampLong > 0);
-    return buildContentValuesForUpdate(introId,
-                                       State.forState(s),
-                                       introducerServiceId,
-                                       introduceeServiceId,
-                                       name,
-                                       number,
-                                       identityKey,
-                                       predictedFingerprint,
-                                       timestampLong);
+  @Throws(NumberFormatException::class)
+  private fun buildContentValuesForUpdate(
+    introductionId: String,
+    state: String,
+    introducerServiceId: String,
+    introduceeServiceId: String,
+    name: String,
+    number: String?,
+    identityKey: String,
+    predictedFingerprint: String,
+    timestamp: String
+  ): ContentValues {
+    Preconditions.checkArgument(
+      introductionId.isNotEmpty() &&
+        state.isNotEmpty() &&
+        introducerServiceId.isNotEmpty() &&
+        introduceeServiceId.isNotEmpty() &&
+        name.isNotEmpty() &&
+        identityKey.isNotEmpty() &&
+        predictedFingerprint.isNotEmpty() &&
+        timestamp.isNotEmpty()
+    )
+    val introId: Long = introductionId.toLong()
+    Preconditions.checkArgument(introId > 0)
+    val s: Int = state.toInt()
+    Preconditions.checkArgument(s in 0..7)
+    val timestampLong: Long = timestamp.toLong()
+    Preconditions.checkArgument(timestampLong > 0)
+    return buildContentValuesForUpdate(
+      introId,
+      State.forState(s),
+      introducerServiceId,
+      introduceeServiceId,
+      name,
+      number,
+      identityKey,
+      predictedFingerprint,
+      timestampLong
+    )
   }
 
   /**
    * @param introduction PRE: none of it's fields may be null, except introducerServiceId (forgotten introducer)
    * @return A populated contentValues object, to use for updates.
    */
-  private @NonNull ContentValues buildContentValuesForUpdate(@NonNull TI_Data introduction) {
-    Preconditions.checkNotNull(introduction.getId());
-    Preconditions.checkNotNull(introduction.getState());
-    Preconditions.checkNotNull(introduction.getPredictedSecurityNumber());
-    final String introduceeName = introduction.getIntroduceeName() != null ? introduction.getIntroduceeName() : "";
-    return buildContentValuesForUpdate(introduction.getId(),
-                                       introduction.getState(),
-                                       introduction.getIntroducerServiceId(),
-                                       introduction.getIntroduceeServiceId(),
-                                       introduceeName,
-                                       introduction.getIntroduceeNumber(),
-                                       introduction.getIntroduceeIdentityKey(),
-                                       introduction.getPredictedSecurityNumber(),
-                                       introduction.getTimestamp());
+  private fun buildContentValuesForUpdate(introduction: TI_Data): ContentValues {
+    Preconditions.checkNotNull(introduction.id)
+    Preconditions.checkNotNull(introduction.state)
+    Preconditions.checkNotNull(introduction.predictedSecurityNumber)
+    val introduceeName: String = introduction.introduceeName ?: ""
+    return buildContentValuesForUpdate(
+      introduction.id!!,
+      introduction.state,
+      introduction.introducerServiceId,
+      introduction.introduceeServiceId,
+      introduceeName,
+      introduction.introduceeNumber,
+      introduction.introduceeIdentityKey,
+      introduction.predictedSecurityNumber!!,
+      introduction.timestamp
+    )
   }
 
   /**
    * @param introduction PRE: none of it's fields (except nr.) may be null, state != stale.
    * @return A populated contentValues object, to use when turning introductions stale.
    */
-  private @NonNull ContentValues buildContentValuesForStale(@NonNull TI_Data introduction) {
-    Preconditions.checkNotNull(introduction.getId());
-    Preconditions.checkNotNull(introduction.getState());
-    Preconditions.checkNotNull(introduction.getIntroducerServiceId());
-    Preconditions.checkNotNull(introduction.getPredictedSecurityNumber());
-    Preconditions.checkArgument(!introduction.getState().isStale());
+  private fun buildContentValuesForStale(introduction: TI_Data): ContentValues {
+    Preconditions.checkNotNull(introduction.id)
+    Preconditions.checkNotNull(introduction.state)
+    Preconditions.checkNotNull(introduction.introducerServiceId)
+    Preconditions.checkNotNull(introduction.predictedSecurityNumber)
+    Preconditions.checkArgument(!introduction.state.isStale)
     // Find stale state
-    State newState = switch (introduction.getState()) {
-      case PENDING, PENDING_UNKNOWN -> State.STALE_PENDING;
-      case ACCEPTED, ACCEPTED_UNKNOWN -> State.STALE_ACCEPTED;
-      case REJECTED, REJECTED_UNKNOWN -> State.STALE_REJECTED;
-      case PENDING_CONFLICTING -> State.STALE_PENDING_CONFLICTING;
-      case ACCEPTED_CONFLICTING -> State.STALE_ACCEPTED_CONFLICTING;
-      case REJECTED_CONFLICTING -> State.STALE_REJECTED_CONFLICTING;
-      default -> throw new AssertionError("State: " + introduction.getState() + " was illegal or already stale.");
-    };
+    val newState: State = when (introduction.state) {
+      State.PENDING, State.PENDING_UNKNOWN -> State.STALE_PENDING
+      State.ACCEPTED, State.ACCEPTED_UNKNOWN -> State.STALE_ACCEPTED
+      State.REJECTED, State.REJECTED_UNKNOWN -> State.STALE_REJECTED
+      State.PENDING_CONFLICTING -> State.STALE_PENDING_CONFLICTING
+      State.ACCEPTED_CONFLICTING -> State.STALE_ACCEPTED_CONFLICTING
+      State.REJECTED_CONFLICTING -> State.STALE_REJECTED_CONFLICTING
+      else -> throw AssertionError("State: " + introduction.state + " was illegal or already stale.")
+    }
 
-    final String introduceeName = introduction.getIntroduceeName() != null ? introduction.getIntroduceeName() : "";
+    val introduceeName: String = introduction.introduceeName ?: ""
 
-    return buildContentValuesForUpdate(introduction.getId(),
-                                       newState,
-                                       introduction.getIntroducerServiceId(),
-                                       introduction.getIntroduceeServiceId(),
-                                       introduceeName,
-                                       introduction.getIntroduceeNumber(),
-                                       introduction.getIntroduceeIdentityKey(),
-                                       introduction.getPredictedSecurityNumber(),
-                                       introduction.getTimestamp());
+    return buildContentValuesForUpdate(
+      introduction.id!!,
+      newState,
+      introduction.introducerServiceId,
+      introduction.introduceeServiceId,
+      introduceeName,
+      introduction.introduceeNumber,
+      introduction.introduceeIdentityKey,
+      introduction.predictedSecurityNumber!!,
+      introduction.timestamp
+    )
   }
 
 
@@ -427,55 +376,58 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
    * @param introduction the introduction for the previously unknown recipient.
    * @return content Values executing the appropriate state transitions for the introduction
    */
-  private @NonNull ContentValues buildContentValuesForUnknownTransition(@NonNull TI_Data introduction) {
-    Preconditions.checkNotNull(introduction.getId());
-    Preconditions.checkNotNull(introduction.getState());
-    Preconditions.checkNotNull(introduction.getIntroducerServiceId());
-    Preconditions.checkNotNull(introduction.getPredictedSecurityNumber());
-    Preconditions.checkArgument(introduction.getState().isUnknownRecipient());
+  private fun buildContentValuesForUnknownTransition(introduction: TI_Data): ContentValues {
+    Preconditions.checkNotNull(introduction.id)
+    Preconditions.checkNotNull(introduction.state)
+    Preconditions.checkNotNull(introduction.introducerServiceId)
+    Preconditions.checkNotNull(introduction.predictedSecurityNumber)
+    Preconditions.checkArgument(introduction.state.isUnknownRecipient)
     // Unknown state transitions
-    State newState = switch (introduction.getState()) {
-      case PENDING_UNKNOWN -> State.PENDING;
-      case ACCEPTED_UNKNOWN -> State.ACCEPTED;
-      case REJECTED_UNKNOWN -> State.REJECTED;
-      default -> throw new AssertionError("State: " + introduction.getState() + " was illegal or already stale.");
-    };
+    val newState: State = when (introduction.state) {
+      State.PENDING_UNKNOWN -> State.PENDING
+      State.ACCEPTED_UNKNOWN -> State.ACCEPTED
+      State.REJECTED_UNKNOWN -> State.REJECTED
+      else -> throw AssertionError("State: " + introduction.state + " was illegal or already stale.")
+    }
 
-    final String introduceeName = introduction.getIntroduceeName() != null ? introduction.getIntroduceeName() : "";
+    val introduceeName: String = introduction.introduceeName ?: ""
 
-    return buildContentValuesForUpdate(introduction.getId(),
-                                       newState,
-                                       introduction.getIntroducerServiceId(),
-                                       introduction.getIntroduceeServiceId(),
-                                       introduceeName,
-                                       introduction.getIntroduceeNumber(),
-                                       introduction.getIntroduceeIdentityKey(),
-                                       introduction.getPredictedSecurityNumber(),
-                                       introduction.getTimestamp());
+    return buildContentValuesForUpdate(
+      introduction.id!!,
+      newState,
+      introduction.introducerServiceId,
+      introduction.introduceeServiceId,
+      introduceeName,
+      introduction.introduceeNumber,
+      introduction.introduceeIdentityKey,
+      introduction.predictedSecurityNumber!!,
+      introduction.timestamp
+    )
   }
 
   // TODO: Given a contact that cannot be contacted (hidden, no username/phone nr.) we cannot determine from the pending introduction, if there was a conflict
   // or the thing turned stale in the meantime when a session is initiated. Thus we must turn it stale immediately from whatever state it was in...
-
-  private long insertIntroduction(TI_Data data, State state) {
-    Preconditions.checkArgument(state == State.PENDING || state == State.PENDING_CONFLICTING || state == State.PENDING_UNKNOWN);
-    TI_DatabaseGlue db = SignalDatabase.tiDatabase();
-    ContentValues values = db.buildContentValuesForInsert(state,
-                                                          data.getIntroducerServiceId(),
-                                                          data.getIntroduceeServiceId(),
-                                                          data.getIntroduceeName(),
-                                                          data.getIntroduceeNumber(),
-                                                          data.getIntroduceeIdentityKey(),
-                                                          data.getPredictedSecurityNumber(),
-                                                          data.getTimestamp());
-    SQLiteDatabase writeableDatabase = db.getSignalWritableDatabase();
-    long           id                = writeableDatabase.insert(TABLE_NAME, null, values);
-    Log.i(TAG, "Inserted new introduction for: " + data.getIntroduceeName() + ", with id: " + id);
-    return id;
+  private fun insertIntroduction(data: TI_Data, state: State): Long {
+    Preconditions.checkArgument(state == State.PENDING || state == State.PENDING_CONFLICTING || state == State.PENDING_UNKNOWN)
+    val db: TI_DatabaseGlue = tiDatabase
+    val values: ContentValues = db.buildContentValuesForInsert(
+      state,
+      data.introducerServiceId!!,
+      data.introduceeServiceId,
+      data.introduceeName!!,
+      data.introduceeNumber!!,
+      data.introduceeIdentityKey,
+      data.predictedSecurityNumber!!,
+      data.timestamp
+    )
+    val writeableDatabase: SQLiteDatabase = db.getSignalWritableDatabase()
+    val id: Long = writeableDatabase.insert(TABLE_NAME, null, values)
+    i(TAG, "Inserted new introduction for: " + data.introduceeName + ", with id: " + id)
+    return id
   }
 
-  private long insertUnknownIntroduction(TI_Data data) {
-    return insertIntroduction(data, State.PENDING_UNKNOWN);
+  private fun insertUnknownIntroduction(data: TI_Data): Long {
+    return insertIntroduction(data, State.PENDING_UNKNOWN)
   }
 
   /**
@@ -486,22 +438,22 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
    * @param data the new introduction to insert.
    * @return insertion id of introduction.
    */
-  private long insertKnownNewIntroduction(TI_Data data) {
-    Optional<RecipientId> introduceeOpt = SignalDatabase.recipients().getByServiceId(ServiceId.parseOrThrow(data.getIntroduceeServiceId()));
-    RecipientId           introduceeId  = introduceeOpt.orElse(null);
+  private fun insertKnownNewIntroduction(data: TI_Data): Long {
+    val introduceeOpt: Optional<RecipientId> = recipients.getByServiceId(parseOrThrow(data.introduceeServiceId))
+    val introduceeId: RecipientId? = introduceeOpt.orElse(null)
     if (introduceeId != null) {
       // The recipient already exists, check if the identity key matches what we already have in the database
-      String identityKey;
+      val identityKey: String
       try {
-        identityKey = TI_Utils.getEncodedIdentityKey(introduceeId);
-        if (!data.getIntroduceeIdentityKey().equals(identityKey)) {
-          return insertIntroduction(data, State.PENDING_CONFLICTING);
+        identityKey = getEncodedIdentityKey(introduceeId)
+        if (data.introduceeIdentityKey != identityKey) {
+          return insertIntroduction(data, State.PENDING_CONFLICTING)
         }
-      } catch (MissingIdentityException e) {
+      } catch (e: MissingIdentityException) {
         // Continue to end condition, recipient is unknown.
       }
     }
-    return insertIntroduction(data, State.PENDING);
+    return insertIntroduction(data, State.PENDING)
   }
 
   /**
@@ -510,21 +462,21 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
    * @param data the introduction to check against.
    * @return a cursor populated with all the matches it found.
    */
-  private Cursor checkForDuplicates(@NonNull TI_Data data) {
+  private fun checkForDuplicates(data: TI_Data): Cursor {
     // Fetch Data to compare if present
     // TODO: Adapt when we are more clear about what the data will be...
     // TODO: reimplement...
-    String andAppend = " AND %s=?";
-    final String selectionBuilder = String.format("%s=?", INTRODUCER_SERVICE_ID)
-                                    + String.format(andAppend, INTRODUCEE_SERVICE_ID)
-                                    + String.format(andAppend, INTRODUCEE_PUBLIC_IDENTITY_KEY);
+    val andAppend = " AND %s=?"
+    val selectionBuilder: String = (String.format("%s=?", INTRODUCER_SERVICE_ID) + String.format(andAppend, INTRODUCEE_SERVICE_ID) + String.format(andAppend, INTRODUCEE_PUBLIC_IDENTITY_KEY))
 
-    String[] args = SqlUtil.buildArgs(data.getIntroducerServiceId(),
-                                      data.getIntroduceeServiceId(),
-                                      data.getIntroduceeIdentityKey());
+    val args: Array<String> = buildArgs(
+      data.introducerServiceId,
+      data.introduceeServiceId,
+      data.introduceeIdentityKey
+    )
 
-    SQLiteDatabase writeableDatabase = databaseHelper.getSignalWritableDatabase();
-    return writeableDatabase.query(TABLE_NAME, TI_ALL_PROJECTION, selectionBuilder, args, null, null, null);
+    val writeableDatabase: SQLiteDatabase = databaseHelper.signalWritableDatabase
+    return writeableDatabase.query(TABLE_NAME, TI_ALL_PROJECTION, selectionBuilder, args, null, null, null)
   }
 
   /**
@@ -535,17 +487,17 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
    * @param data the new introduction this was matched against.
    * @return the update result. Negative if something went wrong, row index of the introduction otherwise.
    */
-  private long updateDuplicateIntroduction(Cursor c, TI_Data data) {
-    c.moveToFirst();
-    SQLiteDatabase writeableDatabase = databaseHelper.getSignalWritableDatabase();
-    int            id_column         = c.getColumnIndex(ID);
-    if (id_column < 0) {
-      return id_column;
+  private fun updateDuplicateIntroduction(c: Cursor, data: TI_Data): Long {
+    c.moveToFirst()
+    val writeableDatabase: SQLiteDatabase = databaseHelper.signalWritableDatabase
+    val idColumn: Int = c.getColumnIndex(ID)
+    if (idColumn < 0) {
+      return idColumn.toLong()
     }
-    long result = writeableDatabase.update(TABLE_NAME, buildContentValuesForTimestampUpdate(c, data.getTimestamp()), ID + " = ?", SqlUtil.buildArgs(c.getInt(id_column)));
-    Log.i(TAG, "Updated timestamp of introduction " + result + " to: " + TI_Utils.INTRODUCTION_DATE_PATTERN.format(data.getTimestamp()));
-    c.close();
-    return result;
+    val result: Long = writeableDatabase.update(TABLE_NAME, buildContentValuesForTimestampUpdate(c, data.timestamp), "$ID = ?", buildArgs(c.getInt(idColumn).toLong())).toLong()
+    i(TAG, "Updated timestamp of introduction " + result + " to: " + TI_Utils.INTRODUCTION_DATE_PATTERN.format(data.timestamp))
+    c.close()
+    return result
   }
 
   /**
@@ -554,21 +506,21 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
    * If we find a duplicate, we simply update the timestamp to the most recent one.
    * Otherwise the start of the introduction FSM is reached.
    *
-   * @param data the incoming introduction
+   * @param introduction the incoming introduction
    * @return insertion id of introduction.
    */
   @SuppressLint("Range")
   @WorkerThread
-  @Override
-  public long incomingIntroduction(@NonNull TI_Data data) {
+  override fun incomingIntroduction(introduction: TI_Data): Long {
     // Fetch Data to compare if present
-    Cursor c = checkForDuplicates(data);
+    val c: Cursor = checkForDuplicates(introduction)
     // We found a matching introduction, we will update it and not insert a new one.
-    if (c.getCount() == 1) {
+    if (c.count == 1) {
       // this closes the cursor
       //TODO: Debugging, uncomment at some point
-      return updateDuplicateIntroduction(c, data);
+      return updateDuplicateIntroduction(c, introduction)
     }
+
     /*
      if(c.getCount() != 0) {
      // If we don't call updateDuplicateIntroduction, we need to close it ourselves.
@@ -576,13 +528,12 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
      // TODO: This assertion is no longer true, when we aren't checking for duplicates and just inserting any intro
      throw new AssertionError(TAG + " When checking for existing Introductions, there is one entry or none, nothing else is valid.");
      } */
-
-    c.close();
-    if (isRecipientUnknown(data.getIntroducerServiceId())) {
+    c.close()
+    if (isRecipientUnknown(introduction.introducerServiceId!!)) {
       // todo: this should throw of course
-      throw new AssertionError(TAG + " We have received an introduction from an unknown contact " + data.getIntroducerServiceId());
+      throw AssertionError(TAG + " We have received an introduction from an unknown contact " + introduction.introducerServiceId)
     }
-    return isRecipientUnknown(data.getIntroduceeServiceId()) ? insertUnknownIntroduction(data) : insertKnownNewIntroduction(data);
+    return if (isRecipientUnknown(introduction.introduceeServiceId)) insertUnknownIntroduction(introduction) else insertKnownNewIntroduction(introduction)
   }
 
 
@@ -595,49 +546,51 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
    * @return if the insertion succeeded or failed
    */
   @WorkerThread
-  private boolean changeIntroductionState(@NonNull TI_Data introduction, @NonNull State newState, @NonNull String logMessage) {
+  private fun changeIntroductionState(introduction: TI_Data, newState: State, logMessage: String): Boolean {
     // We are setting the pending states directly when the introduction is first received. There is no other transition to this state.
-    Preconditions.checkArgument(newState != State.PENDING);
-    Preconditions.checkArgument(introduction.getId() != null);
+    Preconditions.checkArgument(newState != State.PENDING)
+    Preconditions.checkArgument(introduction.id != null)
 
     // Modify introduction
-    ContentValues  newValues         = buildContentValuesForStateUpdate(introduction, newState);
-    SQLiteDatabase writeableDatabase = getSignalWritableDatabase();
-    long           result            = writeableDatabase.update(TABLE_NAME, newValues, ID + " = ?", SqlUtil.buildArgs(introduction.getId()));
+    val newValues: ContentValues = buildContentValuesForStateUpdate(introduction, newState)
+    val writeableDatabase: SQLiteDatabase = getSignalWritableDatabase()
+    val result: Long = writeableDatabase.update(TABLE_NAME, newValues, "$ID = ?", buildArgs(introduction.id)).toLong()
 
     if (result > 0) {
       // Log message on success
-      Log.i(TAG, logMessage);
+      i(TAG, logMessage)
       // Check if a recipient may change verification status as a result of this operation
-      RecipientId introduceeID = getRecipientIdOrUnknown(introduction.getIntroduceeServiceId());
-      if (!introduceeID.isUnknown()) {
-        TI_IdentityTable.VerifiedStatus previousIntroduceeVerification = SignalDatabase.tiIdentityDatabase().getVerifiedStatus(introduceeID);
+      val introduceeID: RecipientId = getRecipientIdOrUnknown(introduction.introduceeServiceId)
+      if (!introduceeID.isUnknown) {
+        val previousIntroduceeVerification: IdentityTableGlue.VerifiedStatus = tiIdentityTable.getVerifiedStatus(introduceeID)
         if (previousIntroduceeVerification == null) {
-          throw new AssertionError("Unexpected missing verification status for " + introduction.getIntroduceeName());
+          throw AssertionError("Unexpected missing verification status for " + introduction.introduceeName)
         }
-        SignalDatabase.tiIdentityDatabase().modifyIntroduceeVerification(introduction.getIntroduceeServiceId(), previousIntroduceeVerification, newState, logMessage);
+        tiIdentityTable.modifyIntroduceeVerification(introduction.introduceeServiceId, previousIntroduceeVerification, newState, logMessage)
       } // if introduceeID is unknown we do not have the recipient as a conversation partner yet and can skip any verification modification
-      return true;
+
+      return true
     }
     // don't touch the verification state of the introducee if the modification failed
-    Log.e(TAG, "State modification of introduction: " + introduction.getId() + " failed!");
-    return false;
+    e(TAG, "State modification of introduction: " + introduction.id + " failed!")
+    return false
   }
 
   /**
-   * @param state               which state to query for
+   * @param states               which state to query for
    * @param introduceeServiceId The serviceID of the recipient whose verification status may change
    */
   @WorkerThread
-  public boolean atLeastOneIntroductionIs(State state, @NotNull String introduceeServiceId) {
-    final String selection = String.format("%s=?", INTRODUCEE_SERVICE_ID)
-                             + String.format(" AND %s=?", STATE);
-    String[] args = SqlUtil.buildArgs(introduceeServiceId,
-                                      state.toInt());
-    SQLiteDatabase writeableDatabase = getSignalWritableDatabase();
-    Cursor         c                 = writeableDatabase.query(TABLE_NAME, TI_ALL_PROJECTION, selection, args, null, null, null);
+  override fun atLeastOneIntroductionIs(states: State, introduceeServiceId: String): Boolean {
+    val selection: String = String.format("%s=?", INTRODUCEE_SERVICE_ID) + String.format(" AND %s=?", STATE)
+    val args: Array<String> = buildArgs(
+      introduceeServiceId,
+      states.toInt()
+    )
+    val writeableDatabase: SQLiteDatabase = getSignalWritableDatabase()
+    val c: Cursor = writeableDatabase.query(TABLE_NAME, TI_ALL_PROJECTION, selection, args, null, null, null)
 
-    return c.getCount() >= 1;
+    return c.count >= 1
   }
 
   /**
@@ -647,26 +600,25 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
    * @return true if there is at least one introduction for this introducee that meets the 'unknown' state criteria.
    */
   @SuppressLint("DefaultLocale")
-  @Override
-  public boolean atLeastOneIntroductionIsUnknown(@NotNull String introduceeServiceId) {
-    String         selection         = String.format("%s=? AND %s IN (%d,%d,%d)", INTRODUCEE_SERVICE_ID, STATE, State.PENDING_UNKNOWN.toInt(), State.ACCEPTED_UNKNOWN.toInt(), State.REJECTED_UNKNOWN.toInt());
-    String[]       args              = SqlUtil.buildArgs(introduceeServiceId);
-    SQLiteDatabase writeableDatabase = getSignalWritableDatabase();
-    Cursor         c                 = writeableDatabase.query(TABLE_NAME, TI_ALL_PROJECTION, selection, args, null, null, null);
+  override fun atLeastOneIntroductionIsUnknown(introduceeServiceId: String): Boolean {
+    val selection: String = String.format("%s=? AND %s IN (%d,%d,%d)", INTRODUCEE_SERVICE_ID, STATE, State.PENDING_UNKNOWN.toInt(), State.ACCEPTED_UNKNOWN.toInt(), State.REJECTED_UNKNOWN.toInt())
+    val args: Array<String> = buildArgs(introduceeServiceId)
+    val writeableDatabase: SQLiteDatabase = getSignalWritableDatabase()
+    val c: Cursor = writeableDatabase.query(TABLE_NAME, TI_ALL_PROJECTION, selection, args, null, null, null)
 
-    Cursor debugCursor = writeableDatabase.query(TABLE_NAME, TI_ALL_PROJECTION, null, null, null, null, null, null);
+    val debugCursor: Cursor = writeableDatabase.query(TABLE_NAME, TI_ALL_PROJECTION, null, null, null, null, null, null)
     if (debugCursor.moveToFirst()) {
-      while (!debugCursor.isAfterLast()) {
+      while (!debugCursor.isAfterLast) {
         do {
-          HashMap<String, String> map = new HashMap<>();
-          for (int i = 0; i < debugCursor.getColumnCount(); i++) {
-            map.put(debugCursor.getColumnName(i), debugCursor.getString(i));
+          val map: HashMap<String, String> = HashMap()
+          for (i in 0 until debugCursor.columnCount) {
+            map[debugCursor.getColumnName(i)] = debugCursor.getString(i)
           }
-          Log.i("TI - table state", String.valueOf(Collections.singletonList(map)));
-        } while (debugCursor.moveToNext());
+          i("TI - table state", listOf(map).toString())
+        } while (debugCursor.moveToNext())
       }
     }
-    return c.getCount() >= 1;
+    return c.count >= 1
   }
 
   /**
@@ -677,91 +629,91 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
    * @return the state with the highest priority.
    */
   @WorkerThread
-  @Override public @Nullable State handleUnknownIntroductions(String serviceId, String encodedIdentityKey) {
-    final String       selection             = String.format("%s=?", INTRODUCEE_SERVICE_ID);
-    String[]           args                  = SqlUtil.buildArgs(serviceId);
-    SQLiteDatabase     writeableDatabase     = getSignalWritableDatabase();
-    Cursor             c                     = writeableDatabase.query(TABLE_NAME, TI_ALL_PROJECTION, selection, args, null, null, null);
-    ArrayList<TI_Data> staleIntroductions    = new ArrayList<>();
-    ArrayList<TI_Data> upToDateIntroductions = new ArrayList<>();
+  override fun handleUnknownIntroductions(serviceId: String, encodedIdentityKey: String): State? {
+    val selection: String = String.format("%s=?", INTRODUCEE_SERVICE_ID)
+    val args: Array<String> = buildArgs(serviceId)
+    val writeableDatabase: SQLiteDatabase = getSignalWritableDatabase()
+    val c: Cursor = writeableDatabase.query(TABLE_NAME, TI_ALL_PROJECTION, selection, args, null, null, null)
+    val staleIntroductions: ArrayList<TI_Data> = ArrayList()
+    val upToDateIntroductions: ArrayList<TI_Data> = ArrayList()
     // Keep count of any introductions that were interacted with that have not turned stale
-    boolean hasTrusted       = false;
-    boolean hasRejected      = false;
-    boolean hasPending       = false;
-    boolean hasStalePending  = false;
-    boolean hasStaleTrusted  = false;
-    boolean hasStaleRejected = false;
-    if (c.getCount() >= 1) {
-      IntroductionReader reader = new IntroductionReader(c);
-      TI_Data            current;
+    var hasTrusted = false
+    var hasRejected = false
+    var hasPending = false
+    var hasStalePending = false
+    var hasStaleTrusted = false
+    var hasStaleRejected = false
+    if (c.count >= 1) {
+      val reader = IntroductionReader(c)
+      var current: TI_Data?
       do {
-        current = reader.getNext();
+        current = reader.next
         // TODO: double check if this is correct
-        assert current != null;
-        if (!(current.getState().isUnknownRecipient())) {
-          throw new AssertionError(TAG + "encountered an illegal introduction state: " + current.getState() + "\n for an unknown recipient with service ID: " + serviceId);
+        checkNotNull(current)
+        if (!(current.state.isUnknownRecipient)) {
+          throw AssertionError(TAG + "encountered an illegal introduction state: " + current.state + "\n for an unknown recipient with service ID: " + serviceId)
         }
         // todo: check WTF is going on here, is the COMPARISON good?
-        if (!encodedIdentityKey.equals(current.getIntroduceeIdentityKey())) {
+        if (encodedIdentityKey != current.introduceeIdentityKey) {
           // Add this datapoint to the introductions that must be turned stale
-          staleIntroductions.add(current);
-          if (current.getState().equals(State.ACCEPTED_UNKNOWN)) hasStaleTrusted = true;
-          if (current.getState().equals(State.REJECTED_UNKNOWN)) hasStaleRejected = true;
-          if (current.getState().equals(State.PENDING_UNKNOWN)) hasStalePending = true;
+          staleIntroductions.add(current)
+          if (current.state == State.ACCEPTED_UNKNOWN) hasStaleTrusted = true
+          if (current.state == State.REJECTED_UNKNOWN) hasStaleRejected = true
+          if (current.state == State.PENDING_UNKNOWN) hasStalePending = true
         } else {
-          upToDateIntroductions.add(current);
-          if (current.getState().equals(State.ACCEPTED_UNKNOWN)) hasTrusted = true;
-          if (current.getState().equals(State.REJECTED_UNKNOWN)) hasRejected = true;
-          if (current.getState().equals(State.PENDING_UNKNOWN)) hasPending = true;
+          upToDateIntroductions.add(current)
+          if (current.state == State.ACCEPTED_UNKNOWN) hasTrusted = true
+          if (current.state == State.REJECTED_UNKNOWN) hasRejected = true
+          if (current.state == State.PENDING_UNKNOWN) hasPending = true
         }
-      } while (reader.hasNext());
+      } while (reader.hasNext())
       try {
-        reader.close();
-      } catch (IOException e) {
-        Log.e(TAG, Arrays.toString(e.getStackTrace()));
-        throw new AssertionError("Error occurred while trying to close the cursor to dangling Introductions for " + current.getIntroduceeName());
+        reader.close()
+      } catch (e: IOException) {
+        e(TAG, e.stackTrace.contentToString())
+        throw AssertionError("Error occurred while trying to close the cursor to dangling Introductions for " + current!!.introduceeName)
       }
       // Turn all introductions stale that had the incorrect identity key
-      String where = ID + " = ?";
-      for (TI_Data staleIntro : staleIntroductions) {
-        ContentValues cv = buildContentValuesForStale(staleIntro.getIntroduction());
-        if (staleIntro.getId() == null) {
-          throw new AssertionError(TAG + " Introduction for " + staleIntro.getIntroduceeName() + " did not have an id ");
+      val where = "$ID = ?"
+      for (staleIntro: TI_Data in staleIntroductions) {
+        val cv: ContentValues = buildContentValuesForStale(staleIntro.introduction)
+        if (staleIntro.id == null) {
+          throw AssertionError(TAG + " Introduction for " + staleIntro.introduceeName + " did not have an id ")
         }
-        long result = writeableDatabase.update(TABLE_NAME, cv, where, SqlUtil.buildArgs(staleIntro.getId()));
+        val result: Long = writeableDatabase.update(TABLE_NAME, cv, where, buildArgs(staleIntro.id)).toLong()
         if (result < 0) {
-          throw new AssertionError(TAG + " Could not turn introduction for " + staleIntro.getIntroduceeName() + " stale!");
+          throw AssertionError(TAG + " Could not turn introduction for " + staleIntro.introduceeName + " stale!")
         }
       }
       // Transition all the unknown introductions with the correct identity key to their known counterparts.
-      for (TI_Data unknownIntro : upToDateIntroductions) {
-        if (unknownIntro.getId() == null) {
-          throw new AssertionError(TAG + " Introduction for " + unknownIntro.getIntroduceeName() + " did not have an id ");
+      for (unknownIntro: TI_Data in upToDateIntroductions) {
+        if (unknownIntro.id == null) {
+          throw AssertionError(TAG + " Introduction for " + unknownIntro.introduceeName + " did not have an id ")
         }
-        ContentValues cv = buildContentValuesForUnknownTransition(unknownIntro.getIntroduction());
-        writeableDatabase.update(TABLE_NAME, cv, where, SqlUtil.buildArgs(unknownIntro.getId()));
+        val cv: ContentValues = buildContentValuesForUnknownTransition(unknownIntro.introduction)
+        writeableDatabase.update(TABLE_NAME, cv, where, buildArgs(unknownIntro.id))
       }
     }
     // Priority defined here w.r.t which introduction state should be considered:
-    if (!(hasTrusted || hasRejected || hasStaleTrusted || hasStaleRejected || hasStalePending || hasPending)) return null;
-    if (hasTrusted) {
-      return State.ACCEPTED;
+    if (!(hasTrusted || hasRejected || hasStaleTrusted || hasStaleRejected || hasStalePending || hasPending)) return null
+    return if (hasTrusted) {
+      State.ACCEPTED
     } else if (hasStaleTrusted) {
-      return State.STALE_ACCEPTED;
+      State.STALE_ACCEPTED
     } else if (hasRejected) {
-      return State.REJECTED;
+      State.REJECTED
     } else if (hasStaleRejected) {
-      return State.STALE_REJECTED;
+      State.STALE_REJECTED
     } else if (hasPending) {
-      return State.PENDING;
+      State.PENDING
     } else {
-      return State.STALE_PENDING;
+      State.STALE_PENDING
     }
   }
 
-  public boolean isRecipientUnknown(String serviceID) {
-    RecipientId rid = getRecipientIdOrUnknown(serviceID);
-    return rid.equals(RecipientId.UNKNOWN);
+  override fun isRecipientUnknown(serviceID: String): Boolean {
+    val rid: RecipientId = getRecipientIdOrUnknown(serviceID)
+    return rid == RecipientId.UNKNOWN
   }
 
   /**
@@ -772,11 +724,10 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
    * @return true if success, false otherwise
    */
   @WorkerThread
-  @Override
-  public boolean acceptIntroduction(TI_Data introduction) {
-    Preconditions.checkArgument(introduction.getId() != null);
-    State newState = isRecipientUnknown(introduction.getIntroduceeServiceId()) ? State.ACCEPTED_UNKNOWN : State.ACCEPTED;
-    return changeIntroductionState(introduction, newState, "Accepted introduction for: " + introduction.getIntroduceeName());
+  override fun acceptIntroduction(introduction: TI_Data): Boolean {
+    Preconditions.checkArgument(introduction.id != null)
+    val newState: State = if (isRecipientUnknown(introduction.introduceeServiceId)) State.ACCEPTED_UNKNOWN else State.ACCEPTED
+    return changeIntroductionState(introduction, newState, "Accepted introduction for: " + introduction.introduceeName)
   }
 
   /**
@@ -787,11 +738,10 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
    * @return true if success, false otherwise
    */
   @WorkerThread
-  @Override
-  public boolean rejectIntroduction(TI_Data introduction) {
-    Preconditions.checkArgument(introduction.getId() != null);
-    State newState = isRecipientUnknown(introduction.getIntroduceeServiceId()) ? State.REJECTED_UNKNOWN : State.REJECTED;
-    return changeIntroductionState(introduction, newState, "Rejected introduction for: " + introduction.getIntroduceeName());
+  override fun rejectIntroduction(introduction: TI_Data): Boolean {
+    Preconditions.checkArgument(introduction.id != null)
+    val newState: State = if (isRecipientUnknown(introduction.introduceeServiceId)) State.REJECTED_UNKNOWN else State.REJECTED
+    return changeIntroductionState(introduction, newState, "Rejected introduction for: " + introduction.introduceeName)
   }
 
   /**
@@ -801,11 +751,10 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
    * @return IntroductionReader which can be used as an iterator.
    */
   @WorkerThread
-  @Override
-  public IntroductionReader getAllDisplayableIntroductions() {
-    String         query = "SELECT * FROM " + TABLE_NAME + " WHERE " + INTRODUCER_SERVICE_ID + " IS NOT NULL";
-    SQLiteDatabase db    = databaseHelper.getSignalReadableDatabase();
-    return new IntroductionReader(db.rawQuery(query, null));
+  override fun getAllDisplayableIntroductions(): IntroductionReader {
+    val query = "SELECT * FROM $TABLE_NAME WHERE $INTRODUCER_SERVICE_ID IS NOT NULL"
+    val db: SQLiteDatabase = databaseHelper.signalReadableDatabase
+    return IntroductionReader(db.rawQuery(query, null))
   }
 
   /**
@@ -816,76 +765,76 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
    * @return true if success, false otherwise
    */
   @WorkerThread
-  @Override
-  public boolean clearIntroducer(TI_Data introduction) {
-    Preconditions.checkArgument(UNKNOWN_INTRODUCER_SERVICE_ID.equals(introduction.getIntroducerServiceId()));
-    Preconditions.checkArgument(introduction.getId() != null);
-    SQLiteDatabase database = databaseHelper.getSignalWritableDatabase();
-    String         query    = ID + " = ?";
-    if(introduction.getId() == null){
-      Log.e(TAG, "tried to clean introduction without id");
-      return false;
+  override fun clearIntroducer(introduction: TI_Data): Boolean {
+    Preconditions.checkArgument(UNKNOWN_INTRODUCER_SERVICE_ID == introduction.introducerServiceId)
+    Preconditions.checkArgument(introduction.id != null)
+    val database: SQLiteDatabase = databaseHelper.signalWritableDatabase
+    val query = "$ID = ?"
+    if (introduction.id == null) {
+      e(TAG, "tried to clean introduction without id")
+      return false
     }
-    String[]       args     = SqlUtil.buildArgs(introduction.getId());
+    val args: Array<String> = buildArgs(introduction.id)
 
-    ContentValues values = buildContentValuesForUpdate(introduction);
+    val values: ContentValues = buildContentValuesForUpdate(introduction)
 
-    int update = database.update(TABLE_NAME, values, query, args);
-    Log.i(TAG, "Forgot introducer for introduction with id: " + introduction.getId());
+    val update: Int = database.update(TABLE_NAME, values, query, args)
+    i(TAG, "Forgot introducer for introduction with id: " + introduction.id)
 
     // TODO: For multi-device, syncing would be handled here
-    return update > 0;
+    return update > 0
   }
 
   /**
    * Turns all introductions for the introducee named by id stale.
    * If this succeeds attempts to update the verification status of the introducee
    *
-   * @param serviceId the introducee whose security nr. changed.
+   * @param serviceID the introducee whose security nr. changed.
    * @return true if all updates succeeded, false otherwise
    */
   @WorkerThread
-  @Override
-  public boolean turnAllIntroductionsStale(String serviceId) {
-    boolean   success   = turnAllIntroductionsStaleInternal(serviceId);
-    Recipient recipient = Recipient.live(RecipientId.fromSidOrE164(serviceId)).get();
+  override fun turnAllIntroductionsStale(serviceID: String): Boolean {
+    val success: Boolean = turnAllIntroductionsStaleInternal(serviceID)
+    val recipient: Recipient = live(RecipientId.fromSidOrE164(serviceID)).get()
     if (!success) {
       // This should hopefully never happen... if it does we need to investigate how to handle this inconsistent state.
       // Maybe turn it into a job and try again?
-      throw new AssertionError("At least one introduction for: " + recipient.getDisplayName(context) + " could not be turned stale! Verification state will not be updated!");
+      throw AssertionError("At least one introduction for: " + recipient.getDisplayName(context) + " could not be turned stale! Verification state will not be updated!")
     }
-    IdentityTableGlue tiIdentityDB = SignalDatabase.tiIdentityDatabase();
+    val tiIdentityDB: IdentityTableGlue = tiIdentityTable
     // Any stale state will result in the same unverified new verification state
-    tiIdentityDB.modifyIntroduceeVerification(serviceId, tiIdentityDB.getVerifiedStatus(recipient.getId()), State.STALE_PENDING, "Marked " + recipient.getDisplayName(context) + " unverified"
-                                                                                                                                 + "after successfully turning all introductions for them stale.");
-    return true;
+    tiIdentityDB.modifyIntroduceeVerification(
+      serviceID, tiIdentityDB.getVerifiedStatus(recipient.id), State.STALE_PENDING, ("Marked " + recipient.getDisplayName(context) + " unverified"
+        + "after successfully turning all introductions for them stale.")
+    )
+    return true
   }
 
-  private boolean turnAllIntroductionsStaleInternal(String serviceId) {
-    boolean updateSucceeded = true;
-    Preconditions.checkArgument(!getRecipientIdOrUnknown(serviceId).equals(RecipientId.UNKNOWN));
-    String   query = INTRODUCEE_SERVICE_ID + " = ?";
-    String[] args  = SqlUtil.buildArgs(serviceId);
+  private fun turnAllIntroductionsStaleInternal(serviceId: String): Boolean {
+    var updateSucceeded = true
+    Preconditions.checkArgument(getRecipientIdOrUnknown(serviceId) != RecipientId.UNKNOWN)
+    val query = "$INTRODUCEE_SERVICE_ID = ?"
+    val args: Array<String> = buildArgs(serviceId)
 
-    SQLiteDatabase     writeableDatabase = databaseHelper.getSignalWritableDatabase();
-    Cursor             c                 = writeableDatabase.query(TABLE_NAME, TI_ALL_PROJECTION, query, args, null, null, null);
-    IntroductionReader reader            = new IntroductionReader(c);
-    TI_Data            introduction;
-    while ((introduction = reader.getNext()) != null) {
+    val writeableDatabase: SQLiteDatabase = databaseHelper.signalWritableDatabase
+    val c: Cursor = writeableDatabase.query(TABLE_NAME, TI_ALL_PROJECTION, query, args, null, null, null)
+    val reader = IntroductionReader(c)
+    var introduction: TI_Data?
+    while ((reader.next.also { introduction = it }) != null) {
       // If the intro is already stale, we don't need to do anything.
-      if (!introduction.getState().isStale() && introduction.getId() != null) {
-        ContentValues cv  = buildContentValuesForStale(introduction);
-        int           res = writeableDatabase.update(TABLE_NAME, cv, ID + " = ?", SqlUtil.buildArgs(introduction.getId()));
+      if (!introduction!!.state.isStale && introduction!!.id != null) {
+        val cv: ContentValues = buildContentValuesForStale(introduction!!)
+        val res: Int = writeableDatabase.update(TABLE_NAME, cv, "$ID = ?", buildArgs(introduction!!.id))
         if (res < 0) {
-          Log.e(TAG, "Introduction " + introduction.getId() + " for " + introduction.getIntroduceeName() + " with state " + introduction.getState() + " could not be turned stale!");
-          updateSucceeded = false;
+          e(TAG, "Introduction " + introduction!!.id + " for " + introduction!!.introduceeName + " with state " + introduction!!.state + " could not be turned stale!")
+          updateSucceeded = false
         } else {
-          Log.i(TAG, "Introduction " + introduction.getId() + " for " + introduction.getIntroduceeName() + " with state " + introduction.getState() + " was turned stale!");
+          i(TAG, "Introduction " + introduction!!.id + " for " + introduction!!.introduceeName + " with state " + introduction!!.state + " was turned stale!")
           // TODO: For multi-device, syncing would be handled here
         }
       }
     }
-    return updateSucceeded;
+    return updateSucceeded
   }
 
 
@@ -897,89 +846,142 @@ public class TI_Database extends DatabaseTable implements TI_DatabaseGlue {
    */
   @SuppressLint("DefaultLocale")
   @WorkerThread
-  @Override
-  public boolean deleteIntroduction(long introductionId) {
-    Preconditions.checkArgument(introductionId > 0);
-    SQLiteDatabase database = databaseHelper.getSignalWritableDatabase();
-    String         query    = ID + " = ?";
-    String[]       args     = SqlUtil.buildArgs(introductionId);
+  override fun deleteIntroduction(introductionId: Long): Boolean {
+    Preconditions.checkArgument(introductionId > 0)
+    val database: SQLiteDatabase = databaseHelper.signalWritableDatabase
+    val query = "$ID = ?"
+    val args: Array<String> = buildArgs(introductionId)
 
-    int count = database.delete(TABLE_NAME, query, args);
+    val count: Int = database.delete(TABLE_NAME, query, args)
 
     if (count == 1) {
-      Log.i(TAG, String.format("Deleted introduction with id: %d from the database.", introductionId));
-      return true;
+      i(TAG, String.format("Deleted introduction with id: %d from the database.", introductionId))
+      return true
     } else if (count > 1) {
       // matching with id, which must be unique
-      throw new AssertionError();
+      throw AssertionError()
     } else {
-      return false;
+      return false
     }
   }
 
   /*
     General Utilities
    */
-
   /**
    * @param introduceeId Which recipient to look for in the recipient database
    * @return Cursor pointing to query result.
    */
   @WorkerThread
-  @Override public Map<RecipientId, RecipientRecord> fetchRecipientRecord(RecipientId introduceeId) {
+  override fun fetchRecipientRecord(introduceeId: RecipientId): Map<RecipientId, RecipientRecord> {
     // TODO: Simplify if you see that you finally never query this cursor with more than 1 recipient...
-    Set<RecipientId> s = new HashSet<>();
-    s.add(introduceeId);
-    return RecipientTableGlue.getRecordsForSendingTI(s);
+    val s: MutableSet<RecipientId> = HashSet()
+    s.add(introduceeId)
+    return getRecordsForSendingTI(s)
   }
 
-  public static class IntroductionReader implements Closeable {
-    private final Cursor cursor;
-
+  class IntroductionReader internal constructor(private val cursor: Cursor) : Closeable {
     // TODO: Make it slightly more flexible in terms of which data you pass around.
     // A cursor pointing to the result of a query using TI_DATA_PROJECTION
-    IntroductionReader(Cursor c) {
-      cursor = c;
-      cursor.moveToFirst();
+    init {
+      cursor.moveToFirst()
     }
 
-    // This is now has a guarantee w.r.t. calling the constructor
-    @SuppressLint("Range")
-    private @Nullable TI_Data getCurrent() {
-      if (cursor.isAfterLast() || cursor.isBeforeFirst()) {
-        return null;
+    @get:SuppressLint("Range")
+    private val current: TI_Data?
+      // This is now has a guarantee w.r.t. calling the constructor
+      get() {
+        if (cursor.isAfterLast || cursor.isBeforeFirst) {
+          return null
+        }
+        val introductionId: Long = cursor.getLong(cursor.getColumnIndex(ID))
+        val s: Int = cursor.getInt(cursor.getColumnIndex(STATE))
+        val state: State = State.forState(s)
+        val introducerServiceId: String = (cursor.getString(cursor.getColumnIndex(INTRODUCER_SERVICE_ID)))
+        val introduceeServiceId: String = (cursor.getString(cursor.getColumnIndex(INTRODUCEE_SERVICE_ID)))
+        // Do I need to hit the Recipient Database to check the name?
+        // TODO: Name changes in introducees should get reflected in database (needs to happen when the name changes, not on query)
+        val introduceeName: String = cursor.getString(cursor.getColumnIndex(INTRODUCEE_NAME))
+        val introduceeNumber: String = cursor.getString(cursor.getColumnIndex(INTRODUCEE_NUMBER))
+        val introduceeIdentityKey: String = cursor.getString(cursor.getColumnIndex(INTRODUCEE_PUBLIC_IDENTITY_KEY))
+        val securityNr: String = cursor.getString(cursor.getColumnIndex(PREDICTED_FINGERPRINT))
+        val timestamp: Long = cursor.getLong(cursor.getColumnIndex(TIMESTAMP))
+        return TI_Data(introductionId, state, introducerServiceId, introduceeServiceId, introduceeName, introduceeNumber, introduceeIdentityKey, securityNr, timestamp)
       }
-      Long   introductionId      = cursor.getLong(cursor.getColumnIndex(ID));
-      int    s                   = cursor.getInt(cursor.getColumnIndex(STATE));
-      State  state               = State.forState(s);
-      String introducerServiceId = (cursor.getString(cursor.getColumnIndex(INTRODUCER_SERVICE_ID)));
-      String introduceeServiceId = (cursor.getString(cursor.getColumnIndex(INTRODUCEE_SERVICE_ID)));
-      // Do I need to hit the Recipient Database to check the name?
-      // TODO: Name changes in introducees should get reflected in database (needs to happen when the name changes, not on query)
-      String introduceeName        = cursor.getString(cursor.getColumnIndex(INTRODUCEE_NAME));
-      String introduceeNumber      = cursor.getString(cursor.getColumnIndex(INTRODUCEE_NUMBER));
-      String introduceeIdentityKey = cursor.getString(cursor.getColumnIndex(INTRODUCEE_PUBLIC_IDENTITY_KEY));
-      String securityNr            = cursor.getString(cursor.getColumnIndex(PREDICTED_FINGERPRINT));
-      long   timestamp             = cursor.getLong(cursor.getColumnIndex(TIMESTAMP));
-      return new TI_Data(introductionId, state, introducerServiceId, introduceeServiceId, introduceeName, introduceeNumber, introduceeIdentityKey, securityNr, timestamp);
+
+    val next: TI_Data?
+      /**
+       * advances one row and returns it, null if empty, or cursor after last.
+       */
+      get() {
+        val current: TI_Data? = current
+        cursor.moveToNext()
+        return current
+      }
+
+    fun hasNext(): Boolean {
+      return !cursor.isAfterLast
     }
 
-    /**
-     * advances one row and returns it, null if empty, or cursor after last.
-     */
-    public @Nullable TI_Data getNext() {
-      TI_Data current = getCurrent();
-      cursor.moveToNext();
-      return current;
-    }
-
-    public boolean hasNext() {
-      return !cursor.isAfterLast();
-    }
-
-    @Override public void close() throws IOException {
-      cursor.close();
+    @Throws(IOException::class)
+    override fun close() {
+      cursor.close()
     }
   }
 
+  companion object {
+    private val TAG: String = String.format(TI_Utils.TI_LOG_TAG, tag(TI_Database::class.java))
+
+    @set:Throws(Exception::class)
+    var instance: TI_DatabaseGlue? = null
+      get() {
+        if (field == null) {
+          throw AssertionError("Attempted to fetch Singleton TI_Database before initializing it.")
+        }
+        return field
+      }
+      set(inst) {
+        if (field != null) {
+          throw Exception("Attempted to reassign Singleton instance of TI_Database")
+        }
+        field = inst
+      }
+
+    const val TABLE_NAME: String = "trusted_introductions"
+
+    private const val ID: String = "_id"
+    const val INTRODUCER_SERVICE_ID: String = "introducer_service_id"
+    private const val INTRODUCEE_SERVICE_ID: String = "introducee_service_id"
+    private const val INTRODUCEE_PUBLIC_IDENTITY_KEY: String = "introducee_identity_key" // The one contained in the Introduction
+    private const val INTRODUCEE_NAME: String = "introducee_name" // TODO: snapshot when introduction happened. Necessary? Or wrong approach?
+    private const val INTRODUCEE_NUMBER: String = "introducee_number" // TODO: snapshot when introduction happened. Necessary? Or wrong approach?
+    private const val PREDICTED_FINGERPRINT: String = "predicted_fingerprint"
+    private const val TIMESTAMP: String = "timestamp"
+    private const val STATE: String = "state"
+    const val UNKNOWN_INTRODUCER_SERVICE_ID: String = "-1"
+
+    const val CREATE_TABLE: String = "CREATE TABLE " + TABLE_NAME + " (" + ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+      INTRODUCER_SERVICE_ID + " TEXT, " +
+      INTRODUCEE_SERVICE_ID + " TEXT NOT NULL, " +
+      INTRODUCEE_PUBLIC_IDENTITY_KEY + " TEXT NOT NULL, " +
+      INTRODUCEE_NAME + " TEXT NOT NULL, " +
+      INTRODUCEE_NUMBER + " TEXT, " +
+      PREDICTED_FINGERPRINT + " TEXT NOT NULL, " +
+      TIMESTAMP + " INTEGER NOT NULL, " +
+      STATE + " INTEGER NOT NULL);"
+
+    private const val CLEAR_TABLE: String = "DELETE FROM $TABLE_NAME;"
+
+    private val TI_ALL_PROJECTION: Array<String> = arrayOf(
+      ID,
+      INTRODUCER_SERVICE_ID,
+      INTRODUCEE_SERVICE_ID,
+      INTRODUCEE_PUBLIC_IDENTITY_KEY,
+      INTRODUCEE_NAME,
+      INTRODUCEE_NUMBER,
+      PREDICTED_FINGERPRINT,
+      TIMESTAMP,
+      STATE
+    )
+  }
 }
