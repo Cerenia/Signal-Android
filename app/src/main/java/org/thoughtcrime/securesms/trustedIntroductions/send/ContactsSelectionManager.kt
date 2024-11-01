@@ -1,57 +1,58 @@
-package org.thoughtcrime.securesms.trustedIntroductions.send;
+package org.thoughtcrime.securesms.trustedIntroductions.send
 
-import androidx.core.util.Consumer;
+import androidx.core.util.Consumer
+import org.signal.core.util.concurrent.SignalExecutors
+import org.thoughtcrime.securesms.recipients.Recipient
+import org.thoughtcrime.securesms.recipients.RecipientId
+import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue
+import org.thoughtcrime.securesms.trustedIntroductions.glue.RecipientTableGlue.getValidTICandidates
 
-import org.signal.core.util.concurrent.SignalExecutors;
-import org.thoughtcrime.securesms.database.model.RecipientRecord;
-import org.thoughtcrime.securesms.recipients.Recipient;
-import org.thoughtcrime.securesms.recipients.RecipientId;
-import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue;
-import org.thoughtcrime.securesms.trustedIntroductions.glue.RecipientTableGlue;
+class ContactsSelectionManager internal constructor(// This is the person which will receive the security numbers of the selected contacts through
+  // a secure introduction.
+  val recipientId: RecipientId, // Dependency injection makes the class testable
+  private val idb: IdentityTableGlue
+) {
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+  fun getValidContacts(introducibleContacts: Consumer<List<Recipient>>) {
+    SignalExecutors.BOUNDED.execute {
+      val eligibleCandidates = getValidTICandidates(idb.getCursorForTIUnlocked())
 
-import io.reactivex.rxjava3.annotations.NonNull;
-
-public class ContactsSelectionManager {
-
-  // This is the person which will receive the security numbers of the selected contacts through
-  //  a secure introduction.
-  private final RecipientId recipientId;
-
-  // Dependency injection makes the class testable
-  private final @NonNull IdentityTableGlue idb;
-
-  ContactsSelectionManager(@NonNull RecipientId recipientId, @NonNull IdentityTableGlue idb) {
-    this.recipientId = recipientId;
-    this.idb         = idb;
-  }
-
-  void getValidContacts(@NonNull Consumer<List<Recipient>> introducibleContacts) {
-    SignalExecutors.BOUNDED.execute(() -> {
-      Map<RecipientId, RecipientRecord> eligibleCandidates = RecipientTableGlue.getValidTICandidates(idb.getCursorForTIUnlocked());
-      int                               count              = eligibleCandidates.size();
-      if (count == 0) {
-        introducibleContacts.accept(Collections.emptyList());
-      } else {
-        List<Recipient> contacts = new ArrayList<>();
-        eligibleCandidates.forEach((recipientID, recipientRecord) -> {
-          if (recipientID.compareTo(this.recipientId) != 0) {
-            contacts.add(Recipient.resolved(recipientID));
-          }
-        });
-        // sort ascending
-        Collections.sort(contacts, Comparator.comparing((Recipient recipient) -> recipient.getProfileName().toString()));
-        introducibleContacts.accept(contacts);
+      if (eligibleCandidates.isEmpty()) {
+        introducibleContacts.accept(emptyList())
+        return@execute
       }
-    });
+
+      eligibleCandidates
+        .asSequence()
+        .filter { (id, _) -> id != recipientId }
+        .map { (id, _) -> Recipient.resolved(id) }
+        .sortedBy { it.profileName.toString() }
+        .toList()
+        .let { introducibleContacts.accept(it) }
+    }
   }
 
-  RecipientId getRecipientId() {
-    return this.recipientId;
-  }
+//  fun getValidContacts(introducibleContacts: Consumer<List<Recipient>?>) {
+//    SignalExecutors.BOUNDED.execute {
+//      val eligibleCandidates = getValidTICandidates(idb.cursorForTIUnlocked)
+//      val count = eligibleCandidates.size
+//      if (count == 0) {
+//        introducibleContacts.accept(emptyList())
+//      } else {
+//        val contacts: MutableList<Recipient> = ArrayList()
+//        eligibleCandidates.forEach { (recipientID: RecipientId?, recipientRecord: RecipientRecord?) ->
+//          if (recipientID.compareTo(this.recipientId) != 0) {
+//            contacts.add(resolved(recipientID))
+//          }
+//        }
+//        // sort ascending
+//        Collections.sort(
+//          contacts,
+//          Comparator.comparing { recipient: Recipient -> recipient.profileName.toString() }
+//        )
+//        introducibleContacts.accept(contacts)
+//      }
+//    }
+
+//  fun getRecipientId(): RecipientId = recipientId
 }

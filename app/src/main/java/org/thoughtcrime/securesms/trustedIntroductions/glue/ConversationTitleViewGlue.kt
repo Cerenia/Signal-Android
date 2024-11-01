@@ -1,41 +1,27 @@
-package org.thoughtcrime.securesms.trustedIntroductions.glue;
+package org.thoughtcrime.securesms.trustedIntroductions.glue
 
-import androidx.annotation.NonNull;
+import android.content.Context
+import android.widget.TextView
+import org.thoughtcrime.securesms.R
+import org.thoughtcrime.securesms.database.SignalDatabase.Companion.tiIdentityTable
+import org.thoughtcrime.securesms.recipients.Recipient
 
-import org.thoughtcrime.securesms.R;
-import org.thoughtcrime.securesms.database.SignalDatabase;
-import org.thoughtcrime.securesms.recipients.Recipient;
-
-import android.content.Context;
-import android.widget.TextView;
-
-public interface ConversationTitleViewGlue {
-
-  static void setIndividualRecipientTitle(@NonNull Recipient recipient, Context context, TextView title, TextView subtitle, @NonNull Runnable updateVisibility) {
-    final String displayName = recipient.getDisplayName(context);
-    title.setText(displayName);
-    IdentityTableGlue.VerifiedStatus verifiedStatus = SignalDatabase.tiIdentityDatabase().getVerifiedStatus(recipient.getId());
-    switch (verifiedStatus){
-      case MANUALLY_VERIFIED:
-        subtitle.setText(R.string.ConversationTitleView__manually_verified);
-        break;
-      case DIRECTLY_VERIFIED:
-        subtitle.setText(R.string.ConversationTitleView__directly_verified);
-        break;
-      case DUPLEX_VERIFIED:
-        subtitle.setText(R.string.ConversationTitleView__duplex);
-        break;
-      case INTRODUCED:
-        subtitle.setText(R.string.ConversationTitleView__introduced);
-        break;
-      case SUSPECTED_COMPROMISE:
-        subtitle.setText(R.string.ConversationTitleView__suspected_compromise);
-      default:
-        subtitle.setText(R.string.ConversationTitleView__unverified); // Should never be visible in this state
-        break;
+interface ConversationTitleViewGlue {
+  companion object {
+    @JvmStatic
+    fun setIndividualRecipientTitle(recipient: Recipient, context: Context, title: TextView, subtitle: TextView, updateVisibility: Runnable) {
+      val displayName = recipient.getDisplayName(context)
+      title.text = displayName
+      val verifiedStatus = tiIdentityTable.getVerifiedStatus(recipient.id)
+      when (verifiedStatus) {
+        IdentityTableGlue.VerifiedStatus.MANUALLY_VERIFIED -> subtitle.setText(R.string.ConversationTitleView__manually_verified)
+        IdentityTableGlue.VerifiedStatus.DIRECTLY_VERIFIED -> subtitle.setText(R.string.ConversationTitleView__directly_verified)
+        IdentityTableGlue.VerifiedStatus.DUPLEX_VERIFIED -> subtitle.setText(R.string.ConversationTitleView__duplex)
+        IdentityTableGlue.VerifiedStatus.INTRODUCED -> subtitle.setText(R.string.ConversationTitleView__introduced)
+        IdentityTableGlue.VerifiedStatus.SUSPECTED_COMPROMISE -> subtitle.setText(R.string.ConversationTitleView__suspected_compromise)
+        else -> subtitle.setText(R.string.ConversationTitleView__unverified) // Should never be visible in this state
+      }
+      updateVisibility.run()
     }
-    updateVisibility.run();
   }
-
-
 }

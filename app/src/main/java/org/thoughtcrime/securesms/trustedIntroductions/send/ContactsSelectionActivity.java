@@ -154,8 +154,8 @@ public final class ContactsSelectionActivity extends PassphraseRequiredActivity 
   }
 
   private void displayAlertMessage(@NonNull ContactsSelectionViewModel.IntroduceDialogMessageState state) {
-    Recipient       recipient = Util.firstNonNull(state.getRecipient(), Recipient.UNKNOWN);
-    List<Recipient> selection = state.getToIntroduce();
+    Recipient       recipient = Util.firstNonNull(state.recipient, Recipient.UNKNOWN);
+    List<Recipient> selection = state.toIntroduce;
     int             count     = selection.size();
     if (count == 1) {
       displayAlertForSingleIntroduction(recipient, selection.get(0), state);
@@ -172,7 +172,7 @@ public final class ContactsSelectionActivity extends PassphraseRequiredActivity 
   }
 
   private void displayAlertForMultiIntroduction(Recipient recipient, @NonNull ContactsSelectionViewModel.IntroduceDialogMessageState state) {
-    int count = state.getToIntroduce().size();
+    int count = state.toIntroduce.size();
     String message = getResources().getQuantityString(R.plurals.PickContactsForTIActivity__introduce_d_contacts_to_s, count,
                                                       count, recipient.getDisplayName(this));
     displayAlert(message, state);
@@ -192,7 +192,7 @@ public final class ContactsSelectionActivity extends PassphraseRequiredActivity 
 
   private void onFinishedSelection(@NonNull ContactsSelectionViewModel.IntroduceDialogMessageState state) {
     Intent                 resultIntent = getIntent();
-    ArrayList<RecipientId> recipientIds = state.getToIntroduce().stream().map(Recipient::getId).collect(Collectors.toCollection(ArrayList::new));
+    ArrayList<RecipientId> recipientIds = state.toIntroduce.stream().map(Recipient::getId).collect(Collectors.toCollection(ArrayList::new));
 
     resultIntent.putParcelableArrayListExtra(SELECTED_CONTACTS_TO_FORWARD, recipientIds);
 
