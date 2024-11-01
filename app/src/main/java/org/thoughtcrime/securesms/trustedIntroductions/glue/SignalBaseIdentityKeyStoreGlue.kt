@@ -1,24 +1,27 @@
-package org.thoughtcrime.securesms.trustedIntroductions.glue;
+package org.thoughtcrime.securesms.trustedIntroductions.glue
 
-import org.signal.core.util.concurrent.SignalExecutors;
-import org.signal.core.util.logging.Log;
-import org.thoughtcrime.securesms.database.SignalDatabase;
-import org.thoughtcrime.securesms.recipients.Recipient;
-import org.thoughtcrime.securesms.recipients.RecipientId;
-import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
+import org.signal.core.util.concurrent.SignalExecutors
+import org.signal.core.util.logging.Log.e
+import org.signal.core.util.logging.Log.tag
+import org.thoughtcrime.securesms.database.SignalDatabase.Companion.tiDatabase
+import org.thoughtcrime.securesms.recipients.Recipient.Companion.resolved
+import org.thoughtcrime.securesms.recipients.RecipientId
+import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils
 
-public interface SignalBaseIdentityKeyStoreGlue {
-
-  String TAG = String.format(TI_Utils.TI_LOG_TAG, org.signal.core.util.logging.Log.tag(SignalBaseIdentityKeyStoreGlue.class));
-
-  static void turnAllIntroductionsStale(RecipientId recipientId) {
-    // Security nr. changed, change all introductions for this introducee to stale
-    SignalExecutors.BOUNDED.execute(() -> {
-      Recipient recipient = Recipient.resolved(recipientId);
-      boolean   res       = SignalDatabase.tiDatabase().turnAllIntroductionsStale(recipient.requireServiceId().toString());
-      if (!res) {
-        Log.e(TAG, "Error occurred while turning all introductions stale for recipient: " + recipientId);
+interface SignalBaseIdentityKeyStoreGlue {
+  companion object {
+    @JvmStatic
+    fun turnAllIntroductionsStale(recipientId: RecipientId) {
+      // Security nr. changed, change all introductions for this introducee to stale
+      SignalExecutors.BOUNDED.execute {
+        val recipient = resolved(recipientId)
+        val res = tiDatabase.turnAllIntroductionsStale(recipient.requireServiceId().toString())
+        if (!res) {
+          e(TAG, "Error occurred while turning all introductions stale for recipient: $recipientId")
+        }
       }
-    });
+    }
+
+    val TAG: String = String.format(TI_Utils.TI_LOG_TAG, tag(SignalBaseIdentityKeyStoreGlue::class.java))
   }
 }

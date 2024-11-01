@@ -1,119 +1,113 @@
-package org.thoughtcrime.securesms.trustedIntroductions;
+package org.thoughtcrime.securesms.trustedIntroductions
 
-import android.annotation.SuppressLint;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.annotation.WorkerThread;
-
-import org.json.JSONException;
-import org.signal.core.util.concurrent.SignalExecutors;
-import org.signal.core.util.logging.Log;
-import org.signal.core.util.Base64;
-import org.signal.libsignal.protocol.IdentityKey;
-import org.signal.libsignal.protocol.fingerprint.Fingerprint;
-import org.signal.libsignal.protocol.fingerprint.NumericFingerprintGenerator;
-import org.thoughtcrime.securesms.crypto.ReentrantSessionLock;
-import org.thoughtcrime.securesms.database.IdentityTable;
-import org.thoughtcrime.securesms.database.RecipientTable;
-import org.thoughtcrime.securesms.database.SignalDatabase;
-import org.thoughtcrime.securesms.database.model.RecipientRecord;
-import org.thoughtcrime.securesms.dependencies.AppDependencies;
-import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database;
-import org.thoughtcrime.securesms.database.model.IdentityRecord;
-import org.thoughtcrime.securesms.jobs.MultiDeviceVerifiedUpdateJob;
-import org.thoughtcrime.securesms.trustedIntroductions.database.TI_IdentityTable;
-import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue;
-import org.thoughtcrime.securesms.trustedIntroductions.glue.RecipientTableGlue;
-import org.thoughtcrime.securesms.trustedIntroductions.jobs.TrustedIntroductionsReceiveJob;
-import org.thoughtcrime.securesms.recipients.LiveRecipient;
-import org.thoughtcrime.securesms.recipients.Recipient;
-import org.thoughtcrime.securesms.recipients.RecipientId;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.math.BigInteger;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-
-import org.json.JSONObject;
-import org.json.JSONArray;
-import org.thoughtcrime.securesms.storage.StorageSyncHelper;
-import org.thoughtcrime.securesms.util.IdentityUtil;
-import org.whispersystems.signalservice.api.SignalSessionLock;
-import org.whispersystems.signalservice.api.push.ServiceId;
-import org.whispersystems.signalservice.api.util.Preconditions;
-
-import static org.thoughtcrime.securesms.dependencies.AppDependencies.getApplication;
+import android.annotation.SuppressLint
+import androidx.annotation.WorkerThread
+import org.json.JSONArray
+import org.json.JSONException
+import org.json.JSONObject
+import org.signal.core.util.Base64.encodeWithoutPadding
+import org.signal.core.util.concurrent.SignalExecutors
+import org.signal.core.util.logging.Log
+import org.signal.libsignal.protocol.IdentityKey
+import org.signal.libsignal.protocol.fingerprint.Fingerprint
+import org.signal.libsignal.protocol.fingerprint.NumericFingerprintGenerator
+import org.thoughtcrime.securesms.crypto.ReentrantSessionLock
+import org.thoughtcrime.securesms.database.IdentityTable.VerifiedStatus.Companion.forState
+import org.thoughtcrime.securesms.database.SignalDatabase
+import org.thoughtcrime.securesms.database.SignalDatabase.Companion.recipients
+import org.thoughtcrime.securesms.database.SignalDatabase.Companion.tiIdentityTable
+import org.thoughtcrime.securesms.database.model.RecipientRecord
+import org.thoughtcrime.securesms.dependencies.AppDependencies.application
+import org.thoughtcrime.securesms.dependencies.AppDependencies.jobManager
+import org.thoughtcrime.securesms.dependencies.AppDependencies.protocolStore
+import org.thoughtcrime.securesms.jobs.MultiDeviceVerifiedUpdateJob
+import org.thoughtcrime.securesms.recipients.Recipient.Companion.live
+import org.thoughtcrime.securesms.recipients.Recipient.Companion.resolved
+import org.thoughtcrime.securesms.recipients.RecipientId
+import org.thoughtcrime.securesms.storage.StorageSyncHelper
+import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database
+import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue.VerifiedStatus
+import org.thoughtcrime.securesms.trustedIntroductions.glue.RecipientTableGlue.getRecordsForReceivingTI
+import org.thoughtcrime.securesms.trustedIntroductions.glue.RecipientTableGlue.getRecordsForSendingTI
+import org.thoughtcrime.securesms.trustedIntroductions.jobs.TrustedIntroductionsReceiveJob
+import org.thoughtcrime.securesms.util.IdentityUtil
+import org.whispersystems.signalservice.api.push.ServiceId.Companion.parseOrThrow
+import org.whispersystems.signalservice.api.util.Preconditions
+import java.io.ByteArrayOutputStream
+import java.io.IOException
+import java.io.ObjectOutputStream
+import java.math.BigInteger
+import java.security.MessageDigest
+import java.security.NoSuchAlgorithmException
+import java.text.SimpleDateFormat
+import java.util.Locale
+import java.util.concurrent.TimeUnit
 
 // TODO: May be able to simplify further by using JsonUtil.java in codebase...
 // Serialization for each object that I am sending is already present..
-
-public class TI_Utils {
-
+object TI_Utils {
   // Prefix all logging with this tag for ease of search
-  public static final String TI_LOG_TAG = "_TI:%s";
-  static final        String TAG        = String.format(TI_LOG_TAG, Log.tag(TI_Utils.class));
+  const val TI_LOG_TAG: String = "_TI:%s"
+  val TAG: String = String.format(TI_LOG_TAG, Log.tag(TI_Utils::class.java))
 
   // Version, change if you change data/message format for compatibility
   // TODO: this is currently only reflected in message format, would need to add this to Database to make
   // Backup/Restore work across revisions
-  public static final String TI_MESSAGE_VERSION   = "2.0";
+  const val TI_MESSAGE_VERSION: String = "2.0"
+
   // Since the Signal version is still important and will not be overwritten I define my own
   // 1: major changes, 2: feature/ui changes , 3. bugs | stability fixes
-  public static final String TI_APK_VERSION       = "2.1.2";
+  const val TI_APK_VERSION: String = "2.1.2"
+
   // text is the interim solution. In the future a custom mimetype should be used such that we can release a
   // custom interpreter that can be used by people that do not have the TI_extension installed.
-  public static final String TI_MIME_TYPE         = "text/plain";
-  public static final String TI_MESSAGE_EXTENSION = ".trustedintro";
-  public static final String TI_MESSAGE_FILENAME  = "Signal" + TI_MESSAGE_EXTENSION;
+  const val TI_MIME_TYPE: String = "text/plain"
+  const val TI_MESSAGE_EXTENSION: String = ".trustedintro"
+  const val TI_MESSAGE_FILENAME: String = "Signal$TI_MESSAGE_EXTENSION"
 
   // Random String to mark a message as a trustedIntroduction, since I'm tunneling through normal messages
-  public static final String TI_IDENTIFIER = "QOikEX9PPGIuXfiejT9nC2SsDB8d9AG0dUPQ9gERBQ8qHF30Xj --- This message is part of an experimental feature and not meant to be read by humans --- Introduction Data:\n";
+  const val TI_IDENTIFIER: String = "QOikEX9PPGIuXfiejT9nC2SsDB8d9AG0dUPQ9gERBQ8qHF30Xj --- This message is part of an experimental feature and not meant to be read by humans --- Introduction Data:\n"
+
   // This should be added as a comment above and below each executed glue line in the Signal codebase
   // will aid in applying glue logic mechanically further down the line.
   // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /start"
   // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH /end"
-  static final        String TI_GLUE_START = "TI_GLUE: eNT9XAHgq0lZdbQs2nfH start";
-  static final        String TI_GLUE_END   = "TI_GLUE: eNT9XAHgq0lZdbQs2nfH end";
-  static final        String TI_SEPARATOR  = "\n"; // marks start of JsonArray, human friendly
-  static final        int    INDENT_SPACES = 1; // pretty printing for human readableness
+  const val TI_GLUE_START: String = "TI_GLUE: eNT9XAHgq0lZdbQs2nfH start"
+  const val TI_GLUE_END: String = "TI_GLUE: eNT9XAHgq0lZdbQs2nfH end"
+  const val TI_SEPARATOR: String = "\n" // marks start of JsonArray, human friendly
+  const val INDENT_SPACES: Int = 1 // pretty printing for human readableness
 
   // For safety_number generation
   // @see VerifyDisplayFragment, iterations hardcoded there
-  static final int ITERATIONS = 5200;
-  // @See length of codes in VerifyDisplayFragment
-  static final int SEGMENTS   = 12;
+  const val ITERATIONS: Int = 5200
 
-  static final String UNDISCLOSED = "undisclosed";
+  // @See length of codes in VerifyDisplayFragment
+  const val SEGMENTS: Int = 12
+
+  const val UNDISCLOSED: String = "undisclosed"
 
   // Json keys
   // TODO: May want to add that to be part of the introduction at some point. This way we can avoid crashed on importing old backups with version mismatches
-  static final String TI_VERSION_J            = "ti_version";
-  static final String INTRODUCER_J            = "introducer";
-  static final String INTRODUCEE_DATA_J       = "introducees";
-  static final String SERVICE_ID_J            = "service_ID";
-  static final String NAME_J                  = "name";
-  static final String NUMBER_J                = "number";
-  static final String IDENTITY_J              = "identity_key_base64";
-  static final String PREDICTED_FINGERPRINT_J = "safety_number";
+  const val TI_VERSION_J: String = "ti_version"
+  const val INTRODUCER_J: String = "introducer"
+  const val INTRODUCEE_DATA_J: String = "introducees"
+  const val SERVICE_ID_J: String = "service_ID"
+  const val NAME_J: String = "name"
+  const val NUMBER_J: String = "number"
+  const val IDENTITY_J: String = "identity_key_base64"
+  const val PREDICTED_FINGERPRINT_J: String = "safety_number"
 
   // Job constants
-  public static final long TI_JOB_LIFESPAN     = TimeUnit.DAYS.toMillis(1);
+  @JvmField
+  val TI_JOB_LIFESPAN: Long = TimeUnit.DAYS.toMillis(1)
+
   //public static final int TI_JOB_MAX_ATTEMPTS = Job.Parameters.UNLIMITED;
-  public static final int  TI_JOB_MAX_ATTEMPTS = 10;
+  const val TI_JOB_MAX_ATTEMPTS: Int = 10
 
   // How to format dates in introductions:
-  @SuppressLint("SimpleDateFormat") public static final SimpleDateFormat INTRODUCTION_DATE_PATTERN = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss");
+  @JvmField
+  @SuppressLint("SimpleDateFormat")
+  val INTRODUCTION_DATE_PATTERN: SimpleDateFormat = SimpleDateFormat("yyyy/MM/dd hh:mm:ss")
 
   /**
    * /@see ManageListFragment::getFiltered()
@@ -121,64 +115,53 @@ public class TI_Utils {
    * @param timestamp the timestamp as long
    * @return The date in 6 parts, in order of the format string, as strings
    */
-  public static @NonNull TimestampDateParts splitIntroductionDate(long timestamp) {
-    String   date      = INTRODUCTION_DATE_PATTERN.format(timestamp);
-    String[] dateTime  = date.split(" ");
-    String[] dateParts = dateTime[0].split("/");
-    String[] timeParts = dateTime[1].split(":");
-    return new TimestampDateParts(dateParts[0],
-                                  dateParts[1],
-                                  dateParts[2],
-                                  timeParts[0],
-                                  timeParts[1],
-                                  timeParts[2]);
+  @JvmStatic
+  fun splitIntroductionDate(timestamp: Long): TimestampDateParts {
+    val date = INTRODUCTION_DATE_PATTERN.format(timestamp)
+    val dateTime = date.split(" ".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+    val dateParts = dateTime[0].split("/".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+    val timeParts = dateTime[1].split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+    return TimestampDateParts(
+      dateParts[0],
+      dateParts[1],
+      dateParts[2],
+      timeParts[0],
+      timeParts[1],
+      timeParts[2]
+    )
   }
 
-  public static class TimestampDateParts {
-    public String year;
-    public String month;
-    public String day;
-    public String hours;
-    public String minutes;
-    public String seconds;
+  /**
+   * @see VerifyDisplayFragment
+   */
+  private fun getFormattedSafetyNumbers(fingerprint: Fingerprint): String {
+    val segments = getSegments(fingerprint)
+    val result = StringBuilder()
 
-    public TimestampDateParts(String year, String month, String day, String hours, String minutes, String seconds) {
-      this.year    = year;
-      this.month   = month;
-      this.day     = day;
-      this.hours   = hours;
-      this.minutes = minutes;
-      this.seconds = seconds;
-    }
-  }
+    for (i in segments.indices) {
+      result.append(segments[i])
 
-  //@see VerifyDisplayFragment
-  private static @NonNull String getFormattedSafetyNumbers(@NonNull Fingerprint fingerprint, int segmentCount) {
-    String[]      segments = getSegments(fingerprint, segmentCount);
-    StringBuilder result   = new StringBuilder();
-
-    for (int i = 0; i < segments.length; i++) {
-      result.append(segments[i]);
-
-      if (i != segments.length - 1) {
-        result.append(' ');
+      if (i != segments.size - 1) {
+        result.append(' ')
       }
     }
 
-    return result.toString();
+    return result.toString()
   }
 
-  //@see VerifyDisplayFragment
-  private static String[] getSegments(Fingerprint fingerprint, int segmentCount) {
-    String[] segments = new String[segmentCount];
-    String   digits   = fingerprint.getDisplayableFingerprint().getDisplayText();
-    int      partSize = digits.length() / segmentCount;
+  /**
+   * @see VerifyDisplayFragment
+   */
+  private fun getSegments(fingerprint: Fingerprint): Array<String?> {
+    val segments = arrayOfNulls<String>(SEGMENTS)
+    val digits = fingerprint.displayableFingerprint.displayText
+    val partSize = digits.length / SEGMENTS
 
-    for (int i = 0; i < segmentCount; i++) {
-      segments[i] = digits.substring(i * partSize, (i * partSize) + partSize);
+    for (i in 0 until SEGMENTS) {
+      segments[i] = digits.substring(i * partSize, (i * partSize) + partSize)
     }
 
-    return segments;
+    return segments
   }
 
   /**
@@ -188,50 +171,52 @@ public class TI_Utils {
    *
    * @param introductionRecipientId first Recipient
    * @param introduceeId            second Recipient (introducee) => Must be present in the local database!
-   * @param introduceeServiceId,    fetched if null and needed
+   * @param maybeIntroducerServiceId,    fetched if null and needed
    * @param introduceeIdentityKey   fetched if null
    * @return The expected safety number as a String, formated into segments identical to the VerifyDisplayFragment TODO: fix wacky formatting (some whitespaces missing)
    */
-  public static String predictFingerprint(@NonNull RecipientId introductionRecipientId, @NonNull RecipientId introduceeId, @Nullable String introduceeServiceId, @Nullable IdentityKey introduceeIdentityKey) {
+  private fun predictFingerprint(introductionRecipientId: RecipientId, introduceeId: RecipientId, maybeIntroducerServiceId: String?, introduceeIdentityKey: IdentityKey?): String {
+    var introduceeServiceId = maybeIntroducerServiceId
     if (introduceeServiceId == null && introduceeIdentityKey == null) {
       // Fetch all the values
-      LiveRecipient liveIntroducee     = Recipient.live(introduceeId);
-      Recipient     introduceeResolved = liveIntroducee.resolve();
-      introduceeServiceId = introduceeResolved.getServiceId().toString();
+      val liveIntroducee = live(introduceeId)
+      val introduceeResolved = liveIntroducee.resolve()
+      introduceeServiceId = introduceeResolved.serviceId.toString()
     } else if (introduceeServiceId != null && introduceeIdentityKey != null) {
       //noop, normal case when recipient fetched through cursor
-      Log.i(TAG, "hit a noop: recipient fetched through cursor (no introducee ServiceId or IdentityKey)");
+      Log.i(TAG, " hit a noop: recipient fetched through cursor (no introducee ServiceId or IdentityKey)")
     } else {
       // TODO: Does that make sense??
-      throw new AssertionError(TAG + "Unexpected non-null parameter in TI_Utils.predictFingerprint");
+      throw AssertionError("$TAG Unexpected non-null parameter in TI_Utils.predictFingerprint")
     }
     // Initialize introduction recipients id & key
-    byte[]                      introductionRecipientFingerprintId;
-    byte[]                      introduceeFingerprintId;
-    LiveRecipient               live                          = Recipient.live(introductionRecipientId);
-    Recipient                   introductionRecipientResolved = live.resolve();
-    NumericFingerprintGenerator generator                     = new NumericFingerprintGenerator(ITERATIONS);
-    Log.i(TAG, "using " + introductionRecipientResolved.requireServiceId());
-    introductionRecipientFingerprintId = introductionRecipientResolved.requireServiceId().toByteArray();
-    introduceeFingerprintId            = introduceeServiceId.getBytes();
-    IdentityKey introductionRecipientIdentityKey;
+    val introductionRecipientFingerprintId: ByteArray
+    val live = live(introductionRecipientId)
+    val introductionRecipientResolved = live.resolve()
+    val generator = NumericFingerprintGenerator(ITERATIONS)
+    Log.i(TAG, "using " + introductionRecipientResolved.requireServiceId())
+    introductionRecipientFingerprintId = introductionRecipientResolved.requireServiceId().toByteArray()
+    val introduceeFingerprintId = introduceeServiceId.toByteArray()
+    val introductionRecipientIdentityKey: IdentityKey
     try {
-      introductionRecipientIdentityKey = getIdentityKey(introductionRecipientId);
-    } catch (MissingIdentityException e) {
-      Log.e(TAG, e.toString());
-      throw new AssertionError(TAG + "The key of the introduction recipient must be present in the database at this stage. RecipientID: " + introductionRecipientId);
+      introductionRecipientIdentityKey = getIdentityKey(introductionRecipientId)
+    } catch (e: MissingIdentityException) {
+      Log.e(TAG, e.toString())
+      throw AssertionError("$TAG The key of the introduction recipient must be present in the database at this stage. RecipientID: $introductionRecipientId")
     }
 
     // @see VerifyDisplayFragment::initializeFingerprint(), iterations there also hardcoded to 5200 for FingerprintGenerator
     // @see ServiceId.java to understand how they convert the ACI to ByteArray
     // @see IdentityKey.java
     // Only version 2 is used since the migration to usernames
-    Fingerprint fingerprint = generator.createFor(2,
-                                                  introductionRecipientFingerprintId,
-                                                  introductionRecipientIdentityKey,
-                                                  introduceeFingerprintId,
-                                                  introduceeIdentityKey);
-    return getFormattedSafetyNumbers(fingerprint, SEGMENTS).replace("\n", "");
+    val fingerprint = generator.createFor(
+      2,
+      introductionRecipientFingerprintId,
+      introductionRecipientIdentityKey,
+      introduceeFingerprintId,
+      introduceeIdentityKey
+    )
+    return getFormattedSafetyNumbers(fingerprint).replace("\n", "")
   }
 
   /**
@@ -240,122 +225,130 @@ public class TI_Utils {
    * @param id recipient ID
    * @return their identity as saved in the Identity database
    */
-  public static IdentityKey getIdentityKey(RecipientId id) throws MissingIdentityException {
-    Optional<IdentityRecord> identityRecord = AppDependencies.getProtocolStore().aci().identities().getIdentityRecord(id);
-    if (identityRecord.isEmpty()) {
-      throw new MissingIdentityException(TAG + " No identity found for the recipient with id: " + id);
+  @Throws(MissingIdentityException::class)
+  fun getIdentityKey(id: RecipientId): IdentityKey {
+    val identityRecord = protocolStore.aci().identities().getIdentityRecord(id)
+    if (identityRecord.isEmpty) {
+      throw MissingIdentityException("$TAG No identity found for the recipient with id: $id")
     }
-    return identityRecord.get().getIdentityKey();
+    return identityRecord.get().identityKey
   }
 
-  public static String encodeIdentityKey(IdentityKey key) {
-    return Base64.encodeWithoutPadding(key.serialize());
+  fun encodeIdentityKey(key: IdentityKey): String {
+    return encodeWithoutPadding(key.serialize())
   }
 
-  public static String getEncodedIdentityKey(RecipientId id) throws MissingIdentityException {
-    return encodeIdentityKey(getIdentityKey(id));
+  @JvmStatic
+  @Throws(MissingIdentityException::class)
+  fun getEncodedIdentityKey(id: RecipientId): String {
+    return encodeIdentityKey(getIdentityKey(id))
   }
 
-  @SuppressLint("Range") @WorkerThread
-  public static String buildMessageBody(@NonNull RecipientId introducerRecipientId, @NonNull RecipientId introductionRecipientId, @NonNull Set<RecipientId> introducees) throws JSONException {
+  @SuppressLint("Range")
+  @WorkerThread
+  @Throws(JSONException::class)
+  @JvmStatic
+  fun buildMessageBody(introducerRecipientId: RecipientId, introductionRecipientId: RecipientId, introducees: Set<RecipientId?>): String {
     if (introducees.isEmpty()) {
-      throw new AssertionError(TAG + " buildMessageBody called with no Introducees!");
+      throw AssertionError("$TAG buildMessageBody called with no Introducees!")
     }
 
-    JSONObject data = new JSONObject();
+    val data = JSONObject()
 
-    Map<RecipientId, RecipientRecord> recipients = RecipientTableGlue.getRecordsForSendingTI(introducees);
+//    val recipients = getRecordsForSendingTI(introducees)
+    val recipients = getRecordsForSendingTI(introducees.filterNotNull().toSet())
+    if (recipients.isEmpty()) {
+      throw AssertionError("$TAG buildMessageBody - no recipients!")
+    }
 
-    data.put(TI_VERSION_J, TI_MESSAGE_VERSION);
+    data.put(TI_VERSION_J, TI_MESSAGE_VERSION)
 
     // create Introducer entry
-    JSONObject introducer         = new JSONObject();
-    Recipient  resolvedIntroducer = Recipient.live(introducerRecipientId).get();
+    val introducer = JSONObject()
+    val resolvedIntroducer = live(introducerRecipientId).get()
 
-    introducer.put(NAME_J, getSomeNonNullName(introducerRecipientId, SignalDatabase.recipients().getRecord(introducerRecipientId)));
-    introducer.put(NUMBER_J, resolvedIntroducer.getE164().isEmpty() ? UNDISCLOSED : resolvedIntroducer.getE164().get());
-    introducer.put(SERVICE_ID_J, resolvedIntroducer.getServiceId().isEmpty() ? UNDISCLOSED : resolvedIntroducer.getServiceId().get().toString());
+    introducer.put(NAME_J, getSomeNonNullName(introducerRecipientId, SignalDatabase.recipients.getRecord(introducerRecipientId)))
+    introducer.put(NUMBER_J, if (resolvedIntroducer.e164.isEmpty) UNDISCLOSED else resolvedIntroducer.e164.get())
+    introducer.put(SERVICE_ID_J, if (resolvedIntroducer.serviceId.isEmpty) UNDISCLOSED else resolvedIntroducer.serviceId.get().toString())
     try {
-      introducer.put(PREDICTED_FINGERPRINT_J, predictFingerprint(introducerRecipientId,
-                                                                 introductionRecipientId,
-                                                                 Recipient.live(introductionRecipientId).get().requireServiceId().toString(),
-                                                                 getIdentityKey(introductionRecipientId)));
-    } catch (MissingIdentityException e) {
+      introducer.put(
+        PREDICTED_FINGERPRINT_J, predictFingerprint(
+          introducerRecipientId,
+          introductionRecipientId,
+          live(introductionRecipientId).get().requireServiceId().toString(),
+          getIdentityKey(introductionRecipientId)
+        )
+      )
+    } catch (e: MissingIdentityException) {
       // should never be the case with the introducer
-      throw new AssertionError(TAG + " My own identity key cannot be missing! ");
+      throw AssertionError("$TAG My own identity key cannot be missing! ")
     }
     try {
-      introducer.put(IDENTITY_J, encodeIdentityKey(getIdentityKey(introducerRecipientId)));
-    } catch (MissingIdentityException e) {
+      introducer.put(IDENTITY_J, encodeIdentityKey(getIdentityKey(introducerRecipientId)))
+    } catch (e: MissingIdentityException) {
       // should never be the case with the introducer
-      throw new AssertionError(TAG + " The introducers Identity cannot be missing! " + introducerRecipientId + " cannot be an introducer!");
+      throw AssertionError("$TAG The introducers Identity cannot be missing! $introducerRecipientId cannot be an introducer!")
     }
-    data.put(INTRODUCER_J, introducer);
+    data.put(INTRODUCER_J, introducer)
 
     // Now do the same for all introducees and wrap them in an array
-    JSONArray introduceeData = new JSONArray();
-    recipients.forEach((recipientId, recipientRecord) -> {
+    val introduceeData = JSONArray()
+    recipients.forEach { (recipientId: RecipientId?, recipientRecord: RecipientRecord?) ->
       try {
-        JSONObject introducee = new JSONObject();
-        introducee.put(NAME_J, getSomeNonNullName(recipientId, recipientRecord));
-        String introduceeE164 = recipientRecord.getE164() == null ? UNDISCLOSED : recipientRecord.getE164();
-        introducee.put(NUMBER_J, introduceeE164);
-        ServiceId introduceeServiceId = recipientRecord.getAci();
-        if (introduceeServiceId == null) {
-          throw new AssertionError(TAG + "Introducee service ID may not be null.");
-        }
-        introducee.put(SERVICE_ID_J, introduceeServiceId);
-        String formatedSafetyNR;
+        val introducee = JSONObject()
+        introducee.put(NAME_J, getSomeNonNullName(recipientId, recipientRecord))
+        val introduceeE164 = recipientRecord.e164 ?: UNDISCLOSED
+        introducee.put(NUMBER_J, introduceeE164)
+        val introduceeServiceId = recipientRecord.aci ?: throw AssertionError(TAG + "Introducee service ID may not be null.")
+        introducee.put(SERVICE_ID_J, introduceeServiceId)
+        val formatedSafetyNR: String
         try {
-          IdentityKey introduceeIdentityKey = getIdentityKey(recipientId);
-          introducee.put(IDENTITY_J, encodeIdentityKey(introduceeIdentityKey));
-          formatedSafetyNR = predictFingerprint(introductionRecipientId, recipientId, introduceeServiceId.toString(), introduceeIdentityKey);
-        } catch (MissingIdentityException e) {
-          e.printStackTrace();
-          throw new AssertionError(TAG + " Unexpected missing identities when building TI message body!");
+          val introduceeIdentityKey = getIdentityKey(recipientId)
+          introducee.put(IDENTITY_J, encodeIdentityKey(introduceeIdentityKey))
+          formatedSafetyNR = predictFingerprint(introductionRecipientId, recipientId, introduceeServiceId.toString(), introduceeIdentityKey)
+        } catch (e: MissingIdentityException) {
+          throw AssertionError("$TAG Unexpected missing identities when building TI message body!\n ${e.stackTraceToString()}")
         }
-        introducee.put(PREDICTED_FINGERPRINT_J, formatedSafetyNR);
-        introduceeData.put(introducee);
-        data.put(INTRODUCEE_DATA_J, introduceeData);
-      } catch (JSONException e) {
-        e.printStackTrace();
-        throw new AssertionError(TAG + "Json Error occurred while building TI_message body.\n");
+        introducee.put(PREDICTED_FINGERPRINT_J, formatedSafetyNR)
+        introduceeData.put(introducee)
+        data.put(INTRODUCEE_DATA_J, introduceeData)
+      } catch (e: JSONException) {
+        throw AssertionError("$TAG Json Error occurred while building TI_message body.\n ${e.stackTraceToString()}")
       }
-    });
-    return TI_IDENTIFIER + TI_SEPARATOR + data.toString(INDENT_SPACES);
+    }
+    return TI_IDENTIFIER + TI_SEPARATOR + data.toString(INDENT_SPACES)
   }
 
 
-  private static String getSomeNonNullName(RecipientId id, RecipientRecord record) {
-    String name;
-    name = record.getSystemDisplayName();
-    if (name != null && !name.isEmpty()) {
-      return name;
+  private fun getSomeNonNullName(id: RecipientId, record: RecipientRecord): String {
+    var name = record.systemDisplayName
+    if (!name.isNullOrEmpty()) {
+      return name
     }
-    name = record.getUsername();
-    if (name != null && !name.isEmpty()) {
-      return name;
+    name = record.username
+    if (!name.isNullOrEmpty()) {
+      return name
     }
-    name = record.getEmail();
-    if (name != null && !name.isEmpty()) {
-      return name;
+    name = record.email
+    if (!name.isNullOrEmpty()) {
+      return name
     }
-    Recipient rp = Recipient.resolved(id);
-    name = rp.getDisplayName(getApplication().getApplicationContext());
-    if (!name.isEmpty()) {
-      return name;
+    val rp = resolved(id)
+    name = rp.getDisplayName(application.applicationContext)
+    if (name.isNotEmpty()) {
+      return name
     }
-    name = rp.getProfileName().toString();
-    if (!name.isEmpty()) {
-      return name;
+    name = rp.profileName.toString()
+    if (name.isNotEmpty()) {
+      return name
     }
-    return "¯\\_(ツ)_/¯";
+    return "¯\\_(ツ)_/¯"
   }
 
   // This structure allows for a oneliner in the processing logic to minimize additional code needed in there.
-  public static void handleTIMessage(String message, long timestamp) {
+  fun handleTIMessage(message: String, timestamp: Long) {
     // Schedule Reception Job
-    AppDependencies.getJobManager().add(new TrustedIntroductionsReceiveJob(message, timestamp));
+    jobManager.add(TrustedIntroductionsReceiveJob(message, timestamp))
   }
 
 
@@ -363,11 +356,11 @@ public class TI_Utils {
    * @param id recipient Id for which the cache should be queried.
    * @return ACI as string if present, null otherwise
    */
-  public static String getServiceIdFromRecipientId(RecipientId id) {
-    if (Recipient.live(id).resolve().getServiceId().isPresent()) {
-      return Recipient.live(id).resolve().getServiceId().get().toString();
+  private fun getServiceIdFromRecipientId(id: RecipientId): String? {
+    return if (live(id).resolve().serviceId.isPresent) {
+      live(id).resolve().serviceId.get().toString()
     } else {
-      return null;
+      null
     }
   }
 
@@ -377,13 +370,22 @@ public class TI_Utils {
    * @param message the body of the .trustedintro attachment
    * @return a parsed JSONObject or null if there was a version mismatch
    */
-  private static @Nullable JSONObject getPureJson(String message) throws JSONException {
-    Preconditions.checkArgument(message.contains(TI_IDENTIFIER));
+  @Throws(JSONException::class)
+  private fun getPureJson(message: String): JSONObject? {
+    Preconditions.checkArgument(message.contains(TI_IDENTIFIER))
     if (isCorrectTImessageVersion(message)) {
-      return new JSONObject(message.replace(TI_IDENTIFIER, ""));
+      return JSONObject(message.replace(TI_IDENTIFIER, ""))
     } else {
-      Log.e(TAG, "Invalid TI_message for the following body:\n" + message + "\n\n--> The current version should be: " + TI_MESSAGE_VERSION + "\n");
-      return null;
+      Log.e(
+        TAG, """
+   Invalid TI_message for the following body:
+   $message
+   
+   --> The current version should be: $TI_MESSAGE_VERSION
+   
+   """.trimIndent()
+      )
+      return null
     }
   }
 
@@ -391,8 +393,8 @@ public class TI_Utils {
    * @param message the TI message (content of .trustedintro file)
    * @return True if the current TI_version is present in the message, false otherwise
    */
-  private static boolean isCorrectTImessageVersion(String message) {
-    return message.contains(String.format(Locale.getDefault(), "\"ti_version\": \"%s\"", TI_MESSAGE_VERSION)) && message.contains(TI_IDENTIFIER);
+  private fun isCorrectTImessageVersion(message: String): Boolean {
+    return message.contains(String.format(Locale.getDefault(), "\"ti_version\": \"%s\"", TI_MESSAGE_VERSION)) && message.contains(TI_IDENTIFIER)
   }
 
   /**
@@ -401,18 +403,19 @@ public class TI_Utils {
    * @param message the TI message (content of .trustedintro file)
    * @return the RecipientId of the introducer or null if there was a version mismatch
    */
-  public static @javax.annotation.Nullable RecipientId getIntroducerFromRawMessage(String message) {
+  @JvmStatic
+  fun getIntroducerFromRawMessage(message: String): RecipientId? {
     try {
-      JSONObject jsonData = getPureJson(message);
+      val jsonData = getPureJson(message)
       if (jsonData != null) {
-        JSONObject introducer = new JSONObject(jsonData.getString(INTRODUCER_J));
-        return RecipientId.from(ServiceId.parseOrThrow(introducer.getString(SERVICE_ID_J)));
+        val introducer = JSONObject(jsonData.getString(INTRODUCER_J))
+        return RecipientId.from(parseOrThrow(introducer.getString(SERVICE_ID_J)))
       }
-    } catch (JSONException e) {
-      Log.e(TAG, "A JsonException occurred for the following TI message body: \n" + message);
-      e.printStackTrace();
+    } catch (e: JSONException) {
+      Log.e(TAG, "A JsonException occurred for the following TI message body: \n$message")
+      e.printStackTrace()
     }
-    return null;
+    return null
   }
 
 
@@ -424,82 +427,85 @@ public class TI_Utils {
    * @param timestamp    when message was received
    * @param introducerId whom the message came from
    * @return populated List<TI_Data> if successful, null otherwise
-   */
+  </TI_Data> */
+  @JvmStatic
   @WorkerThread
   @SuppressLint("Range") // keywords exists
-  public static @Nullable List<TI_Data> constructIntroduceesFromTrustedIntrosString(String body, long timestamp, RecipientId introducerId) {
+  fun constructIntroduceesFromTrustedIntrosString(body: String, timestamp: Long, introducerId: RecipientId): List<TI_Data>? {
     if (!body.contains(TI_IDENTIFIER) || !isCorrectTImessageVersion(body)) {
-      throw new AssertionError("Non TI message passed into constructIntroducees!");
+      throw AssertionError("Non TI message passed into constructIntroducees!")
     }
-    String             introducerServiceId = getServiceIdFromRecipientId(introducerId);
-    ArrayList<TI_Data> result              = new ArrayList<>();
+    val introducerServiceId = getServiceIdFromRecipientId(introducerId)
+    val result = ArrayList<TI_Data>()
     try {
-      JSONObject data = getPureJson(body);
-      if (data == null) {
-        // For now we just ignore introductions with mismatched versions or invalid bodies
-        return null;
-      }
-      JSONArray            introducees         = data.getJSONArray(INTRODUCEE_DATA_J);
-      ArrayList<IdKeyPair> idKeyPairs          = new ArrayList<>();
-      List<String>         recipientServiceIds = new ArrayList<>();
+      val data = getPureJson(body)
+        ?: // For now we just ignore introductions with mismatched versions or invalid bodies
+        return null
+      val introducees = data.getJSONArray(INTRODUCEE_DATA_J)
+      val idKeyPairs = ArrayList<IdKeyPair>()
+      val recipientServiceIds: MutableList<String> = ArrayList()
       // Get all ServiceIds of introducees first to minimize database Queries
-      for (int i = 0; i < introducees.length(); i++) {
-        JSONObject o                   = introducees.getJSONObject(i);
-        String     introduceeServiceId = o.getString(SERVICE_ID_J);
-        idKeyPairs.add(new IdKeyPair(introduceeServiceId, o.getString(IDENTITY_J)));
-        recipientServiceIds.add(introduceeServiceId);
+      for (i in 0 until introducees.length()) {
+        val o = introducees.getJSONObject(i)
+        val introduceeServiceId = o.getString(SERVICE_ID_J)
+        idKeyPairs.add(IdKeyPair(introduceeServiceId, o.getString(IDENTITY_J)))
+        recipientServiceIds.add(introduceeServiceId)
       }
       // Get any known recipients & add to result
-      Map<RecipientId, RecipientRecord> records  = RecipientTableGlue.getRecordsForReceivingTI(recipientServiceIds);
-      ArrayList<String>                 knownIds = new ArrayList<>();
-      if (!records.isEmpty()) {
-        records.forEach((recipientID, recipientRecord) -> {
-          String introduceeServiceId = String.valueOf(recipientRecord.getAci());
-          knownIds.add(introduceeServiceId);
-          String  name        = getSomeNonNullName(recipientID, recipientRecord);
-          String  phone       = UNDISCLOSED.equals(recipientRecord.getE164()) ? null : recipientRecord.getE164();
-          String  identityKey = IdKeyPair.findCorrespondingKeyInList(introduceeServiceId, idKeyPairs);
-          TI_Data d           = new TI_Data(null, TI_Database.State.PENDING, introducerServiceId, introduceeServiceId, name, phone, identityKey, null, timestamp);
-          result.add(d);
-        });
+      val records = getRecordsForReceivingTI(recipientServiceIds)
+      val knownIds = ArrayList<String>()
+      if (records.isNotEmpty()) {
+        records.forEach { (recipientID: RecipientId?, recipientRecord: RecipientRecord?) ->
+          val introduceeServiceId = recipientRecord.aci.toString()
+          knownIds.add(introduceeServiceId)
+          val name = getSomeNonNullName(recipientID, recipientRecord)
+          val phone = if (UNDISCLOSED == recipientRecord.e164) null else recipientRecord.e164
+          val identityKey = IdKeyPair.findCorrespondingKeyInList(introduceeServiceId, idKeyPairs)
+          val d = TI_Data(null, TI_Database.State.PENDING, introducerServiceId, introduceeServiceId, name, phone, identityKey, null, timestamp)
+          result.add(d)
+        }
       }
       // Iterate through JSONData again, create the introductions for the still unknown recipients & set the predictedSecurityNumbers for all
-      for (int i = 0; i < introducees.length(); i++) {
-        JSONObject o = introducees.getJSONObject(i);
+      for (i in 0 until introducees.length()) {
+        val o = introducees.getJSONObject(i)
         // If data was fetched from local database, simply add the Security number information
-        String introduceeServiceId = o.getString(SERVICE_ID_J);
+        val introduceeServiceId = o.getString(SERVICE_ID_J)
         if (knownIds.contains(introduceeServiceId)) {
-          int j = 0;
-          while (!result.get(j).getIntroduceeServiceId().equals(introduceeServiceId)) j++;
-          if (j >= result.size()) {
-            throw new AssertionError("Known Id not found in the original JSON Data");
+          var j = 0
+          while (result[j].introduceeServiceId != introduceeServiceId) j++
+          if (j >= result.size) {
+            throw AssertionError("Known Id not found in the original JSON Data")
           }
-          result.get(j).setPredictedSecurityNumber(o.getString(PREDICTED_FINGERPRINT_J));
+          result[j].predictedSecurityNumber = o.getString(PREDICTED_FINGERPRINT_J)
         } else {
-          TI_Data d = new TI_Data(null, TI_Database.State.PENDING, introducerServiceId, o.getString(SERVICE_ID_J), o.getString(NAME_J), o.getString(NUMBER_J), o.getString(IDENTITY_J), o.getString(PREDICTED_FINGERPRINT_J), timestamp);
-          result.add(d);
+          val d = TI_Data(null, TI_Database.State.PENDING, introducerServiceId, o.getString(SERVICE_ID_J), o.getString(NAME_J), o.getString(NUMBER_J), o.getString(IDENTITY_J), o.getString(PREDICTED_FINGERPRINT_J), timestamp)
+          result.add(d)
         }
       }
-    } catch (JSONException e) {
-      Log.e(TAG, String.format("A JSON exception occurred while trying to parse the TI message: %s", body));
-      return null; // unsuccessful parse
+    } catch (e: JSONException) {
+      Log.e(TAG, String.format("A JSON exception occurred while trying to parse the TI message: %s", body))
+      return null // unsuccessful parse
     }
-    return result;
+    return result
   }
 
-  private static String getPhone(JSONArray introducees, String introuceeServiceId) {
+  private fun getPhone(introducees: JSONArray, introuceeServiceId: String): String {
     try {
-      for (int i = 0; i < introducees.length(); i++) {
-        JSONObject o = introducees.getJSONObject(i);
-        if (o.getString(SERVICE_ID_J).equals(introuceeServiceId)) {
-          return o.getString(NUMBER_J);
+      for (i in 0 until introducees.length()) {
+        val o = introducees.getJSONObject(i)
+        if (o.getString(SERVICE_ID_J) == introuceeServiceId) {
+          return o.getString(NUMBER_J)
         }
       }
-    } catch (JSONException e) {
-      e.printStackTrace();
-      Log.i(TAG, "Error while extracting phone nr. from introduction. Using placeholder.");
+    } catch (e: JSONException) {
+      Log.i(
+        TAG, """
+   Error while extracting phone nr. from introduction. Using placeholder.
+   ${e.stackTrace.contentToString()}
+   """.trimIndent()
+      )
     }
-    return "missing";
+    return "missing"
   }
 
   /**
@@ -508,49 +514,39 @@ public class TI_Utils {
    * @param o Object, must be serializable.
    * @return A string that can be used for the Job queue key.
    */
-  public static String serializeForQueue(Object o) {
-    MessageDigest md;
-    String        hashtext;
+  @JvmStatic
+  fun serializeForQueue(o: Any?): String {
+    val md: MessageDigest
+    val hashText: String
     try {
-      md = MessageDigest.getInstance("MD5");
+      md = MessageDigest.getInstance("MD5")
       // Serialize introducee Set
-      ByteArrayOutputStream bos = new ByteArrayOutputStream();
-      ObjectOutputStream    oos = new ObjectOutputStream(bos);
-      oos.writeObject(o);
-      oos.flush();
+      val bos = ByteArrayOutputStream()
+      val oos = ObjectOutputStream(bos)
+      oos.writeObject(o)
+      oos.flush()
       // Create digest and convert to Hex String
-      byte[]     digest = md.digest(bos.toByteArray());
-      BigInteger no     = new BigInteger(1, digest);
-      hashtext = no.toString(16);
-    } catch (NoSuchAlgorithmException e) {
-      Log.e(TAG, e.toString());
-      Log.e(TAG, e.getMessage());
-      throw new AssertionError("No such Algorithm!");
-    } catch (IOException ioe) {
-      Log.e(TAG, ioe.toString());
-      Log.e(TAG, ioe.getMessage());
-      throw new AssertionError("IO exception!");
+      val digest = md.digest(bos.toByteArray())
+      val no = BigInteger(1, digest)
+      hashText = no.toString(16)
+    } catch (e: NoSuchAlgorithmException) {
+      Log.e(
+        TAG, """
+   $e
+   ${e.message}
+   """.trimIndent()
+      )
+      throw AssertionError("No such Algorithm!")
+    } catch (ioe: IOException) {
+      Log.e(
+        TAG, """
+   $ioe
+   ${ioe.message}
+   """.trimIndent()
+      )
+      throw AssertionError("IO exception!")
     }
-    return hashtext;
-  }
-
-  private static class IdKeyPair {
-    public String id;
-    public String key;
-
-    public IdKeyPair(String id, String key) {
-      this.id  = id;
-      this.key = key;
-    }
-
-    public static String findCorrespondingKeyInList(String id, ArrayList<IdKeyPair> list) {
-      for (IdKeyPair p : list) {
-        if (id.equals(p.id)) {
-          return p.key;
-        }
-      }
-      throw new AssertionError(TAG + " The Id you were searching for was not found in the list!");
-    }
+    return hashText
   }
 
   /**
@@ -560,38 +556,47 @@ public class TI_Utils {
    *
    * @param status The new verification status
    */
-  public static void updateContactsVerifiedStatus(RecipientId recipientId, IdentityKey remoteIdentity, TI_IdentityTable.VerifiedStatus status) {
-    Log.i(TAG, "Saving identity: " + recipientId);
-    SignalExecutors.BOUNDED.execute(() -> {
+  @JvmStatic
+  fun updateContactsVerifiedStatus(recipientId: RecipientId, remoteIdentity: IdentityKey, status: VerifiedStatus) {
+    Log.i(TAG, "Saving identity: $recipientId")
+    SignalExecutors.BOUNDED.execute {
       // Fetch remote identity
-      Recipient recipient = Recipient.live(recipientId).resolve();
-      try (SignalSessionLock.Lock ignored = ReentrantSessionLock.INSTANCE.acquire()) {
+      val recipient = live(recipientId).resolve()
+      ReentrantSessionLock.INSTANCE.acquire().use { _ ->
         // TI
-        SignalDatabase.tiIdentityDatabase().setVerifiedStatus(recipientId, status);
+        tiIdentityTable.setVerifiedStatus(recipientId, status)
         // Vanilla
-        final boolean verified = TI_IdentityTable.VerifiedStatus.isVerified(status);
+//        val verified: Boolean = .VerifiedStatus.isVerified(status)
+        val verified: Boolean = VerifiedStatus.isVerified(status)
         if (verified) {
-          AppDependencies.getProtocolStore().aci().identities()
-                         .saveIdentityWithoutSideEffects(recipientId,
-                                                         recipient.requireServiceId(),
-                                                         remoteIdentity,
-                                                         TI_IdentityTable.VerifiedStatus.toVanilla(status),
-                                                         false,
-                                                         System.currentTimeMillis(),
-                                                         true);
+          protocolStore.aci().identities()
+            .saveIdentityWithoutSideEffects(
+              recipientId,
+              recipient.requireServiceId(),
+              remoteIdentity,
+              VerifiedStatus.toVanilla(status),
+              false,
+              System.currentTimeMillis(),
+              true
+            )
         } else {
-          AppDependencies.getProtocolStore().aci().identities().setVerified(recipientId, remoteIdentity, IdentityTable.VerifiedStatus.forState(TI_IdentityTable.VerifiedStatus.toVanilla(status.toInt())));
+          protocolStore.aci().identities()
+            .setVerified(recipientId, remoteIdentity, forState(VerifiedStatus.toVanilla(status.toInt())))
         }
         // For other devices but the Android phone, we map the finer statuses to verified or unverified.
         // TODO: Change once we add new devices for TI
-        AppDependencies.getJobManager()
-                       .add(new MultiDeviceVerifiedUpdateJob(recipientId,
-                                                             remoteIdentity,
-                                                             IdentityTable.VerifiedStatus.forState(IdentityTableGlue.VerifiedStatus.toVanilla(status.toInt()))));
-        StorageSyncHelper.scheduleSyncForDataChange();
-        IdentityUtil.markIdentityVerified(getApplication().getApplicationContext(), recipient, verified, false);
+        jobManager
+          .add(
+            MultiDeviceVerifiedUpdateJob(
+              recipientId,
+              remoteIdentity,
+              forState(VerifiedStatus.toVanilla(status.toInt()))
+            )
+          )
+        StorageSyncHelper.scheduleSyncForDataChange()
+        IdentityUtil.markIdentityVerified(application.applicationContext, recipient, verified, false)
       }
-    });
+    }
   }
 
   /**
@@ -599,11 +604,27 @@ public class TI_Utils {
    * Query db and check if recipient is present. If not return Unknown.
    * PRE: serviceId represents valid ACI
    */
+  @JvmStatic
   @WorkerThread
-  public static RecipientId getRecipientIdOrUnknown(String serviceId) {
-    ServiceId             sId        = ServiceId.parseOrThrow(serviceId);
-    RecipientTable        recipients = SignalDatabase.recipients();
-    Optional<RecipientId> rId        = recipients.getByServiceId(sId);
-    return rId.orElse(RecipientId.UNKNOWN);
+  fun getRecipientIdOrUnknown(serviceId: String): RecipientId {
+    val sId = parseOrThrow(serviceId)
+    val recipients = recipients
+    val rId = recipients.getByServiceId(sId)
+    return rId.orElse(RecipientId.UNKNOWN)
+  }
+
+  class TimestampDateParts(@JvmField var year: String, @JvmField var month: String, @JvmField var day: String, @JvmField var hours: String, @JvmField var minutes: String, @JvmField var seconds: String)
+
+  private class IdKeyPair(var id: String, var key: String) {
+    companion object {
+      fun findCorrespondingKeyInList(id: String, list: ArrayList<IdKeyPair>): String {
+        for (p in list) {
+          if (id == p.id) {
+            return p.key
+          }
+        }
+        throw AssertionError("$TAG The Id you were searching for was not found in the list!")
+      }
+    }
   }
 }

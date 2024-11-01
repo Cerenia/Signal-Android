@@ -34,6 +34,12 @@ object SelectedTIContacts {
     override fun areItemsTheSame(newItem: Model): Boolean {
       return newItem.selectedContact.id == recipientId
     }
+
+    override fun hashCode(): Int {
+      var result = selectedContact.hashCode()
+      result = 31 * result + recipientId.hashCode()
+      return result
+    }
   }
 
   private class ViewHolder(itemView: View, private val onCloseIconClicked: (Model) -> Unit) : MappingViewHolder<Model>(itemView) {

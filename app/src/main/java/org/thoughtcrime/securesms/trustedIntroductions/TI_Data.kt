@@ -1,8 +1,9 @@
 package org.thoughtcrime.securesms.trustedIntroductions
 
+import org.json.JSONException
 import org.json.JSONObject
 import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database
-import org.thoughtcrime.securesms.trustedIntroductions.jobs.TI_Serialize
+import org.thoughtcrime.securesms.trustedIntroductions.jobs.TISerializable
 
 // TODO: predictedSecurityNumber only needs to be nullable because I parse the TI_Message somewhat awkwardly... maybe change at some point? Not super critical...
 // IntroduceeRecipientId and Introducer
@@ -18,7 +19,7 @@ data class TI_Data(
   val introduceeIdentityKey: String,
   var predictedSecurityNumber: String?,
   val timestamp: Long
-) : TI_Serialize {
+) : TISerializable {
 
   override fun serialize(): JSONObject {
     // Absence of key signifies null
@@ -36,13 +37,15 @@ data class TI_Data(
     return builder
   }
 
-  override fun deserialize(serialized: JSONObject): TI_Data {
+  override fun deserialize(serialized: JSONObject?): TI_Data {
+    if (serialized == null) {
+      throw NullPointerException("cannot deserialize null TI_Data")
+    }
     return Deserializer.deserialize(serialized)
   }
 
-  override fun getIntroduction(): TI_Data {
-    return this
-  }
+  override val introduction: TI_Data
+    get() = this
 
   companion object Deserializer {
     // factory from serialized String

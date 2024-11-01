@@ -1,129 +1,97 @@
-package org.thoughtcrime.securesms.trustedIntroductions.send;
+package org.thoughtcrime.securesms.trustedIntroductions.send
 
-import androidx.annotation.NonNull;
-import androidx.core.util.Consumer;
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModel;
-import androidx.lifecycle.ViewModelProvider;
+import androidx.core.util.Consumer
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import org.signal.core.util.concurrent.SimpleTask
+import org.thoughtcrime.securesms.database.SignalDatabase.Companion.tiIdentityTable
+import org.thoughtcrime.securesms.recipients.Recipient
+import org.thoughtcrime.securesms.recipients.Recipient.Companion.resolved
+import org.thoughtcrime.securesms.recipients.RecipientId
+import java.util.Objects
 
-import org.signal.core.util.concurrent.SimpleTask;
-import org.thoughtcrime.securesms.database.SignalDatabase;
-import org.thoughtcrime.securesms.recipients.Recipient;
-import org.thoughtcrime.securesms.recipients.RecipientId;
+class ContactsSelectionViewModel internal constructor(private val manager: ContactsSelectionManager) : ViewModel() {
+  private val selectedContacts = ArrayList<SelectedTIContacts.Model>()
+  private val introducibleContacts = MutableLiveData<List<Recipient>>()
+  private val filter = MutableLiveData("")
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-
-public class ContactsSelectionViewModel extends ViewModel {
-  private final ContactsSelectionManager            manager;
-  private final ArrayList<SelectedTIContacts.Model> selectedContacts;
-  private final MutableLiveData<List<Recipient>>    introducibleContacts;
-  private final MutableLiveData<String>             filter;
-
-  ContactsSelectionViewModel(ContactsSelectionManager manager) {
-    this.manager         = manager;
-    introducibleContacts = new MutableLiveData<>();
-    selectedContacts     = new ArrayList<>();
-    filter               = new MutableLiveData<>("");
-    loadValidContacts();
+  init {
+    loadValidContacts()
   }
 
-  boolean addSelectedContact(@NonNull Recipient contact) {
-    return selectedContacts.add(new SelectedTIContacts.Model(contact, contact.getId()));
+  fun addSelectedContact(contact: Recipient): Boolean {
+    return selectedContacts.add(SelectedTIContacts.Model(contact, contact.id))
   }
 
-  int removeSelectedContact(@NonNull Recipient contact) {
-    SelectedTIContacts.Model c       = new SelectedTIContacts.Model(contact, contact.getId());
-    boolean                  removed = selectedContacts.remove(c);
-    return removed ? 1 : 0;
+  fun removeSelectedContact(contact: Recipient): Int {
+    val c = SelectedTIContacts.Model(contact, contact.id)
+    val removed = selectedContacts.remove(c)
+    return if (removed) 1 else 0
   }
 
-  boolean isSelectedContact(@NonNull Recipient contact) {
-    SelectedTIContacts.Model c = new SelectedTIContacts.Model(contact, contact.getId());
-    return Objects.requireNonNull(selectedContacts).contains(c);
+  fun isSelectedContact(contact: Recipient): Boolean {
+    val c = SelectedTIContacts.Model(contact, contact.id)
+    return Objects.requireNonNull(selectedContacts).contains(c)
   }
 
-  int getSelectedContactsCount() {
-    return Objects.requireNonNull(selectedContacts).size();
+  val selectedContactsCount: Int
+    get() = Objects.requireNonNull(selectedContacts).size
+
+
+  fun listSelectedContactModels(): List<SelectedTIContacts.Model> {
+    return selectedContacts
   }
 
-
-  List<SelectedTIContacts.Model> listSelectedContactModels() {
-    return selectedContacts;
-  }
-
-  List<Recipient> listSelectedContactIds() {
-    ArrayList<Recipient> selected = new ArrayList<>();
-    for (SelectedTIContacts.Model m : selectedContacts) {
-      selected.add(m.getSelectedContact());
+  private fun listSelectedContactIds(): List<Recipient> {
+    val selected = ArrayList<Recipient>()
+    for (m in selectedContacts) {
+      selected.add(m.selectedContact)
     }
-    return selected;
+    return selected
   }
 
 
-  public void setQueryFilter(String filter) {
-    this.filter.setValue(filter);
+  fun setQueryFilter(filter: String) {
+    this.filter.value = filter
   }
 
-  LiveData<String> getFilter() {
-    return this.filter;
+  fun getFilter(): LiveData<String> {
+    return this.filter
   }
 
-  private void loadValidContacts() {
-    manager.getValidContacts(introducibleContacts::postValue);
+  private fun loadValidContacts() {
+    manager.getValidContacts { value: List<Recipient> -> introducibleContacts.postValue(value) }
   }
 
-  public LiveData<List<Recipient>> getContacts() {
-    return introducibleContacts;
-  }
+  val contacts: LiveData<List<Recipient>>
+    get() = introducibleContacts
 
-  void getDialogStateForSelectedContacts(@NonNull Consumer<IntroduceDialogMessageState> callback) {
+  fun getDialogStateForSelectedContacts(callback: Consumer<IntroduceDialogMessageState?>) {
     SimpleTask.run(
-        () -> {
-          List<Recipient> selection = listSelectedContactIds();
-          return new IntroduceDialogMessageState(Recipient.resolved(manager.getRecipientId()), selection);
-        },
-        callback::accept
-    );
+      {
+        val selection = listSelectedContactIds()
+        IntroduceDialogMessageState(resolved(manager.recipientId), selection)
+      },
+      { value: IntroduceDialogMessageState? -> callback.accept(value) }
+    )
   }
 
   // TODO: Opted to use recipients directly instead of the SelectedContact class..
   // May need to reconsider if there are performance issues during integration testing.
-  static final class IntroduceDialogMessageState {
-    private final Recipient       recipient;
-    private final List<Recipient> toIntroduce;
+  class IntroduceDialogMessageState(@JvmField val recipient: Recipient, @JvmField val toIntroduce: List<Recipient>)
 
-    private IntroduceDialogMessageState(@NonNull Recipient recipient, List<Recipient> toIntroduce) {
-      this.recipient   = recipient;
-      this.toIntroduce = toIntroduce;
+
+  internal class Factory(id: RecipientId?) : ViewModelProvider.Factory {
+    private val manager = ContactsSelectionManager(id!!, tiIdentityTable)
+
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+      return Objects.requireNonNull(modelClass.cast(ContactsSelectionViewModel(manager)))
     }
-
-    Recipient getRecipient() {
-      return recipient;
-    }
-
-    List<Recipient> getToIntroduce() {
-      return toIntroduce;
-    }
-
+//    override fun <T : ViewModel?> create(modelClass: Class<T>, extras: CreationExtras): T {
+//      return Objects.requireNonNull(modelClass.cast(ContactsSelectionViewModel(manager)))
+//    }
   }
-
-
-  static class Factory implements ViewModelProvider.Factory {
-
-    private final ContactsSelectionManager manager;
-
-    Factory(RecipientId id) {
-      this.manager = new ContactsSelectionManager(id, SignalDatabase.tiIdentityDatabase());
-    }
-
-    @Override
-    public @NonNull <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
-      return Objects.requireNonNull(modelClass.cast(new ContactsSelectionViewModel(manager)));
-    }
-  }
-
 }
 

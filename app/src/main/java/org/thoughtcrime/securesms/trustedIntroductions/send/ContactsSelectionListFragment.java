@@ -98,7 +98,12 @@ public class ContactsSelectionListFragment extends Fragment implements ContactFi
   }
 
   private void initializeAdapter() {
-    Glide glideRequests = Glide.get(this.getContext());
+    var context = this.getContext();
+    if (context == null) {
+      Log.w(TAG, "failed to get context, cannot initialize adapter");
+      throw new IllegalStateException();
+    }
+    Glide glideRequests = Glide.get(context);
     // Not directly passing a cursor, instead submitting a list to ContactsAdapter
     TIRecyclerViewAdapter = new ContactsSelectionAdapter(requireContext(), glideRequests, new ContactClickListener());
 
