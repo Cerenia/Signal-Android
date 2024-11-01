@@ -1,73 +1,77 @@
-package org.thoughtcrime.securesms.trustedIntroductions.receive;
+package org.thoughtcrime.securesms.trustedIntroductions.receive
 
-import androidx.annotation.NonNull;
-import androidx.core.util.Consumer;
-import androidx.core.util.Pair;
+import androidx.core.util.Consumer
+import androidx.core.util.Pair
+import org.signal.core.util.concurrent.SignalExecutors
+import org.signal.core.util.logging.Log
+import org.thoughtcrime.securesms.dependencies.AppDependencies
+import org.thoughtcrime.securesms.recipients.Recipient
+import org.thoughtcrime.securesms.trustedIntroductions.TI_Data
+import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils
+import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database
+import org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue
+import java.util.Collections
 
-import org.signal.core.util.concurrent.SignalExecutors;
-import org.signal.core.util.logging.Log;
-import org.thoughtcrime.securesms.recipients.Recipient;
-import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
-import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
-import org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue;
-import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-
-import static org.thoughtcrime.securesms.dependencies.AppDependencies.getApplication;
-import static org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.UNKNOWN_INTRODUCER_SERVICE_ID;
-
-public class ManageManager {
-
-  private static final String TAG = String.format(TI_Utils.TI_LOG_TAG, Log.tag(ManageManager.class));
-
-  @NonNull private final String          forgottenPlaceholder;
-  // Dependency injection
-  private final          TI_DatabaseGlue tdb;
-
-  ManageManager(@NonNull TI_DatabaseGlue tdb, @NonNull String forgottenPlaceholder) {
-    this.tdb                  = tdb;
-    this.forgottenPlaceholder = forgottenPlaceholder;
+class ManageManager(
+  private val tdb: TI_DatabaseGlue,
+  private val forgottenPlaceholder: String
+) {
+  companion object {
+    private val TAG = String.format(
+      TI_Utils.TI_LOG_TAG,
+      Log.tag(ManageManager::class.java)
+    )
   }
 
-  void getIntroductions(@NonNull Consumer<List<Pair<TI_Data, ManageViewModel.IntroducerInformation>>> listConsumer) {
-    SignalExecutors.BOUNDED.execute(() -> {
-
+  fun getIntroductions(listConsumer: Consumer<ArrayList<Pair<TI_Data, ManageViewModel.IntroducerInformation>>>) {
+    SignalExecutors.BOUNDED.execute {
       // Pull introductions out of the database
-      TI_Database.IntroductionReader reader        = tdb.getAllDisplayableIntroductions();
-      ArrayList<TI_Data>             introductions = new ArrayList<>();
+      val reader = tdb.getAllDisplayableIntroductions()
+      val introductions = ArrayList<TI_Data>()
+
       while (reader.hasNext()) {
-        introductions.add(reader.getNext());
+        introductions.add(reader.getNext()!!)
       }
-      // sort by date
-      Collections.sort(introductions, Comparator.comparing(TI_Data::getTimestamp));
-      ArrayList<Pair<TI_Data, ManageViewModel.IntroducerInformation>> result = new ArrayList<>();
-      ManageViewModel.IntroducerInformation                           i      = null;
-      for (TI_Data d : introductions) {
-        if (Objects.equals(d.getIntroducerServiceId(), UNKNOWN_INTRODUCER_SERVICE_ID)) {
-          i = new ManageViewModel.IntroducerInformation(forgottenPlaceholder, forgottenPlaceholder);
+
+      // Sort by date
+      introductions.sortWith(Comparator { d1, d2 ->
+        d1.timestamp.compareTo(d2.timestamp)
+      })
+
+      val result = ArrayList<Pair<TI_Data, ManageViewModel.IntroducerInformation>>()
+
+      for (d in introductions) {
+        val i = if (d.introducerServiceId == TI_Database.UNKNOWN_INTRODUCER_SERVICE_ID) {
+          ManageViewModel.IntroducerInformation(forgottenPlaceholder, forgottenPlaceholder)
         } else {
           try {
-            Recipient r      = Recipient.live(TI_Utils.getRecipientIdOrUnknown(d.getIntroducerServiceId())).resolve();
-            String    number = r.getE164().orElse("");
+            val r = Recipient.live(
+              TI_Utils.getRecipientIdOrUnknown(
+                requireNotNull(d.introducerServiceId)
+              )
+            ).resolve()
+
+            val number = r.e164.orElse("")
             // TODO: using getApplication context because the context doesn't matter... (22-10-06)
             // It just circularly gets passed around between methods in the Recipient but is never used for anything.
-            i = new ManageViewModel.IntroducerInformation(r.getDisplayName(getApplication().getApplicationContext()), number);
-          } catch (Exception e) {
-            e.printStackTrace();
-            Log.e(TAG, e.getMessage());
+            ManageViewModel.IntroducerInformation(
+              r.getDisplayName(AppDependencies.application.applicationContext),
+              number
+            )
+          } catch (e: Exception) {
+            e.printStackTrace()
+            Log.e(TAG, e.message ?: "Unknown error")
+            null
           }
-        } // TODO: this should not happen
-        if (i != null) {
-          result.add(new Pair<>(d, i));
+        }
+
+        // TODO: this should not happen
+        i?.let {
+          result.add(Pair(d, it))
         }
       }
-      listConsumer.accept(result);
-    });
-  }
 
+      listConsumer.accept(result)
+    }
+  }
 }

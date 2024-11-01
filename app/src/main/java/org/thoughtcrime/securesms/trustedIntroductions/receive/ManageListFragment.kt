@@ -1,379 +1,326 @@
-package org.thoughtcrime.securesms.trustedIntroductions.receive;
+package org.thoughtcrime.securesms.trustedIntroductions.receive
 
-import android.content.Context;
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.TextView
+import androidx.core.util.Pair
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelStoreOwner
+import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.button.MaterialButton
+import com.pnikosis.materialishprogress.ProgressWheel
+import org.signal.core.util.logging.Log
+import org.thoughtcrime.securesms.R
+import org.thoughtcrime.securesms.recipients.Recipient
+import org.thoughtcrime.securesms.trustedIntroductions.TI_Data
+import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils
+import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.splitIntroductionDate
+import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database
+import org.thoughtcrime.securesms.trustedIntroductions.receive.ManageActivity.ActiveTab
+import org.thoughtcrime.securesms.trustedIntroductions.receive.ManageActivity.ActiveTab.NEW
+import java.util.regex.Pattern
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.core.util.Pair;
-import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.lifecycle.ViewModelStoreOwner;
-import androidx.recyclerview.widget.RecyclerView;
+class ManageListFragment(
+  private val owner: ViewModelStoreOwner? = null,
+  private var tab: ActiveTab = NEW
+) : Fragment(),
+  DeleteIntroductionDialog.DeleteIntroduction,
+  ForgetIntroducerDialog.ForgetIntroducer {
 
-import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.splitIntroductionDate;
-import static org.thoughtcrime.securesms.trustedIntroductions.receive.ManageActivity.ActiveTab.NEW;
-
-import com.google.android.material.button.MaterialButton;
-import com.pnikosis.materialishprogress.ProgressWheel;
-
-import org.signal.core.util.logging.Log;
-import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database;
-import org.thoughtcrime.securesms.recipients.Recipient;
-import org.thoughtcrime.securesms.trustedIntroductions.TI_Data;
-import org.thoughtcrime.securesms.R;
-import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
-
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.function.Function;
-import java.util.regex.Pattern;
-
-public class ManageListFragment extends Fragment implements DeleteIntroductionDialog.DeleteIntroduction, ForgetIntroducerDialog.ForgetIntroducer {
-
-  private static final String TAG = String.format(TI_Utils.TI_LOG_TAG, Log.tag(ManageListFragment.class));
-
-  // TODO: Needed?
-  private ProgressWheel            showIntroductionsProgress;
-  private ManageViewModel          viewModel;
-  private ManageAdapter            adapter;
-  private TextView                 no_introductions;
-  private View                     all_header;
-  private ManageActivity.ActiveTab tab           = NEW;
-  private MaterialButton           showConflicting;
-  // Don't refresh list 5 times on setup.
-  private boolean                  sCisFirstInit = true;
-
-  private MaterialButton showAccepted;
-  private boolean        sAisFirstInit = true;
-
-  private MaterialButton showRejected;
-  private boolean        sRisFirstInit = true;
-
-  private MaterialButton showStale;
-  private boolean        sSisFirstInit = true;
-
-  // Because final onCreate in AppCompat disposals me from using a Fragment Factory, I need to use a Bundle for Arguments.
-  static String TYPE_KEY = "type_key";
-
-  static String FORGOTTEN_INTRODUCER;
-
-  public ManageListFragment() {
-    super();
+  companion object {
+    private val TAG = String.format(TI_Utils.TI_LOG_TAG, Log.tag(ManageListFragment::class.java))
+    const val TYPE_KEY = "type_key"
+    lateinit var FORGOTTEN_INTRODUCER: String
   }
 
-  public ManageListFragment(@NonNull ViewModelStoreOwner owner, @NonNull ManageActivity.ActiveTab type) {
-    this.tab = type;
+  private var showIntroductionsProgress: ProgressWheel? = null
+  private lateinit var viewModel: ManageViewModel
+  private lateinit var adapter: ManageAdapter
+  private lateinit var noIntroductions: TextView
+  private lateinit var allHeader: View
+  private lateinit var showConflicting: MaterialButton
+  private var sCisFirstInit = true
+
+  private lateinit var showAccepted: MaterialButton
+  private var sAisFirstInit = true
+
+  private lateinit var showRejected: MaterialButton
+  private var sRisFirstInit = true
+
+  private lateinit var showStale: MaterialButton
+  private var sSisFirstInit = true
+
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
   }
 
-  @Override
-  public void onCreate(Bundle b) {
-    super.onCreate(b);
-  }
+  override fun onCreateView(
+    inflater: LayoutInflater,
+    container: ViewGroup?,
+    savedInstanceState: Bundle?
+  ): View? = inflater.inflate(R.layout.ti_manage_fragment, container, false)
 
-  @Nullable
-  @Override
-  public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
-                           @Nullable Bundle savedInstanceState)
-  {
-    return inflater.inflate(R.layout.ti_manage_fragment, container, false);
-  }
+  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    super.onViewCreated(view, savedInstanceState)
 
-  @Override
-  public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-    super.onViewCreated(view, savedInstanceState);
-    ManageViewModel.Factory factory = new ManageViewModel.Factory(FORGOTTEN_INTRODUCER);
-    viewModel = new ViewModelProvider(getActivity(), factory).get(ManageViewModel.class);
+    val factory = ManageViewModel.Factory(FORGOTTEN_INTRODUCER)
+    viewModel = ViewModelProvider(requireActivity(), factory)[ManageViewModel::class.java]
+
     if (!viewModel.introductionsLoaded()) {
-      viewModel.loadIntroductions();
+      viewModel.loadIntroductions()
     }
-    adapter = new ManageAdapter(requireContext(), new IntroductionClickListener(this, this));
-    RecyclerView introductionList = view.findViewById(R.id.recycler_view);
-    introductionList.setClipToPadding(true);
-    introductionList.setAdapter(adapter);
-    no_introductions = view.findViewById(R.id.no_introductions_found);
-    all_header       = view.findViewById(R.id.manage_fragment_header);
-    // Filter state
-    showConflicting = view.findViewById(R.id.conflictingFilter);
-    showStale       = view.findViewById(R.id.staleFilter);
-    showAccepted    = view.findViewById(R.id.acceptedFilter);
-    showRejected    = view.findViewById(R.id.rejectedFilter);
-    if (savedInstanceState != null && savedInstanceState.getString(TYPE_KEY) != null) {
-      tab = ManageActivity.ActiveTab.fromString(savedInstanceState.getString(TYPE_KEY));
+
+    adapter = ManageAdapter(requireContext(), IntroductionClickListener(this, this))
+
+    val introductionList: RecyclerView = view.findViewById(R.id.recycler_view)
+    introductionList.setClipToPadding(true)
+    introductionList.adapter = adapter
+
+    noIntroductions = view.findViewById(R.id.no_introductions_found)
+    allHeader = view.findViewById(R.id.manage_fragment_header)
+
+    // Filter state buttons
+    showConflicting = view.findViewById(R.id.conflictingFilter)
+    showStale = view.findViewById(R.id.staleFilter)
+    showAccepted = view.findViewById(R.id.acceptedFilter)
+    showRejected = view.findViewById(R.id.rejectedFilter)
+
+    // Restore tab from saved state if available
+    savedInstanceState?.getString(TYPE_KEY)?.let {
+      tab = ActiveTab.fromString(it)
     }
-    showConflicting.setVisibility(View.VISIBLE);
-    showStale.setVisibility(View.VISIBLE);
-    if (viewModel != null) {
-      // viewModel has default values.
-      showConflicting.setChecked(viewModel.showConflicting().getValue());
-      showStale.setChecked(viewModel.showStale().getValue());
-    } else {
-      showConflicting.setChecked(true);
-      showStale.setChecked(true);
-    }
-    showConflicting.addOnCheckedChangeListener((button, isChecked) -> viewModel.setShowConflicting(isChecked));
-    showStale.addOnCheckedChangeListener((button, isChecked) -> viewModel.setShowStale(isChecked));
-    switch (tab) {
-      case NEW:
-        // Accepted, Rejected and stale don't show up
-        showAccepted.setVisibility(View.GONE);
-        showRejected.setVisibility(View.GONE);
-        showStale.setVisibility(View.GONE);
-        break;
-      case LIBRARY:
-        showAccepted.setVisibility(View.VISIBLE);
-        showRejected.setVisibility(View.VISIBLE);
-        if (viewModel != null) {
-          showAccepted.setChecked(viewModel.showTrusted().getValue());
-          showRejected.setChecked(viewModel.showDistrusted().getValue());
-        } else {
-          showAccepted.setChecked(true);
-          showRejected.setChecked(true);
-        }
-        showAccepted.addOnCheckedChangeListener((button, isChecked) -> viewModel.setShowTrusted(isChecked));
-        showRejected.addOnCheckedChangeListener((button, isChecked) -> viewModel.setShowDistrusted(isChecked));
-    }
-    // Filter state Observers
-    viewModel.showConflicting().observe(getViewLifecycleOwner(), state -> sCisFirstInit = onFilterStateChanged(showConflicting, state, sCisFirstInit));
-    viewModel.showStale().observe(getViewLifecycleOwner(), state -> sSisFirstInit = onFilterStateChanged(showStale, state, sSisFirstInit));
-    viewModel.showTrusted().observe(getViewLifecycleOwner(), state -> sAisFirstInit = onFilterStateChanged(showAccepted, state, sAisFirstInit));
-    viewModel.showDistrusted().observe(getViewLifecycleOwner(), state -> sRisFirstInit = onFilterStateChanged(showRejected, state, sRisFirstInit));
-    // Introduction Observer
-    this.viewModel.getIntroductions().observe(getViewLifecycleOwner(), introductions -> {
-      // Screen layout
-      if (!introductions.isEmpty()) {
-        no_introductions.setVisibility(View.GONE);
-        all_header.setVisibility(View.VISIBLE);
-      } else {
-        no_introductions.setVisibility(View.VISIBLE);
-        all_header.setVisibility(View.GONE);
-        no_introductions.setText(R.string.ManageIntroductionsFragment__No_Introductions_all);
-      }
-      refreshList();
-    });
+
+    setupFilterButtons()
+    setupFilterStateObservers()
+    setupIntroductionsObserver()
   }
 
-  /**
-   * @param b             which button to set.
-   * @param newCheckState the new newCheckState.
-   * @param isFirstInit   global indicating if the button was ever set before.
-   * @return false, the value to be assigned to the global xXisFirstInit of the button if the method succeeds.
-   */
-  private boolean onFilterStateChanged(MaterialButton b, Boolean newCheckState, Boolean isFirstInit) {
-    if (b.isChecked() != newCheckState) {
-      b.setChecked(newCheckState);
+  private fun setupFilterButtons() {
+    showConflicting.visibility = View.VISIBLE
+    showStale.visibility = View.VISIBLE
+
+    // Set initial button states
+    showConflicting.isChecked = viewModel.showConflicting().value ?: true
+    showStale.isChecked = viewModel.showStale().value ?: true
+
+    // Add listeners
+    showConflicting.addOnCheckedChangeListener { _, isChecked ->
+      viewModel.setShowConflicting(isChecked)
+    }
+    showStale.addOnCheckedChangeListener { _, isChecked ->
+      viewModel.setShowStale(isChecked)
+    }
+
+    when (tab) {
+      NEW -> {
+        showAccepted.visibility = View.GONE
+        showRejected.visibility = View.GONE
+        showStale.visibility = View.GONE
+      }
+
+      ActiveTab.LIBRARY -> {
+        showAccepted.visibility = View.VISIBLE
+        showRejected.visibility = View.VISIBLE
+
+        showAccepted.isChecked = viewModel.showTrusted().value ?: true
+        showRejected.isChecked = viewModel.showDistrusted().value ?: true
+
+        showAccepted.addOnCheckedChangeListener { _, isChecked ->
+          viewModel.setShowTrusted(isChecked)
+        }
+        showRejected.addOnCheckedChangeListener { _, isChecked ->
+          viewModel.setShowDistrusted(isChecked)
+        }
+      }
+    }
+  }
+
+  private fun setupFilterStateObservers() {
+    viewModel.showConflicting().observe(viewLifecycleOwner) { state ->
+      sCisFirstInit = onFilterStateChanged(showConflicting, state, sCisFirstInit)
+    }
+    viewModel.showStale().observe(viewLifecycleOwner) { state ->
+      sSisFirstInit = onFilterStateChanged(showStale, state, sSisFirstInit)
+    }
+    viewModel.showTrusted().observe(viewLifecycleOwner) { state ->
+      sAisFirstInit = onFilterStateChanged(showAccepted, state, sAisFirstInit)
+    }
+    viewModel.showDistrusted().observe(viewLifecycleOwner) { state ->
+      sRisFirstInit = onFilterStateChanged(showRejected, state, sRisFirstInit)
+    }
+  }
+
+  private fun setupIntroductionsObserver() {
+    viewModel.getIntroductions().observe(viewLifecycleOwner) { introductions ->
+      if (introductions.isNotEmpty()) {
+        noIntroductions.visibility = View.GONE
+        allHeader.visibility = View.VISIBLE
+      } else {
+        noIntroductions.visibility = View.VISIBLE
+        allHeader.visibility = View.GONE
+        noIntroductions.setText(R.string.ManageIntroductionsFragment__No_Introductions_all)
+      }
+      refreshList()
+    }
+  }
+
+  private fun onFilterStateChanged(
+    button: MaterialButton,
+    newCheckState: Boolean?,
+    isFirstInit: Boolean
+  ): Boolean {
+    newCheckState?.let {
+      if (button.isChecked != it) {
+        button.isChecked = it
+      }
     }
     if (!isFirstInit) {
-      refreshList();
+      refreshList()
     }
-    return false;
+    return false
   }
 
-  @Override public void onSaveInstanceState(@NonNull Bundle outState) {
-    outState.putString(TYPE_KEY, tab.toString());
-    super.onSaveInstanceState(outState);
+  override fun onSaveInstanceState(outState: Bundle) {
+    outState.putString(TYPE_KEY, tab.toString())
+    super.onSaveInstanceState(outState)
   }
 
-  /**
-   * Decides if this datum must be displayed in the fragment. Depends on tab type and active filters.
-   *
-   * @param p the datum to be evaluated.
-   * @return true if displayed, false if not.
-   */
-  private boolean isDisplayed(Pair<TI_Data, ManageViewModel.IntroducerInformation> p) {
-    TI_Database.State s = p.first.getState();
-    switch (tab) {
-      case NEW:
-        // Only display pending and conflicting
-        if (!(s.isPending() && !s.isStale())) {
-          return false;
-        }
-        if (userFiltered(s)) {
-          return false;
-        }
-        break;
-      case LIBRARY:
-        // Display everything but pending
-        if ((s.isPending())) {
-          return false;
-        }
-        if (userFiltered(s)) {
-          return false;
-        }
-        break;
-      default:
-        // fail open
-        return true;
-    }
-    return true;
-  }
-
-  /**
-   * Checks the state of the introduction against the user filters.
-   *
-   * @return true if filtered, false otherwise
-   */
-  private boolean userFiltered(TI_Database.State s) {
-    if (Boolean.FALSE.equals(viewModel.showConflicting().getValue())) {
-      return s.isConflicting();
-    }
-    if (Boolean.FALSE.equals(viewModel.showStale().getValue())) {
-      return s.isStale();
-    }
-    if (Boolean.FALSE.equals(viewModel.showTrusted().getValue())) {
-      return s.isTrusted();
-    }
-    if (Boolean.FALSE.equals(viewModel.showDistrusted().getValue())) {
-      return s.isDistrusted();
-    }
-    return false;
-  }
-
-  /**
-   * Filters complete introduction list by Tab type, search filter, button selectors and finally sorts.
-   *
-   * @param introductions All introductions returned by ViewModel.
-   * @param filter        The user provided filter.
-   * @return the filtered list appropriate for the fragment depending on tab, button selectors and filter.
-   */
-  private List<Pair<TI_Data, ManageViewModel.IntroducerInformation>> getFiltered(List<Pair<TI_Data, ManageViewModel.IntroducerInformation>> introductions, @Nullable String filter) {
-    List<Pair<TI_Data, ManageViewModel.IntroducerInformation>> filtered = new ArrayList<>();
-    for (Pair<TI_Data, ManageViewModel.IntroducerInformation> p : introductions) {
-      if (isDisplayed(p)) {
-        filtered.add(p);
-      }
-    }
-    if (filter != null) {
-      if (!filter.isEmpty() && filter.compareTo("") != 0) {
-        Pattern filterPattern = Pattern.compile("\\A" + filter + ".*", Pattern.CASE_INSENSITIVE);
-        for (Pair<TI_Data, ManageViewModel.IntroducerInformation> p : introductions) {
-          TI_Data                     d              = p.first;
-          TI_Utils.TimestampDateParts timestampParts = splitIntroductionDate(d.getTimestamp());
-          // Split up for debugging. May be one big expr.
-          boolean matchYear             = filterPattern.matcher(timestampParts.year).find();
-          boolean matchMonth            = filterPattern.matcher(timestampParts.month).find();
-          boolean matchDay              = filterPattern.matcher(timestampParts.day).find();
-          boolean matchHours            = filterPattern.matcher(timestampParts.hours).find();
-          boolean matchMinutes          = filterPattern.matcher(timestampParts.minutes).find();
-          boolean matchSeconds          = filterPattern.matcher(timestampParts.seconds).find();
-          boolean matchIntroduceeName   = filterPattern.matcher(d.getIntroduceeName()).find();
-          boolean matchIntroduceeNumber = filterPattern.matcher(d.getIntroduceeNumber()).find();
-          boolean matchIntroducerName   = filterPattern.matcher(p.second.getName()).find();
-          boolean matchIntroducerNumber = filterPattern.matcher(p.second.getNumber()).find();
-          if (!(matchYear || matchMonth || matchDay || matchHours || !matchMinutes || matchSeconds || matchIntroduceeName || matchIntroduceeNumber
-                || matchIntroducerName || matchIntroducerNumber))
-          {
-            filtered.remove(p);
-          }
-        }
-      }
-    }
-    return sortIntroductions(filtered);
-  }
-
-  private static Function<Pair<TI_Data, ManageViewModel.IntroducerInformation>, Long>   dateExtractor           = p -> p.first.getTimestamp();
-  private static Function<Pair<TI_Data, ManageViewModel.IntroducerInformation>, String> introduceeNameExtractor = p -> p.first.getIntroduceeName();
-  private static Function<Pair<TI_Data, ManageViewModel.IntroducerInformation>, Long>   stateExtractor          = p -> (long) p.first.getState().toInt();
-
-  /**
-   * Sorts introductions depending on the tab type.
-   * NEW: by date
-   * LIBRARY: by introducee
-   * ALL: by introducer
-   * The sorted list.
-   */
-  private List<Pair<TI_Data, ManageViewModel.IntroducerInformation>> sortIntroductions(List<Pair<TI_Data, ManageViewModel.IntroducerInformation>> filtered) {
-    return switch (tab) {
-      case NEW -> {
-        filtered.sort(Comparator.comparing(dateExtractor));
-        yield filtered;
-      }
-      case LIBRARY -> {
-        // First by state, then introducee, then date
-        filtered.sort(Comparator.comparing(stateExtractor).thenComparing(introduceeNameExtractor).thenComparing(dateExtractor));
-        yield filtered;
-      }
-      default -> throw new AssertionError(TAG + "Unknown tab type!");
-    };
-  }
-
-  void refreshList() {
-    if (adapter != null) {
-      List<Pair<TI_Data, ManageViewModel.IntroducerInformation>> l = viewModel.getIntroductions().getValue();
-      if (l == null) {
-        Log.e(TAG, "Introductions list not yet loaded when calling refreshList!");
-        return;
-      }
-      adapter.submitList(getFiltered(viewModel.getIntroductions().getValue(), viewModel.getTextFilter().getValue()));
+  private fun isDisplayed(p: Pair<TI_Data, ManageViewModel.IntroducerInformation>): Boolean {
+    val s = p.first.state
+    return when (tab) {
+      NEW -> s.isPending() && !s.isStale() && !userFiltered(s)
+      ActiveTab.LIBRARY -> !s.isPending() && !userFiltered(s)
+      else -> true
     }
   }
 
-  public void onFilterChanged(String filter) {
-    if (adapter != null) {
-      viewModel.setTextFilter(filter);
-      List<Pair<TI_Data, ManageViewModel.IntroducerInformation>> l = viewModel.getIntroductions().getValue();
-      if (l == null) {
-        Log.e(TAG, "Introductions list not yet loaded when calling onFilterChanged!");
-        return;
-      }
-      adapter.submitList(getFiltered(viewModel.getIntroductions().getValue(), filter));
+  private fun userFiltered(s: TI_Database.State): Boolean {
+    return when {
+      viewModel.showConflicting().value == false && s.isConflicting() -> true
+      viewModel.showStale().value == false && s.isStale() -> true
+      viewModel.showTrusted().value == false && s.isTrusted() -> true
+      viewModel.showDistrusted().value == false && s.isDistrusted() -> true
+      else -> false
     }
   }
 
-  /**
-   * Callback if user decides to proceeds with deletion from dialogue.
-   *
-   * @param introductionId the introduction to delete.
-   */
-  @Override public void deleteIntroduction(long introductionId) {
-    viewModel.deleteIntroduction(introductionId);
-  }
+  private fun getFiltered(
+    introductions: List<Pair<TI_Data, ManageViewModel.IntroducerInformation>>?,
+    filter: String?
+  ): List<Pair<TI_Data, ManageViewModel.IntroducerInformation>> {
+    introductions ?: return emptyList()
 
-  /**
-   * Callback if user decides to mask introducer
-   *
-   * @param introductionId the introduction for which to mask the introducer.
-   */
-  @Override public void forgetIntroducer(long introductionId) {
-    viewModel.forgetIntroducer(introductionId);
-  }
+    val filtered = introductions.filter { isDisplayed(it) }.toMutableList()
 
-  private class IntroductionClickListener implements ManageAdapter.InteractionListener {
+    if (!filter.isNullOrBlank()) {
+      val filterPattern = Pattern.compile("\\A$filter.*", Pattern.CASE_INSENSITIVE)
+      filtered.removeAll { p ->
+        val d = p.first
+        val timestampParts = splitIntroductionDate(d.timestamp)
 
-    DeleteIntroductionDialog.DeleteIntroduction deleteHandler;
-    ForgetIntroducerDialog.ForgetIntroducer     forgetHandler;
-    Context                                     c;
+        // Match conditions
+        val matchYear = filterPattern.matcher(timestampParts.year).find()
+        val matchMonth = filterPattern.matcher(timestampParts.month).find()
+        val matchDay = filterPattern.matcher(timestampParts.day).find()
+        val matchHours = filterPattern.matcher(timestampParts.hours).find()
+        val matchMinutes = filterPattern.matcher(timestampParts.minutes).find()
+        val matchSeconds = filterPattern.matcher(timestampParts.seconds).find()
+        val matchIntroduceeName = filterPattern.matcher(d.introduceeName!!).find()
+        val matchIntroduceeNumber = filterPattern.matcher(d.introduceeNumber!!).find()
+        val matchIntroducerName = filterPattern.matcher(p.second.name).find()
+        val matchIntroducerNumber = filterPattern.matcher(p.second.number).find()
 
-    public IntroductionClickListener(DeleteIntroductionDialog.DeleteIntroduction d, ForgetIntroducerDialog.ForgetIntroducer f) {
-      this.deleteHandler = d;
-      this.forgetHandler = f;
-      c                  = requireContext();
-    }
-
-    @Override public void accept(@NonNull Long introductionId) {
-      viewModel.acceptIntroduction(introductionId);
-    }
-
-    @Override public void reject(@NonNull Long introductionId) {
-      viewModel.rejectIntroduction(introductionId);
-    }
-
-    @Override public void mask(@NonNull ManageAdapter.IntroductionViewHolder item, String introducerServiceId) {
-      if (!introducerServiceId.equals(TI_Database.UNKNOWN_INTRODUCER_SERVICE_ID)) {
-        ForgetIntroducerDialog.show(c, item.getIntroductionId(), item.getIntroduceeName(), item.getIntroducerName(requireContext()), item.getDate(), forgetHandler);
+        !(matchYear || matchMonth || matchDay || matchHours || matchMinutes ||
+          matchSeconds || matchIntroduceeName || matchIntroduceeNumber ||
+          matchIntroducerName || matchIntroducerNumber)
       }
     }
 
-    @Override public void delete(@NonNull ManageAdapter.IntroductionViewHolder item, String introducerServiceId) {
-      String introducerName = introducerServiceId.equals(TI_Database.UNKNOWN_INTRODUCER_SERVICE_ID) ? getString(R.string.ManageIntroductionsListItem__Forgotten_Introducer) : Recipient
-          .resolved(TI_Utils.getRecipientIdOrUnknown(introducerServiceId)).getDisplayName(requireContext());
-      DeleteIntroductionDialog.show(c, item.getIntroductionId(), item.getIntroduceeName(), introducerName, item.getDate(), deleteHandler);
+    return sortIntroductions(filtered)
+  }
+
+  private fun sortIntroductions(
+    filtered: List<Pair<TI_Data, ManageViewModel.IntroducerInformation>>
+  ): List<Pair<TI_Data, ManageViewModel.IntroducerInformation>> {
+    return when (tab) {
+      NEW -> filtered.sortedBy { it.first.timestamp }
+      ActiveTab.LIBRARY -> filtered.sortedWith(
+        compareBy(
+          { it.first.state.toInt() },
+          { it.first.introduceeName },
+          { it.first.timestamp }
+        )
+      )
+
+      else -> throw AssertionError("$TAG Unknown tab type!")
+    }
+  }
+
+  fun refreshList() {
+    adapter.submitList(getFiltered(viewModel.getIntroductions().value, viewModel.getTextFilter().value))
+  }
+
+  fun onFilterChanged(filter: String) {
+    viewModel.setTextFilter(filter)
+    adapter.submitList(getFiltered(viewModel.getIntroductions().value, filter))
+  }
+
+  // Implement dialog callbacks
+  override fun deleteIntroduction(introductionId: Long) {
+    viewModel.deleteIntroduction(introductionId)
+  }
+
+  override fun forgetIntroducer(introductionId: Long) {
+    viewModel.forgetIntroducer(introductionId)
+  }
+
+  private inner class IntroductionClickListener(
+    private val deleteHandler: DeleteIntroductionDialog.DeleteIntroduction,
+    private val forgetHandler: ForgetIntroducerDialog.ForgetIntroducer
+  ) : ManageAdapter.InteractionListener {
+
+    private val context = requireContext()
+
+    override fun accept(introductionId: Long) {
+      viewModel.acceptIntroduction(introductionId)
     }
 
+    override fun reject(introductionId: Long) {
+      viewModel.rejectIntroduction(introductionId)
+    }
+
+    override fun mask(item: ManageAdapter.IntroductionViewHolder, introducerServiceId: String) {
+      if (introducerServiceId != TI_Database.UNKNOWN_INTRODUCER_SERVICE_ID) {
+        ForgetIntroducerDialog.show(
+          context,
+          item.introductionId,
+          item.introduceeName,
+          item.getIntroducerName(context)!!, // todo: this might fail :c
+          item.date,
+          forgetHandler
+        )
+      }
+    }
+
+    override fun delete(item: ManageAdapter.IntroductionViewHolder, introducerServiceId: String) {
+      val introducerName = if (introducerServiceId == TI_Database.UNKNOWN_INTRODUCER_SERVICE_ID) {
+        getString(R.string.ManageIntroductionsListItem__Forgotten_Introducer)
+      } else {
+        Recipient.resolved(TI_Utils.getRecipientIdOrUnknown(introducerServiceId))
+          .getDisplayName(context)
+      }
+
+      DeleteIntroductionDialog.show(
+        context,
+        item.introductionId,
+        item.introduceeName,
+        introducerName,
+        item.date,
+        deleteHandler
+      )
+    }
   }
 }
