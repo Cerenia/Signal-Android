@@ -84,6 +84,10 @@ interface IdentityTableGlue {
       return VerifiedStatus.UNVERIFIED
     }
 
+    fun getDefault() : VerifiedStatus{
+      return VerifiedStatus.DEFAULT
+    }
+
     fun getToggleIntroduction(previousIntroduceeVerification: VerifiedStatus, newIntroductionState: TI_DatabaseGlue.Companion.State, introduceeServiceId: String) : VerifiedStatus {
       val newIntroduceeVerification = when (newIntroductionState) {
         TI_DatabaseGlue.Companion.State.PENDING, TI_DatabaseGlue.Companion.State.PENDING_UNKNOWN -> throw AssertionError(TAG + " Precondition Violation! State was: " + newIntroductionState.name)
