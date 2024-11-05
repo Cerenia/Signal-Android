@@ -297,7 +297,6 @@ class TI_Database(context: Context?, databaseHelper: SignalDatabase?) : Database
     val s: Int = state.toInt()
     Preconditions.checkArgument(s in 0..14)
     val timestampLong: Long = timestamp.toLong()
-    e(TAG, timestampLong.toString())
     Preconditions.checkArgument(timestampLong > 0)
     return buildContentValuesForUpdate(
       introId,
