@@ -25,7 +25,7 @@ import org.thoughtcrime.securesms.recipients.Recipient.Companion.live
 import org.thoughtcrime.securesms.recipients.Recipient.Companion.resolved
 import org.thoughtcrime.securesms.recipients.RecipientId
 import org.thoughtcrime.securesms.storage.StorageSyncHelper
-import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue.VerifiedStatus
+import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue.Companion.VerifiedStatus
 import org.thoughtcrime.securesms.trustedIntroductions.glue.RecipientTableGlue.getRecordsForReceivingTI
 import org.thoughtcrime.securesms.trustedIntroductions.glue.RecipientTableGlue.getRecordsForSendingTI
 import org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue
@@ -108,8 +108,6 @@ object TI_Utils {
   @JvmField
   @SuppressLint("SimpleDateFormat")
   val INTRODUCTION_DATE_PATTERN: SimpleDateFormat = SimpleDateFormat("yyyy/MM/dd hh:mm:ss")
-
-
 
 
   /**
