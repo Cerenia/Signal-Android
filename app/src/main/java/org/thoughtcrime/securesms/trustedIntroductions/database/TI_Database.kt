@@ -726,7 +726,14 @@ class TI_Database(context: Context?, databaseHelper: SignalDatabase?) : Database
   @WorkerThread
   override fun acceptIntroduction(introduction: TI_Data): Boolean {
     Preconditions.checkArgument(introduction.id != null)
-    val newState: State = if (isRecipientUnknown(introduction.introduceeServiceId)) State.ACCEPTED_UNKNOWN else State.ACCEPTED
+    val newState: State
+    if (isRecipientUnknown(introduction.introduceeServiceId)){
+      newState = State.ACCEPTED_UNKNOWN
+    } else if (introduction.state.equals(State.PENDING_CONFLICTING)){
+      newState = State.ACCEPTED_CONFLICTING
+    } else {
+      newState = State.ACCEPTED
+    }
     return changeIntroductionState(introduction, newState, "Accepted introduction for: " + introduction.introduceeName)
   }
 
@@ -740,7 +747,14 @@ class TI_Database(context: Context?, databaseHelper: SignalDatabase?) : Database
   @WorkerThread
   override fun rejectIntroduction(introduction: TI_Data): Boolean {
     Preconditions.checkArgument(introduction.id != null)
-    val newState: State = if (isRecipientUnknown(introduction.introduceeServiceId)) State.REJECTED_UNKNOWN else State.REJECTED
+    val newState: State
+    if (isRecipientUnknown(introduction.introduceeServiceId)){
+      newState = State.REJECTED_UNKNOWN
+    } else if (introduction.state.equals(State.PENDING_CONFLICTING)){
+      newState = State.REJECTED_CONFLICTING
+    } else {
+      newState = State.REJECTED
+    }
     return changeIntroductionState(introduction, newState, "Rejected introduction for: " + introduction.introduceeName)
   }
 
