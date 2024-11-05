@@ -20,10 +20,11 @@ import org.thoughtcrime.securesms.storage.StorageSyncHelper
 import org.thoughtcrime.securesms.trustedIntroductions.ClearVerificationDialog.show
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.updateContactsVerifiedStatus
-import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue.VerifiedStatus
-import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue.VerifiedStatus.DIRECTLY_VERIFIED
-import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue.VerifiedStatus.MANUALLY_VERIFIED
-import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue.VerifiedStatus.UNVERIFIED
+import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue.Companion.VerifiedStatus
+import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue.Companion.VerifiedStatus.MANUALLY_VERIFIED
+import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue.Companion.getManuallyVerified
+import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue.Companion.getUnverified
+import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue.Companion.getQrVerificationSuccess
 import org.thoughtcrime.securesms.util.IdentityUtil
 import org.thoughtcrime.securesms.verify.VerifyDisplayFragment
 
@@ -97,18 +98,19 @@ interface VerifyDisplayFragmentGlue {
         }
       } else if (previousStatus == MANUALLY_VERIFIED) {
         // manually verified, no user check necessary
-        updateContactsVerifiedStatus(recipientId, remoteIdentity, UNVERIFIED)
+        updateContactsVerifiedStatus(recipientId, remoteIdentity, getUnverified())
         updateVerifyButtonText(false, verifyButton)
       } else {
         // Unverified or default, simply set to manually verified
-        updateContactsVerifiedStatus(recipientId, remoteIdentity, MANUALLY_VERIFIED)
+        updateContactsVerifiedStatus(recipientId, remoteIdentity, getManuallyVerified())
         updateVerifyButtonText(true, verifyButton)
       }
     }
 
     fun onSuccessfulVerification(recipientId: RecipientId, remoteIdentity: IdentityKey, verifyButton: Button) {
+      val previousStatus = tiIdentityTable.getVerifiedStatus(recipientId)
       // The fingerprint matched after a QR scan and we can update the users verification status
-      updateContactsVerifiedStatus(recipientId, remoteIdentity, DIRECTLY_VERIFIED)
+      updateContactsVerifiedStatus(recipientId, remoteIdentity, getQrVerificationSuccess(previousStatus))
       updateVerifyButtonText(true, verifyButton)
     }
 

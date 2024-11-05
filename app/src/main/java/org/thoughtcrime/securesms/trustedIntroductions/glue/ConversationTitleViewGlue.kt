@@ -14,11 +14,11 @@ interface ConversationTitleViewGlue {
       title.text = displayName
       val verifiedStatus = tiIdentityTable.getVerifiedStatus(recipient.id)
       when (verifiedStatus) {
-        IdentityTableGlue.VerifiedStatus.MANUALLY_VERIFIED -> subtitle.setText(R.string.ConversationTitleView__manually_verified)
-        IdentityTableGlue.VerifiedStatus.DIRECTLY_VERIFIED -> subtitle.setText(R.string.ConversationTitleView__directly_verified)
-        IdentityTableGlue.VerifiedStatus.DUPLEX_VERIFIED -> subtitle.setText(R.string.ConversationTitleView__duplex)
-        IdentityTableGlue.VerifiedStatus.INTRODUCED -> subtitle.setText(R.string.ConversationTitleView__introduced)
-        IdentityTableGlue.VerifiedStatus.SUSPECTED_COMPROMISE -> subtitle.setText(R.string.ConversationTitleView__suspected_compromise)
+        IdentityTableGlue.Companion.VerifiedStatus.MANUALLY_VERIFIED -> subtitle.setText(R.string.ConversationTitleView__manually_verified)
+        IdentityTableGlue.Companion.VerifiedStatus.DIRECTLY_VERIFIED -> subtitle.setText(R.string.ConversationTitleView__directly_verified)
+        IdentityTableGlue.Companion.VerifiedStatus.DUPLEX_VERIFIED -> subtitle.setText(R.string.ConversationTitleView__duplex)
+        IdentityTableGlue.Companion.VerifiedStatus.INTRODUCED -> subtitle.setText(R.string.ConversationTitleView__introduced)
+        IdentityTableGlue.Companion.VerifiedStatus.SUSPECTED_COMPROMISE -> subtitle.setText(R.string.ConversationTitleView__suspected_compromise)
         else -> subtitle.setText(R.string.ConversationTitleView__unverified) // Should never be visible in this state
       }
       updateVisibility.run()

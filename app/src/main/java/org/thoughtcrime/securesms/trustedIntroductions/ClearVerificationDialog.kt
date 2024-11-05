@@ -8,7 +8,7 @@ import org.signal.core.util.logging.Log
 import org.signal.libsignal.protocol.IdentityKey
 import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.recipients.RecipientId
-import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue.VerifiedStatus
+import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue.Companion.VerifiedStatus
 import org.thoughtcrime.securesms.trustedIntroductions.glue.VerifyDisplayFragmentGlue
 
 /**

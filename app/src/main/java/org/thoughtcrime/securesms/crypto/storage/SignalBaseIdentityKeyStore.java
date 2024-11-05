@@ -11,7 +11,6 @@ import org.signal.core.util.logging.Log;
 import org.signal.libsignal.protocol.IdentityKey;
 import org.signal.libsignal.protocol.SignalProtocolAddress;
 import org.signal.libsignal.protocol.state.IdentityKeyStore;
-import org.thoughtcrime.securesms.crypto.IdentityKeyUtil;
 import org.thoughtcrime.securesms.crypto.ReentrantSessionLock;
 import org.thoughtcrime.securesms.crypto.storage.SignalIdentityKeyStore.SaveResult;
 import org.thoughtcrime.securesms.database.IdentityTable;
@@ -24,10 +23,8 @@ import org.thoughtcrime.securesms.dependencies.AppDependencies;
 import org.thoughtcrime.securesms.keyvalue.SignalStore;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.recipients.RecipientId;
-import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils;
 import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue;
 import org.thoughtcrime.securesms.trustedIntroductions.glue.SignalBaseIdentityKeyStoreGlue;
-import org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue;
 import org.thoughtcrime.securesms.util.IdentityUtil;
 import org.thoughtcrime.securesms.util.LRUCache;
 import org.whispersystems.signalservice.api.SignalSessionLock;
@@ -81,7 +78,7 @@ public class SignalBaseIdentityKeyStore {
         Log.i(TAG, "Saving new identity for " + address);
         cache.save(address.getName(), recipientId, identityKey, VerifiedStatus.DEFAULT, true, System.currentTimeMillis(), nonBlockingApproval);
         //TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
-        SignalDatabase.tiIdentityDatabase().saveIdentity(address.getName(), IdentityTableGlue.VerifiedStatus.UNVERIFIED);
+        SignalDatabase.tiIdentityDatabase().saveIdentity(address.getName(), IdentityTableGlue.Companion.VerifiedStatus.UNVERIFIED);
         //TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
         return SaveResult.NEW;
       }
@@ -96,9 +93,9 @@ public class SignalBaseIdentityKeyStore {
 
         //TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
         SignalBaseIdentityKeyStoreGlue.turnAllIntroductionsStale(recipientId);
-        IdentityTableGlue.VerifiedStatus currentVerifiedStatus = SignalDatabase.tiIdentityDatabase().getVerifiedStatus(recipientId);
-        if(currentVerifiedStatus != IdentityTableGlue.VerifiedStatus.DEFAULT && currentVerifiedStatus != IdentityTableGlue.VerifiedStatus.UNVERIFIED)
-          SignalDatabase.tiIdentityDatabase().saveIdentity(address.getName(), IdentityTableGlue.VerifiedStatus.UNVERIFIED);
+        IdentityTableGlue.Companion.VerifiedStatus currentVerifiedStatus = SignalDatabase.tiIdentityDatabase().getVerifiedStatus(recipientId);
+        if(currentVerifiedStatus != IdentityTableGlue.Companion.VerifiedStatus.DEFAULT && currentVerifiedStatus != IdentityTableGlue.Companion.VerifiedStatus.UNVERIFIED)
+          SignalDatabase.tiIdentityDatabase().saveIdentity(address.getName(), IdentityTableGlue.Companion.VerifiedStatus.UNVERIFIED);
         //TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 
         if (identityRecord.getVerifiedStatus() == VerifiedStatus.VERIFIED ||

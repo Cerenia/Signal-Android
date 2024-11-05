@@ -455,7 +455,7 @@ class TI_Database(context: Context?, databaseHelper: SignalDatabase?) : Database
       // Check if a recipient may change verification status as a result of this operation
       val introduceeID: RecipientId = getRecipientIdOrUnknown(introduction.introduceeServiceId)
       if (!introduceeID.isUnknown) {
-        val previousIntroduceeVerification: IdentityTableGlue.VerifiedStatus = tiIdentityTable.getVerifiedStatus(introduceeID)
+        val previousIntroduceeVerification: IdentityTableGlue.Companion.VerifiedStatus = tiIdentityTable.getVerifiedStatus(introduceeID)
         if (previousIntroduceeVerification == null) {
           throw AssertionError("Unexpected missing verification status for " + introduction.introduceeName)
         }

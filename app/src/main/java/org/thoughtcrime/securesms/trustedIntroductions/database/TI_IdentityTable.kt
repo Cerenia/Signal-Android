@@ -14,7 +14,7 @@ import org.thoughtcrime.securesms.recipients.RecipientId
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.TI_LOG_TAG
 import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue
-import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue.VerifiedStatus
+import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue.Companion.VerifiedStatus
 import org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue
 
 
@@ -135,58 +135,10 @@ class TI_IdentityTable internal constructor(context: Context?, databaseHelper: S
    */
   @WorkerThread
   override fun modifyIntroduceeVerification(introduceeServiceId: String, previousIntroduceeVerification: VerifiedStatus, newState: TI_DatabaseGlue.Companion.State, logMessage: String) {
-    val newIntroduceeVerification = when (newState) {
-      TI_DatabaseGlue.Companion.State.PENDING, TI_DatabaseGlue.Companion.State.PENDING_UNKNOWN -> throw AssertionError(TAG + " Precondition Violation! State was: " + newState.name)
-      // Any stale state leads to unverified
-      TI_DatabaseGlue.Companion.State.STALE_PENDING, TI_DatabaseGlue.Companion.State.STALE_ACCEPTED, TI_DatabaseGlue.Companion.State.STALE_REJECTED, TI_DatabaseGlue.Companion.State.STALE_ACCEPTED_CONFLICTING,
-      TI_DatabaseGlue.Companion.State.STALE_REJECTED_CONFLICTING, TI_DatabaseGlue.Companion.State.STALE_PENDING_CONFLICTING -> VerifiedStatus.UNVERIFIED
-      // An accepted introduction may lead to the introducee verification state:
-      TI_DatabaseGlue.Companion.State.ACCEPTED, TI_DatabaseGlue.Companion.State.ACCEPTED_UNKNOWN -> when (previousIntroduceeVerification) {
-        // Becoming or staying strongly verified
-        VerifiedStatus.DUPLEX_VERIFIED, VerifiedStatus.DIRECTLY_VERIFIED -> VerifiedStatus.DUPLEX_VERIFIED
-        // Staying or becoming introduced
-        VerifiedStatus.DEFAULT, VerifiedStatus.UNVERIFIED, VerifiedStatus.INTRODUCED, VerifiedStatus.MANUALLY_VERIFIED -> VerifiedStatus.INTRODUCED
-        // Or staying in the suspected compromised state
-        VerifiedStatus.SUSPECTED_COMPROMISE -> VerifiedStatus.SUSPECTED_COMPROMISE
-      }
-      // A rejected introduction may lead to the introducee verification state:
-      TI_DatabaseGlue.Companion.State.REJECTED, TI_DatabaseGlue.Companion.State.REJECTED_UNKNOWN -> when (previousIntroduceeVerification) {
-        // Staying the same
-        VerifiedStatus.DIRECTLY_VERIFIED, VerifiedStatus.MANUALLY_VERIFIED, VerifiedStatus.DEFAULT, VerifiedStatus.UNVERIFIED -> previousIntroduceeVerification
-        // Potentially degrading in status
-        VerifiedStatus.DUPLEX_VERIFIED -> {
-          if (SignalDatabase.tiDatabase.atLeastOneIntroductionIs(TI_DatabaseGlue.Companion.State.ACCEPTED, introduceeServiceId)) VerifiedStatus.DUPLEX_VERIFIED
-          else VerifiedStatus.DIRECTLY_VERIFIED
-        }
-
-        VerifiedStatus.INTRODUCED -> {
-          if (SignalDatabase.tiDatabase.atLeastOneIntroductionIs(TI_DatabaseGlue.Companion.State.ACCEPTED, introduceeServiceId)) VerifiedStatus.INTRODUCED
-          else VerifiedStatus.UNVERIFIED
-        }
-        // Or staying in the suspected compromised state
-        VerifiedStatus.SUSPECTED_COMPROMISE -> VerifiedStatus.SUSPECTED_COMPROMISE
-      }
-      // An accepted conflicting introduction will lead to a suspected compromise
-      TI_DatabaseGlue.Companion.State.ACCEPTED_CONFLICTING -> VerifiedStatus.SUSPECTED_COMPROMISE
-      // A rejected conflicting introduction might move the introducee out of the conflicting state or keep the state the same
-      TI_DatabaseGlue.Companion.State.REJECTED_CONFLICTING -> when (previousIntroduceeVerification) {
-        VerifiedStatus.SUSPECTED_COMPROMISE -> {
-          if (SignalDatabase.tiDatabase.atLeastOneIntroductionIs(TI_DatabaseGlue.Companion.State.ACCEPTED_CONFLICTING, introduceeServiceId)) VerifiedStatus.SUSPECTED_COMPROMISE
-          else {
-            if (SignalDatabase.tiDatabase.atLeastOneIntroductionIs(TI_DatabaseGlue.Companion.State.ACCEPTED, introduceeServiceId)) VerifiedStatus.INTRODUCED
-            else VerifiedStatus.UNVERIFIED
-          }
-        }
-
-        VerifiedStatus.INTRODUCED, VerifiedStatus.UNVERIFIED, VerifiedStatus.DIRECTLY_VERIFIED, VerifiedStatus.MANUALLY_VERIFIED, VerifiedStatus.DEFAULT,
-        VerifiedStatus.DUPLEX_VERIFIED -> previousIntroduceeVerification
-      }
-
-      TI_DatabaseGlue.Companion.State.PENDING_CONFLICTING -> previousIntroduceeVerification
-    }
+    val newIntroduceeVerificationStatus = IdentityTableGlue.getToggleIntroduction(previousIntroduceeVerification, newState, introduceeServiceId)
     // Finally update the verification state and log
     val rid = RecipientId.fromSidOrE164(introduceeServiceId)
-    TI_Utils.updateContactsVerifiedStatus(rid, TI_Utils.getIdentityKey(rid), newIntroduceeVerification)
+    TI_Utils.updateContactsVerifiedStatus(rid, TI_Utils.getIdentityKey(rid), newIntroduceeVerificationStatus)
     Log.i(TAG, logMessage)
   }
 }
