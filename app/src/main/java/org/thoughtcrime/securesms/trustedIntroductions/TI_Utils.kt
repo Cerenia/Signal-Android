@@ -459,7 +459,10 @@ object TI_Utils {
           val introduceeServiceId = recipientRecord.aci.toString()
           knownIds.add(introduceeServiceId)
           val name = getSomeNonNullName(recipientID, recipientRecord)
-          val phone = if (UNDISCLOSED == recipientRecord.e164) null else recipientRecord.e164
+          var phone = if (UNDISCLOSED == recipientRecord.e164) UNDISCLOSED else recipientRecord.e164
+          // Check if a phone number is included in the introduction data. This is equivalent to forwarding a contact thus it doesn't make sense to obfuscate the number on purpose.
+          val numberPresentInJson = getPhone(introducees, introduceeServiceId)
+          phone = if (numberPresentInJson == "missing") phone else numberPresentInJson
           val identityKey = IdKeyPair.findCorrespondingKeyInList(introduceeServiceId, idKeyPairs)
           val d = TI_Data(null, TI_Database.State.PENDING, introducerServiceId, introduceeServiceId, name, phone, identityKey, null, timestamp)
           result.add(d)
