@@ -19,6 +19,7 @@ import org.thoughtcrime.securesms.trustedIntroductions.TI_Data
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.splitIntroductionDate
 import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database
+import org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue
 import org.thoughtcrime.securesms.trustedIntroductions.receive.ManageActivity.ActiveTab
 import org.thoughtcrime.securesms.trustedIntroductions.receive.ManageActivity.ActiveTab.NEW
 import java.util.regex.Pattern
@@ -197,7 +198,7 @@ class ManageListFragment(
     }
   }
 
-  private fun userFiltered(s: TI_Database.State): Boolean {
+  private fun userFiltered(s: TI_DatabaseGlue.Companion.State): Boolean {
     return when {
       viewModel.showConflicting().value == false && s.isConflicting -> true
       viewModel.showStale().value == false && s.isStale -> true

@@ -7,7 +7,6 @@ import org.thoughtcrime.securesms.database.IdentityTable
 import org.thoughtcrime.securesms.database.SignalDatabase
 import org.thoughtcrime.securesms.database.SignalDatabase.Companion.tiIdentityTable
 import org.thoughtcrime.securesms.recipients.RecipientId
-import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database
 import org.thoughtcrime.securesms.trustedIntroductions.database.TI_IdentityTable
 
 interface IdentityTableGlue {
@@ -162,7 +161,7 @@ interface IdentityTableGlue {
    * @param newState                       The new state of the modified introduction.
    * @param logMessage                     What to print to logcat if the verification state was modified.
    */
-  fun modifyIntroduceeVerification(introduceeServiceId: String, previousIntroduceeVerification: VerifiedStatus, newState: TI_Database.State, logMessage: String)
+  fun modifyIntroduceeVerification(introduceeServiceId: String, previousIntroduceeVerification: VerifiedStatus, newState: TI_DatabaseGlue.Companion.State, logMessage: String)
 
   companion object {
     val createTable: String

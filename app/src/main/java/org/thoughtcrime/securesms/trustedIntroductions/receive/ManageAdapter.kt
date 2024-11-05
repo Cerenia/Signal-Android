@@ -23,21 +23,22 @@ import org.thoughtcrime.securesms.recipients.RecipientId
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils
 import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database
-import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.ACCEPTED
-import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.ACCEPTED_CONFLICTING
-import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.ACCEPTED_UNKNOWN
-import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.PENDING
-import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.PENDING_CONFLICTING
-import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.PENDING_UNKNOWN
-import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.REJECTED
-import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.REJECTED_CONFLICTING
-import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.REJECTED_UNKNOWN
-import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.STALE_ACCEPTED
-import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.STALE_ACCEPTED_CONFLICTING
-import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.STALE_PENDING
-import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.STALE_PENDING_CONFLICTING
-import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.STALE_REJECTED
-import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database.State.STALE_REJECTED_CONFLICTING
+import org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue
+import org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue.Companion.State.ACCEPTED
+import org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue.Companion.State.ACCEPTED_CONFLICTING
+import org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue.Companion.State.ACCEPTED_UNKNOWN
+import org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue.Companion.State.PENDING
+import org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue.Companion.State.PENDING_CONFLICTING
+import org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue.Companion.State.PENDING_UNKNOWN
+import org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue.Companion.State.REJECTED
+import org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue.Companion.State.REJECTED_CONFLICTING
+import org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue.Companion.State.REJECTED_UNKNOWN
+import org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue.Companion.State.STALE_ACCEPTED
+import org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue.Companion.State.STALE_ACCEPTED_CONFLICTING
+import org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue.Companion.State.STALE_PENDING
+import org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue.Companion.State.STALE_PENDING_CONFLICTING
+import org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue.Companion.State.STALE_REJECTED
+import org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue.Companion.State.STALE_REJECTED_CONFLICTING
 import java.util.Date
 
 class ManageAdapter(
@@ -224,7 +225,7 @@ class ManageAdapter(
       }
     }
 
-    private fun changeListItemAppearanceByState(state: TI_Database.State) {
+    private fun changeListItemAppearanceByState(state: TI_DatabaseGlue.Companion.State) {
       // Background
       val backgroundRes = when {
         state.isStale && state.isConflicting -> R.drawable.ti_manage_listview_background_stale_conflicting
@@ -303,7 +304,7 @@ class ManageAdapter(
       }
     }
 
-    private fun changeState(d: TI_Data, newState: TI_Database.State): TI_Data {
+    private fun changeState(d: TI_Data, newState: TI_DatabaseGlue.Companion.State): TI_Data {
       return TI_Data(
         d.id,
         newState,
