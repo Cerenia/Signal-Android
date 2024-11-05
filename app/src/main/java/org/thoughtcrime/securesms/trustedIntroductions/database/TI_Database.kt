@@ -260,7 +260,7 @@ class TI_Database(context: Context?, databaseHelper: SignalDatabase?) : Database
    * PRE: None of the Strings may be empty or Null.
    *
    * @param introductionId       Expected to represent a Long > 0.
-   * @param state                Expected to represent an Int between 0 and 7 (inclusive).
+   * @param state                Expected to represent an Int between 0 and 14 (inclusive).
    * @param introducerServiceId  who made the introduction (uuid)
    * @param introduceeServiceId  Who is getting introduced - could be an ACI or PNI ServiceId
    * @param name                 Display name (optional)
@@ -295,8 +295,9 @@ class TI_Database(context: Context?, databaseHelper: SignalDatabase?) : Database
     val introId: Long = introductionId.toLong()
     Preconditions.checkArgument(introId > 0)
     val s: Int = state.toInt()
-    Preconditions.checkArgument(s in 0..7)
+    Preconditions.checkArgument(s in 0..14)
     val timestampLong: Long = timestamp.toLong()
+    e(TAG, timestampLong.toString())
     Preconditions.checkArgument(timestampLong > 0)
     return buildContentValuesForUpdate(
       introId,
