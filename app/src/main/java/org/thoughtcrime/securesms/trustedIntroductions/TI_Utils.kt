@@ -25,10 +25,10 @@ import org.thoughtcrime.securesms.recipients.Recipient.Companion.live
 import org.thoughtcrime.securesms.recipients.Recipient.Companion.resolved
 import org.thoughtcrime.securesms.recipients.RecipientId
 import org.thoughtcrime.securesms.storage.StorageSyncHelper
-import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database
 import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue.VerifiedStatus
 import org.thoughtcrime.securesms.trustedIntroductions.glue.RecipientTableGlue.getRecordsForReceivingTI
 import org.thoughtcrime.securesms.trustedIntroductions.glue.RecipientTableGlue.getRecordsForSendingTI
+import org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue
 import org.thoughtcrime.securesms.trustedIntroductions.jobs.TrustedIntroductionsReceiveJob
 import org.thoughtcrime.securesms.util.IdentityUtil
 import org.whispersystems.signalservice.api.push.ServiceId.Companion.parseOrThrow
@@ -108,6 +108,9 @@ object TI_Utils {
   @JvmField
   @SuppressLint("SimpleDateFormat")
   val INTRODUCTION_DATE_PATTERN: SimpleDateFormat = SimpleDateFormat("yyyy/MM/dd hh:mm:ss")
+
+
+
 
   /**
    * /@see ManageListFragment::getFiltered()
@@ -464,7 +467,7 @@ object TI_Utils {
           val numberPresentInJson = getPhone(introducees, introduceeServiceId)
           phone = if (numberPresentInJson == "missing") phone else numberPresentInJson
           val identityKey = IdKeyPair.findCorrespondingKeyInList(introduceeServiceId, idKeyPairs)
-          val d = TI_Data(null, TI_Database.State.PENDING, introducerServiceId, introduceeServiceId, name, phone, identityKey, null, timestamp)
+          val d = TI_Data(null, TI_DatabaseGlue.Companion.State.PENDING, introducerServiceId, introduceeServiceId, name, phone, identityKey, null, timestamp)
           result.add(d)
         }
       }
@@ -481,7 +484,7 @@ object TI_Utils {
           }
           result[j].predictedSecurityNumber = o.getString(PREDICTED_FINGERPRINT_J)
         } else {
-          val d = TI_Data(null, TI_Database.State.PENDING, introducerServiceId, o.getString(SERVICE_ID_J), o.getString(NAME_J), o.getString(NUMBER_J), o.getString(IDENTITY_J), o.getString(PREDICTED_FINGERPRINT_J), timestamp)
+          val d = TI_Data(null, TI_DatabaseGlue.Companion.State.PENDING, introducerServiceId, o.getString(SERVICE_ID_J), o.getString(NAME_J), o.getString(NUMBER_J), o.getString(IDENTITY_J), o.getString(PREDICTED_FINGERPRINT_J), timestamp)
           result.add(d)
         }
       }

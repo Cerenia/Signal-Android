@@ -29,6 +29,10 @@ import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.getRecipientIdOr
 import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue
 import org.thoughtcrime.securesms.trustedIntroductions.glue.RecipientTableGlue.getRecordsForSendingTI
 import org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue
+import org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue.Companion.turnIntroductionStale
+import org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue.Companion.unknownStateTransition
+import org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue.Companion.userToggledAccepted
+import org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue.Companion.userToggledRejected
 import org.whispersystems.signalservice.api.push.ServiceId.Companion.parseOrThrow
 import org.whispersystems.signalservice.api.util.Preconditions
 import java.io.Closeable
@@ -55,110 +59,13 @@ class TI_Database(context: Context?, databaseHelper: SignalDatabase?) : Database
   }
 
   /**
-   * All states in the FSM for Introductions.
-   */
-  enum class State {
-    PENDING, ACCEPTED, REJECTED, PENDING_UNKNOWN, ACCEPTED_UNKNOWN, REJECTED_UNKNOWN, PENDING_CONFLICTING, ACCEPTED_CONFLICTING, REJECTED_CONFLICTING, STALE_PENDING, STALE_ACCEPTED,
-    STALE_REJECTED, STALE_PENDING_CONFLICTING, STALE_ACCEPTED_CONFLICTING, STALE_REJECTED_CONFLICTING;
-
-    fun toInt(): Int {
-      return when (this) {
-        PENDING -> 0
-        ACCEPTED -> 1
-        REJECTED -> 2
-        PENDING_UNKNOWN -> 3
-        ACCEPTED_UNKNOWN -> 4
-        REJECTED_UNKNOWN -> 5
-        PENDING_CONFLICTING -> 6
-        ACCEPTED_CONFLICTING -> 7
-        REJECTED_CONFLICTING -> 8
-        STALE_PENDING -> 9
-        STALE_ACCEPTED -> 10
-        STALE_REJECTED -> 11
-        STALE_PENDING_CONFLICTING -> 12
-        STALE_ACCEPTED_CONFLICTING -> 13
-        STALE_REJECTED_CONFLICTING -> 14
-      }
-    }
-
-    val isStale: Boolean
-      get() = when (this) {
-        STALE_PENDING, STALE_ACCEPTED, STALE_REJECTED, STALE_PENDING_CONFLICTING, STALE_ACCEPTED_CONFLICTING, STALE_REJECTED_CONFLICTING -> true
-        else -> false
-      }
-
-    val isPending: Boolean
-      get() {
-        return when (this) {
-          PENDING, PENDING_CONFLICTING, PENDING_UNKNOWN, STALE_PENDING, STALE_PENDING_CONFLICTING -> true
-          else -> false
-        }
-      }
-
-    val isUnknownRecipient: Boolean
-      get() {
-        return when (this) {
-          PENDING_UNKNOWN, ACCEPTED_UNKNOWN, REJECTED_UNKNOWN -> true
-          else -> false
-        }
-      }
-
-    val isConflicting: Boolean
-      get() {
-        return when (this) {
-          PENDING_CONFLICTING, ACCEPTED_CONFLICTING, REJECTED_CONFLICTING, STALE_PENDING_CONFLICTING, STALE_ACCEPTED_CONFLICTING, STALE_REJECTED_CONFLICTING -> true
-          else -> false
-        }
-      }
-
-    val isTrusted: Boolean
-      get() {
-        return when (this) {
-          ACCEPTED, ACCEPTED_UNKNOWN, ACCEPTED_CONFLICTING, STALE_ACCEPTED, STALE_ACCEPTED_CONFLICTING -> true
-          else -> false
-        }
-      }
-
-    val isDistrusted: Boolean
-      get() {
-        return when (this) {
-          REJECTED, REJECTED_UNKNOWN, REJECTED_CONFLICTING, STALE_REJECTED, STALE_REJECTED_CONFLICTING -> true
-          else -> false
-        }
-      }
-
-    companion object {
-      fun forState(state: Int): State {
-        return when (state) {
-          0 -> PENDING
-          1 -> ACCEPTED
-          2 -> REJECTED
-          3 -> PENDING_UNKNOWN
-          4 -> ACCEPTED_UNKNOWN
-          5 -> REJECTED_UNKNOWN
-          6 -> PENDING_CONFLICTING
-          7 -> ACCEPTED_CONFLICTING
-          8 -> REJECTED_CONFLICTING
-          9 -> STALE_PENDING
-          10 -> STALE_ACCEPTED
-          11 -> STALE_REJECTED
-          12 -> STALE_PENDING_CONFLICTING
-          13 -> STALE_ACCEPTED_CONFLICTING
-          14 -> STALE_REJECTED_CONFLICTING
-          else -> throw AssertionError("No such state: $state")
-        }
-      }
-    }
-  }
-
-  /**
    * Used to update a database entry. Pass all the data that should stay the same and change what needs to be updated.
    *
    * @return Content Values for the updated entry
    */
   private fun buildContentValuesForUpdate(
     introductionId: Long,
-    state: State,
+    state: TI_DatabaseGlue.Companion.State,
     introducerServiceId: String?,
     serviceId: String,
     name: String,
@@ -207,7 +114,7 @@ class TI_Database(context: Context?, databaseHelper: SignalDatabase?) : Database
    * @return Correctly populated ContentValues
    */
   @SuppressLint("Range")
-  override fun buildContentValuesForStateUpdate(introduction: TI_Data, newState: State): ContentValues {
+  override fun buildContentValuesForStateUpdate(introduction: TI_Data, newState: TI_DatabaseGlue.Companion.State): ContentValues {
     val values: ContentValues = buildContentValuesForUpdate(introduction)
     values.remove(STATE)
     values.put(STATE, newState.toInt())
@@ -232,7 +139,7 @@ class TI_Database(context: Context?, databaseHelper: SignalDatabase?) : Database
    * @return populated content values ready for insertion
    */
   override fun buildContentValuesForInsert(
-    state: State,
+    state: TI_DatabaseGlue.Companion.State,
     introducerServiceId: String,
     introduceeServiceId: String,
     introduceeName: String,
@@ -241,7 +148,7 @@ class TI_Database(context: Context?, databaseHelper: SignalDatabase?) : Database
     predictedSecurityNumber: String,
     timestamp: Long
   ): ContentValues {
-    Preconditions.checkArgument(state == State.PENDING || state == State.PENDING_CONFLICTING || state == State.PENDING_UNKNOWN)
+    Preconditions.checkArgument(state == TI_DatabaseGlue.Companion.State.PENDING || state == TI_DatabaseGlue.Companion.State.PENDING_CONFLICTING || state == TI_DatabaseGlue.Companion.State.PENDING_UNKNOWN)
     val cv = ContentValues()
     cv.put(STATE, state.toInt())
     cv.put(INTRODUCER_SERVICE_ID, introducerServiceId)
@@ -300,7 +207,7 @@ class TI_Database(context: Context?, databaseHelper: SignalDatabase?) : Database
     Preconditions.checkArgument(timestampLong > 0)
     return buildContentValuesForUpdate(
       introId,
-      State.forState(s),
+      TI_DatabaseGlue.Companion.State.forState(s),
       introducerServiceId,
       introduceeServiceId,
       name,
@@ -343,16 +250,7 @@ class TI_Database(context: Context?, databaseHelper: SignalDatabase?) : Database
     Preconditions.checkNotNull(introduction.introducerServiceId)
     Preconditions.checkNotNull(introduction.predictedSecurityNumber)
     Preconditions.checkArgument(!introduction.state.isStale)
-    // Find stale state
-    val newState: State = when (introduction.state) {
-      State.PENDING, State.PENDING_UNKNOWN -> State.STALE_PENDING
-      State.ACCEPTED, State.ACCEPTED_UNKNOWN -> State.STALE_ACCEPTED
-      State.REJECTED, State.REJECTED_UNKNOWN -> State.STALE_REJECTED
-      State.PENDING_CONFLICTING -> State.STALE_PENDING_CONFLICTING
-      State.ACCEPTED_CONFLICTING -> State.STALE_ACCEPTED_CONFLICTING
-      State.REJECTED_CONFLICTING -> State.STALE_REJECTED_CONFLICTING
-      else -> throw AssertionError("State: " + introduction.state + " was illegal or already stale.")
-    }
+    val newState = turnIntroductionStale(introduction)
 
     val introduceeName: String = introduction.introduceeName ?: ""
 
@@ -383,12 +281,7 @@ class TI_Database(context: Context?, databaseHelper: SignalDatabase?) : Database
     Preconditions.checkNotNull(introduction.predictedSecurityNumber)
     Preconditions.checkArgument(introduction.state.isUnknownRecipient)
     // Unknown state transitions
-    val newState: State = when (introduction.state) {
-      State.PENDING_UNKNOWN -> State.PENDING
-      State.ACCEPTED_UNKNOWN -> State.ACCEPTED
-      State.REJECTED_UNKNOWN -> State.REJECTED
-      else -> throw AssertionError("State: " + introduction.state + " was illegal or already stale.")
-    }
+    val newState = unknownStateTransition(introduction)
 
     val introduceeName: String = introduction.introduceeName ?: ""
 
@@ -407,8 +300,8 @@ class TI_Database(context: Context?, databaseHelper: SignalDatabase?) : Database
 
   // TODO: Given a contact that cannot be contacted (hidden, no username/phone nr.) we cannot determine from the pending introduction, if there was a conflict
   // or the thing turned stale in the meantime when a session is initiated. Thus we must turn it stale immediately from whatever state it was in...
-  private fun insertIntroduction(data: TI_Data, state: State): Long {
-    Preconditions.checkArgument(state == State.PENDING || state == State.PENDING_CONFLICTING || state == State.PENDING_UNKNOWN)
+  private fun insertIntroduction(data: TI_Data, state: TI_DatabaseGlue.Companion.State): Long {
+    Preconditions.checkArgument(state == TI_DatabaseGlue.Companion.State.PENDING || state == TI_DatabaseGlue.Companion.State.PENDING_CONFLICTING || state == TI_DatabaseGlue.Companion.State.PENDING_UNKNOWN)
     val db: TI_DatabaseGlue = tiDatabase
     val values: ContentValues = db.buildContentValuesForInsert(
       state,
@@ -427,7 +320,7 @@ class TI_Database(context: Context?, databaseHelper: SignalDatabase?) : Database
   }
 
   private fun insertUnknownIntroduction(data: TI_Data): Long {
-    return insertIntroduction(data, State.PENDING_UNKNOWN)
+    return insertIntroduction(data, TI_DatabaseGlue.Companion.State.PENDING_UNKNOWN)
   }
 
   /**
@@ -447,13 +340,13 @@ class TI_Database(context: Context?, databaseHelper: SignalDatabase?) : Database
       try {
         identityKey = getEncodedIdentityKey(introduceeId)
         if (data.introduceeIdentityKey != identityKey) {
-          return insertIntroduction(data, State.PENDING_CONFLICTING)
+          return insertIntroduction(data, TI_DatabaseGlue.Companion.State.PENDING_CONFLICTING)
         }
       } catch (e: MissingIdentityException) {
         // Continue to end condition, recipient is unknown.
       }
     }
-    return insertIntroduction(data, State.PENDING)
+    return insertIntroduction(data, TI_DatabaseGlue.Companion.State.PENDING)
   }
 
   /**
@@ -546,9 +439,9 @@ class TI_Database(context: Context?, databaseHelper: SignalDatabase?) : Database
    * @return if the insertion succeeded or failed
    */
   @WorkerThread
-  private fun changeIntroductionState(introduction: TI_Data, newState: State, logMessage: String): Boolean {
+  private fun changeIntroductionState(introduction: TI_Data, newState: TI_DatabaseGlue.Companion.State, logMessage: String): Boolean {
     // We are setting the pending states directly when the introduction is first received. There is no other transition to this state.
-    Preconditions.checkArgument(newState != State.PENDING)
+    Preconditions.checkArgument(newState != TI_DatabaseGlue.Companion.State.PENDING)
     Preconditions.checkArgument(introduction.id != null)
 
     // Modify introduction
@@ -581,7 +474,7 @@ class TI_Database(context: Context?, databaseHelper: SignalDatabase?) : Database
    * @param introduceeServiceId The serviceID of the recipient whose verification status may change
    */
   @WorkerThread
-  override fun atLeastOneIntroductionIs(states: State, introduceeServiceId: String): Boolean {
+  override fun atLeastOneIntroductionIs(states: TI_DatabaseGlue.Companion.State, introduceeServiceId: String): Boolean {
     val selection: String = String.format("%s=?", INTRODUCEE_SERVICE_ID) + String.format(" AND %s=?", STATE)
     val args: Array<String> = buildArgs(
       introduceeServiceId,
@@ -601,7 +494,7 @@ class TI_Database(context: Context?, databaseHelper: SignalDatabase?) : Database
    */
   @SuppressLint("DefaultLocale")
   override fun atLeastOneIntroductionIsUnknown(introduceeServiceId: String): Boolean {
-    val selection: String = String.format("%s=? AND %s IN (%d,%d,%d)", INTRODUCEE_SERVICE_ID, STATE, State.PENDING_UNKNOWN.toInt(), State.ACCEPTED_UNKNOWN.toInt(), State.REJECTED_UNKNOWN.toInt())
+    val selection: String = String.format("%s=? AND %s IN (%d,%d,%d)", INTRODUCEE_SERVICE_ID, STATE, TI_DatabaseGlue.Companion.State.PENDING_UNKNOWN.toInt(), TI_DatabaseGlue.Companion.State.ACCEPTED_UNKNOWN.toInt(), TI_DatabaseGlue.Companion.State.REJECTED_UNKNOWN.toInt())
     val args: Array<String> = buildArgs(introduceeServiceId)
     val writeableDatabase: SQLiteDatabase = getSignalWritableDatabase()
     val c: Cursor = writeableDatabase.query(TABLE_NAME, TI_ALL_PROJECTION, selection, args, null, null, null)
@@ -629,7 +522,7 @@ class TI_Database(context: Context?, databaseHelper: SignalDatabase?) : Database
    * @return the state with the highest priority.
    */
   @WorkerThread
-  override fun handleUnknownIntroductions(serviceId: String, encodedIdentityKey: String): State? {
+  override fun handleUnknownIntroductions(serviceId: String, encodedIdentityKey: String): TI_DatabaseGlue.Companion.State? {
     val selection: String = String.format("%s=?", INTRODUCEE_SERVICE_ID)
     val args: Array<String> = buildArgs(serviceId)
     val writeableDatabase: SQLiteDatabase = getSignalWritableDatabase()
@@ -657,14 +550,14 @@ class TI_Database(context: Context?, databaseHelper: SignalDatabase?) : Database
         if (encodedIdentityKey != current.introduceeIdentityKey) {
           // Add this datapoint to the introductions that must be turned stale
           staleIntroductions.add(current)
-          if (current.state == State.ACCEPTED_UNKNOWN) hasStaleTrusted = true
-          if (current.state == State.REJECTED_UNKNOWN) hasStaleRejected = true
-          if (current.state == State.PENDING_UNKNOWN) hasStalePending = true
+          if (current.state == TI_DatabaseGlue.Companion.State.ACCEPTED_UNKNOWN) hasStaleTrusted = true
+          if (current.state == TI_DatabaseGlue.Companion.State.REJECTED_UNKNOWN) hasStaleRejected = true
+          if (current.state == TI_DatabaseGlue.Companion.State.PENDING_UNKNOWN) hasStalePending = true
         } else {
           upToDateIntroductions.add(current)
-          if (current.state == State.ACCEPTED_UNKNOWN) hasTrusted = true
-          if (current.state == State.REJECTED_UNKNOWN) hasRejected = true
-          if (current.state == State.PENDING_UNKNOWN) hasPending = true
+          if (current.state == TI_DatabaseGlue.Companion.State.ACCEPTED_UNKNOWN) hasTrusted = true
+          if (current.state == TI_DatabaseGlue.Companion.State.REJECTED_UNKNOWN) hasRejected = true
+          if (current.state == TI_DatabaseGlue.Companion.State.PENDING_UNKNOWN) hasPending = true
         }
       } while (reader.hasNext())
       try {
@@ -697,17 +590,17 @@ class TI_Database(context: Context?, databaseHelper: SignalDatabase?) : Database
     // Priority defined here w.r.t which introduction state should be considered:
     if (!(hasTrusted || hasRejected || hasStaleTrusted || hasStaleRejected || hasStalePending || hasPending)) return null
     return if (hasTrusted) {
-      State.ACCEPTED
+      TI_DatabaseGlue.Companion.State.ACCEPTED
     } else if (hasStaleTrusted) {
-      State.STALE_ACCEPTED
+      TI_DatabaseGlue.Companion.State.STALE_ACCEPTED
     } else if (hasRejected) {
-      State.REJECTED
+      TI_DatabaseGlue.Companion.State.REJECTED
     } else if (hasStaleRejected) {
-      State.STALE_REJECTED
+      TI_DatabaseGlue.Companion.State.STALE_REJECTED
     } else if (hasPending) {
-      State.PENDING
+      TI_DatabaseGlue.Companion.State.PENDING
     } else {
-      State.STALE_PENDING
+      TI_DatabaseGlue.Companion.State.STALE_PENDING
     }
   }
 
@@ -726,15 +619,7 @@ class TI_Database(context: Context?, databaseHelper: SignalDatabase?) : Database
   @WorkerThread
   override fun acceptIntroduction(introduction: TI_Data): Boolean {
     Preconditions.checkArgument(introduction.id != null)
-    val newState: State
-    if (isRecipientUnknown(introduction.introduceeServiceId)){
-      newState = State.ACCEPTED_UNKNOWN
-    } else if (introduction.state.equals(State.PENDING_CONFLICTING)){
-      newState = State.ACCEPTED_CONFLICTING
-    } else {
-      newState = State.ACCEPTED
-    }
-    return changeIntroductionState(introduction, newState, "Accepted introduction for: " + introduction.introduceeName)
+    return changeIntroductionState(introduction, userToggledAccepted(introduction), "Accepted introduction for: " + introduction.introduceeName)
   }
 
   /**
@@ -747,15 +632,7 @@ class TI_Database(context: Context?, databaseHelper: SignalDatabase?) : Database
   @WorkerThread
   override fun rejectIntroduction(introduction: TI_Data): Boolean {
     Preconditions.checkArgument(introduction.id != null)
-    val newState: State
-    if (isRecipientUnknown(introduction.introduceeServiceId)){
-      newState = State.REJECTED_UNKNOWN
-    } else if (introduction.state.equals(State.PENDING_CONFLICTING)){
-      newState = State.REJECTED_CONFLICTING
-    } else {
-      newState = State.REJECTED
-    }
-    return changeIntroductionState(introduction, newState, "Rejected introduction for: " + introduction.introduceeName)
+    return changeIntroductionState(introduction, userToggledRejected(introduction), "Rejected introduction for: " + introduction.introduceeName)
   }
 
   /**
@@ -818,7 +695,7 @@ class TI_Database(context: Context?, databaseHelper: SignalDatabase?) : Database
     val tiIdentityDB: IdentityTableGlue = tiIdentityTable
     // Any stale state will result in the same unverified new verification state
     tiIdentityDB.modifyIntroduceeVerification(
-      serviceID, tiIdentityDB.getVerifiedStatus(recipient.id), State.STALE_PENDING, ("Marked " + recipient.getDisplayName(context) + " unverified"
+      serviceID, tiIdentityDB.getVerifiedStatus(recipient.id), TI_DatabaseGlue.Companion.State.STALE_PENDING, ("Marked " + recipient.getDisplayName(context) + " unverified"
         + "after successfully turning all introductions for them stale.")
     )
     return true
@@ -910,7 +787,7 @@ class TI_Database(context: Context?, databaseHelper: SignalDatabase?) : Database
         }
         val introductionId: Long = cursor.getLong(cursor.getColumnIndex(ID))
         val s: Int = cursor.getInt(cursor.getColumnIndex(STATE))
-        val state: State = State.forState(s)
+        val state: TI_DatabaseGlue.Companion.State = TI_DatabaseGlue.Companion.State.forState(s)
         val introducerServiceId: String = (cursor.getString(cursor.getColumnIndex(INTRODUCER_SERVICE_ID)))
         val introduceeServiceId: String = (cursor.getString(cursor.getColumnIndex(INTRODUCEE_SERVICE_ID)))
         // Do I need to hit the Recipient Database to check the name?
@@ -944,6 +821,7 @@ class TI_Database(context: Context?, databaseHelper: SignalDatabase?) : Database
   }
 
   companion object {
+
     private val TAG: String = String.format(TI_Utils.TI_LOG_TAG, tag(TI_Database::class.java))
 
     @set:Throws(Exception::class)

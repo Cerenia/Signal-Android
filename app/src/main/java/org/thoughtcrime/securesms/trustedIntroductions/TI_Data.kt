@@ -1,8 +1,7 @@
 package org.thoughtcrime.securesms.trustedIntroductions
 
-import org.json.JSONException
 import org.json.JSONObject
-import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database
+import org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue
 import org.thoughtcrime.securesms.trustedIntroductions.jobs.TISerializable
 
 // TODO: predictedSecurityNumber only needs to be nullable because I parse the TI_Message somewhat awkwardly... maybe change at some point? Not super critical...
@@ -11,7 +10,7 @@ import org.thoughtcrime.securesms.trustedIntroductions.jobs.TISerializable
 // Service ID == ACI. PNI may be used to query profiles but once a chat is established we always have an ACI.
 data class TI_Data(
   val id: Long?,
-  val state: TI_Database.State,
+  val state: TI_DatabaseGlue.Companion.State,
   val introducerServiceId: String?,
   val introduceeServiceId: String,
   val introduceeName: String?,
@@ -56,7 +55,7 @@ data class TI_Data(
       } else {
         null
       }
-      val state = TI_Database.State.forState(serialized.getInt("state"))
+      val state = TI_DatabaseGlue.Companion.State.forState(serialized.getInt("state"))
       val introducerServiceId: String? = if (serialized.has("introducerServiceId")) {
         serialized.getString("introducerServiceId")
       } else {

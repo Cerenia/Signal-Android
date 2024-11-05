@@ -12,6 +12,7 @@ import org.thoughtcrime.securesms.database.SignalDatabase
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils
 import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database
+import org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue
 import org.whispersystems.signalservice.api.util.Preconditions
 import java.util.Objects
 
@@ -112,8 +113,7 @@ class ManageViewModel(
     iterateAndModify(introductionId, object : Modify {
       override fun modifyIntroductionItem(introductionItem: Pair<TI_Data, IntroducerInformation>): Pair<TI_Data, IntroducerInformation> {
         val oldIntroduction = introductionItem.first
-        val newAcceptState = if (SignalDatabase.tiDatabase.isRecipientUnknown(oldIntroduction.introduceeServiceId))
-          TI_Database.State.ACCEPTED_UNKNOWN else TI_Database.State.ACCEPTED
+        val newAcceptState = TI_DatabaseGlue.userToggledAccepted(oldIntroduction)
 
         val newIntroduction = TI_Data(
           oldIntroduction.id, newAcceptState, oldIntroduction.introducerServiceId,
@@ -138,8 +138,7 @@ class ManageViewModel(
     iterateAndModify(introductionId, object : Modify {
       override fun modifyIntroductionItem(introductionItem: Pair<TI_Data, IntroducerInformation>): Pair<TI_Data, IntroducerInformation> {
         val oldIntroduction = introductionItem.first
-        val newRejectedState = if (SignalDatabase.tiDatabase.isRecipientUnknown(oldIntroduction.introduceeServiceId))
-          TI_Database.State.REJECTED_UNKNOWN else TI_Database.State.REJECTED
+        val newRejectedState = TI_DatabaseGlue.userToggledRejected(oldIntroduction)
 
         val newIntroduction = TI_Data(
           oldIntroduction.id, newRejectedState, oldIntroduction.introducerServiceId,
