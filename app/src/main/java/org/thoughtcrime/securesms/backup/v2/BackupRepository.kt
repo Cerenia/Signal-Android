@@ -145,6 +145,11 @@ object BackupRepository {
     }
   }
 
+  @JvmStatic
+  fun skipMediaRestore() {
+    // TODO [backups] -- Clear the error as necessary
+  }
+
   /**
    * Triggers backup id reservation. As documented, this is safe to perform multiple times.
    */
