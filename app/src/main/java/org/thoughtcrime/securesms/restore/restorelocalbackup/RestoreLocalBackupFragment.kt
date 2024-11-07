@@ -41,12 +41,12 @@ import java.util.Locale
  * This fragment is used to monitor and manage an in-progress backup restore.
  */
 class RestoreLocalBackupFragment : LoggingFragment(R.layout.fragment_restore_local_backup) {
-  private val navigationViewModel: RestoreViewModel by activityViewModels()
+  private val sharedViewModel: RestoreViewModel by activityViewModels()
   private val restoreLocalBackupViewModel: RestoreLocalBackupViewModel by viewModels(
     factoryProducer = ViewModelFactory.factoryProducer {
-      val fileBackupUri = navigationViewModel.getBackupFileUri()!!
+      val fileBackupUri = sharedViewModel.getBackupFileUri()!!
       // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
-      val tiFileBackupUri = navigationViewModel.getTIBackupFileUri()
+      val tiFileBackupUri = sharedViewModel.getTIBackupFileUri()
       RestoreLocalBackupViewModel(fileBackupUri, tiFileBackupUri)
       // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
     }
@@ -58,7 +58,7 @@ class RestoreLocalBackupFragment : LoggingFragment(R.layout.fragment_restore_loc
     setDebugLogSubmitMultiTapView(binding.verifyHeader)
     Log.i(TAG, "Backup restore.")
 
-    if (navigationViewModel.getBackupFileUri() == null) {
+    if (sharedViewModel.getBackupFileUri() == null) {
       Log.i(TAG, "No backup URI found, must navigate back to choose one.")
       findNavController().navigateUp()
       return
@@ -113,11 +113,7 @@ class RestoreLocalBackupFragment : LoggingFragment(R.layout.fragment_restore_loc
   private fun onBackupCompletedSuccessfully() {
     Log.d(TAG, "onBackupCompletedSuccessfully()")
     val activity = requireActivity() as RestoreActivity
-    navigationViewModel.getNextIntent()?.let {
-      Log.d(TAG, "Launching ${it.component}")
-      activity.startActivity(it)
-    }
-    activity.finishActivitySuccessfully()
+    activity.onBackupCompletedSuccessfully()
   }
 
   override fun onStart() {
