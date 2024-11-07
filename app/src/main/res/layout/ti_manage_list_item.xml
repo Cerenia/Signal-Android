@@ -90,7 +90,6 @@
         app:layout_constraintWidth_max="wrap"
         app:layout_constraintHorizontal_bias="0"
         app:layout_constraintStart_toEndOf="@id/guideline_left"
-        app:layout_constraintEnd_toStartOf="@id/guideline_right"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_chainStyle="spread_inside"
         app:layout_constraintBottom_toTopOf="@id/introducerNumber"
@@ -111,7 +110,6 @@
         app:layout_constraintHorizontal_bias="0"
         app:layout_constraintVertical_chainStyle="spread_inside"
         app:layout_constraintStart_toEndOf="@id/guideline_left"
-        app:layout_constraintEnd_toStartOf="@id/guideline_right"
         app:layout_constraintTop_toBottomOf="@id/introducerName"
         app:layout_constraintBottom_toTopOf="@id/buttonBarrier"
         tools:text="@sample/contacts.json/data/number" />
@@ -129,7 +127,6 @@
         app:iconPadding="0dp"
         app:iconTint="@color/signal_colorOnSurface"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/guideline_right"
         app:layout_constraintHorizontal_bias="0"
         app:layout_constraintStart_toEndOf="@id/guideline_left"
         app:layout_constraintTop_toBottomOf="@id/buttonBarrier"
@@ -151,7 +148,6 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@id/guideline_left"
-        app:layout_constraintEnd_toStartOf="@id/guideline_right"
         />
 
     <androidx.constraintlayout.widget.Guideline
@@ -159,7 +155,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.73" />
+        app:layout_constraintGuide_percent="0.7" />
     <!--The following views are not correctly constraining to the right guideline
     and the previous ones are ellipsizing too soon... I have not yet figured out why and
     am countering with larger margins, but it's not quite clean on orientation change.-->
@@ -177,8 +173,7 @@
         app:layout_constraintWidth_min="wrap"
         app:layout_constraintHorizontal_bias="0"
         app:layout_constraintVertical_chainStyle="spread_inside"
-        app:layout_constraintStart_toEndOf="@id/guideline_right"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@id/guideline_right"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@id/introduceeNumber"
         tools:text="@sample/contacts.json/data/name"/>
@@ -197,8 +192,7 @@
     app:layout_constraintWidth_min="wrap"
     app:layout_constraintHorizontal_bias="0"
     app:layout_constraintVertical_chainStyle="spread_inside"
-    app:layout_constraintStart_toEndOf="@id/guideline_right"
-    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="@id/guideline_right"
     app:layout_constraintTop_toBottomOf="@id/introduceeName"
     app:layout_constraintBottom_toTopOf="@id/buttonBarrier"
     tools:text="@sample/contacts.json/data/number" />
@@ -224,7 +218,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/trust_distrust"
         app:layout_constraintHorizontal_bias="0"
-        app:layout_constraintStart_toStartOf="@+id/guideline_right"
+        app:layout_constraintStart_toStartOf="@id/guideline_right"
         app:layout_constraintTop_toBottomOf="@id/buttonBarrier"
         app:layout_constraintVertical_chainStyle="spread_inside"
         tools:text="Stale" />
@@ -246,7 +240,7 @@
         android:background="@drawable/radio_group_border"
         android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@id/radioGroupBarrier"
+        app:layout_constraintStart_toStartOf="@id/radioGroupBarrier"
         app:layout_constraintTop_toBottomOf="@id/buttonBarrier"
         >
 

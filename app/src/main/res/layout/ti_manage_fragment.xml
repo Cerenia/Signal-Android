@@ -91,11 +91,11 @@
             app:layout_constraintStart_toEndOf="@id/guideline_left"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/guideline_right"
+            app:layout_constraintEnd_toStartOf="@id/guideline_right_header"
             tools:text="From"/>
 
         <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/guideline_right"
+            android:id="@+id/guideline_right_header"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
@@ -115,7 +115,7 @@
             android:textColor="@color/signal_text_primary"
             android:textStyle="bold"
             app:layout_constraintHorizontal_bias="0"
-            app:layout_constraintStart_toEndOf="@id/guideline_right"
+            app:layout_constraintStart_toEndOf="@id/guideline_right_header"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
