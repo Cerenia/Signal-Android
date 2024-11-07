@@ -28,7 +28,6 @@
         app:layout_constraintVertical_chainStyle="spread_inside"
         app:layout_constraintBottom_toTopOf="@id/timestamp_time"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/guideline_left"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="01.01.2001"/>
 
@@ -46,7 +45,6 @@
         app:layout_constraintVertical_chainStyle="spread_inside"
         app:layout_constraintBottom_toTopOf="@id/buttonBarrier"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/guideline_left"
         app:layout_constraintTop_toBottomOf="@id/timestamp_date"
         tools:text="16:32"/>
 
@@ -61,7 +59,6 @@
         app:iconSize="@dimen/exo_media_preview_button_width"
         app:iconTint="@color/signal_colorOnSurface"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/guideline_left"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/buttonBarrier"
@@ -138,13 +135,14 @@
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:src="@drawable/ti_domino_mask_active_64"
-        android:paddingLeft="8dp"
+        android:paddingStart="8dp"
         android:gravity="center"
         android:scaleType="fitCenter"
         android:visibility="gone"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         app:layout_constraintHorizontal_bias="0"
+        app:iconSize="@dimen/webrtc_button_size"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@id/guideline_left"
@@ -156,9 +154,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.7" />
-    <!--The following views are not correctly constraining to the right guideline
-    and the previous ones are ellipsizing too soon... I have not yet figured out why and
-    am countering with larger margins, but it's not quite clean on orientation change.-->
+    <!--The following views are not correctly constraining to the right guideline-->
 
 
     <org.thoughtcrime.securesms.components.FromTextView
@@ -215,10 +211,9 @@
         android:text="@string/ManageIntroductionsListItem__Conflicting"
         android:textAppearance="@style/Signal.Text.BodyMedium"
         android:textColor="@color/signal_text_primary"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/trust_distrust"
         app:layout_constraintHorizontal_bias="0"
         app:layout_constraintStart_toStartOf="@id/guideline_right"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@id/buttonBarrier"
         app:layout_constraintVertical_chainStyle="spread_inside"
         tools:text="Stale" />
