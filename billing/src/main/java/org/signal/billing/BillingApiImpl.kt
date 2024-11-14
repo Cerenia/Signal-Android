@@ -273,6 +273,14 @@ internal class BillingApiImpl(
     }
   }
 
+  private fun Int.toBillingPurchaseState(): BillingPurchaseState {
+    return when (this) {
+      Purchase.PurchaseState.PURCHASED -> BillingPurchaseState.PURCHASED
+      Purchase.PurchaseState.PENDING -> BillingPurchaseState.PENDING
+      else -> BillingPurchaseState.UNSPECIFIED
+    }
+  }
+
   private suspend fun queryProductsInternal(): ProductDetailsResult {
     val productList = listOf(
       QueryProductDetailsParams.Product.newBuilder()
