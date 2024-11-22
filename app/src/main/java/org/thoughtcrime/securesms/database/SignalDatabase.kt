@@ -77,6 +77,7 @@ open class SignalDatabase(private val context: Application, databaseSecret: Data
   val inAppPaymentTable: InAppPaymentTable = InAppPaymentTable(context, this)
   val inAppPaymentSubscriberTable: InAppPaymentSubscriberTable = InAppPaymentSubscriberTable(context, this)
   val chatFoldersTable: ChatFolderTables = ChatFolderTables(context, this)
+  val backupMediaSnapshotTable: BackupMediaSnapshotTable = BackupMediaSnapshotTable(context, this)
   // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
   val tiDatabase: org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue =  org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue.createSingleton(context, this)
   val tiIdentityTable: org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue =  org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue.createSingleton(context, this)
@@ -130,6 +131,7 @@ open class SignalDatabase(private val context: Application, databaseSecret: Data
     executeStatements(db, NotificationProfileDatabase.CREATE_TABLE)
     executeStatements(db, DistributionListTables.CREATE_TABLE)
     executeStatements(db, ChatFolderTables.CREATE_TABLE)
+    db.execSQL(BackupMediaSnapshotTable.CREATE_TABLE)
 
     executeStatements(db, RecipientTable.CREATE_INDEXS)
     executeStatements(db, MessageTable.CREATE_INDEXS)
@@ -574,6 +576,11 @@ open class SignalDatabase(private val context: Application, databaseSecret: Data
     @get:JvmName("chatFolders")
     val chatFolders: ChatFolderTables
       get() = instance!!.chatFoldersTable
+
+    @get:JvmStatic
+    @get:JvmName("backupMediaSnapshots")
+    val backupMediaSnapshots: BackupMediaSnapshotTable
+      get() = instance!!.backupMediaSnapshotTable
 
     // "TI_GLUE: eNT9XAHgq0lZdbQs2nfH start"
     @get:JvmStatic
