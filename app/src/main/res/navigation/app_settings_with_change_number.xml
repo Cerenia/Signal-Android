@@ -276,6 +276,10 @@
         android:name="org.thoughtcrime.securesms.linkdevice.EditDeviceNameFragment" />
 
     <fragment
+        android:id="@+id/editDeviceNameFragment"
+        android:name="org.thoughtcrime.securesms.linkdevice.EditDeviceNameFragment" />
+
+    <fragment
         android:id="@+id/addLinkDeviceFragment"
         android:name="org.thoughtcrime.securesms.linkdevice.AddLinkDeviceFragment"
         android:label="link_device_add_fragment">
