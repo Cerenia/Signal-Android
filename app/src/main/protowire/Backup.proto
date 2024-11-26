@@ -944,7 +944,7 @@ message SessionSwitchoverChatUpdate {
 
 message GroupChangeChatUpdate {
   message Update {
-    // If unset, importers should consider it to be a GenericGroupUpdate with unset updaterAci
+    // Note: group expiration timer changes are represented as ExpirationTimerChatUpdate.
     oneof update {
       GenericGroupUpdate genericGroupUpdate = 1;
       GroupCreationUpdate groupCreationUpdate = 2;
