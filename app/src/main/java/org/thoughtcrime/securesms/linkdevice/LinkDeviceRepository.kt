@@ -405,6 +405,24 @@ object LinkDeviceRepository {
   }
 
   /**
+   * If [createAndUploadArchive] fails to upload an archive, alert the linked device of the failure and if the user will try again
+   */
+  fun sendTransferArchiveError(deviceId: Int, deviceCreatedAt: Long, error: TransferArchiveError) {
+    val archiveErrorResult = SignalNetwork.linkDevice.setTransferArchiveError(
+      destinationDeviceId = deviceId,
+      destinationDeviceCreated = deviceCreatedAt,
+      error = error
+    )
+
+    when (archiveErrorResult) {
+      is NetworkResult.Success -> Log.i(TAG, "[sendTransferArchiveError] Successfully sent transfer archive error.")
+      is NetworkResult.ApplicationError -> throw archiveErrorResult.throwable
+      is NetworkResult.NetworkError -> Log.w(TAG, "[sendTransferArchiveError] Network error when sending transfer archive error.", archiveErrorResult.exception)
+      is NetworkResult.StatusCodeError -> Log.w(TAG, "[sendTransferArchiveError] Status code error when sending transfer archive error.", archiveErrorResult.exception)
+    }
+  }
+
+  /**
    * Changes the name of a linked device and sends a sync message if successful
    */
   fun changeDeviceName(deviceName: String, deviceId: Int): DeviceNameChangeResult {
