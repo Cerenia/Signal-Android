@@ -17,12 +17,12 @@ object ForgetIntroducerDialog {
 
   @JvmStatic
   fun show(context: Context, introductionId: Long, introduceeName: String, introducerName: String, date: Date, f: ForgetIntroducer) {
-    val builder = AlertDialog.Builder(context).setTitle(R.string.ForgetIntroucerDialog__Title)
+    val builder = AlertDialog.Builder(context).setTitle(R.string.ForgetIntroducerDialog__Title)
     // TODO: do we still want to differentiate? or can we get rid of t?
-    val text = context.getString(R.string.ForgetIntroucerDialog__Forget_Introducer_ALL, introducerName, introduceeName, INTRODUCTION_DATE_PATTERN.format(date))
+    val text = context.getString(R.string.ForgetIntroducerDialog__Forget_Introducer_ALL, introducerName, introduceeName, INTRODUCTION_DATE_PATTERN.format(date))
     builder.setMessage(text)
-    builder.setNegativeButton(android.R.string.no) { dialog: DialogInterface, which: Int -> dialog.dismiss() }
-      .setPositiveButton(R.string.ForgetIntroucerDialog__forget) { dialog: DialogInterface, which: Int ->
+    builder.setNegativeButton(android.R.string.cancel) { dialog: DialogInterface, which: Int -> dialog.dismiss() }
+      .setPositiveButton(R.string.ForgetIntroducerDialog__forget) { dialog: DialogInterface, which: Int ->
         dialog.dismiss()
         f.forgetIntroducer(introductionId)
       }

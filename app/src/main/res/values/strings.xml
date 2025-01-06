@@ -8211,7 +8211,7 @@
     <string name="ClearVerificationDialog__Title">Clear Verification?</string>
     <string name="ClearVerificationDialog__Clear_directly_verified">Are you sure you want to clear the QR-verified status of this contact? Restoring this state will necessitate rescanning the QR code on your contact\'s device.</string>
     <string name="ClearVerificationDialog__Clear_introduced">Are you sure you want to clear the introduction of this contact? Restoring this state will necessitate a fresh introduction of this contact by a verified third party.</string>
-    <string name="ClearVerificationDialog__Clear_duplex">Are you sure you want to clear the double verification status of this contact? Restoring this state will necessitate both a rescann of your contact\'s QR code *and* a fresh introduction of this contact by a verified third party. </string>
+    <string name="ClearVerificationDialog__Clear_duplex">Are you sure you want to clear the double verification status of this contact? Restoring this state will necessitate both a rescan of your contact\'s QR code *and* a fresh introduction of this contact by a verified third party.</string>
 
     <!-- ContactsSelectionActivity -->
     <string name="PickContactsForTIActivity_ok">OK</string>
@@ -8260,11 +8260,11 @@
     <string name="ManageIntroductionsListItemHeader__Introducee">Introduced:</string>
     <string name="ManageIntroductionsListItemHeader__Introducer">From:</string>
 
-    <!-- ForgetIntroucerDialog -->
-    <string name="ForgetIntroucerDialog__Title">Erase Introducer:</string>
-    <string name="ForgetIntroucerDialog__Forget_Introducer_RECIPIENT_SPECIFIC">Are you sure that you want to forget that %1$s introduced you to %2$s on the %3$s? This action is not reversible! The introduction will disappear from this screen but will still be listed as an introduction.</string>
-    <string name="ForgetIntroucerDialog__Forget_Introducer_ALL">Are you sure that you want to forget that %1$s introduced you to %2$s on the %3$s? This action is not reversible!</string>
-    <string name="ForgetIntroucerDialog__forget">Erase</string>
+    <!-- ForgetIntroducerDialog -->
+    <string name="ForgetIntroducerDialog__Title">Erase Introducer:</string>
+    <string name="ForgetIntroducerDialog__Forget_Introducer_RECIPIENT_SPECIFIC">Are you sure that you want to forget that %1$s introduced you to %2$s on the %3$s? This action is not reversible! The introduction will disappear from this screen but will still be listed as an introduction.</string>
+    <string name="ForgetIntroducerDialog__Forget_Introducer_ALL">Are you sure that you want to forget that %1$s introduced you to %2$s on the %3$s? This action is not reversible!</string>
+    <string name="ForgetIntroducerDialog__forget">Erase</string>
 
     <!-- ConversationTitleView added states -->
     <string name="ConversationTitleView__manually_verified">Manually Verified</string>
