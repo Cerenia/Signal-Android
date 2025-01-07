@@ -70,7 +70,7 @@ class ManageActivity : PassphraseRequiredActivity() {
     // Initialize navigation titles
     tabTitles[0] = getString(R.string.ManageIntroductionsActivity__Navigation_Tab_new)
     tabTitles[1] = getString(R.string.ManageIntroductionsActivity__Navigation_Tab_library)
-    tabTitles[2] = getString(R.string.ManageIntroductionsActivity__Navigation_Tab_all)
+//    tabTitles[2] = getString(R.string.ManageIntroductionsActivity__Navigation_Tab_all) // todo: No idea why, to remove
 
     val factory = ManageViewModel.Factory(ManageListFragment.FORGOTTEN_INTRODUCER)
     viewModel = ViewModelProvider(this, factory)[ManageViewModel::class.java]
@@ -85,23 +85,29 @@ class ManageActivity : PassphraseRequiredActivity() {
     tabLayout = findViewById(R.id.tab_navigation)
 
     initializeToolbar()
-    initializePager()
+    initializePager(
+      if (intent.extras != null) {
+        intent.extras
+      } else {
+        savedInstanceState
+      }
+    )
 
     window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
   }
 
-  private fun initializePager() {
+  private fun initializePager(savedInstanceState: Bundle?) {
     val adapter = ManagePagerAdapter(this)
     adapter.initializeViewModelOwner(this)
     pager.adapter = adapter
 
     contactFilterView.setHint(R.string.ManageIntroductionsActivity__Filter_hint)
 
-    setActiveTab(null)
-
     TabLayoutMediator(tabLayout, pager) { tab, position ->
       tab.text = tabTitles[position]
     }.attach()
+
+    setActiveTab(savedInstanceState)
   }
 
   override fun onSaveInstanceState(outState: Bundle) {

@@ -14,6 +14,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.padding
+// TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+import androidx.compose.foundation.layout.requiredSize
+// TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -73,6 +76,9 @@ import org.thoughtcrime.securesms.compose.StatusBarColorNestedScrollConnection
 import org.thoughtcrime.securesms.database.model.InAppPaymentSubscriberRecord
 import org.thoughtcrime.securesms.profiles.ProfileName
 import org.thoughtcrime.securesms.recipients.Recipient
+// TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+import org.thoughtcrime.securesms.trustedIntroductions.receive.ManageActivity
+// TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 import org.thoughtcrime.securesms.util.CommunicationActions
 import org.thoughtcrime.securesms.util.SignalE164Util
 import org.thoughtcrime.securesms.util.Util
@@ -313,6 +319,35 @@ private fun AppSettingsContent(
         item {
           Dividers.Default()
         }
+
+// TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+        item {
+          val context = LocalContext.current
+
+          Rows.TextRow(
+            text = {
+              Text("Trusted Introductions")
+            },
+            icon = {
+              Icon(
+                painter = painterResource(R.drawable.ic_trusted_introduction),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.requiredSize(24.dp)
+              )
+            },
+            onClick = {
+              context.startActivity(ManageActivity.createIntent(context, ManageActivity.ActiveTab.LIBRARY))
+            },
+            enabled = isRegisteredAndUpToDate
+          )
+        }
+
+        item {
+          Dividers.Default()
+        }
+// TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
+
 
         item {
           Rows.TextRow(
