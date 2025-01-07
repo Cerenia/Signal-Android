@@ -3,6 +3,7 @@ package org.thoughtcrime.securesms.trustedIntroductions.jobs
 import android.net.Uri
 import org.signal.core.util.logging.Log.e
 import org.signal.core.util.logging.Log.tag
+import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.attachments.Attachment
 import org.thoughtcrime.securesms.attachments.UriAttachment
 import org.thoughtcrime.securesms.database.AttachmentTable
@@ -57,10 +58,10 @@ class TrustedIntroductionSendJob private constructor(introducerRecipientId: Reci
    */
   override fun serialize(): ByteArray? {
     return JsonJobData.Builder()
-        .putString(KEY_INTRODUCER_RECIPIENT_ID, introducerRecipientId.serialize())
-        .putString(KEY_INTRODUCTION_RECIPIENT_ID, introductionRecipientId.serialize())
-        .putLongListAsArray(KEY_INTRODUCEE_IDS, introduceeIds.stream().map { obj: RecipientId -> obj.toLong() }.collect(Collectors.toList()))
-        .build().serialize()
+      .putString(KEY_INTRODUCER_RECIPIENT_ID, introducerRecipientId.serialize())
+      .putString(KEY_INTRODUCTION_RECIPIENT_ID, introductionRecipientId.serialize())
+      .putLongListAsArray(KEY_INTRODUCEE_IDS, introduceeIds.stream().map { obj: RecipientId -> obj.toLong() }.collect(Collectors.toList()))
+      .build().serialize()
   }
 
   /**
@@ -89,9 +90,7 @@ class TrustedIntroductionSendJob private constructor(introducerRecipientId: Reci
     val introductionRecipient = liveIntroductionRecipient.resolve()
     val uri = BlobProvider.getInstance().forData(body.toByteArray(StandardCharsets.UTF_8)).withMimeType(TI_Utils.TI_MIME_TYPE).withFileName(TI_Utils.TI_MESSAGE_FILENAME).createForSingleUseInMemory()
     val attachmentList = getAttachments(uri)
-    // TODO: this is bad v
-    val msgBody = "I would like to introduce some people to you, please navigate to the Trusted Introductions management screen to see the new introductions."
-    // TODO: should extract this ^ to a resource string, with appropriate localization placeholders!
+    val msgBody = context.resources.getQuantityString(R.plurals.TISendJob_message_body, introduceeIds.size)
     val message = OutgoingMessage(
       introductionRecipient,
       msgBody,
