@@ -16,6 +16,7 @@ import org.thoughtcrime.securesms.util.BackupUtil.BackupInfo
 data class RestoreLocalBackupState(
   // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
   val tiBackupUri: Uri? = null,
+  val tiBackupInfo: BackupInfo? = null,
   // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
   val uri: Uri,
   val backupInfo: BackupInfo? = null,

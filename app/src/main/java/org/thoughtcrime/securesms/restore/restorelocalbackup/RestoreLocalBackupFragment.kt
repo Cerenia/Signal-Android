@@ -91,6 +91,15 @@ class RestoreLocalBackupFragment : LoggingFragment(R.layout.fragment_restore_loc
         presentBackupFileInfo(backupSize = it.size, backupTimestamp = it.timestamp)
       }
 
+      // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+      fragmentState.tiBackupInfo?.let {
+        presentTIBackupFileInfo(backupSize = it.size, backupTimestamp = it.timestamp)
+      } ?: run {
+        binding.tiBackupSizeText.text = getString(R.string.RegistrationActivity_ti_backup_missing)
+        binding.tiBackupCreatedText.text = ""
+      }
+      // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
+
       if (fragmentState.restoreInProgress) {
         presentRestoreProgress(fragmentState.backupProgressCount)
       } else {
@@ -228,6 +237,18 @@ class RestoreLocalBackupFragment : LoggingFragment(R.layout.fragment_restore_loc
       binding.backupCreatedText.text = getString(R.string.RegistrationActivity_backup_timestamp_s, DateUtils.getExtendedRelativeTimeSpanString(requireContext(), Locale.getDefault(), backupTimestamp))
     }
   }
+
+  // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+  private fun presentTIBackupFileInfo(backupSize: Long, backupTimestamp: Long) {
+    if (backupSize > 0) {
+      binding.tiBackupSizeText.text = getString(R.string.RegistrationActivity_ti_backup_size_s, Util.getPrettyFileSize(backupSize))
+    }
+
+    if (backupTimestamp > 0) {
+      binding.tiBackupCreatedText.text = getString(R.string.RegistrationActivity_ti_backup_timestamp_s, DateUtils.getExtendedRelativeTimeSpanString(requireContext(), Locale.getDefault(), backupTimestamp))
+    }
+  }
+  // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 
   companion object {
     private val TAG = Log.tag(RestoreLocalBackupFragment::class.java)

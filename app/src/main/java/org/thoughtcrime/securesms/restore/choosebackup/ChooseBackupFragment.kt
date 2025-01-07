@@ -26,10 +26,12 @@ import org.thoughtcrime.securesms.databinding.FragmentChooseBackupBinding
 import org.thoughtcrime.securesms.keyvalue.SignalStore
 import org.thoughtcrime.securesms.registration.fragments.RegistrationViewDelegate
 import org.thoughtcrime.securesms.restore.RestoreViewModel
-import org.thoughtcrime.securesms.trustedIntroductions.backup.NowChooseNormalBackupDialogue
-// TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
-import org.thoughtcrime.securesms.trustedIntroductions.glue.ChooseLocalTIBackupContract
 import org.thoughtcrime.securesms.util.navigation.safeNavigate
+// TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+import android.provider.OpenableColumns
+import org.thoughtcrime.securesms.trustedIntroductions.backup.NowChooseNormalBackupDialogue
+import org.thoughtcrime.securesms.trustedIntroductions.glue.ChooseLocalTIBackupContract
+import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.TI_BACKUP_NAME_PREFIX
 // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 
 /**
@@ -39,16 +41,39 @@ class ChooseBackupFragment : LoggingFragment(R.layout.fragment_choose_backup) {
   private val sharedViewModel by activityViewModels<RestoreViewModel>()
   private val binding: FragmentChooseBackupBinding by ViewBinderDelegate(FragmentChooseBackupBinding::bind)
 
+  // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+  private fun getFileNameFromUri(uri: Uri): String {
+    var fileName = ""
+    val cursor = context?.contentResolver?.query(uri, null, null, null, null)
+    cursor?.use {
+      val nameIndex = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+      if (nameIndex != -1 && it.moveToFirst()) {
+        fileName = it.getString(nameIndex)
+      }
+    }
+    return fileName
+  }
+  // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
+
   private val pickMedia = registerForActivityResult(BackupFileContract()) {
     if (it != null) {
-      onUserChoseBackupFile(it)
+      // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+      val fileName = getFileNameFromUri(it)
+      if (fileName.startsWith(TI_BACKUP_NAME_PREFIX, ignoreCase = true)) {
+        Toast.makeText(context, "Backup file starts with the TI prefix. Select the normal backup instead.", Toast.LENGTH_SHORT).show()
+      } else {
+        // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
+        onUserChoseBackupFile(it)
+        // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+      }
+      // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
     } else {
       Log.i(TAG, "Null URI returned for backup file selection.")
     }
   }
 
   // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
-  private val pickTIMedia = registerForActivityResult(ChooseLocalTIBackupContract()){
+  private val pickTIMedia = registerForActivityResult(ChooseLocalTIBackupContract()) {
     if (it != null) {
       onUserChoseTIBackupFile(it)
     } else {

@@ -38,6 +38,10 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.UUID;
 
+// TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.TI_BACKUP_FILENAME_FORMAT;
+// TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
+
 /**
  * Backup Job for installs requiring Scoped Storage.
  *
@@ -118,7 +122,7 @@ public final class LocalBackupJobApi29 extends BaseJob {
       }
 
       // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
-      String       fileNameTI        = String.format("ti-signal-%s.backup", timestamp);
+      String       fileNameTI        = String.format(TI_BACKUP_FILENAME_FORMAT, timestamp);
       if (backupDirectory.findFile(fileNameTI) != null) {
         throw new IOException("Trusted Introductions backup file already exists!");
       }
