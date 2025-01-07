@@ -37,6 +37,10 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+// TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+import static org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.TI_BACKUP_FILENAME_FORMAT;
+// TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
+
 public final class LocalBackupJob extends BaseJob {
 
   public static final String KEY = "LocalBackupJob";
@@ -127,7 +131,7 @@ public final class LocalBackupJob extends BaseJob {
 
       File tempFile = File.createTempFile(TEMP_BACKUP_FILE_PREFIX, TEMP_BACKUP_FILE_SUFFIX, backupDirectory);
       // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
-      String tiFileName = String.format("ti-signal-%s.backup", timestamp);
+      String tiFileName = String.format(TI_BACKUP_FILENAME_FORMAT, timestamp);
       File   tiBackupFile      = new File(backupDirectory, tiFileName);
       if (tiBackupFile.exists()) {
         throw new IOException("TI Backup file already exists?");

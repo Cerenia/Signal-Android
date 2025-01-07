@@ -26,7 +26,8 @@ import org.thoughtcrime.securesms.restore.RestoreRepository
  */
 // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
 class RestoreLocalBackupViewModel(fileBackupUri: Uri, fileBackupUriTI: Uri?) : ViewModel() {
-  private val store = MutableStateFlow(RestoreLocalBackupState(tiBackupUri = fileBackupUriTI, fileBackupUri))
+  private val store = MutableStateFlow(RestoreLocalBackupState(tiBackupUri = fileBackupUriTI, tiBackupInfo = null, fileBackupUri))
+
   // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
   val uiState = store.asLiveData()
 
@@ -36,8 +37,18 @@ class RestoreLocalBackupViewModel(fileBackupUri: Uri, fileBackupUriTI: Uri?) : V
 
   fun prepareRestore(context: Context) {
     val backupFileUri = store.value.uri
+    // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+    val tiBackupFileUri = store.value.tiBackupUri
+    // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
     viewModelScope.launch {
       val result: RestoreRepository.BackupInfoResult = RestoreRepository.getLocalBackupFromUri(context, backupFileUri)
+      // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+      val tiResult: RestoreRepository.BackupInfoResult? = if (tiBackupFileUri != null) {
+        RestoreRepository.getLocalBackupFromUri(context, tiBackupFileUri)
+      } else {
+        null
+      }
+      // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 
       if (result.failure && result.failureCause != null) {
         store.update {
@@ -51,9 +62,20 @@ class RestoreLocalBackupViewModel(fileBackupUri: Uri, fileBackupUriTI: Uri?) : V
       }
 
       store.update {
-        it.copy(
-          backupInfo = result.backupInfo
-        )
+        // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+        if (tiResult != null && !tiResult.failure) {
+          it.copy(
+            backupInfo = result.backupInfo,
+            tiBackupInfo = tiResult.backupInfo
+          )
+        } else {
+        // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
+          it.copy(
+            backupInfo = result.backupInfo
+          )
+          // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+        }
+        // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
       }
     }
   }

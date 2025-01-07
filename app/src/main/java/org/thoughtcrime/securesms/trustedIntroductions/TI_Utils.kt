@@ -59,6 +59,9 @@ object TI_Utils {
   // 1: major changes, 2: feature/ui changes , 3. bugs | stability fixes
   const val TI_APK_VERSION: String = "2.1.2"
 
+  const val TI_BACKUP_FILENAME_FORMAT: String = "ti_signal-%s.backup"
+  const val TI_BACKUP_NAME_PREFIX: String = "ti_signal"
+
   // text is the interim solution. In the future a custom mimetype should be used such that we can release a
   // custom interpreter that can be used by people that do not have the TI_extension installed.
   const val TI_MIME_TYPE: String = "text/plain"

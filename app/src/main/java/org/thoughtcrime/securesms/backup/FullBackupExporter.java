@@ -186,7 +186,6 @@ public class FullBackupExporter extends FullBackupBase {
       List<String> tables = exportSchema(input, outputStream, false);
       Log.w(TAG, "Exporting TI Schema...");
       List<String> ti_tables = exportSchema(input, outputStreamTI, true);
-      // todo - fix backup timestamp for ti file
       // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 
       count += tables.size() * TABLE_RECORD_COUNT_MULTIPLIER;
