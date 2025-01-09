@@ -331,8 +331,6 @@ private fun AppSettingsContent(
           Dividers.Default()
         }
 // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
-
-
         item {
           Rows.TextRow(
             text = stringResource(R.string.preferences__appearance),

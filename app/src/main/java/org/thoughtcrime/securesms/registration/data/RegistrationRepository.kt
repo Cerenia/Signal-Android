@@ -420,7 +420,7 @@ object RegistrationRepository {
         registrationLock = registrationLock,
         unidentifiedAccessKey = unidentifiedAccessKey,
         unrestrictedUnidentifiedAccess = universalUnidentifiedAccess,
-        capabilities = AppCapabilities.getCapabilities(true, RemoteConfig.storageServiceEncryptionV2),
+        capabilities = AppCapabilities.getCapabilities(true),
         discoverableByPhoneNumber = SignalStore.phoneNumberPrivacy.phoneNumberDiscoverabilityMode == PhoneNumberPrivacyValues.PhoneNumberDiscoverabilityMode.DISCOVERABLE,
         name = null,
         pniRegistrationId = registrationData.pniRegistrationId,

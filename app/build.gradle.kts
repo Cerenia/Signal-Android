@@ -7,12 +7,11 @@ import java.util.Date
 import java.util.Properties
 
 plugins {
-  id("com.android.application")
-  id("kotlin-android")
+  alias(libs.plugins.android.application)
+  alias(libs.plugins.jetbrains.kotlin.android)
+  alias(libs.plugins.ktlint)
+  alias(libs.plugins.compose.compiler)
   id("androidx.navigation.safeargs")
-  id("org.jlleitschuh.gradle.ktlint")
-  id("org.jetbrains.kotlin.android")
-  id("app.cash.exhaustive")
   id("kotlin-parcelize")
   id("com.squareup.wire")
   id("translations")
@@ -21,8 +20,8 @@ plugins {
 
 apply(from = "static-ips.gradle.kts")
 
-val canonicalVersionCode = 1496
-val canonicalVersionName = "7.28.4"
+val canonicalVersionCode = 1498
+val canonicalVersionName = "7.29.1"
 val currentHotfixVersion = 0
 val maxHotfixVersions = 100
 
@@ -590,9 +589,7 @@ dependencies {
   }
 
   testImplementation(testLibs.junit.junit)
-  testImplementation(testLibs.assertj.core)
-  testImplementation(testLibs.mockito.core)
-  testImplementation(testLibs.mockito.kotlin)
+  testImplementation(testLibs.assertk)
   testImplementation(testLibs.androidx.test.core)
   testImplementation(testLibs.robolectric.robolectric) {
     exclude(group = "com.google.protobuf", module = "protobuf-java")

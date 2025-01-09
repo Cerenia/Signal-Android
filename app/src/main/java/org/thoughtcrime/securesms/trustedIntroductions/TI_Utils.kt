@@ -297,25 +297,30 @@ object TI_Utils {
 
     // Now do the same for all introducees and wrap them in an array
     val introduceeData = JSONArray()
-    recipients.forEach { (recipientId: RecipientId?, recipientRecord: RecipientRecord?) ->
+    recipients.forEach { (recipientId: RecipientId, recipientRecord: RecipientRecord) ->
       try {
         val introducee = JSONObject()
         introducee.put(NAME_J, getSomeNonNullName(recipientId, recipientRecord))
         val introduceeE164 = recipientRecord.e164 ?: UNDISCLOSED
         introducee.put(NUMBER_J, introduceeE164)
-        val introduceeServiceId = recipientRecord.aci ?: throw AssertionError(TAG + "Introducee service ID may not be null.")
+        val introduceeServiceId = recipientRecord.aci ?: throw AssertionError("$TAG Introducee service ID may not be null.")
         introducee.put(SERVICE_ID_J, introduceeServiceId)
-        val formatedSafetyNR: String
+
         try {
           val introduceeIdentityKey = getIdentityKey(recipientId)
           introducee.put(IDENTITY_J, encodeIdentityKey(introduceeIdentityKey))
-          formatedSafetyNR = predictFingerprint(introductionRecipientId, recipientId, introduceeServiceId.toString(), introduceeIdentityKey)
+          val formatedSafetyNR = predictFingerprint(
+            introductionRecipientId,
+            recipientId,
+            introduceeServiceId.toString(),
+            introduceeIdentityKey
+          )
+          introducee.put(PREDICTED_FINGERPRINT_J, formatedSafetyNR)
+          introduceeData.put(introducee)
+          data.put(INTRODUCEE_DATA_J, introduceeData)
         } catch (e: MissingIdentityException) {
           throw AssertionError("$TAG Unexpected missing identities when building TI message body!\n ${e.stackTraceToString()}")
         }
-        introducee.put(PREDICTED_FINGERPRINT_J, formatedSafetyNR)
-        introduceeData.put(introducee)
-        data.put(INTRODUCEE_DATA_J, introduceeData)
       } catch (e: JSONException) {
         throw AssertionError("$TAG Json Error occurred while building TI_message body.\n ${e.stackTraceToString()}")
       }
@@ -324,7 +329,8 @@ object TI_Utils {
   }
 
 
-  private fun getSomeNonNullName(id: RecipientId, record: RecipientRecord): String {
+  private fun getSomeNonNullName(id: RecipientId?, record: RecipientRecord?): String {
+    if (id == null || record == null) return "¯\\_(ツ)_/¯"
     var name = record.systemDisplayName
     if (!name.isNullOrEmpty()) {
       return name
@@ -459,11 +465,11 @@ object TI_Utils {
       val records = getRecordsForReceivingTI(recipientServiceIds)
       val knownIds = ArrayList<String>()
       if (records.isNotEmpty()) {
-        records.forEach { (recipientID: RecipientId?, recipientRecord: RecipientRecord?) ->
+        records.forEach { (recipientID: RecipientId, recipientRecord: RecipientRecord) ->
           val introduceeServiceId = recipientRecord.aci.toString()
           knownIds.add(introduceeServiceId)
           val name = getSomeNonNullName(recipientID, recipientRecord)
-          var phone = if (UNDISCLOSED == recipientRecord.e164) UNDISCLOSED else recipientRecord.e164
+          var phone = if (UNDISCLOSED == recipientRecord.e164.toString()) UNDISCLOSED else recipientRecord.e164
           // Check if a phone number is included in the introduction data. This is equivalent to forwarding a contact thus it doesn't make sense to obfuscate the number on purpose.
           val numberPresentInJson = getPhone(introducees, introduceeServiceId)
           phone = if (numberPresentInJson == "missing") phone else numberPresentInJson
