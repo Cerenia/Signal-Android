@@ -1,8 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--TI_GLUE: eNT9XAHgq0lZdbQs2nfH start-->
-<!--TI_GLUE: eNT9XAHgq0lZdbQs2nfH end-->
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -29,53 +25,50 @@
         app:layout_constraintGuide_begin="0dp"
         app:layout_constraintGuide_percent="0.7" />
 
-    <org.thoughtcrime.securesms.components.FromTextView
-        android:id="@+id/timestamp_date"
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_third_column_end"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.99" />
+
+    <!-- First Column -->
+    <org.thoughtcrime.securesms.components.FromTextView
+        android:id="@+id/timestamp_date"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:ellipsize="marquee"
+        android:singleLine="true"
         android:textAppearance="@style/Signal.Text.BodyMedium"
         android:textColor="@color/signal_text_primary"
-        android:maxLines="1"
+        app:layout_constraintEnd_toStartOf="@id/guideline_left"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:text="01.01.2001"/>
+        tools:text="01.01.2001" />
 
     <org.thoughtcrime.securesms.components.FromTextView
         android:id="@+id/timestamp_time"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:textAppearance="@style/Signal.Text.BodyMedium"
+        android:ellipsize="marquee"
+        android:singleLine="true"
+        android:textAppearance="@style/Signal.Text.BodyLarge"
         android:textColor="@color/signal_text_primary"
-        android:maxLines="1"
+        app:layout_constraintEnd_toStartOf="@id/guideline_left"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/timestamp_date"
-        app:layout_constraintBottom_toTopOf="@id/buttonBarrier"
-        tools:text="16:32"/>
+        tools:text="16:32" />
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/delete"
-        style="@style/Signal.Widget.Button.Small.Primary"
-        android:layout_width="88dp"
-        android:layout_height="61dp"
-        app:icon="@drawable/ic_ti_trash_24"
-        app:iconGravity="textStart"
-        app:iconPadding="0dp"
-        app:iconSize="@dimen/exo_media_preview_button_width"
-        app:iconTint="@color/signal_colorOnSurface"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/buttonBarrier" />
-
-
+    <!-- Second Column -->
     <org.thoughtcrime.securesms.components.FromTextView
         android:id="@+id/introducerName"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:drawablePadding="4dp"
+        android:ellipsize="marquee"
+        android:singleLine="true"
         android:textAppearance="@style/Signal.Text.BodyLarge"
         android:textColor="@color/signal_text_primary"
-        android:singleLine="true"
-        android:ellipsize="marquee"
-        app:layout_constraintWidth_max="wrap"
+        app:layout_constraintEnd_toStartOf="@+id/trust_distrust"
         app:layout_constraintStart_toEndOf="@id/guideline_left"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="@sample/contacts.json/data/name" />
@@ -84,138 +77,121 @@
         android:id="@+id/introducerNumber"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:textAppearance="@style/Signal.Text.BodyMedium"
-        android:textColor="@color/signal_text_secondary"
-        android:singleLine="true"
         android:ellipsize="marquee"
-        app:layout_constraintWidth_max="wrap"
+        android:singleLine="true"
+        android:textAppearance="@style/Signal.Text.BodyLarge"
+        android:textColor="@color/signal_text_primary"
+        app:layout_constraintEnd_toStartOf="@+id/trust_distrust"
         app:layout_constraintStart_toEndOf="@id/guideline_left"
         app:layout_constraintTop_toBottomOf="@id/introducerName"
-        app:layout_constraintBottom_toTopOf="@id/buttonBarrier"
         tools:text="@sample/contacts.json/data/number" />
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/mask"
-        style="@style/Signal.Widget.Button.Small.Primary"
-        android:layout_width="100dp"
-        android:layout_height="60dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        app:icon="@drawable/ti_domino_mask_24px"
-        app:iconSize="@dimen/webrtc_button_size"
-        app:iconGravity="textStart"
-        app:iconPadding="0dp"
-        app:iconTint="@color/signal_colorOnSurface"
-        app:layout_constraintStart_toEndOf="@id/guideline_left"
-        app:layout_constraintTop_toBottomOf="@id/buttonBarrier" />
-
-    <ImageView
-        android:id="@+id/maskedImage"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:src="@drawable/ti_domino_mask_active_64"
-        android:paddingStart="8dp"
-        android:gravity="center"
-        android:scaleType="fitCenter"
-        android:visibility="gone"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:scaleX="1.5"
-        android:scaleY="1.5"
-        app:layout_constraintHorizontal_bias="0"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toEndOf="@id/guideline_left"
-        app:layout_constraintBottom_toBottomOf="parent"
-        />
-
-    <!--The following views are not correctly constraining to the right guideline-->
-
-
+    <!-- Third Column -->
     <org.thoughtcrime.securesms.components.FromTextView
         android:id="@+id/introduceeName"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:ellipsize="marquee"
+        android:singleLine="true"
         android:textAppearance="@style/Signal.Text.BodyLarge"
         android:textColor="@color/signal_text_primary"
-        android:ellipsize="marquee"
-        app:layout_constraintVertical_chainStyle="spread_inside"
-        app:layout_constraintStart_toStartOf="@id/guideline_right"
+        app:layout_constraintEnd_toEndOf="@id/guideline_third_column_end"
+        app:layout_constraintStart_toStartOf="@+id/trust_distrust"
         app:layout_constraintTop_toTopOf="parent"
-        tools:text="@sample/contacts.json/data/name"/>
-    <!--android:singleLine="true"-->
+        tools:text="@sample/contacts.json/data/name" />
 
-<org.thoughtcrime.securesms.components.FromTextView
-    android:id="@+id/introduceeNumber"
-    android:layout_width="0dp"
-    android:layout_height="wrap_content"
-    android:textAppearance="@style/Signal.Text.BodyMedium"
-    android:textColor="@color/signal_text_secondary"
-    android:ellipsize="marquee"
-    app:layout_constraintVertical_chainStyle="spread_inside"
-    app:layout_constraintStart_toStartOf="@id/guideline_right"
-    app:layout_constraintTop_toBottomOf="@id/introduceeName"
-    app:layout_constraintBottom_toTopOf="@id/buttonBarrier"
-    tools:text="@sample/contacts.json/data/number" />
+    <org.thoughtcrime.securesms.components.FromTextView
+        android:id="@+id/introduceeNumber"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:ellipsize="marquee"
+        android:singleLine="true"
+        android:textAppearance="@style/Signal.Text.BodyLarge"
+        android:textColor="@color/signal_text_primary"
+        app:layout_constraintEnd_toEndOf="@id/guideline_third_column_end"
+        app:layout_constraintStart_toStartOf="@+id/trust_distrust"
+        app:layout_constraintTop_toBottomOf="@id/introduceeName"
+        tools:text="@sample/contacts.json/data/number" />
 
-<androidx.constraintlayout.widget.Barrier
-    android:id="@+id/buttonBarrier"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    app:barrierDirection="bottom"
-    app:constraint_referenced_ids="introducerNumber, introducerNumber, timestamp_time"
-    />
+    <!-- Horizontal Barrier -->
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/buttonBarrier"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:barrierDirection="bottom"
+        app:constraint_referenced_ids="timestamp_time,introducerNumber,introduceeNumber" />
+
+    <!-- Buttons -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/delete"
+        style="@style/Signal.Widget.Button.Small.Primary"
+        android:layout_width="wrap_content"
+        android:layout_height="62dp"
+        app:icon="@drawable/ic_ti_trash_24"
+        app:iconGravity="textStart"
+        app:iconPadding="0dp"
+        app:iconSize="@dimen/exo_media_preview_button_width"
+        app:iconTint="@color/signal_colorOnSurface"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/guideline_left"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/radio_group_label" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/mask"
+        style="@style/Signal.Widget.Button.Small.Primary"
+        android:layout_width="wrap_content"
+        android:layout_height="62dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:orientation="horizontal"
+        app:icon="@drawable/ti_domino_mask_24px"
+        app:iconGravity="textStart"
+        app:iconPadding="0dp"
+        app:iconSize="@dimen/webrtc_button_size"
+        app:iconTint="@color/signal_colorOnSurface"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@id/guideline_left"
+        app:layout_constraintTop_toBottomOf="@+id/radio_group_label" />
 
     <org.thoughtcrime.securesms.components.FromTextView
         android:id="@+id/radio_group_label"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="@string/ManageIntroductionsListItem__Conflicting"
-        android:textAppearance="@style/Signal.Text.BodyMedium"
+        android:ellipsize="marquee"
+        android:singleLine="true"
+        android:textAppearance="@style/Signal.Text.BodyLarge"
         android:textColor="@color/signal_text_primary"
-        app:layout_constraintStart_toStartOf="@id/guideline_right"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/guideline_third_column_end"
+        app:layout_constraintStart_toStartOf="@+id/trust_distrust"
         app:layout_constraintTop_toBottomOf="@id/buttonBarrier"
-        tools:text="Stale" />
+        tools:text="Trust?" />
 
-    <androidx.constraintlayout.widget.Barrier
-        android:id="@+id/radioGroupBarrier"
+    <RadioGroup
+        android:id="@+id/trust_distrust"
+        style="@style/Signal.Widget.Button.Small.Primary"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:barrierDirection="end"
-        app:constraint_referenced_ids="guideline_right, radio_group_label"
-        />
+        android:layout_height="62dp"
+        android:background="@drawable/radio_group_border"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/guideline_right"
+        app:layout_constraintTop_toBottomOf="@id/radio_group_label">
 
+        <RadioButton
+            android:id="@+id/accept"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:button="@drawable/ic_ti_selector_accepted_24" />
 
-        <RadioGroup
-            android:id="@+id/trust_distrust"
-            style="@style/Signal.Widget.Button.Small.Primary"
-            android:layout_width="100dp"
-            android:layout_height="51dp"
-            android:background="@drawable/radio_group_border"
-            android:orientation="horizontal"
-            app:layout_constraintStart_toEndOf="@id/radioGroupBarrier"
-            app:layout_constraintTop_toBottomOf="@id/buttonBarrier"
-            app:layout_constraintBottom_toBottomOf="parent"
-    >
+        <RadioButton
+            android:id="@+id/reject"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:button="@drawable/ic_ti_selector_rejected_24" />
 
-    <RadioButton
-        android:id="@+id/accept"
-        android:layout_width="38dp"
-        android:layout_height="40dp"
-        android:layout_marginStart="19dp"
-        android:button="@drawable/ic_ti_selector_accepted_24"
-        android:scaleX="1.5"
-        android:scaleY="1.5" />
-
-    <RadioButton
-        android:id="@+id/reject"
-        android:layout_width="38dp"
-        android:layout_height="40dp"
-        android:button="@drawable/ic_ti_selector_rejected_24"
-        android:scaleX="1.5"
-        android:scaleY="1.5" />
-</RadioGroup>
+    </RadioGroup>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
