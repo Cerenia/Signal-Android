@@ -110,7 +110,7 @@ class ManageAdapter(
     private val radioGroup: RadioGroup = itemView.findViewById(R.id.trust_distrust)
     private val radioGroupLabel: TextView = itemView.findViewById(R.id.radio_group_label)
     private val guideline: Guideline = itemView.findViewById(R.id.guideline_right)
-    private val mask: ImageView = itemView.findViewById(R.id.maskedImage)
+//    private val mask: ImageView = itemView.findViewById(R.id.maskedImage)
     private val maskIntroducer: MaterialButton = itemView.findViewById(R.id.mask)
     private val delete: MaterialButton = itemView.findViewById(R.id.delete)
 
@@ -215,13 +215,17 @@ class ManageAdapter(
     private fun setForgetIntroducerComponentVisibility() {
       val introducerServiceId = requireNotNull(data?.introducerServiceId)
       if (introducerServiceId == TI_Database.UNKNOWN_INTRODUCER_SERVICE_ID) {
-        maskIntroducer.visibility = View.GONE
+//        maskIntroducer.visibility = View.GONE
         introducerNumber.visibility = View.GONE
         introducerName.visibility = View.GONE
-        mask.visibility = View.VISIBLE
+//        mask.visibility = View.VISIBLE
+        maskIntroducer.setIconResource(R.drawable.ti_domino_mask_active_48)
+        maskIntroducer.setEnabled(false)
       } else {
-        maskIntroducer.visibility = View.VISIBLE
-        mask.visibility = View.GONE
+//        maskIntroducer.visibility = View.VISIBLE
+        maskIntroducer.setIconResource(R.drawable.ti_domino_mask_24px)
+        maskIntroducer.setEnabled(true)
+//        mask.visibility = View.GONE
       }
     }
 
