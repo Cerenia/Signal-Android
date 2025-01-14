@@ -3498,10 +3498,10 @@
         <item>Xüsusiyyətlə əlaqəli sorğu</item>
         <item>Sual</item>
         <item>Rəy</item>
-        <item>Payments (MobileCoin)</item>
-        <item>Donations &amp; Badges</item>
-        <item>Signal Android Backup</item>
-        <item>Other</item>
+        <item>Ödənişlər (MobileCoin)</item>
+        <item>İanələr və Nişanlar</item>
+        <item>Signal Android Ehtiyat nüsxəsi</item>
+        <item>Digər</item>
     </string-array>
     <!-- Subject of email when submitting debug logs to help debug slow notifications -->
     <string name="DebugLogsPromptDialogFragment__signal_android_support_request">Signal Android sazlama jurnalının göndərilməsi</string>
@@ -6445,7 +6445,7 @@
     <!-- Displayed when copying group story reply text to clipboard -->
     <string name="StoryGroupReplyFragment__copied_to_clipboard">Lövhəyə kopyalandı</string>
     <!-- Displayed in story caption when content is longer than 5 lines -->
-    <string name="StoryViewerPageFragment__read_more">Read more</string>
+    <string name="StoryViewerPageFragment__read_more">Daha çox oxu</string>
     <!-- Displayed in toast after sending a direct reply -->
     <string name="StoryDirectReplyDialogFragment__sending_reply">Cavab göndərilir…</string>
     <!-- Displayed in the viewer when a story is no longer available -->
@@ -7261,7 +7261,7 @@
     <!-- Displayed whenever a name change, revocation, etc, fails. -->
     <string name="CallLinkDetailsFragment__couldnt_save_changes">Dəyişiklikləri yaddaşda saxlamaq mümkün olmadı. Şəbəkə bağlantınızı yoxlayıb yenidən cəhd edin.</string>
     <!-- Displayed whenever an admin update fails with a 409. -->
-    <string name="CallLinkDetailsFragment__couldnt_update_admin_approval">Couldn\'t update admin approval settings. Check the call link is not currently in use.</string>
+    <string name="CallLinkDetailsFragment__couldnt_update_admin_approval">Admin təsdiqi parametrlərini yeniləmək alınmadı. Zəng keçidinin hazırda məşğul olub-olmadığını yoxlayın.</string>
     <!-- Displayed when the call link is in use when the user tries to delete it -->
     <string name="CallLinkDetailsFragment__couldnt_delete_call_link">Hazırda istifadədə olduğu üçünn zəng keçidini silmək mümkün olmadıd.</string>
     <!-- Displayed as title in dialog when user attempts to delete the link -->
@@ -7677,7 +7677,7 @@
     <!-- Displayed on the title bar -->
     <string name="RemoteBackupsSettingsFragment__signal_backups">Signal ehtiyat nüsxələri</string>
     <!-- Text shown in a popup indicating that the user needs to enter their screen lock -->
-    <string name="RemoteBackupsSettingsFragment__authenticatino_required">Authentication required</string>
+    <string name="RemoteBackupsSettingsFragment__authenticatino_required">Autentifikasiya tələb olunur</string>
     <!-- Row label to launch payment history screen -->
     <string name="RemoteBackupsSettingsFragment__payment_history">Ödəniş tarixçəsi</string>
     <!-- Section header for backup information -->

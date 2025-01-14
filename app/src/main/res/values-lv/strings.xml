@@ -3597,10 +3597,10 @@
         <item>Jaunas funkcijas pieprasījums</item>
         <item>Jautājums</item>
         <item>Atsauksme</item>
-        <item>Payments (MobileCoin)</item>
-        <item>Donations &amp; Badges</item>
-        <item>Signal Android Backup</item>
-        <item>Other</item>
+        <item>Maksājumi (MobileCoin)</item>
+        <item>Ziedojumi un nozīmītes</item>
+        <item>Signal Android rezerves kopija</item>
+        <item>Cits</item>
     </string-array>
     <!-- Subject of email when submitting debug logs to help debug slow notifications -->
     <string name="DebugLogsPromptDialogFragment__signal_android_support_request">Signal Android atkļūdošanas žurnāla nosūtīšana</string>
@@ -6585,7 +6585,7 @@
     <!-- Displayed when copying group story reply text to clipboard -->
     <string name="StoryGroupReplyFragment__copied_to_clipboard">Iekopēts starpliktuvē</string>
     <!-- Displayed in story caption when content is longer than 5 lines -->
-    <string name="StoryViewerPageFragment__read_more">Read more</string>
+    <string name="StoryViewerPageFragment__read_more">Lasīt vairāk</string>
     <!-- Displayed in toast after sending a direct reply -->
     <string name="StoryDirectReplyDialogFragment__sending_reply">Sūta atbildi…</string>
     <!-- Displayed in the viewer when a story is no longer available -->
@@ -7418,7 +7418,7 @@
     <!-- Displayed whenever a name change, revocation, etc, fails. -->
     <string name="CallLinkDetailsFragment__couldnt_save_changes">Neizdevās saglabāt izmaiņas. Pārbaudiet tīkla savienojumu un mēģiniet vēlreiz.</string>
     <!-- Displayed whenever an admin update fails with a 409. -->
-    <string name="CallLinkDetailsFragment__couldnt_update_admin_approval">Couldn\'t update admin approval settings. Check the call link is not currently in use.</string>
+    <string name="CallLinkDetailsFragment__couldnt_update_admin_approval">Neizdevās atjaunināt administratoru apstiprināšanas iestatījumus. Pārbaudiet, vai zvana saite šobrīd netiek izmantota.</string>
     <!-- Displayed when the call link is in use when the user tries to delete it -->
     <string name="CallLinkDetailsFragment__couldnt_delete_call_link">Zvana saiti nevarēja dzēst, jo tā pašlaik tiek izmantota.</string>
     <!-- Displayed as title in dialog when user attempts to delete the link -->
@@ -7839,7 +7839,7 @@
     <!-- Displayed on the title bar -->
     <string name="RemoteBackupsSettingsFragment__signal_backups">Signal rezerves kopijas</string>
     <!-- Text shown in a popup indicating that the user needs to enter their screen lock -->
-    <string name="RemoteBackupsSettingsFragment__authenticatino_required">Authentication required</string>
+    <string name="RemoteBackupsSettingsFragment__authenticatino_required">Nepieciešama autentifikācija</string>
     <!-- Row label to launch payment history screen -->
     <string name="RemoteBackupsSettingsFragment__payment_history">Maksājumu vēsture</string>
     <!-- Section header for backup information -->

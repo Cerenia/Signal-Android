@@ -1107,7 +1107,7 @@
     <!-- AddToGroupActivity -->
     <string name="AddToGroupActivity_add_member">Ajouter un membre ?</string>
     <string name="AddToGroupActivity_add_s_to_s">Ajouter %1$s à \"%2$s\" ?</string>
-    <string name="AddToGroupActivity_s_added_to_s">%1$s a été ajouté à \"%2$s\".</string>
+    <string name="AddToGroupActivity_s_added_to_s">Vous avez ajouté %1$s à \"%2$s\".</string>
     <string name="AddToGroupActivity_add_to_group">Ajouter au groupe</string>
     <string name="AddToGroupActivity_add_to_groups">Ajouter aux groupes</string>
     <string name="AddToGroupActivity_this_person_cant_be_added_to_legacy_groups">Vous ne pouvez pas ajouter cet utilisateur à un groupe hérité.</string>
@@ -3498,10 +3498,10 @@
         <item>Suggestion de fonctionnalité</item>
         <item>Question</item>
         <item>Commentaires</item>
-        <item>Payments (MobileCoin)</item>
-        <item>Donations &amp; Badges</item>
-        <item>Signal Android Backup</item>
-        <item>Other</item>
+        <item>Paiements (MobileCoin)</item>
+        <item>Dons et macarons</item>
+        <item>Sauvegarde Signal pour Android</item>
+        <item>Autre</item>
     </string-array>
     <!-- Subject of email when submitting debug logs to help debug slow notifications -->
     <string name="DebugLogsPromptDialogFragment__signal_android_support_request">Journal de débogage de Signal pour Android</string>
@@ -6445,7 +6445,7 @@
     <!-- Displayed when copying group story reply text to clipboard -->
     <string name="StoryGroupReplyFragment__copied_to_clipboard">Copié dans le presse-papiers</string>
     <!-- Displayed in story caption when content is longer than 5 lines -->
-    <string name="StoryViewerPageFragment__read_more">Read more</string>
+    <string name="StoryViewerPageFragment__read_more">Lire la suite</string>
     <!-- Displayed in toast after sending a direct reply -->
     <string name="StoryDirectReplyDialogFragment__sending_reply">Envoi de la réponse…</string>
     <!-- Displayed in the viewer when a story is no longer available -->

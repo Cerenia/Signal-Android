@@ -3399,10 +3399,10 @@
         <item>Yêu cầu Tính năng</item>
         <item>Câu hỏi</item>
         <item>Góp ý</item>
-        <item>Payments (MobileCoin)</item>
-        <item>Donations &amp; Badges</item>
-        <item>Signal Android Backup</item>
-        <item>Other</item>
+        <item>Lựa chọn Thanh toán (MobileCoin)</item>
+        <item>Khoản ủng hộ &amp; Huy hiệu</item>
+        <item>Bản sao lưu Signal Android</item>
+        <item>Khác</item>
     </string-array>
     <!-- Subject of email when submitting debug logs to help debug slow notifications -->
     <string name="DebugLogsPromptDialogFragment__signal_android_support_request">Gửi Nhật Ký Gỡ Lỗi Signal Android</string>
@@ -6305,7 +6305,7 @@
     <!-- Displayed when copying group story reply text to clipboard -->
     <string name="StoryGroupReplyFragment__copied_to_clipboard">Đã sao chép vào clipboard</string>
     <!-- Displayed in story caption when content is longer than 5 lines -->
-    <string name="StoryViewerPageFragment__read_more">Read more</string>
+    <string name="StoryViewerPageFragment__read_more">Đọc thêm</string>
     <!-- Displayed in toast after sending a direct reply -->
     <string name="StoryDirectReplyDialogFragment__sending_reply">Đang gửi câu trả lời…</string>
     <!-- Displayed in the viewer when a story is no longer available -->
@@ -7104,7 +7104,7 @@
     <!-- Displayed whenever a name change, revocation, etc, fails. -->
     <string name="CallLinkDetailsFragment__couldnt_save_changes">Không thể lưu các thay đổi. Kiểm tra kết nối mạng của bạn và thử lại.</string>
     <!-- Displayed whenever an admin update fails with a 409. -->
-    <string name="CallLinkDetailsFragment__couldnt_update_admin_approval">Couldn\'t update admin approval settings. Check the call link is not currently in use.</string>
+    <string name="CallLinkDetailsFragment__couldnt_update_admin_approval">Không thể cập nhật cài đặt quản trị viên chấp thuận. Kiểm tra xem đường dẫn cuộc gọi có đang được sử dụng không.</string>
     <!-- Displayed when the call link is in use when the user tries to delete it -->
     <string name="CallLinkDetailsFragment__couldnt_delete_call_link">Không thể xóa đường dẫn cuộc gọi vì đường dẫn đang được sử dụng.</string>
     <!-- Displayed as title in dialog when user attempts to delete the link -->
@@ -7515,7 +7515,7 @@
     <!-- Displayed on the title bar -->
     <string name="RemoteBackupsSettingsFragment__signal_backups">Bản sao lưu Signal</string>
     <!-- Text shown in a popup indicating that the user needs to enter their screen lock -->
-    <string name="RemoteBackupsSettingsFragment__authenticatino_required">Authentication required</string>
+    <string name="RemoteBackupsSettingsFragment__authenticatino_required">Yêu cầu xác thực</string>
     <!-- Row label to launch payment history screen -->
     <string name="RemoteBackupsSettingsFragment__payment_history">Lịch sử thanh toán</string>
     <!-- Section header for backup information -->
