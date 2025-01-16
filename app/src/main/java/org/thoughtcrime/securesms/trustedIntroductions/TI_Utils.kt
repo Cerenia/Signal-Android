@@ -1,6 +1,7 @@
 package org.thoughtcrime.securesms.trustedIntroductions
 
 import android.annotation.SuppressLint
+import android.content.Context
 import androidx.annotation.WorkerThread
 import org.json.JSONArray
 import org.json.JSONException
@@ -8,19 +9,30 @@ import org.json.JSONObject
 import org.signal.core.util.Base64.encodeWithoutPadding
 import org.signal.core.util.concurrent.SignalExecutors
 import org.signal.core.util.logging.Log
+import org.signal.core.util.logging.Log.i
 import org.signal.libsignal.protocol.IdentityKey
 import org.signal.libsignal.protocol.fingerprint.Fingerprint
 import org.signal.libsignal.protocol.fingerprint.NumericFingerprintGenerator
 import org.thoughtcrime.securesms.crypto.ReentrantSessionLock
 import org.thoughtcrime.securesms.database.IdentityTable.VerifiedStatus.Companion.forState
 import org.thoughtcrime.securesms.database.SignalDatabase
+import org.thoughtcrime.securesms.database.SignalDatabase.Companion.groups
+import org.thoughtcrime.securesms.database.SignalDatabase.Companion.messages
 import org.thoughtcrime.securesms.database.SignalDatabase.Companion.recipients
+import org.thoughtcrime.securesms.database.SignalDatabase.Companion.threads
 import org.thoughtcrime.securesms.database.SignalDatabase.Companion.tiIdentityTable
+import org.thoughtcrime.securesms.database.model.GroupRecord
 import org.thoughtcrime.securesms.database.model.RecipientRecord
 import org.thoughtcrime.securesms.dependencies.AppDependencies.application
 import org.thoughtcrime.securesms.dependencies.AppDependencies.jobManager
 import org.thoughtcrime.securesms.dependencies.AppDependencies.protocolStore
 import org.thoughtcrime.securesms.jobs.MultiDeviceVerifiedUpdateJob
+import org.thoughtcrime.securesms.mms.IncomingMessage.Companion.identityDefault
+import org.thoughtcrime.securesms.mms.IncomingMessage.Companion.identityVerified
+import org.thoughtcrime.securesms.mms.MmsException
+import org.thoughtcrime.securesms.mms.OutgoingMessage.Companion.identityDefaultMessage
+import org.thoughtcrime.securesms.mms.OutgoingMessage.Companion.identityTIVerifiedMessage
+import org.thoughtcrime.securesms.recipients.Recipient
 import org.thoughtcrime.securesms.recipients.Recipient.Companion.live
 import org.thoughtcrime.securesms.recipients.Recipient.Companion.resolved
 import org.thoughtcrime.securesms.recipients.RecipientId
@@ -573,7 +585,6 @@ object TI_Utils {
         // TI
         tiIdentityTable.setVerifiedStatus(recipientId, status)
         // Vanilla
-//        val verified: Boolean = .VerifiedStatus.isVerified(status)
         val verified: Boolean = VerifiedStatus.isVerified(status)
         if (verified) {
           protocolStore.aci().identities()
@@ -601,8 +612,81 @@ object TI_Utils {
             )
           )
         StorageSyncHelper.scheduleSyncForDataChange()
-        IdentityUtil.markIdentityVerified(application.applicationContext, recipient, verified, false)
+        markIdentityVerified(application.applicationContext, recipient, status, false)
       }
+    }
+  }
+
+  fun markIdentityVerified(applicationContext: Context?, recipient: Recipient, status: VerifiedStatus, remote: Boolean) {
+    val time = System.currentTimeMillis()
+    val smsDatabase = messages
+    val groupDatabase = groups
+
+    groupDatabase.getGroups().use { reader ->
+      var groupRecord: GroupRecord
+      while (reader.hasNext()) {
+        groupRecord = reader.getNext()!!
+        if (groupRecord.members.contains(recipient.id) && groupRecord.isActive && !groupRecord.isMms) {
+          if (remote) {
+            val incoming = if (VerifiedStatus.isVerified(status))
+              identityVerified(recipient.id, time, groupRecord.id)
+            else
+              identityDefault(recipient.id, time, groupRecord.id)
+
+            try {
+              smsDatabase.insertMessageInbox(incoming)
+            } catch (e: MmsException) {
+              throw java.lang.AssertionError(e)
+            }
+          } else {
+            val recipientId = recipients.getOrInsertFromGroupId(groupRecord.id)
+            val groupRecipient = resolved(recipientId)
+            val threadId = threads.getOrCreateThreadIdFor(groupRecipient)
+            val outgoing = if (VerifiedStatus.isVerified(status)) {
+//              identityVerifiedMessage(recipient, time)
+              identityTIVerifiedMessage(recipient, time, VerifiedStatus.verifiedByQR(status), VerifiedStatus.verifiedByAcceptedIntro(status))
+            } else {
+              identityDefaultMessage(recipient, time)
+            }
+
+            try {
+              messages.insertMessageOutbox(outgoing, threadId, false, null)
+            } catch (e: MmsException) {
+              throw java.lang.AssertionError(e)
+            }
+            threads.update(threadId, unarchive = true, syncThreadDelete = true)
+          }
+        }
+      }
+    }
+
+    if (remote) {
+      val incoming = if (VerifiedStatus.isVerified(status))
+        identityVerified(recipient.id, time, null) // todo: this will have to change when multi-dev TI happens (if ever :c)
+      else
+        identityDefault(recipient.id, time, null)
+
+      try {
+        smsDatabase.insertMessageInbox(incoming)
+      } catch (e: MmsException) {
+        throw java.lang.AssertionError(e)
+      }
+    } else {
+      val outgoing = if (VerifiedStatus.isVerified(status)) {
+        identityTIVerifiedMessage(recipient, time, VerifiedStatus.verifiedByQR(status), VerifiedStatus.verifiedByAcceptedIntro(status))
+      } else {
+        identityDefaultMessage(recipient, time)
+      }
+
+      val threadId = threads.getOrCreateThreadIdFor(recipient)
+
+      i(TAG, "Inserting verified outbox...")
+      try {
+        messages.insertMessageOutbox(outgoing, threadId, false, null)
+      } catch (e: MmsException) {
+        throw java.lang.AssertionError()
+      }
+      threads.update(threadId, unarchive = true, syncThreadDelete = true)
     }
   }
 
