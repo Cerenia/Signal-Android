@@ -10,7 +10,6 @@ import org.thoughtcrime.securesms.trustedIntroductions.TI_Data
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils
 import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database
 import org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue
-import java.util.Collections
 
 class ManageManager(
   private val tdb: TI_DatabaseGlue,
@@ -51,7 +50,7 @@ class ManageManager(
               )
             ).resolve()
 
-            val number = r.e164.orElse("")
+            val number = r.e164.orElse(forgottenPlaceholder)
             // TODO: using getApplication context because the context doesn't matter... (22-10-06)
             // It just circularly gets passed around between methods in the Recipient but is never used for anything.
             ManageViewModel.IntroducerInformation(

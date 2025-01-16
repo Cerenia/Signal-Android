@@ -110,7 +110,8 @@ class ManageAdapter(
     private val reject: RadioButton = itemView.findViewById(R.id.reject)
     private val radioGroup: RadioGroup = itemView.findViewById(R.id.trust_distrust)
     private val radioGroupLabel: TextView = itemView.findViewById(R.id.radio_group_label)
-    private val guideline: Guideline = itemView.findViewById(R.id.guideline_right)
+    private val chatButton: MaterialButton = itemView.findViewById(R.id.chat)
+//    private val guideline: Guideline = itemView.findViewById(R.id.guideline_right)
 //    private val mask: ImageView = itemView.findViewById(R.id.maskedImage)
     private val maskIntroducer: MaterialButton = itemView.findViewById(R.id.mask)
     private val delete: MaterialButton = itemView.findViewById(R.id.delete)
@@ -145,7 +146,7 @@ class ManageAdapter(
 
         introducerNumber.visibility = View.VISIBLE
         introducerName.visibility = View.VISIBLE
-        guideline.setGuidelinePercent(0.5f)
+//        guideline.setGuidelinePercent(0.5f)
         changeListItemAppearanceByState(safeData.state)
 
         maskIntroducer.setOnClickListener {
@@ -153,6 +154,9 @@ class ManageAdapter(
         }
         delete.setOnClickListener {
           listener.delete(this, safeData.introducerServiceId!!)
+        }
+        chatButton.setOnClickListener {
+          listener.openChat(safeData.introduceeServiceId, safeData.introduceeNumber, null)
         }
       }
     }
@@ -346,6 +350,7 @@ class ManageAdapter(
   }
 
   interface InteractionListener {
+    fun openChat(serviceId: String, e164: String?, username: String?)
     fun accept(introductionId: Long)
     fun reject(introductionId: Long)
     fun mask(item: IntroductionViewHolder, introducerServiceId: String)

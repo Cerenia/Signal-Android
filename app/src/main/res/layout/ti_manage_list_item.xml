@@ -154,6 +154,21 @@
         app:layout_constraintStart_toEndOf="@id/guideline_left"
         app:layout_constraintTop_toBottomOf="@+id/radio_group_label" />
 
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/chat"
+        style="@style/Signal.Widget.Button.Small.Primary"
+        android:layout_width="wrap_content"
+        android:layout_height="62dp"
+        android:orientation="horizontal"
+        app:icon="@drawable/ic_chat_message_24"
+        app:iconGravity="textStart"
+        app:iconPadding="0dp"
+        app:iconSize="@dimen/webrtc_button_size"
+        app:iconTint="@color/signal_colorOnSurface"
+        app:layout_constraintBottom_toTopOf="@id/radio_group_label"
+        app:layout_constraintStart_toEndOf="@id/guideline_right"
+        app:layout_constraintTop_toBottomOf="@+id/buttonBarrier" />
+
     <org.thoughtcrime.securesms.components.FromTextView
         android:id="@+id/radio_group_label"
         android:layout_width="0dp"
@@ -164,7 +179,7 @@
         android:textColor="@color/signal_text_primary"
         app:layout_constraintEnd_toStartOf="@id/guideline_third_column_end"
         app:layout_constraintStart_toStartOf="@+id/trust_distrust"
-        app:layout_constraintTop_toBottomOf="@id/buttonBarrier"
+        app:layout_constraintTop_toBottomOf="@id/chat"
         tools:text="Trust?" />
 
     <RadioGroup
