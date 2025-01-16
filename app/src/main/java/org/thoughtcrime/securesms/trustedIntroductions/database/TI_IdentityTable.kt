@@ -16,6 +16,7 @@ import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.TI_LOG_TAG
 import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue
 import org.thoughtcrime.securesms.trustedIntroductions.glue.IdentityTableGlue.Companion.VerifiedStatus
 import org.thoughtcrime.securesms.trustedIntroductions.glue.TI_DatabaseGlue
+import org.whispersystems.signalservice.api.push.ServiceId
 
 
 class TI_IdentityTable internal constructor(context: Context?, databaseHelper: SignalDatabase?) : DatabaseTable(context, databaseHelper), IdentityTableGlue {
@@ -88,6 +89,7 @@ class TI_IdentityTable internal constructor(context: Context?, databaseHelper: S
     }
   }
 
+  override fun getVerifiedStatus(serviceId: ServiceId): VerifiedStatus = this.getVerifiedStatus(RecipientId.from(serviceId))
 
   override fun saveIdentity(addressName: String, verifiedStatus: VerifiedStatus): Boolean {
     val contentValues = contentValuesOf(

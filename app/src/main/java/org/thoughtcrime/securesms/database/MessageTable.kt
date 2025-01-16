@@ -2936,6 +2936,14 @@ open class MessageTable(context: Context?, databaseHelper: SignalDatabase) : Dat
 
     if (message.isIdentityVerified) {
       type = type or MessageTypes.KEY_EXCHANGE_IDENTITY_VERIFIED_BIT
+      // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+      if (message.verifiedViaQR) {
+        type = type or MessageTypes.SPECIAL_TYPE_IDENTITY_QR_VERIFIED
+      }
+      if (message.isIdentityDefault) {
+        type = type or MessageTypes.SPECIAL_TYPE_IDENTITY_TI_VERIFIED
+      }
+      // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
     } else if (message.isIdentityDefault) {
       type = type or MessageTypes.KEY_EXCHANGE_IDENTITY_DEFAULT_BIT
     }

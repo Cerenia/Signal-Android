@@ -232,8 +232,22 @@ public abstract class MessageRecord extends DisplayRecord {
     } else if (isIdentityUpdate()) {
       return fromRecipient(getFromRecipient(), r -> context.getString(R.string.MessageRecord_your_safety_number_with_s_has_changed, r.getDisplayName(context)), Glyph.SAFETY_NUMBER);
     } else if (isIdentityVerified()) {
-      if (isOutgoing()) return fromRecipient(getToRecipient(), r -> context.getString(R.string.MessageRecord_you_marked_your_safety_number_with_s_verified, r.getDisplayName(context)), Glyph.SAFETY_NUMBER);
-      else              return fromRecipient(getFromRecipient(), r -> context.getString(R.string.MessageRecord_you_marked_your_safety_number_with_s_verified_from_another_device, r.getDisplayName(context)), Glyph.SAFETY_NUMBER);
+      // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+      if (isOutgoing()) {
+        if (isIdentityVerifiedByTI() && isIdentityVerifiedByQR()) {
+          return fromRecipient(getToRecipient(), r -> "You marked your safety number with " + r.getDisplayName(context) + " verified by QR and Trusted Introduction", R.drawable.ic_safety_number_16);
+        }
+        if (isIdentityVerifiedByQR()) {
+          return fromRecipient(getToRecipient(), r -> "You marked your safety number with " + r.getDisplayName(context) + " verified by QR", R.drawable.symbol_qrcode_24);
+        }
+        if (isIdentityVerifiedByTI()) {
+          return fromRecipient(getToRecipient(), r -> "You marked your safety number with " + r.getDisplayName(context) + " verified by accepting a Trusted Introduction", R.drawable.ic_trusted_introduction);
+        }
+        return fromRecipient(getToRecipient(), r -> context.getString(R.string.MessageRecord_you_marked_your_safety_number_with_s_verified, r.getDisplayName(context) + " (manually)"), R.drawable.ic_safety_number_16);
+      } else  {
+        return fromRecipient(getFromRecipient(), r -> context.getString(R.string.MessageRecord_you_marked_your_safety_number_with_s_verified_from_another_device, r.getDisplayName(context)), R.drawable.ic_safety_number_16);
+      }
+      // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
     } else if (isIdentityDefault()) {
       if (isOutgoing()) return fromRecipient(getToRecipient(), r -> context.getString(R.string.MessageRecord_you_marked_your_safety_number_with_s_unverified, r.getDisplayName(context)), Glyph.INFO);
       else              return fromRecipient(getFromRecipient(), r -> context.getString(R.string.MessageRecord_you_marked_your_safety_number_with_s_unverified_from_another_device, r.getDisplayName(context)), Glyph.INFO);
@@ -643,6 +657,14 @@ public abstract class MessageRecord extends DisplayRecord {
 
   public boolean isIdentityVerified() {
     return MessageTypes.isIdentityVerified(type);
+  }
+
+  public boolean isIdentityVerifiedByQR() {
+    return MessageTypes.isIdentityQrVerified(type);
+  }
+
+  public boolean isIdentityVerifiedByTI() {
+    return MessageTypes.isIdentityTiVerified(type);
   }
 
   public boolean isIdentityDefault() {

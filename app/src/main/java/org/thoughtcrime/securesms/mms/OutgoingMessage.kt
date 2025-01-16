@@ -58,7 +58,12 @@ data class OutgoingMessage(
   val isMessageRequestAccept: Boolean = false,
   val isBlocked: Boolean = false,
   val isUnblocked: Boolean = false,
-  val messageExtras: MessageExtras? = null
+  // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+  val messageExtras: MessageExtras? = null,
+
+  val verifiedViaQR: Boolean = false,
+  val verifiedByIntroduction: Boolean = false,
+  // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
 ) {
 
   val isV2Group: Boolean = messageGroupContext != null && GroupV2UpdateMessageUtil.isGroupV2(messageGroupContext)
@@ -384,6 +389,20 @@ data class OutgoingMessage(
         isSecure = true
       )
     }
+
+    // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+    fun identityTIVerifiedMessage(threadRecipient: Recipient, sentTimeMillis: Long, verifiedViaQR: Boolean = false, verifiedByIntroduction: Boolean = false): OutgoingMessage {
+      return OutgoingMessage(
+        threadRecipient = threadRecipient,
+        sentTimeMillis = sentTimeMillis,
+        isIdentityVerified = true,
+        isUrgent = false,
+        isSecure = true,
+        verifiedViaQR = verifiedViaQR,
+        verifiedByIntroduction = verifiedByIntroduction,
+        )
+    }
+    // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
 
     /**
      * Message for when the verification status of an identity is getting set to the default.
