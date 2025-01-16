@@ -123,8 +123,8 @@ public interface MessageTypes {
   long SPECIAL_TYPE_BLOCKED                   = 0xA00000000L;
   long SPECIAL_TYPE_UNBLOCKED                 = 0xB00000000L;
   // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
-  long SPECIAL_TYPE_IDENTITY_QR_VERIFIED      = 0xC00000000L; // TODO: double check that we don't exceed the Mask
-  long SPECIAL_TYPE_IDENTITY_TI_VERIFIED      = 0xD00000000L;
+  long SPECIAL_TYPE_IDENTITY_QR_VERIFIED      = 0x1000000000L; // TODO: double check that we don't exceed the Mask
+  long SPECIAL_TYPE_IDENTITY_TI_VERIFIED      = 0x2000000000L;
   // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
   long IGNORABLE_TYPESMASK_WHEN_COUNTING = END_SESSION_BIT | KEY_EXCHANGE_IDENTITY_UPDATE_BIT | KEY_EXCHANGE_IDENTITY_VERIFIED_BIT;
 
@@ -275,6 +275,12 @@ public interface MessageTypes {
   static boolean isDuplexVerified(long type) {
     return isIdentityQrVerified(type) && isIdentityTiVerified(type);
   }
+
+  public static long clearExtendedVerificationBits(long messageType) {
+    // todo: Use when handling backups
+    return messageType & (0xFFFFFFFFFFL & ~0x3F00000000L);
+  }
+
   // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 
   static boolean isIdentityDefault(long type) {
