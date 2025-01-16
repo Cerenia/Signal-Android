@@ -2940,7 +2940,7 @@ open class MessageTable(context: Context?, databaseHelper: SignalDatabase) : Dat
       if (message.verifiedViaQR) {
         type = type or MessageTypes.SPECIAL_TYPE_IDENTITY_QR_VERIFIED
       }
-      if (message.isIdentityDefault) {
+      if (message.verifiedByIntroduction) {
         type = type or MessageTypes.SPECIAL_TYPE_IDENTITY_TI_VERIFIED
       }
       // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end

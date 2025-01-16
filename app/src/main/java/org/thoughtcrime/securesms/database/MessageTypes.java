@@ -265,11 +265,11 @@ public interface MessageTypes {
 
   // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
   static boolean isIdentityQrVerified(long type) {
-    return isIdentityVerified(type) && ((type & SPECIAL_TYPES_MASK) == SPECIAL_TYPE_IDENTITY_QR_VERIFIED);
+    return isIdentityVerified(type) && ((type & SPECIAL_TYPE_IDENTITY_QR_VERIFIED) != 0);
   }
 
   static boolean isIdentityTiVerified(long type) {
-    return isIdentityVerified(type) && ((type & SPECIAL_TYPES_MASK) == SPECIAL_TYPE_IDENTITY_TI_VERIFIED);
+    return isIdentityVerified(type) && ((type & SPECIAL_TYPE_IDENTITY_TI_VERIFIED) != 0);
   }
 
   static boolean isDuplexVerified(long type) {

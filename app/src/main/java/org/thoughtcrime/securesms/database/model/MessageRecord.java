@@ -234,7 +234,7 @@ public abstract class MessageRecord extends DisplayRecord {
     } else if (isIdentityVerified()) {
       // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
       if (isOutgoing()) {
-        if (isIdentityVerifiedByTI() && isIdentityVerifiedByQR()) {
+        if (isIdentityDuplexVerified()) {
           return fromRecipient(getToRecipient(), r -> "You marked your safety number with " + r.getDisplayName(context) + " verified by QR and Trusted Introduction", R.drawable.ic_safety_number_16);
         }
         if (isIdentityVerifiedByQR()) {
@@ -665,6 +665,10 @@ public abstract class MessageRecord extends DisplayRecord {
 
   public boolean isIdentityVerifiedByTI() {
     return MessageTypes.isIdentityTiVerified(type);
+  }
+
+  public boolean isIdentityDuplexVerified() {
+    return MessageTypes.isDuplexVerified(type);
   }
 
   public boolean isIdentityDefault() {

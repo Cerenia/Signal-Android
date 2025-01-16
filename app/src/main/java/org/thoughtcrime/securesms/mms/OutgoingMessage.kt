@@ -402,7 +402,7 @@ data class OutgoingMessage(
         verifiedByIntroduction = verifiedByIntroduction,
         )
     }
-    // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
+    // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 
     /**
      * Message for when the verification status of an identity is getting set to the default.
