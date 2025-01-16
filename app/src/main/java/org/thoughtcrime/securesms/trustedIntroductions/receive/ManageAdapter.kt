@@ -9,6 +9,7 @@ import android.widget.ImageView
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.TextView
+import android.widget.Toast
 import androidx.constraintlayout.widget.Guideline
 import androidx.core.content.ContextCompat
 import androidx.core.util.Pair
@@ -203,13 +204,17 @@ class ManageAdapter(
         }
       }
 
-      if (trust) {
+      var toastContent = ""
+      toastContent = if (trust) {
         listener.accept(requireNotNull(currentData.id))
+        "Accepted introduction for ${currentData.introduceeName} (was ${currentData.state})"
       } else {
         listener.reject(requireNotNull(currentData.id))
+        "Rejected introduction for ${currentData.introduceeName} (was ${currentData.state})"
       }
 
       data = changeState(currentData, newState)
+      Toast.makeText(context, toastContent, Toast.LENGTH_SHORT).show()
     }
 
     private fun setForgetIntroducerComponentVisibility() {
@@ -310,15 +315,15 @@ class ManageAdapter(
 
     private fun changeState(d: TI_Data, newState: TI_DatabaseGlue.Companion.State): TI_Data {
       return TI_Data(
-        d.id,
-        newState,
-        d.introducerServiceId,
-        d.introduceeServiceId,
-        d.introduceeName,
-        d.introduceeNumber,
-        d.introduceeIdentityKey,
-        d.predictedSecurityNumber,
-        d.timestamp
+        id = d.id,
+        state = newState,
+        introducerServiceId = d.introducerServiceId,
+        introduceeServiceId = d.introduceeServiceId,
+        introduceeName = d.introduceeName,
+        introduceeNumber = d.introduceeNumber,
+        introduceeIdentityKey = d.introduceeIdentityKey,
+        predictedSecurityNumber = d.predictedSecurityNumber,
+        timestamp = d.timestamp
       )
     }
 
