@@ -1,5 +1,7 @@
 package org.thoughtcrime.securesms.trustedIntroductions.receive
 
+import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -14,7 +16,10 @@ import com.google.android.material.button.MaterialButton
 import com.pnikosis.materialishprogress.ProgressWheel
 import org.signal.core.util.logging.Log
 import org.thoughtcrime.securesms.R
+import org.thoughtcrime.securesms.conversation.ConversationIntents
+import org.thoughtcrime.securesms.dependencies.AppDependencies
 import org.thoughtcrime.securesms.recipients.Recipient
+import org.thoughtcrime.securesms.recipients.RecipientRepository
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils.splitIntroductionDate
@@ -291,6 +296,43 @@ class ManageListFragment(
 
     override fun reject(introductionId: Long) {
       viewModel.rejectIntroduction(introductionId)
+    }
+
+    @SuppressLint("CheckResult")
+    override fun openChat(serviceId: String, e164: String?, username: String?) {
+      var introduceeRecipient = TI_Utils.getRecipientIdOrUnknown(serviceId)
+      if (introduceeRecipient.isUnknown) {
+        Log.i(TAG, "Introducee is unknown")
+        if (e164 == null) {
+          Log.e(TAG, "Introducee number is null")
+        } else {
+          Log.i(TAG, "Introducee number is $e164. Fetching new Recipient (CDSi lookup)")
+          when (val lookup = RecipientRepository.lookupNewE164(AppDependencies.application.applicationContext, e164)) {
+            is RecipientRepository.LookupResult.Success -> {
+              introduceeRecipient = lookup.recipientId
+              Log.i(TAG, "Got Recipient ID: ${introduceeRecipient.toLong()}")
+            }
+
+            RecipientRepository.LookupResult.InvalidEntry -> TODO("log properly")
+            RecipientRepository.LookupResult.NetworkError -> TODO("log properly")
+            is RecipientRepository.LookupResult.NotFound -> TODO("log properly")
+          }
+        }
+      } else {
+        Log.i(TAG, "Introducee was known already, opening chat")
+      }
+
+      ConversationIntents.createBuilder(context, introduceeRecipient, -1L)
+        .map { builder: ConversationIntents.Builder ->
+          builder
+            .withDraftText(null)
+            .withDataUri(null)
+            .withDataType(null)
+            .build()
+        }
+        .subscribe { intent: Intent? ->
+          context.startActivity(intent)
+        }
     }
 
     override fun mask(item: ManageAdapter.IntroductionViewHolder, introducerServiceId: String) {
