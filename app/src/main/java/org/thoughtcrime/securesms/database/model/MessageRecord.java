@@ -235,9 +235,11 @@ public abstract class MessageRecord extends DisplayRecord {
       // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
       if (isOutgoing()) {
         if (isIdentityDuplexVerified()) {
+          // todo: a custom UI icon with both handshake and qr could be cute ;)
           return fromRecipient(getToRecipient(), r -> "You marked your safety number with " + r.getDisplayName(context) + " verified by QR and Trusted Introduction", R.drawable.ic_safety_number_16);
         }
         if (isIdentityVerifiedByQR()) {
+          // todo: qr symbol is 24, the others are 16.. should resize
           return fromRecipient(getToRecipient(), r -> "You marked your safety number with " + r.getDisplayName(context) + " verified by QR", R.drawable.symbol_qrcode_24);
         }
         if (isIdentityVerifiedByTI()) {

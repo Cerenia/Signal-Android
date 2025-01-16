@@ -644,7 +644,7 @@ object TI_Utils {
             val threadId = threads.getOrCreateThreadIdFor(groupRecipient)
             val outgoing = if (VerifiedStatus.isVerified(status)) {
 //              identityVerifiedMessage(recipient, time)
-              identityTIVerifiedMessage(recipient, time, VerifiedStatus.verifiedByQR(status), VerifiedStatus.verifiedByAcceptedIntro(status))
+              identityTIVerifiedMessage(threadRecipient = recipient, sentTimeMillis = time, verifiedViaQR = VerifiedStatus.verifiedByQR(status), verifiedByIntroduction = VerifiedStatus.verifiedByAcceptedIntro(status))
             } else {
               identityDefaultMessage(recipient, time)
             }
@@ -673,7 +673,7 @@ object TI_Utils {
       }
     } else {
       val outgoing = if (VerifiedStatus.isVerified(status)) {
-        identityTIVerifiedMessage(recipient, time, VerifiedStatus.verifiedByQR(status), VerifiedStatus.verifiedByAcceptedIntro(status))
+        identityTIVerifiedMessage(threadRecipient = recipient, sentTimeMillis = time, verifiedViaQR = VerifiedStatus.verifiedByQR(status), verifiedByIntroduction = VerifiedStatus.verifiedByAcceptedIntro(status))
       } else {
         identityDefaultMessage(recipient, time)
       }
