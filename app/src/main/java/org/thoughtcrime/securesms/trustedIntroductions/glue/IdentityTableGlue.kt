@@ -10,6 +10,7 @@ import org.thoughtcrime.securesms.database.SignalDatabase.Companion.tiIdentityTa
 import org.thoughtcrime.securesms.recipients.RecipientId
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils
 import org.thoughtcrime.securesms.trustedIntroductions.database.TI_IdentityTable
+import org.whispersystems.signalservice.api.push.ServiceId
 
 interface IdentityTableGlue {
   /**
@@ -26,7 +27,7 @@ interface IdentityTableGlue {
    */
   fun getVerifiedStatus(id: RecipientId?): VerifiedStatus
 
-
+  fun getVerifiedStatus(serviceId: ServiceId): VerifiedStatus
   /**
    * Adds a new identity to the shadow table
    */
@@ -254,6 +255,36 @@ interface IdentityTableGlue {
             else -> false
           }
         }
+
+        @JvmStatic
+        fun verifiedByQR(status: VerifiedStatus): Boolean {
+          return when (status) {
+            DIRECTLY_VERIFIED, DUPLEX_VERIFIED -> true
+            else -> false
+          }
+        }
+
+        @JvmStatic
+        fun duplexVerified(status: VerifiedStatus): Boolean {
+          return status == DUPLEX_VERIFIED
+        }
+
+        @JvmStatic
+        fun onlyManuallyVerified(status: VerifiedStatus): Boolean {
+          return when (status) {
+            MANUALLY_VERIFIED -> true
+            else -> false
+          }
+        }
+
+        @JvmStatic
+        fun verifiedByAcceptedIntro(status: VerifiedStatus): Boolean {
+          return when (status) {
+            DUPLEX_VERIFIED, INTRODUCED -> true
+            else -> false
+          }
+        }
+
       }
     }
 
