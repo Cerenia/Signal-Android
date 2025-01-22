@@ -24,6 +24,7 @@ import org.thoughtcrime.securesms.backup.v2.proto.BodyRange
 import org.thoughtcrime.securesms.backup.v2.proto.ChatItem
 import org.thoughtcrime.securesms.backup.v2.proto.ChatUpdateMessage
 import org.thoughtcrime.securesms.backup.v2.proto.ContactAttachment
+import org.thoughtcrime.securesms.backup.v2.proto.DirectStoryReplyMessage
 import org.thoughtcrime.securesms.backup.v2.proto.GroupCall
 import org.thoughtcrime.securesms.backup.v2.proto.IndividualCall
 import org.thoughtcrime.securesms.backup.v2.proto.LinkPreview
@@ -125,7 +126,8 @@ class ChatItemArchiveImporter(
       MessageTable.VIEW_ONCE,
       MessageTable.MESSAGE_EXTRAS,
       MessageTable.ORIGINAL_MESSAGE_ID,
-      MessageTable.LATEST_REVISION_ID
+      MessageTable.LATEST_REVISION_ID,
+      MessageTable.PARENT_STORY_ID
     )
 
     private val REACTION_COLUMNS = arrayOf(
@@ -238,10 +240,11 @@ class ChatItemArchiveImporter(
   private fun ChatItem.toMessageInsert(fromRecipientId: RecipientId, chatRecipientId: RecipientId, threadId: Long): MessageInsert {
     val contentValues = this.toMessageContentValues(fromRecipientId, chatRecipientId, threadId)
 
-    var followUp: ((Long) -> Unit)? = null
+    val followUps: MutableList<(Long) -> Unit> = mutableListOf()
+
     if (this.updateMessage != null) {
       if (this.updateMessage.individualCall != null && this.updateMessage.individualCall.callId != null) {
-        followUp = { messageRowId ->
+        followUps += { messageRowId ->
           val values = contentValuesOf(
             CallTable.CALL_ID to updateMessage.individualCall.callId,
             CallTable.MESSAGE_ID to messageRowId,
@@ -263,7 +266,7 @@ class ChatItemArchiveImporter(
           db.insert(CallTable.TABLE_NAME, SQLiteDatabase.CONFLICT_IGNORE, values)
         }
       } else if (this.updateMessage.groupCall != null && this.updateMessage.groupCall.callId != null) {
-        followUp = { messageRowId ->
+        followUps += { messageRowId ->
           val ringer: RecipientId? = this.updateMessage.groupCall.ringerRecipientId?.let { importState.remoteToLocalRecipientId[it] }
 
           val values = contentValuesOf(
@@ -295,7 +298,7 @@ class ChatItemArchiveImporter(
     }
 
     if (this.paymentNotification != null) {
-      followUp = { messageRowId ->
+      followUps += { messageRowId ->
         val uuid = tryRestorePayment(this, chatRecipientId)
         if (uuid != null) {
           db.update(MessageTable.TABLE_NAME)
@@ -310,7 +313,7 @@ class ChatItemArchiveImporter(
     }
 
     if (this.contactMessage != null) {
-      val contacts = this.contactMessage.contact.map { backupContact ->
+      val contact = this.contactMessage.contact?.let { backupContact ->
         Contact(
           backupContact.name.toLocal(),
           backupContact.organization,
@@ -345,22 +348,35 @@ class ChatItemArchiveImporter(
         )
       }
 
-      val contactAttachments = contacts.mapNotNull { it.avatarAttachment }
-      if (contacts.isNotEmpty()) {
-        followUp = { messageRowId ->
-          val attachmentMap = if (contactAttachments.isNotEmpty()) {
-            SignalDatabase.attachments.insertAttachmentsForMessage(messageRowId, contactAttachments, emptyList())
+      if (contact != null) {
+        val contactAttachment: Attachment? = contact.avatarAttachment
+        followUps += { messageRowId ->
+          val attachmentMap = if (contactAttachment != null) {
+            SignalDatabase.attachments.insertAttachmentsForMessage(messageRowId, listOf(contactAttachment), emptyList())
           } else {
             emptyMap()
           }
           db.update(
             MessageTable.TABLE_NAME,
             contentValuesOf(
-              MessageTable.SHARED_CONTACTS to SignalDatabase.messages.getSerializedSharedContacts(attachmentMap, contacts)
+              MessageTable.SHARED_CONTACTS to SignalDatabase.messages.getSerializedSharedContacts(attachmentMap, listOf(contact))
             ),
             "${MessageTable.ID} = ?",
             SqlUtil.buildArgs(messageRowId)
           )
+        }
+      }
+    }
+
+    if (this.directStoryReplyMessage != null) {
+      val longTextAttachment: Attachment? = this.directStoryReplyMessage.textReply?.longText?.toLocalAttachment(
+        importState = importState,
+        contentType = "text/x-signal-plain"
+      )
+
+      if (longTextAttachment != null) {
+        followUps += { messageRowId ->
+          SignalDatabase.attachments.insertAttachmentsForMessage(messageRowId, listOf(longTextAttachment), emptyList())
         }
       }
     }
@@ -380,7 +396,7 @@ class ChatItemArchiveImporter(
             }
           }
         if (mentions.isNotEmpty()) {
-          followUp = { messageId ->
+          followUps += { messageId ->
             SignalDatabase.mentions.insert(threadId, messageId, mentions)
           }
         }
@@ -391,19 +407,17 @@ class ChatItemArchiveImporter(
         attachment.toLocalAttachment()
       }
 
-      val longTextAttachments: List<Attachment> = this.standardMessage.longText?.let { longTextPointer ->
-        longTextPointer.toLocalAttachment(
-          importState = importState,
-          contentType = "text/x-signal-plain"
-        )
-      }?.let { listOf(it) } ?: emptyList()
+      val longTextAttachments: List<Attachment> = this.standardMessage.longText?.toLocalAttachment(
+        importState = importState,
+        contentType = "text/x-signal-plain"
+      )?.let { listOf(it) } ?: emptyList()
 
       val quoteAttachments: List<Attachment> = this.standardMessage.quote?.toLocalAttachments() ?: emptyList()
 
       val hasAttachments = attachments.isNotEmpty() || linkPreviewAttachments.isNotEmpty() || quoteAttachments.isNotEmpty() || longTextAttachments.isNotEmpty()
 
       if (hasAttachments || linkPreviews.isNotEmpty()) {
-        followUp = { messageRowId ->
+        followUps += { messageRowId ->
           val attachmentMap = if (hasAttachments) {
             SignalDatabase.attachments.insertAttachmentsForMessage(messageRowId, attachments + linkPreviewAttachments + longTextAttachments, quoteAttachments)
           } else {
@@ -424,7 +438,7 @@ class ChatItemArchiveImporter(
       val sticker = this.stickerMessage.sticker
       val attachment = sticker.toLocalAttachment()
       if (attachment != null) {
-        followUp = { messageRowId ->
+        followUps += { messageRowId ->
           SignalDatabase.attachments.insertAttachmentsForMessage(messageRowId, listOf(attachment), emptyList())
         }
       }
@@ -433,10 +447,18 @@ class ChatItemArchiveImporter(
     if (this.viewOnceMessage != null) {
       val attachment = this.viewOnceMessage.attachment?.toLocalAttachment()
       if (attachment != null) {
-        followUp = { messageRowId ->
+        followUps += { messageRowId ->
           SignalDatabase.attachments.insertAttachmentsForMessage(messageRowId, listOf(attachment), emptyList())
         }
       }
+    }
+
+    val followUp: ((Long) -> Unit)? = if (followUps.isNotEmpty()) {
+      { messageId ->
+        followUps.forEach { it(messageId) }
+      }
+    } else {
+      null
     }
 
     return MessageInsert(contentValues, followUp)
@@ -505,6 +527,7 @@ class ChatItemArchiveImporter(
       this.paymentNotification != null -> contentValues.addPaymentNotification(this, chatRecipientId)
       this.giftBadge != null -> contentValues.addGiftBadge(this.giftBadge)
       this.viewOnceMessage != null -> contentValues.addViewOnce(this.viewOnceMessage)
+      this.directStoryReplyMessage != null -> contentValues.addDirectStoryReply(this.directStoryReplyMessage)
     }
 
     return contentValues
@@ -548,6 +571,7 @@ class ChatItemArchiveImporter(
       this.contactMessage != null -> this.contactMessage.reactions
       this.stickerMessage != null -> this.stickerMessage.reactions
       this.viewOnceMessage != null -> this.viewOnceMessage.reactions
+      this.directStoryReplyMessage != null -> this.directStoryReplyMessage.reactions
       else -> emptyList()
     }
 
@@ -623,6 +647,10 @@ class ChatItemArchiveImporter(
 
     if (this.giftBadge != null) {
       type = type or MessageTypes.SPECIAL_TYPE_GIFT_BADGE
+    }
+
+    if (this.directStoryReplyMessage?.emoji != null) {
+      type = type or MessageTypes.SPECIAL_TYPE_STORY_REACTION
     }
 
     return type
@@ -846,6 +874,19 @@ class ChatItemArchiveImporter(
 
   private fun ContentValues.addViewOnce(viewOnce: ViewOnceMessage) {
     put(MessageTable.VIEW_ONCE, true.toInt())
+  }
+
+  private fun ContentValues.addDirectStoryReply(directStoryReply: DirectStoryReplyMessage) {
+    put(MessageTable.PARENT_STORY_ID, MessageTable.PARENT_STORY_MISSING_ID)
+
+    if (directStoryReply.emoji != null) {
+      put(MessageTable.BODY, directStoryReply.emoji)
+    }
+
+    if (directStoryReply.textReply != null) {
+      put(MessageTable.BODY, directStoryReply.textReply.text?.body)
+      put(MessageTable.MESSAGE_RANGES, directStoryReply.textReply.text?.bodyRanges?.toLocalBodyRanges()?.encode())
+    }
   }
 
   private fun String?.tryParseMoney(): Money? {

@@ -14,8 +14,8 @@ import org.thoughtcrime.securesms.jobmanager.impl.BatteryNotLowConstraint;
 import org.thoughtcrime.securesms.jobmanager.impl.CellServiceConstraintObserver;
 import org.thoughtcrime.securesms.jobmanager.impl.ChangeNumberConstraint;
 import org.thoughtcrime.securesms.jobmanager.impl.ChangeNumberConstraintObserver;
-import org.thoughtcrime.securesms.jobmanager.impl.ChargingConstraint;
 import org.thoughtcrime.securesms.jobmanager.impl.ChargingAndBatteryIsNotLowConstraintObserver;
+import org.thoughtcrime.securesms.jobmanager.impl.ChargingConstraint;
 import org.thoughtcrime.securesms.jobmanager.impl.DataRestoreConstraint;
 import org.thoughtcrime.securesms.jobmanager.impl.DataRestoreConstraintObserver;
 import org.thoughtcrime.securesms.jobmanager.impl.DecryptionsDrainedConstraint;
@@ -150,6 +150,7 @@ public final class JobManagerFactories {
       put(CopyAttachmentToArchiveJob.KEY,            new CopyAttachmentToArchiveJob.Factory());
       put(CreateReleaseChannelJob.KEY,               new CreateReleaseChannelJob.Factory());
       put(DeleteAbandonedAttachmentsJob.KEY,         new DeleteAbandonedAttachmentsJob.Factory());
+      put(NewLinkedDeviceNotificationJob.KEY,        new NewLinkedDeviceNotificationJob.Factory());
       put(DeviceNameChangeJob.KEY,                   new DeviceNameChangeJob.Factory());
       put(DirectoryRefreshJob.KEY,                   new DirectoryRefreshJob.Factory());
       put(DownloadLatestEmojiDataJob.KEY,            new DownloadLatestEmojiDataJob.Factory());
@@ -383,6 +384,7 @@ public final class JobManagerFactories {
       put("SubscriptionReceiptCredentialsSubmissionJob", new FailingJob.Factory());
       put("DonationReceiptRedemptionJob",                new FailingJob.Factory());
       put("SendGiftJob",                                 new FailingJob.Factory());
+      put("InactiveGroupCheckMigrationJob",              new PassingMigrationJob.Factory());
     }};
   }
 
