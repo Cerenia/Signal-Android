@@ -61,6 +61,7 @@ import org.signal.core.util.concurrent.LifecycleDisposable;
 import org.signal.core.util.concurrent.SignalExecutors;
 import org.signal.core.util.logging.Log;
 import org.signal.libsignal.protocol.IdentityKey;
+import org.signal.ringrtc.GroupCall;
 import org.thoughtcrime.securesms.components.TooltipPopup;
 import org.thoughtcrime.securesms.components.sensors.Orientation;
 import org.thoughtcrime.securesms.components.webrtc.CallLinkProfileKeySender;
@@ -320,7 +321,7 @@ public class WebRtcCallActivity extends BaseActivity implements SafetyNumberChan
 
     if (!callPermissionsDialogController.isAskingForPermission() && !viewModel.isCallStarting() && !isChangingConfigurations()) {
       CallParticipantsState state = viewModel.getCallParticipantsStateSnapshot();
-      if (state != null && state.getCallState().isPreJoinOrNetworkUnavailable()) {
+      if (state != null && (state.getCallState().isPreJoinOrNetworkUnavailable() || state.getCallState().isIncomingOrHandledElsewhere())) {
         finish();
       }
     }
@@ -343,7 +344,7 @@ public class WebRtcCallActivity extends BaseActivity implements SafetyNumberChan
     if (!viewModel.isCallStarting() && !isChangingConfigurations()) {
       CallParticipantsState state = viewModel.getCallParticipantsStateSnapshot();
       if (state != null) {
-        if (state.getCallState().isPreJoinOrNetworkUnavailable()) {
+        if (state.getCallState().isPreJoinOrNetworkUnavailable() || state.getCallState().isIncomingOrHandledElsewhere()) {
           AppDependencies.getSignalCallManager().cancelPreJoin();
         } else if (state.getCallState().getInOngoingCall() && isInPipMode()) {
           AppDependencies.getSignalCallManager().relaunchPipOnForeground();
@@ -780,6 +781,13 @@ public class WebRtcCallActivity extends BaseActivity implements SafetyNumberChan
     }
   }
 
+  private void handleGroupCallHasMaxDevices(@NonNull Recipient recipient) {
+    new MaterialAlertDialogBuilder(this)
+        .setMessage(R.string.WebRtcCallView__call_is_full)
+        .setPositiveButton(android.R.string.ok, (d, w) -> handleTerminate(recipient, HangupMessage.Type.NORMAL))
+        .show();
+  }
+
   private void handleTerminate(@NonNull Recipient recipient, @NonNull HangupMessage.Type hangupType) {
     Log.i(TAG, "handleTerminate called: " + hangupType.name());
 
@@ -936,12 +944,23 @@ public class WebRtcCallActivity extends BaseActivity implements SafetyNumberChan
   @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
   public void onEventMainThread(@NonNull WebRtcViewModel event) {
     Log.i(TAG, "Got message from service: " + event.describeDifference(previousEvent));
+
+    WebRtcViewModel.State previousCallState = previousEvent != null ? previousEvent.getState() : null;
+
     previousEvent = event;
 
     viewModel.setRecipient(event.getRecipient());
     controlsAndInfoViewModel.setRecipient(event.getRecipient());
 
     switch (event.getState()) {
+      case CALL_INCOMING:
+        if (previousCallState == WebRtcViewModel.State.NETWORK_FAILURE) {
+          Log.d(TAG, "Incoming call directly from network failure state. Recreating activity.");
+          recreate();
+          return;
+        }
+
+        break;
       case CALL_PRE_JOIN:
         handleCallPreJoin(event); break;
       case CALL_CONNECTED:
@@ -953,7 +972,13 @@ public class WebRtcCallActivity extends BaseActivity implements SafetyNumberChan
       case CALL_RINGING:
         handleCallRinging(); break;
       case CALL_DISCONNECTED:
-        handleTerminate(event.getRecipient(), HangupMessage.Type.NORMAL); break;
+        if (event.getGroupCallEndReason() == GroupCall.GroupCallEndReason.HAS_MAX_DEVICES) {
+          handleGroupCallHasMaxDevices(event.getRecipient());
+        } else {
+          handleTerminate(event.getRecipient(), HangupMessage.Type.NORMAL);
+        }
+
+        break;
       case CALL_DISCONNECTED_GLARE:
         handleGlare(event.getRecipient()); break;
       case CALL_ACCEPTED_ELSEWHERE:

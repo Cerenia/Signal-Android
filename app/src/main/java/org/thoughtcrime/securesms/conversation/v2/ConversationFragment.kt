@@ -2384,7 +2384,7 @@ class ConversationFragment :
 
     val attachments = SaveAttachmentUtil.getAttachmentsForRecord(record)
 
-    SaveAttachmentUtil.showWarningDialog(requireContext(), attachments.size) { _, _ ->
+    SaveAttachmentUtil.showWarningDialogIfNecessary(requireContext()) {
       if (StorageUtil.canWriteToMediaStore()) {
         performAttachmentSave(attachments)
       } else {
@@ -3240,7 +3240,7 @@ class ConversationFragment :
 
                 binding.conversationItemRecycler.suppressLayout(false)
                 if (selectedConversationModel.audioUri != null) {
-                  getVoiceNoteMediaController().resumePlayback(selectedConversationModel.audioUri, messageRecord.getId())
+                  getVoiceNoteMediaController().resumePlayback(selectedConversationModel.audioUri, messageRecord.id)
                 }
 
                 WindowUtil.setLightStatusBarFromTheme(requireActivity())
@@ -3310,12 +3310,12 @@ class ConversationFragment :
     }
 
     private fun MessageRecord.getAudioUriForLongClick(): Uri? {
-      val playbackState = getVoiceNoteMediaController().voiceNotePlaybackState.value
-      if (playbackState == null || !playbackState.isPlaying) {
+      if (!hasAudio()) {
         return null
       }
 
-      if (hasAudio() || !isMms) {
+      val playbackState = getVoiceNoteMediaController().voiceNotePlaybackState.value
+      if (playbackState == null || !playbackState.isPlaying) {
         return null
       }
 

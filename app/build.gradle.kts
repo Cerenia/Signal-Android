@@ -20,8 +20,8 @@ plugins {
 
 apply(from = "static-ips.gradle.kts")
 
-val canonicalVersionCode = 1504
-val canonicalVersionName = "7.30.2"
+val canonicalVersionCode = 1506
+val canonicalVersionName = "7.31.1"
 val currentHotfixVersion = 0
 val maxHotfixVersions = 100
 
@@ -605,7 +605,6 @@ dependencies {
     }
   }
   testImplementation(testLibs.conscrypt.openjdk.uber)
-  testImplementation(testLibs.hamcrest.hamcrest)
   testImplementation(testLibs.mockk)
   testImplementation(testFixtures(project(":libsignal-service")))
   testImplementation(testLibs.espresso.core)
