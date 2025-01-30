@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.net.Uri;
 import android.util.Pair;
 
@@ -32,6 +33,7 @@ import org.thoughtcrime.securesms.crypto.ModernEncryptingPartOutputStream;
 import org.thoughtcrime.securesms.database.AttachmentTable;
 import org.thoughtcrime.securesms.database.EmojiSearchTable;
 import org.thoughtcrime.securesms.database.KeyValueDatabase;
+import org.thoughtcrime.securesms.database.MessageTable;
 import org.thoughtcrime.securesms.database.SearchTable;
 import org.thoughtcrime.securesms.database.StickerTable;
 import org.thoughtcrime.securesms.dependencies.AppDependencies;
@@ -51,6 +53,7 @@ import java.io.OutputStream;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -92,7 +95,7 @@ public class FullBackupImporter extends FullBackupBase {
       throws IOException
   {
     try (InputStream is = getInputStream(context, uri)) {
-      if (tiUri != null){
+      if (tiUri != null) {
         try (InputStream tiInputStream = getInputStream(context, tiUri)) {
           importFile(context, attachmentSecret, db, is, tiInputStream, passphrase);
         }
@@ -119,7 +122,7 @@ public class FullBackupImporter extends FullBackupBase {
     try {
       BackupRecordInputStream inputStream = new BackupRecordInputStream(is, passphrase);
       // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
-      BackupRecordInputStream tiInputStream = tiIs != null ?   new BackupRecordInputStream(tiIs, passphrase) : null;
+      BackupRecordInputStream tiInputStream = tiIs != null ? new BackupRecordInputStream(tiIs, passphrase) : null;
       // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
       dropAllTables(db);
 
@@ -142,10 +145,49 @@ public class FullBackupImporter extends FullBackupBase {
       }
 
       // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
-      if(tiInputStream != null) {
+      if (tiInputStream != null) {
         while ((frame = tiInputStream.readFrame()).end != Boolean.TRUE) {
-          if (frame.statement != null) processStatement(db, frame.statement);
-          else if (frame.preference != null) processPreference(context, frame.preference);
+          if (frame.statement != null) {
+            if (Objects.requireNonNull(frame.statement.statement).contains("TI_verification_types")) {
+              if (frame.statement.statement.startsWith("CREATE TABLE")) {
+                // we can skip this as we don't create the table
+                continue;
+              }
+              if (frame.statement.statement.startsWith("INSERT INTO")) {
+                // we can skip this as we don't insert into the table
+                if (frame.statement.parameters.size() != 2) {
+                  Log.e(TAG, "Got unexpected number of parameters for TI_verification_types: " + Arrays.toString(frame.statement.parameters.toArray()));
+                }
+                assert frame.statement.parameters.get(0).integerParameter != null;
+                assert frame.statement.parameters.get(1).integerParameter != null;
+                long msgId = frame.statement.parameters.get(0).integerParameter.longValue();
+                long msgVerifBits = frame.statement.parameters.get(1).integerParameter.longValue();
+                String selectQuery = "SELECT " + MessageTable.TYPE + " FROM " + MessageTable.TABLE_NAME + " WHERE " + MessageTable.ID + " = ?";
+                Cursor cursor      = db.rawQuery(selectQuery, new String[] { String.valueOf(msgId) });
+                int    currentType = 0;
+                if (cursor.moveToFirst()) {
+                  int idx = cursor.getColumnIndex(MessageTable.TYPE);
+                  if (idx < 0) {
+                    continue;
+                    // todo: log error
+                  }
+                  currentType = cursor.getInt(idx);
+                }
+                cursor.close();
+                long updatedType = currentType + msgVerifBits;
+
+                String updateQuery = "UPDATE " + MessageTable.TABLE_NAME + " SET " + MessageTable.TYPE + " = ? WHERE " + MessageTable.ID + " = ?";
+                db.execSQL(updateQuery, new Object[] { updatedType, msgId });
+
+
+                // update the type value by adding msgVerifBits to it and update the row
+                Log.e(TAG, "Process insert by modifying the Messages table: " + frame.statement.statement);
+              }
+            } else {
+              // normal statement
+              processStatement(db, frame.statement);
+            }
+          } else if (frame.preference != null) processPreference(context, frame.preference);
           else if (frame.attachment != null) processAttachment(context, attachmentSecret, db, frame.attachment, inputStream);
           else if (frame.sticker != null) processSticker(context, attachmentSecret, db, frame.sticker, inputStream);
           else if (frame.avatar != null) processAvatar(context, db, frame.avatar, inputStream);
