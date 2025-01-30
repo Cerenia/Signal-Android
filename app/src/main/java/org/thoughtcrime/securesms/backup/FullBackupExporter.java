@@ -1,6 +1,7 @@
 package org.thoughtcrime.securesms.backup;
 
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.text.TextUtils;
@@ -34,6 +35,7 @@ import org.thoughtcrime.securesms.database.GroupReceiptTable;
 import org.thoughtcrime.securesms.database.KeyValueDatabase;
 import org.thoughtcrime.securesms.database.MentionTable;
 import org.thoughtcrime.securesms.database.MessageTable;
+import org.thoughtcrime.securesms.database.MessageTypes;
 import org.thoughtcrime.securesms.database.OneTimePreKeyTable;
 import org.thoughtcrime.securesms.database.PendingRetryReceiptTable;
 import org.thoughtcrime.securesms.database.ReactionTable;
@@ -113,7 +115,7 @@ public class FullBackupExporter extends FullBackupBase {
   {
     try (OutputStream outputStream = new FileOutputStream(output)) {
       // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
-      try(OutputStream tiOutputStream = new FileOutputStream(tiOutput)) {
+      try (OutputStream tiOutputStream = new FileOutputStream(tiOutput)) {
         return internalExport(context, attachmentSecret, input, outputStream, tiOutputStream, passphrase, true, cancellationSignal);
       }
       // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
@@ -134,7 +136,7 @@ public class FullBackupExporter extends FullBackupBase {
   {
     try (OutputStream outputStream = Objects.requireNonNull(context.getContentResolver().openOutputStream(output.getUri()))) {
       // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
-      try(OutputStream tiOutputStream = Objects.requireNonNull(context.getContentResolver().openOutputStream(tiOutput.getUri()))) {
+      try (OutputStream tiOutputStream = Objects.requireNonNull(context.getContentResolver().openOutputStream(tiOutput.getUri()))) {
         return internalExport(context, attachmentSecret, input, outputStream, tiOutputStream, passphrase, true, cancellationSignal);
       }
       // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
@@ -185,6 +187,15 @@ public class FullBackupExporter extends FullBackupBase {
       outputStreamTI.writeDatabaseVersion(input.getVersion());
       List<String> tables = exportSchema(input, outputStream, false);
       Log.w(TAG, "Exporting TI Schema...");
+      String AUXILIARY_TABLE = "TI_verification_types";
+      String PK              = "message_id";
+      String VERIF_TYPE = "verification_bits";
+      input.execSQL("DROP TABLE IF EXISTS " + AUXILIARY_TABLE);
+      input.execSQL("CREATE TABLE " + AUXILIARY_TABLE + " (" +
+                    PK + " INTEGER PRIMARY KEY, " +
+                    VERIF_TYPE+ " INTEGER NOT NULL" +
+                    ")");
+
       List<String> ti_tables = exportSchema(input, outputStreamTI, true);
       // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 
@@ -219,9 +230,9 @@ public class FullBackupExporter extends FullBackupBase {
       tiCount += ti_tables.size() * TABLE_RECORD_COUNT_MULTIPLIER;
       final long estimatedTICount = calculateCount(context, input, ti_tables);
       estimatedTICountOutside = estimatedTICount;
-      for (String table: ti_tables){
+      for (String table : ti_tables) {
         throwIfCanceled(cancellationSignal);
-          tiCount = exportTable(table, input, outputStreamTI, null, null, tiCount, estimatedTICount, cancellationSignal);
+        tiCount = exportTable(table, input, outputStreamTI, null, null, tiCount, estimatedTICount, cancellationSignal);
       }
       // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 
@@ -314,6 +325,7 @@ public class FullBackupExporter extends FullBackupBase {
       throw new BackupCanceledException();
     }
   }
+
   // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
   private static List<String> exportSchema(@NonNull SQLiteDatabase input, @NonNull BackupFrameOutputStream outputStream, Boolean exportingTI)
       throws IOException
@@ -342,7 +354,7 @@ public class FullBackupExporter extends FullBackupBase {
       }
     }
 
-    for (String table :  tablesInOrder) {
+    for (String table : tablesInOrder) {
       String statement = createStatementsByTable.get(table);
 
       if (statement != null) {
@@ -364,7 +376,7 @@ public class FullBackupExporter extends FullBackupBase {
           }
         } else {
           if (name.contains("TI") || name.contains("trusted")) {
-            Log.w(TAG, "wrote to ti_table data "+ name + " -> "+ sql);
+            Log.w(TAG, "wrote to ti_table data " + name + " -> " + sql);
             outputStream.write(new SqlStatement.Builder().statement(sql).build());
           }
           // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
@@ -473,6 +485,10 @@ public class FullBackupExporter extends FullBackupBase {
 
     String template = "INSERT INTO " + table + " VALUES ";
 
+    boolean isAltertedMessageTable = table.equals(MessageTable.TABLE_NAME);
+    String AUXILIARY_TABLE = "TI_verification_types";
+    String PK              = "message_id";
+    String VERIF_TYPE = "verification_bits";
     try (Cursor cursor = input.rawQuery("SELECT * FROM " + table, null)) {
       while (cursor != null && cursor.moveToNext()) {
         throwIfCanceled(cancellationSignal);
@@ -488,18 +504,45 @@ public class FullBackupExporter extends FullBackupBase {
           for (int i = 0; i < cursor.getColumnCount(); i++) {
             statement.append('?');
 
-            if (cursor.getType(i) == Cursor.FIELD_TYPE_STRING) {
-              statementBuilder.parameters.add(new SqlStatement.SqlParameter.Builder().stringParamter(cursor.getString(i)).build());
-            } else if (cursor.getType(i) == Cursor.FIELD_TYPE_FLOAT) {
-              statementBuilder.parameters.add(new SqlStatement.SqlParameter.Builder().doubleParameter(cursor.getDouble(i)).build());
-            } else if (cursor.getType(i) == Cursor.FIELD_TYPE_INTEGER) {
-              statementBuilder.parameters.add(new SqlStatement.SqlParameter.Builder().integerParameter(cursor.getLong(i)).build());
-            } else if (cursor.getType(i) == Cursor.FIELD_TYPE_BLOB) {
-              statementBuilder.parameters.add(new SqlStatement.SqlParameter.Builder().blobParameter(new ByteString(cursor.getBlob(i))).build());
-            } else if (cursor.getType(i) == Cursor.FIELD_TYPE_NULL) {
-              statementBuilder.parameters.add(new SqlStatement.SqlParameter.Builder().nullparameter(true).build());
+            if (isAltertedMessageTable && cursor.getColumnName(i).equals(MessageTable.TYPE)) {
+              // oh boy, we need to do some special handling here
+              long messageId   = CursorUtil.requireLong(cursor, MessageTable.ID);
+              long currentType = cursor.getLong(i);
+              if (MessageTypes.isIdentityQrVerified(currentType) || MessageTypes.isIdentityTiVerified(currentType)) {
+                long newType     = MessageTypes.clearExtendedVerificationBits(currentType); //todo: should probably clean all higher-order bits, in case we add more later on
+                long bitsToStore = currentType - newType;
+                if (bitsToStore != 0) {
+                  // create a record in the other table
+                  Log.w(TAG, "Exporting message type bits: " + bitsToStore + " for message: " + messageId);
+                  ContentValues values = new ContentValues();
+                  values.put(PK, messageId);
+                  values.put(VERIF_TYPE, bitsToStore);
+
+                  // Use replace in case we need to reprocess
+                  final long result = input.replace(AUXILIARY_TABLE, null, values);
+                  if (result == -1) {
+                    Log.w(TAG, "Failed to store verification bits for message: " + messageId);
+                  }
+                  assert currentType >= newType;
+                  currentType = newType;
+                }
+              }
+              statementBuilder.parameters.add(new SqlStatement.SqlParameter.Builder().integerParameter(currentType).build());
+
             } else {
-              throw new AssertionError("unknown type?" + cursor.getType(i));
+              if (cursor.getType(i) == Cursor.FIELD_TYPE_STRING) {
+                statementBuilder.parameters.add(new SqlStatement.SqlParameter.Builder().stringParamter(cursor.getString(i)).build());
+              } else if (cursor.getType(i) == Cursor.FIELD_TYPE_FLOAT) {
+                statementBuilder.parameters.add(new SqlStatement.SqlParameter.Builder().doubleParameter(cursor.getDouble(i)).build());
+              } else if (cursor.getType(i) == Cursor.FIELD_TYPE_INTEGER) {
+                statementBuilder.parameters.add(new SqlStatement.SqlParameter.Builder().integerParameter(cursor.getLong(i)).build());
+              } else if (cursor.getType(i) == Cursor.FIELD_TYPE_BLOB) {
+                statementBuilder.parameters.add(new SqlStatement.SqlParameter.Builder().blobParameter(new ByteString(cursor.getBlob(i))).build());
+              } else if (cursor.getType(i) == Cursor.FIELD_TYPE_NULL) {
+                statementBuilder.parameters.add(new SqlStatement.SqlParameter.Builder().nullparameter(true).build());
+              } else {
+                throw new AssertionError("unknown type?" + cursor.getType(i));
+              }
             }
 
             if (i < cursor.getColumnCount() - 1) {
@@ -714,15 +757,15 @@ public class FullBackupExporter extends FullBackupBase {
 
   // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
   public static class FinishedEventHandleWrapper {
-    boolean isTI;
+    boolean     isTI;
     BackupEvent event;
 
-    public FinishedEventHandleWrapper(BackupEvent e, boolean ti){
-      isTI = ti;
+    public FinishedEventHandleWrapper(BackupEvent e, boolean ti) {
+      isTI  = ti;
       event = e;
     }
 
-    public long getCount(){
+    public long getCount() {
       if (isTI) {
         return event.getTICount();
       } else {
