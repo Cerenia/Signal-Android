@@ -422,4 +422,15 @@
         <item name="android:layout_width">@dimen/exo_media_preview_button_width</item>
         <item name="android:layout_height">@dimen/exo_media_preview_button_width</item>
     </style>
+
+
+    <style name="TIWidget.App.Button.OutlinedButton.IconOnly" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="iconPadding">0dp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:paddingLeft">12dp</item>
+        <item name="android:paddingRight">12dp</item>
+        <item name="android:minWidth">48dp</item>
+        <item name="android:minHeight">48dp</item>
+    </style>
 </resources>

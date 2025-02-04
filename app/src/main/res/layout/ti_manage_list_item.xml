@@ -15,7 +15,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.25" />
+        app:layout_constraintGuide_percent="0.22" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline_right"
@@ -208,5 +208,94 @@
             android:button="@drawable/ic_ti_selector_rejected_24" />
 
     </RadioGroup>
+
+    <org.thoughtcrime.securesms.components.AvatarImageView
+        android:id="@+id/introducerAvatar"
+        android:layout_width="@dimen/conversation_list_avatar_size"
+        android:layout_height="@dimen/conversation_list_avatar_size"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="4dp"
+        android:contentDescription="@string/conversation_list_item_view__contact_photo_image"
+        app:layout_constraintTop_toBottomOf="@id/delete"
+        app:layout_goneMarginStart="0dp"
+        tools:src="@tools:sample/avatars" />
+
+    <org.thoughtcrime.securesms.components.AvatarImageView
+        android:id="@+id/introduceeAvatar"
+        android:layout_width="@dimen/conversation_list_avatar_size"
+        android:layout_height="@dimen/conversation_list_avatar_size"
+        android:layout_marginStart="-16dp"
+        android:layout_marginTop="4dp"
+        android:contentDescription="@string/conversation_list_item_view__contact_photo_image"
+        app:layout_constraintTop_toBottomOf="@id/delete"
+        app:layout_constraintLeft_toRightOf="@id/introducerAvatar"
+        app:layout_goneMarginStart="0dp"
+        tools:src="@tools:sample/avatars" />
+
+    <org.thoughtcrime.securesms.components.FromTextView
+        android:id="@+id/introduceeHeading"
+        style="@style/Signal.Text.BodyLarge"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="12dp"
+        android:drawablePadding="5dp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textAlignment="viewStart"
+        android:textColor="@color/signal_colorOnSurface"
+        app:layout_constraintTop_toBottomOf="@id/delete"
+        app:layout_constraintStart_toEndOf="@id/introduceeAvatar"
+        app:layout_constraintEnd_toStartOf="@id/guideline_right"
+        app:layout_constraintVertical_chainStyle="packed"
+        tools:text="Long Chat name for testing purposes" />
+
+    <org.thoughtcrime.securesms.components.emoji.EmojiTextView
+        android:id="@+id/introduceeInfo"
+        style="@style/Signal.Text.BodyMedium"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="12dp"
+        android:ellipsize="end"
+        android:lines="2"
+        android:maxLines="2"
+        android:textColor="@color/signal_text_secondary"
+        app:emoji_renderSpoilers="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/guideline_right"
+        app:layout_constraintStart_toEndOf="@id/introduceeAvatar"
+        app:layout_constraintTop_toBottomOf="@id/introduceeHeading"
+        app:layout_constraintVertical_chainStyle="packed"
+        tools:text="I'll send those photos over to the Bugle ASAP." />
+
+    <com.google.android.material.button.MaterialButtonToggleGroup
+        android:id="@+id/trust_distrust2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/delete"
+        app:layout_constraintStart_toEndOf="@+id/guideline_right"
+        app:singleSelection="true"
+        >
+        <com.google.android.material.button.MaterialButton
+            style="@style/TIWidget.App.Button.OutlinedButton.IconOnly"
+            android:id="@+id/accept2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:icon="@drawable/ic_ti_selector_accepted_24"
+            app:iconTint="@color/ti_accept_introduction_color"
+            />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/reject2"
+            style="@style/TIWidget.App.Button.OutlinedButton.IconOnly"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:icon="@drawable/ic_ti_selector_rejected_24"
+            app:iconTint="@color/ti_reject_introduction_color"
+            />
+
+    </com.google.android.material.button.MaterialButtonToggleGroup>
+
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

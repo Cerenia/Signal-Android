@@ -68,7 +68,7 @@ class ManageActivity : PassphraseRequiredActivity() {
     ManageListFragment.FORGOTTEN_INTRODUCER = getString(R.string.ManageIntroductionsListItem__Forgotten_Introducer)
 
     // Initialize navigation titles
-    tabTitles[0] = getString(R.string.ManageIntroductionsActivity__Navigation_Tab_new)
+    tabTitles[0] = getString(R.string.ManageIntroductionsActivity__Navigation_Tab_pending)
     tabTitles[1] = getString(R.string.ManageIntroductionsActivity__Navigation_Tab_library)
 //    tabTitles[2] = getString(R.string.ManageIntroductionsActivity__Navigation_Tab_all) // todo: No idea why, to remove
 
