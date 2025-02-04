@@ -5,22 +5,25 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
+import android.widget.Button
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.TextView
 import android.widget.Toast
-import androidx.constraintlayout.widget.Guideline
 import androidx.core.content.ContextCompat
 import androidx.core.util.Pair
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.button.MaterialButtonToggleGroup
 import org.signal.core.util.logging.Log
 import org.thoughtcrime.securesms.R
+import org.thoughtcrime.securesms.avatar.fallback.FallbackAvatar
+import org.thoughtcrime.securesms.components.AvatarImageView
 import org.thoughtcrime.securesms.recipients.Recipient
 import org.thoughtcrime.securesms.recipients.RecipientId
+import org.thoughtcrime.securesms.trustedIntroductions.RelativeTimestamp.getRelativeTime
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils
 import org.thoughtcrime.securesms.trustedIntroductions.database.TI_Database
@@ -116,13 +119,24 @@ class ManageAdapter(
     private val maskIntroducer: MaterialButton = itemView.findViewById(R.id.mask)
     private val delete: MaterialButton = itemView.findViewById(R.id.delete)
 
+    // my experimental stuff
+    private val introducerAvatar: AvatarImageView = itemView.findViewById(R.id.introducerAvatar);
+    private val introduceeAvatar: AvatarImageView = itemView.findViewById(R.id.introduceeAvatar);
+    private val introduceeHeading: TextView = itemView.findViewById(R.id.introduceeHeading);
+    private val introduceeInfo: TextView = itemView.findViewById(R.id.introduceeInfo);
+
+    private val toggleGroup: MaterialButtonToggleGroup = itemView.findViewById(R.id.trust_distrust2);
+    private val acceptBtn: Button = itemView.findViewById(R.id.accept2);
+    private val rejectBtn: Button = itemView.findViewById(R.id.reject2);
+
+
     init {
       radioGroup.setOnCheckedChangeListener { _, id ->
         changeTrust(id == accept.id)
       }
     }
 
-    @SuppressLint("RestrictedApi")
+    @SuppressLint("RestrictedApi", "SetTextI18n")
     fun bind(d: TI_Data?, introducerInformation: ManageViewModel.IntroducerInformation?) {
       data = d
       d?.let { safeData ->
@@ -146,7 +160,6 @@ class ManageAdapter(
 
         introducerNumber.visibility = View.VISIBLE
         introducerName.visibility = View.VISIBLE
-//        guideline.setGuidelinePercent(0.5f)
         changeListItemAppearanceByState(safeData.state)
 
         maskIntroducer.setOnClickListener {
@@ -158,6 +171,22 @@ class ManageAdapter(
         chatButton.setOnClickListener {
           listener.openChat(safeData.introduceeServiceId, safeData.introduceeNumber, null)
         }
+
+        // todo: mask should probably not set the `safeData.introducerServiceId` as the "-1" string
+        val introducerRecipient = safeData.introducerServiceId?.let { serviceId -> runCatching { TI_Utils.getRecipientIdOrUnknown(serviceId) }.getOrNull() }
+        if (introducerRecipient != null && !introducerRecipient.isUnknown) {
+          introducerAvatar.setAvatar(Recipient.resolved(introducerRecipient)) // todo: might hit the disk and crash terribly
+        } else {
+          introducerAvatar.setNonAvatarImageResource(R.drawable.ti_domino_mask_active_48)
+        }
+        val introduceeRecipient = safeData.introduceeServiceId.let { serviceId -> runCatching { TI_Utils.getRecipientIdOrUnknown(serviceId) }.getOrNull() }
+        if (introduceeRecipient != null && !introduceeRecipient.isUnknown) {
+          introduceeAvatar.setAvatar(Recipient.resolved(introduceeRecipient)) // todo: might hit the disk and crash terribly
+        }
+
+        introduceeHeading.text = "Meet " + safeData.introduceeName
+        val introducer = introducerInformation?.name ?: "Somebody"
+        introduceeInfo.text = "Introduced by " + introducer + " (" + getRelativeTime(context, safeData.timestamp) + ")";
       }
     }
 
@@ -184,6 +213,11 @@ class ManageAdapter(
         }
       }
     }
+
+    fun getIntroducerServiceId(): String {
+      return data?.introducerServiceId ?: TI_Database.UNKNOWN_INTRODUCER_SERVICE_ID
+    }
+
 
     private fun changeTrust(trust: Boolean) {
       val currentData = data ?: return
@@ -229,11 +263,11 @@ class ManageAdapter(
         introducerName.visibility = View.GONE
 //        mask.visibility = View.VISIBLE
         maskIntroducer.setIconResource(R.drawable.ti_domino_mask_active_48)
-        maskIntroducer.setEnabled(false)
+        maskIntroducer.isEnabled = false
       } else {
 //        maskIntroducer.visibility = View.VISIBLE
         maskIntroducer.setIconResource(R.drawable.ti_domino_mask_24px)
-        maskIntroducer.setEnabled(true)
+        maskIntroducer.isEnabled = true
 //        mask.visibility = View.GONE
       }
     }
@@ -253,6 +287,11 @@ class ManageAdapter(
       accept.isClickable = !state.isStale
       reject.isEnabled = !state.isStale
       reject.isClickable = !state.isStale
+
+      acceptBtn.isEnabled = !state.isStale
+      acceptBtn.isClickable = !state.isStale
+      rejectBtn.isEnabled = !state.isStale
+      rejectBtn.isClickable = !state.isStale
 
       // Masking visibility and state
       maskIntroducer.visibility = View.VISIBLE
@@ -280,12 +319,14 @@ class ManageAdapter(
           radioGroupLabel.visibility = View.VISIBLE
           radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Conflicting)
           if (!accept.isChecked) accept.isChecked = true
+          toggleGroup.check(acceptBtn.id);
         }
 
         REJECTED_CONFLICTING -> {
           radioGroupLabel.visibility = View.VISIBLE
           radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Conflicting)
           if (!reject.isChecked) reject.isChecked = true
+          toggleGroup.check(rejectBtn.id);
         }
 
         STALE_PENDING, STALE_PENDING_CONFLICTING -> {
@@ -297,22 +338,26 @@ class ManageAdapter(
           radioGroupLabel.visibility = View.VISIBLE
           radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Stale)
           if (!accept.isChecked) accept.isChecked = true
+          toggleGroup.check(acceptBtn.id);
         }
 
         STALE_REJECTED, STALE_REJECTED_CONFLICTING -> {
           radioGroupLabel.visibility = View.VISIBLE
           radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Stale)
           if (!reject.isChecked) reject.isChecked = true
+          toggleGroup.check(rejectBtn.id);
         }
 
         ACCEPTED, ACCEPTED_UNKNOWN -> {
           radioGroupLabel.visibility = View.GONE
           if (!accept.isChecked) accept.isChecked = true
+          toggleGroup.check(acceptBtn.id);
         }
 
         REJECTED, REJECTED_UNKNOWN -> {
           radioGroupLabel.visibility = View.GONE
           if (!reject.isChecked) reject.isChecked = true
+          toggleGroup.check(rejectBtn.id);
         }
       }
     }

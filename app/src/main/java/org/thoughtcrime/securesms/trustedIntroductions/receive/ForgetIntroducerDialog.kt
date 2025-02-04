@@ -1,8 +1,8 @@
 package org.thoughtcrime.securesms.trustedIntroductions.receive
 
-import android.app.AlertDialog
 import android.content.Context
 import android.content.DialogInterface
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import org.signal.core.util.logging.Log.tag
 import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils
@@ -17,7 +17,7 @@ object ForgetIntroducerDialog {
 
   @JvmStatic
   fun show(context: Context, introductionId: Long, introduceeName: String, introducerName: String, date: Date, f: ForgetIntroducer) {
-    val builder = AlertDialog.Builder(context).setTitle(R.string.ForgetIntroducerDialog__Title)
+    val builder = MaterialAlertDialogBuilder(context).setTitle(R.string.ForgetIntroducerDialog__Title)
     // TODO: do we still want to differentiate? or can we get rid of t?
     val text = context.getString(R.string.ForgetIntroducerDialog__Forget_Introducer_ALL, introducerName, introduceeName, INTRODUCTION_DATE_PATTERN.format(date))
     builder.setMessage(text)

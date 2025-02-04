@@ -8203,7 +8203,7 @@
     <string name="CanNotIntroduceDialog__Identity_record_empty">Could not redirect to the verification screen, please try to navigate there manually.</string>
 
     <!-- DeleteIntroductionDialog -->
-    <string name="DeleteIntroductionDialog__Title">Delete Introduction:</string>
+    <string name="DeleteIntroductionDialog__Title">Delete Introduction</string>
     <string name="DeleteIntroductionDialog__Delete_Introduction">Are you sure that you want to delete %1$s\'s introduction of %2$s from the %3$s? This action is not reversible!</string>
 
     <!-- ClearVerificationDialog -->
@@ -8234,6 +8234,7 @@
     <string name="ManageIntroductionsActivity__Toolbar_Title">Trusted Introductions:</string>
     <string name="ManageIntroductionsActivity__Filter_hint">Search Introductions</string>
     <string name="ManageIntroductionsActivity__Navigation_Tab_new">New</string>
+    <string name="ManageIntroductionsActivity__Navigation_Tab_pending">Pending</string>
     <string name="ManageIntroductionsActivity__Navigation_Tab_library">Library</string>
     <string name="ManageIntroductionsActivity__Navigation_Tab_all">All</string>
 
