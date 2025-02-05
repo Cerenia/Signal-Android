@@ -103,21 +103,8 @@ class ManageAdapter(
     private val context: Context
   ) : RecyclerView.ViewHolder(itemView) {
     private var data: TI_Data? = null
-    private val timestampDate: TextView = itemView.findViewById(R.id.timestamp_date)
-    private val timestampTime: TextView = itemView.findViewById(R.id.timestamp_time)
-    private val introducerName: TextView = itemView.findViewById(R.id.introducerName)
-    private val introducerNumber: TextView = itemView.findViewById(R.id.introducerNumber)
-    private val introduceeName: TextView = itemView.findViewById(R.id.introduceeName)
-    private val introduceeNumber: TextView = itemView.findViewById(R.id.introduceeNumber)
-    private val accept: RadioButton = itemView.findViewById(R.id.accept)
-    private val reject: RadioButton = itemView.findViewById(R.id.reject)
-    private val radioGroup: RadioGroup = itemView.findViewById(R.id.trust_distrust)
-    private val radioGroupLabel: TextView = itemView.findViewById(R.id.radio_group_label)
+
     private val chatButton: MaterialButton = itemView.findViewById(R.id.chat)
-//    private val guideline: Guideline = itemView.findViewById(R.id.guideline_right)
-//    private val mask: ImageView = itemView.findViewById(R.id.maskedImage)
-    private val maskIntroducer: MaterialButton = itemView.findViewById(R.id.mask)
-    private val delete: MaterialButton = itemView.findViewById(R.id.delete)
 
     // my experimental stuff
     private val introducerAvatar: AvatarImageView = itemView.findViewById(R.id.introducerAvatar);
@@ -125,16 +112,10 @@ class ManageAdapter(
     private val introduceeHeading: TextView = itemView.findViewById(R.id.introduceeHeading);
     private val introduceeInfo: TextView = itemView.findViewById(R.id.introduceeInfo);
 
-    private val toggleGroup: MaterialButtonToggleGroup = itemView.findViewById(R.id.trust_distrust2);
-    private val acceptBtn: Button = itemView.findViewById(R.id.accept2);
-    private val rejectBtn: Button = itemView.findViewById(R.id.reject2);
+    private val toggleGroup: MaterialButtonToggleGroup = itemView.findViewById(R.id.toggleTrust);
+    private val acceptBtn: Button = itemView.findViewById(R.id.acceptIntro);
+    private val rejectBtn: Button = itemView.findViewById(R.id.rejectIntro);
 
-
-    init {
-      radioGroup.setOnCheckedChangeListener { _, id ->
-        changeTrust(id == accept.id)
-      }
-    }
 
     @SuppressLint("RestrictedApi", "SetTextI18n")
     fun bind(d: TI_Data?, introducerInformation: ManageViewModel.IntroducerInformation?) {
@@ -162,12 +143,14 @@ class ManageAdapter(
         introducerName.visibility = View.VISIBLE
         changeListItemAppearanceByState(safeData.state)
 
-        maskIntroducer.setOnClickListener {
-          listener.mask(this, safeData.introducerServiceId!!)
+        acceptBtn.setOnClickListener { _ ->
+          changeTrust(true)
         }
-        delete.setOnClickListener {
-          listener.delete(this, safeData.introducerServiceId!!)
+
+        rejectBtn.setOnClickListener { _ ->
+          changeTrust(false)
         }
+
         chatButton.setOnClickListener {
           listener.openChat(safeData.introduceeServiceId, safeData.introduceeNumber, null)
         }
@@ -187,6 +170,24 @@ class ManageAdapter(
         introduceeHeading.text = "Meet " + safeData.introduceeName
         val introducer = introducerInformation?.name ?: "Somebody"
         introduceeInfo.text = "Introduced by " + introducer + " (" + getRelativeTime(context, safeData.timestamp) + ")";
+
+        introducerAvatar.setOnClickListener {
+          run {
+            Toast.makeText(it.context, "This is $introducer", Toast.LENGTH_LONG).show()
+            if (introducerRecipient != null && !introducerRecipient.isUnknown) {
+              RecipientBottomSheetDialogFragment.show((context as FragmentActivity).supportFragmentManager, introducerRecipient, null)
+            }
+          }
+        }
+
+        introduceeAvatar.setOnClickListener {
+          run {
+            Toast.makeText(it.context, "Introducee: $safeData.introduceeName ($safeData.introduceeServiceId)", Toast.LENGTH_LONG).show()
+            if (introduceeRecipient != null && !introduceeRecipient.isUnknown) {
+              RecipientBottomSheetDialogFragment.show((context as FragmentActivity).supportFragmentManager, introduceeRecipient, null)
+            }
+          }
+        }
       }
     }
 
@@ -255,21 +256,9 @@ class ManageAdapter(
       Toast.makeText(context, toastContent, Toast.LENGTH_SHORT).show()
     }
 
+    @Deprecated("Will be removed if not needed anymore")
     private fun setForgetIntroducerComponentVisibility() {
       val introducerServiceId = requireNotNull(data?.introducerServiceId)
-      if (introducerServiceId == TI_Database.UNKNOWN_INTRODUCER_SERVICE_ID) {
-//        maskIntroducer.visibility = View.GONE
-        introducerNumber.visibility = View.GONE
-        introducerName.visibility = View.GONE
-//        mask.visibility = View.VISIBLE
-        maskIntroducer.setIconResource(R.drawable.ti_domino_mask_active_48)
-        maskIntroducer.isEnabled = false
-      } else {
-//        maskIntroducer.visibility = View.VISIBLE
-        maskIntroducer.setIconResource(R.drawable.ti_domino_mask_24px)
-        maskIntroducer.isEnabled = true
-//        mask.visibility = View.GONE
-      }
     }
 
     private fun changeListItemAppearanceByState(state: TI_DatabaseGlue.Companion.State) {
@@ -282,82 +271,42 @@ class ManageAdapter(
       }
       itemView.background = ContextCompat.getDrawable(context, backgroundRes)
 
-      // Radio buttons state
-      accept.isEnabled = !state.isStale
-      accept.isClickable = !state.isStale
-      reject.isEnabled = !state.isStale
-      reject.isClickable = !state.isStale
-
+      // Toggle buttons state
       acceptBtn.isEnabled = !state.isStale
       acceptBtn.isClickable = !state.isStale
       rejectBtn.isEnabled = !state.isStale
       rejectBtn.isClickable = !state.isStale
 
-      // Masking visibility and state
-      maskIntroducer.visibility = View.VISIBLE
-      when (state) {
-        STALE_PENDING, STALE_PENDING_CONFLICTING -> {
-          maskIntroducer.isEnabled = true
-          maskIntroducer.isClickable = true
-        }
-
-        else -> {
-          maskIntroducer.isEnabled = !state.isPending
-          maskIntroducer.isClickable = !state.isPending
-          setForgetIntroducerComponentVisibility()
-        }
-      }
-
       // Label text and radio group state
       when (state) {
         PENDING, PENDING_CONFLICTING, PENDING_UNKNOWN -> {
-          radioGroupLabel.visibility = View.VISIBLE
-          radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Pending)
         }
 
         ACCEPTED_CONFLICTING -> {
-          radioGroupLabel.visibility = View.VISIBLE
-          radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Conflicting)
-          if (!accept.isChecked) accept.isChecked = true
-          toggleGroup.check(acceptBtn.id);
+          if (toggleGroup.checkedButtonId != acceptBtn.id) toggleGroup.check(acceptBtn.id);
         }
 
         REJECTED_CONFLICTING -> {
-          radioGroupLabel.visibility = View.VISIBLE
-          radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Conflicting)
-          if (!reject.isChecked) reject.isChecked = true
-          toggleGroup.check(rejectBtn.id);
+          if (toggleGroup.checkedButtonId != rejectBtn.id) toggleGroup.check(rejectBtn.id);
         }
 
         STALE_PENDING, STALE_PENDING_CONFLICTING -> {
-          radioGroupLabel.visibility = View.VISIBLE
-          radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Stale)
         }
 
         STALE_ACCEPTED, STALE_ACCEPTED_CONFLICTING -> {
-          radioGroupLabel.visibility = View.VISIBLE
-          radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Stale)
-          if (!accept.isChecked) accept.isChecked = true
-          toggleGroup.check(acceptBtn.id);
+          if (toggleGroup.checkedButtonId != acceptBtn.id) toggleGroup.check(acceptBtn.id);
         }
 
         STALE_REJECTED, STALE_REJECTED_CONFLICTING -> {
-          radioGroupLabel.visibility = View.VISIBLE
-          radioGroupLabel.setText(R.string.ManageIntroductionsListItem__Stale)
-          if (!reject.isChecked) reject.isChecked = true
-          toggleGroup.check(rejectBtn.id);
+          if (toggleGroup.checkedButtonId != rejectBtn.id) toggleGroup.check(rejectBtn.id);
         }
 
         ACCEPTED, ACCEPTED_UNKNOWN -> {
-          radioGroupLabel.visibility = View.GONE
-          if (!accept.isChecked) accept.isChecked = true
-          toggleGroup.check(acceptBtn.id);
+          if (toggleGroup.checkedButtonId != acceptBtn.id) toggleGroup.check(acceptBtn.id);
         }
 
         REJECTED, REJECTED_UNKNOWN -> {
-          radioGroupLabel.visibility = View.GONE
-          if (!reject.isChecked) reject.isChecked = true
-          toggleGroup.check(rejectBtn.id);
+          if (toggleGroup.checkedButtonId != rejectBtn.id) toggleGroup.check(rejectBtn.id);
         }
       }
     }
