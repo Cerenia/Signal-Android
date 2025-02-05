@@ -6,12 +6,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.RadioButton
-import android.widget.RadioGroup
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.util.Pair
+import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -19,10 +18,10 @@ import com.google.android.material.button.MaterialButton
 import com.google.android.material.button.MaterialButtonToggleGroup
 import org.signal.core.util.logging.Log
 import org.thoughtcrime.securesms.R
-import org.thoughtcrime.securesms.avatar.fallback.FallbackAvatar
 import org.thoughtcrime.securesms.components.AvatarImageView
 import org.thoughtcrime.securesms.recipients.Recipient
 import org.thoughtcrime.securesms.recipients.RecipientId
+import org.thoughtcrime.securesms.recipients.ui.bottomsheet.RecipientBottomSheetDialogFragment
 import org.thoughtcrime.securesms.trustedIntroductions.RelativeTimestamp.getRelativeTime
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Data
 import org.thoughtcrime.securesms.trustedIntroductions.TI_Utils
@@ -124,23 +123,6 @@ class ManageAdapter(
         val date = Date(safeData.timestamp)
         val dString = TI_Utils.INTRODUCTION_DATE_PATTERN.format(date)
 
-        timestampDate.text = dString.split(" ")[0]
-        timestampTime.text = dString.split(" ")[1]
-        introduceeName.text = safeData.introduceeName
-        introduceeNumber.text = safeData.introduceeNumber
-        introduceeName.visibility = View.VISIBLE
-        introduceeNumber.visibility = View.VISIBLE
-
-        if (introducerInformation == null) {
-          introducerName.setText(R.string.ManageIntroductionsListItem__Unknown_Value)
-          introducerNumber.setText(R.string.ManageIntroductionsListItem__Unknown_Value)
-        } else {
-          introducerNumber.text = introducerInformation.number
-          introducerName.text = introducerInformation.name
-        }
-
-        introducerNumber.visibility = View.VISIBLE
-        introducerName.visibility = View.VISIBLE
         changeListItemAppearanceByState(safeData.state)
 
         acceptBtn.setOnClickListener { _ ->
