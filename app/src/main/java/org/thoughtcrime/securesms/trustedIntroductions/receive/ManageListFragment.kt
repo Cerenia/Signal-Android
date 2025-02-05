@@ -535,27 +535,37 @@ class ManageListFragment(
     }
 
     override fun onChildDraw(
-      canvas: Canvas, recyclerView: RecyclerView,
+      canvas: Canvas,
+      recyclerView: RecyclerView,
       viewHolder: RecyclerView.ViewHolder,
-      dX: Float, dY: Float, actionState: Int,
+      dX: Float,
+      dY: Float,
+      actionState: Int,
       isCurrentlyActive: Boolean
     ) {
       val absoluteDx = abs(dX.toDouble()).toFloat()
       val context = viewHolder.itemView.context
+      val isRtl = ViewUtil.isRtl(context)
 
       var iconDrawable: Drawable? = null
       if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
         val resources: Resources = getResources(context, Locale.getDefault())
         val itemView = viewHolder.itemView
         val percentDx = absoluteDx / viewHolder.itemView.width
-        val color = if (dX > 0) {
+
+        // Determine if swipe is towards start or end
+        val isSwipeToEnd = if (isRtl) dX < 0 else dX > 0
+
+        val color = if (isSwipeToEnd) {
           ArgbEvaluatorCompat.getInstance().evaluate(
-            min(1.0, (percentDx * (1 / 0.25f)).toDouble()).toFloat(), ContextCompat.getColor(context, R.color.conversation_violet),
+            min(1.0, (percentDx * (1 / 0.25f)).toDouble()).toFloat(),
+            ContextCompat.getColor(context, R.color.conversation_violet),
             ContextCompat.getColor(context, R.color.conversation_violet_shade)
           )
         } else {
           ArgbEvaluatorCompat.getInstance().evaluate(
-            min(1.0, (percentDx * (1 / 0.25f)).toDouble()).toFloat(), ContextCompat.getColor(context, R.color.conversation_crimson),
+            min(1.0, (percentDx * (1 / 0.25f)).toDouble()).toFloat(),
+            ContextCompat.getColor(context, R.color.conversation_crimson),
             ContextCompat.getColor(context, R.color.conversation_crimson_shade)
           )
         }
@@ -570,58 +580,41 @@ class ManageListFragment(
           min(
             MAX_ICON_SCALE.toDouble(),
             (MIN_ICON_SCALE + ((absoluteDx - scaleStartPoint) / (scaleEndPoint - scaleStartPoint)) * (MAX_ICON_SCALE - MIN_ICON_SCALE)).toDouble()
-          )
-            .toFloat()
+          ).toFloat()
         }
 
         if (absoluteDx > 0) {
           if (iconDrawable == null) {
-            iconDrawable = if (dX > 0) {
+            iconDrawable = if (isSwipeToEnd) {
               Objects.requireNonNull<Drawable?>(AppCompatResources.getDrawable(context, R.drawable.ti_domino_mask_24px))
             } else {
               Objects.requireNonNull<Drawable?>(AppCompatResources.getDrawable(context, R.drawable.ic_ti_trash_24))
             }
-            iconDrawable.colorFilter = SimpleColorFilter(ContextCompat.getColor(context, R.color.signal_colorOnPrimary))
-
+            iconDrawable.colorFilter = SimpleColorFilter(ContextCompat.getColor(context, R.color.signal_colorOnSurface))
             iconDrawable.setBounds(0, 0, iconDrawable.intrinsicWidth, iconDrawable.intrinsicHeight)
           }
 
           canvas.save()
           canvas.clipRect(itemView.left, itemView.top, itemView.right, itemView.bottom)
-
           canvas.drawColor(color)
 
           val gutter = resources.getDimension(R.dimen.dsl_settings_gutter)
           val extra = resources.getDimension(R.dimen.conversation_list_fragment_archive_padding)
 
-          if (dX > 0) {
-            if (ViewUtil.isLtr(context)) {
-              canvas.translate(
-                itemView.left + gutter + extra,
-                itemView.top + (itemView.bottom - itemView.top - iconDrawable!!.intrinsicHeight) / 2f
-              )
-            } else {
-              canvas.translate(
-                itemView.right - gutter - extra,
-                itemView.top + (itemView.bottom - itemView.top - iconDrawable!!.intrinsicHeight) / 2f
-              )
-            }
-          } else {
-            if (ViewUtil.isLtr(context)) {
-              canvas.translate(
-                itemView.right - gutter - extra,
-                itemView.top + (itemView.bottom - itemView.top - iconDrawable!!.intrinsicHeight) / 2f
-              )
-            } else {
-              canvas.translate(
-                itemView.left + gutter + extra,
-                itemView.top + (itemView.bottom - itemView.top - iconDrawable!!.intrinsicHeight) / 2f
-              )
-            }
+          // Calculate translation based on layout direction and swipe direction
+          val translationX = when {
+            isSwipeToEnd && !isRtl -> itemView.left + gutter + extra
+            isSwipeToEnd && isRtl -> itemView.right - gutter - extra
+            !isSwipeToEnd && !isRtl -> itemView.right - gutter - extra
+            else -> itemView.left + gutter + extra
           }
 
-          canvas.scale(scale, scale, iconDrawable.intrinsicWidth / 2f, iconDrawable.intrinsicHeight / 2f)
+          canvas.translate(
+            translationX,
+            itemView.top + (itemView.bottom - itemView.top - iconDrawable!!.intrinsicHeight) / 2f
+          )
 
+          canvas.scale(scale, scale, iconDrawable.intrinsicWidth / 2f, iconDrawable.intrinsicHeight / 2f)
           iconDrawable.draw(canvas)
           canvas.restore()
 
