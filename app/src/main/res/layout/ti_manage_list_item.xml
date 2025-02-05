@@ -124,7 +124,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:icon="@drawable/ic_ti_selector_accepted_24"
-            app:iconTint="@color/ti_accept_introduction_color" />
+            app:iconTint="@color/ti_accept_introduction_color"
+            app:backgroundTint="@color/ti_accept_introduction_tint"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/rejectIntro"
@@ -132,7 +133,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:icon="@drawable/ic_ti_selector_rejected_24"
-            app:iconTint="@color/ti_reject_introduction_color" />
+            app:iconTint="@color/ti_reject_introduction_color"
+            app:backgroundTint="@color/ti_reject_introduction_tint" />
 
     </com.google.android.material.button.MaterialButtonToggleGroup>
 

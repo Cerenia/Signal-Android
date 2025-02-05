@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright 2025 Signal Messenger, LLC
+  ~ SPDX-License-Identifier: AGPL-3.0-only
+  -->
+
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- When the button is checked, use colorError (for active state) -->
+    <item android:color="?attr/colorError" android:alpha="0.3" android:state_checked="true" />
+
+    <!-- When the button is unchecked, use colorOnSurface with reduced opacity for transparency -->
+<!--    <item android:color="?attr/colorOnSurface" />-->
+</selector>
