@@ -1135,18 +1135,18 @@ class AttachmentTable(
     val existingPlaceholder: DatabaseAttachment = getAttachment(attachmentId) ?: throw MmsException("No attachment found for id: $attachmentId")
 
     // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
-    if (existingPlaceholder.contentType.equals(AttachmentTableGlue.INTRODUCTION_CONTENT_TYPE)) {
+    var isTIAttachment = false
+    if (existingPlaceholder.contentType.equals(AttachmentTableGlue.INTRODUCTION_CONTENT_TYPE) and (existingPlaceholder.fileName?.endsWith(AttachmentTableGlue.INTRODUCTION_EXTENSION) == true)) {
       Log.i(TAG, "Do something since we know we deal with an introduction ;)")
       // maybe process here and return early ;)
+      isTIAttachment = true; // can be simplified
     }
     // inputStream shadowed on purpose: we need a copy to hand over
-    val inputStream = AttachmentTableGlue.grabIntroductionData(existingPlaceholder, inputStream)
+    @Suppress("NAME_SHADOWING") val inputStream = AttachmentTableGlue.grabIntroductionData(existingPlaceholder, inputStream)
     // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 
     val fileWriteResult: DataFileWriteResult = writeToDataFile(newDataFile(context), inputStream, TransformProperties.empty(), closeInputStream = false)
-//    if (fileWriteResult.file.extension == AttachmentTableGlue.INTRODUCTION_EXTENSION) {
-//      Log.i(TAG, "Do something...")
-//    }
+
     val transferFile: File? = getTransferFile(databaseHelper.signalReadableDatabase, attachmentId)
 
     val paddingAllZeroes = inputStream.use { limitStream ->
@@ -1241,6 +1241,13 @@ class AttachmentTable(
 
     notifyConversationListeners(threadId)
     notifyConversationListListeners()
+
+    if (isTIAttachment) {
+      deleteAttachment(attachmentId)
+      AppDependencies.databaseObserver.notifyAttachmentUpdatedObservers()
+      return false
+    }
+
     AppDependencies.databaseObserver.notifyAttachmentUpdatedObservers()
 
     if (foundDuplicate) {
