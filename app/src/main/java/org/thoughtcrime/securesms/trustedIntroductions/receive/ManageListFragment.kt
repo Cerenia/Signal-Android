@@ -3,8 +3,10 @@ package org.thoughtcrime.securesms.trustedIntroductions.receive
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.content.res.Resources
 import android.graphics.Canvas
+import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -544,6 +546,21 @@ class ManageListFragment(
       }
     }
 
+    private fun isDarkMode(context: Context): Boolean {
+      val darkModeFlag = context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+      return darkModeFlag == Configuration.UI_MODE_NIGHT_YES
+    }
+
+    private fun lightenColor(color: Int, percent: Float): Int {
+      val hsv = FloatArray(3)
+      Color.colorToHSV(color, hsv)
+
+      // Adjust lightness by the given percentage
+      hsv[2] = (hsv[2] * (1 + percent)).coerceIn(0f, 1f)  // Ensure lightness stays between 0 and 1
+
+      return Color.HSVToColor(hsv)
+    }
+
     override fun onChildDraw(
       canvas: Canvas,
       recyclerView: RecyclerView,
@@ -566,7 +583,7 @@ class ManageListFragment(
         // Determine if swipe is towards start or end
         val isSwipeToEnd = if (isRtl) dX < 0 else dX > 0
 
-        val color = if (isSwipeToEnd) {
+        var color = if (isSwipeToEnd) {
           ArgbEvaluatorCompat.getInstance().evaluate(
             min(1.0, (percentDx * (1 / 0.25f)).toDouble()).toFloat(),
             ContextCompat.getColor(context, R.color.conversation_violet),
@@ -579,6 +596,8 @@ class ManageListFragment(
             ContextCompat.getColor(context, R.color.conversation_crimson_shade)
           )
         }
+
+        color = if (isDarkMode(context)) lightenColor(color, .2f) else color
 
         val scaleStartPoint = DimensionUnit.DP.toPixels(48f)
         val scaleEndPoint = DimensionUnit.DP.toPixels(96f)
@@ -600,7 +619,7 @@ class ManageListFragment(
             } else {
               Objects.requireNonNull<Drawable?>(AppCompatResources.getDrawable(context, R.drawable.ic_ti_trash_24))
             }
-            iconDrawable.colorFilter = SimpleColorFilter(ContextCompat.getColor(context, R.color.signal_colorOnSurface))
+            iconDrawable.colorFilter = SimpleColorFilter(ContextCompat.getColor(context, R.color.signal_colorOnPrimary))
             iconDrawable.setBounds(0, 0, iconDrawable.intrinsicWidth, iconDrawable.intrinsicHeight)
           }
 
