@@ -203,6 +203,31 @@ class ManageViewModel(
 
   fun getIntroductions(): LiveData<List<Pair<TI_Data, IntroducerInformation>>> = introductions
 
+  fun markIntroductionStale(introductionId: Long) {
+      iterateAndModify(introductionId, object : Modify {
+        override fun modifyIntroductionItem(introductionItem: Pair<TI_Data, IntroducerInformation>): Pair<TI_Data, IntroducerInformation> {
+          val oldIntroduction = introductionItem.first
+          val staleState = TI_DatabaseGlue.turnIntroductionStale(oldIntroduction)
+
+          val newIntroduction = TI_Data(
+            oldIntroduction.id, staleState, oldIntroduction.introducerServiceId,
+            oldIntroduction.introduceeServiceId, oldIntroduction.introduceeName,
+            oldIntroduction.introduceeNumber, oldIntroduction.introduceeIdentityKey,
+            oldIntroduction.predictedSecurityNumber, oldIntroduction.timestamp
+          )
+          return Pair(newIntroduction, introductionItem.second)
+        }
+
+        override fun databaseCall(introduction: TI_Data): Boolean {
+          return SignalDatabase.tiDatabase.staleIntroduction(introduction)
+        }
+
+        override fun errorMessage(introductionId: Long): String {
+          return "Failed to stale introduction: $introductionId"
+        }
+      })
+  }
+
   private interface Modify {
     /**
      * @param introductionItem the item to be modified. Implementations must return a modified copy and leave the original item untouched.

@@ -43,6 +43,8 @@ interface TI_DatabaseGlue {
 
   fun rejectIntroduction(introduction: TI_Data): Boolean
 
+  fun staleIntroduction(introduction: TI_Data): Boolean
+
   fun atLeastOneIntroductionIs(states: State, introduceeServiceId: String): Boolean
 
   fun atLeastOneIntroductionIsUnknown(introduceeServiceId: String): Boolean

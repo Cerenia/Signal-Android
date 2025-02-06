@@ -134,7 +134,7 @@ class ManageAdapter(
         }
 
         chatButton.setOnClickListener {
-          listener.openChat(safeData.introduceeServiceId, safeData.introduceeNumber, null)
+          listener.openChat(safeData.id ?: -1, safeData.introduceeServiceId, safeData.introduceeNumber, null)
         }
 
         // todo: mask should probably not set the `safeData.introducerServiceId` as the "-1" string
@@ -326,7 +326,7 @@ class ManageAdapter(
   }
 
   interface InteractionListener {
-    fun openChat(serviceId: String, e164: String?, username: String?)
+    fun openChat(introductionId: Long, serviceId: String, e164: String?, username: String?)
     fun accept(introductionId: Long)
     fun reject(introductionId: Long)
     fun mask(item: IntroductionViewHolder, introducerServiceId: String)

@@ -329,7 +329,7 @@ class ManageListFragment(
     }
 
     @SuppressLint("CheckResult")
-    override fun openChat(serviceId: String, e164: String?, username: String?) {
+    override fun openChat(introductionId: Long, serviceId: String, e164: String?, username: String?) {
       var introduceeRecipient = TI_Utils.getRecipientIdOrUnknown(serviceId)
       if (introduceeRecipient.isUnknown) {
         Log.i(TAG, "Introducee is unknown")
@@ -343,9 +343,19 @@ class ManageListFragment(
               Log.i(TAG, "Got Recipient ID: ${introduceeRecipient.toLong()}")
             }
 
-            RecipientRepository.LookupResult.InvalidEntry -> TODO("log properly")
-            RecipientRepository.LookupResult.NetworkError -> TODO("log properly")
-            is RecipientRepository.LookupResult.NotFound -> TODO("log properly")
+            RecipientRepository.LookupResult.NetworkError -> {
+              Toast.makeText(context, "Could not find the user on Signal. Please try again later.", Toast.LENGTH_LONG).show()
+              return
+            }
+
+            RecipientRepository.LookupResult.InvalidEntry, is RecipientRepository.LookupResult.NotFound -> {
+              Log.i(TAG, "Invalid recipient in introduction: $introductionId (${if (introductionId < 0) " (invalid intro)" else ""})")
+              Toast.makeText(context, "Invalid Recipient.", Toast.LENGTH_LONG).show()
+              if (introductionId > 0) {
+                viewModel.markIntroductionStale(introductionId)
+              }
+              return
+            }
           }
         }
       } else {
