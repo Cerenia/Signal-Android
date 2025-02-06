@@ -636,6 +636,19 @@ class TI_Database(context: Context?, databaseHelper: SignalDatabase?) : Database
   }
 
   /**
+   * Expects the introducee to have been fetched.
+   * Expects introduction to already be present in database.
+   *
+   * @param introduction PRE: introduction.id cannot be null
+   * @return true if success, false otherwise
+   */
+  @WorkerThread
+  override fun staleIntroduction(introduction: TI_Data): Boolean {
+    Preconditions.checkArgument(introduction.id != null)
+    return changeIntroductionState(introduction, introduction.state, "Turned introduction stale for: " + introduction.introduceeName)
+  }
+
+  /**
    * Fetches All displayable Introduction data.
    * Introductions with null introducerServiceId are omitted
    *
