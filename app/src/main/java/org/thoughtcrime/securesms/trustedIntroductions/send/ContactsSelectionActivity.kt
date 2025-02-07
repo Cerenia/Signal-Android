@@ -8,6 +8,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.ViewModelProvider
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import org.signal.core.util.logging.Log
 import org.thoughtcrime.securesms.PassphraseRequiredActivity
 import org.thoughtcrime.securesms.R
@@ -197,7 +198,7 @@ class ContactsSelectionActivity : PassphraseRequiredActivity(), ContactsSelectio
     message: String,
     state: ContactsSelectionViewModel.IntroduceDialogMessageState
   ) {
-    AlertDialog.Builder(this)
+    MaterialAlertDialogBuilder(this)
       .setMessage(message)
       .setNegativeButton(android.R.string.cancel) { dialog, _ -> dialog.cancel() }
       .setPositiveButton(R.string.PickContactsForTIActivity_introduce) { dialog, _ ->
