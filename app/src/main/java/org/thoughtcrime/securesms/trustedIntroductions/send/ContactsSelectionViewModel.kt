@@ -89,9 +89,6 @@ class ContactsSelectionViewModel internal constructor(private val manager: Conta
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
       return Objects.requireNonNull(modelClass.cast(ContactsSelectionViewModel(manager)))
     }
-//    override fun <T : ViewModel?> create(modelClass: Class<T>, extras: CreationExtras): T {
-//      return Objects.requireNonNull(modelClass.cast(ContactsSelectionViewModel(manager)))
-//    }
   }
 }
 
