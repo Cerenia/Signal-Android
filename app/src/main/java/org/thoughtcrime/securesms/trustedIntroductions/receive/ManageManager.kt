@@ -51,8 +51,6 @@ class ManageManager(
             ).resolve()
 
             val number = r.e164.orElse(forgottenPlaceholder)
-            // TODO: using getApplication context because the context doesn't matter... (22-10-06)
-            // It just circularly gets passed around between methods in the Recipient but is never used for anything.
             ManageViewModel.IntroducerInformation(
               r.getDisplayName(AppDependencies.application.applicationContext),
               number
@@ -64,7 +62,6 @@ class ManageManager(
           }
         }
 
-        // TODO: this should not happen
         i?.let {
           result.add(Pair(d, it))
         }
