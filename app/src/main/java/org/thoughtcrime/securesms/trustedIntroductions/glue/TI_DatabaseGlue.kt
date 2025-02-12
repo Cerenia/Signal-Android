@@ -23,6 +23,7 @@ interface TI_DatabaseGlue {
     introduceeName: String,
     introduceeNumber: String,
     introduceeIdentityKey: String,
+    introduceeProfileKey: String,
     predictedSecurityNumber: String,
     timestamp: Long
   ): ContentValues

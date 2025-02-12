@@ -65,7 +65,7 @@ object TI_Utils {
   // Version, change if you change data/message format for compatibility
   // TODO: this is currently only reflected in message format, would need to add this to Database to make
   // Backup/Restore work across revisions
-  const val TI_MESSAGE_VERSION: String = "2.0"
+  const val TI_MESSAGE_VERSION: String = "2.1"
 
   // Since the Signal version is still important and will not be overwritten I define my own
   // 1: major changes, 2: feature/ui changes , 3. bugs | stability fixes
@@ -110,6 +110,7 @@ object TI_Utils {
   const val NAME_J: String = "name"
   const val NUMBER_J: String = "number"
   const val IDENTITY_J: String = "identity_key_base64"
+  const val PROFILE_KEY_J: String = "profile_key_base64"
   const val PREDICTED_FINGERPRINT_J: String = "safety_number"
 
   // Job constants
@@ -318,6 +319,10 @@ object TI_Utils {
         val introduceeServiceId = recipientRecord.aci ?: throw AssertionError("$TAG Introducee service ID may not be null.")
         introducee.put(SERVICE_ID_J, introduceeServiceId)
 
+        val profileKey = recipientRecord.profileKey
+        if (profileKey != null) {
+          introducee.put(PROFILE_KEY_J, encodeWithoutPadding(profileKey))
+        }
         try {
           val introduceeIdentityKey = getIdentityKey(recipientId)
           introducee.put(IDENTITY_J, encodeIdentityKey(introduceeIdentityKey))
@@ -486,7 +491,21 @@ object TI_Utils {
           val numberPresentInJson = getPhone(introducees, introduceeServiceId)
           phone = if (numberPresentInJson == "missing") phone else numberPresentInJson
           val identityKey = IdKeyPair.findCorrespondingKeyInList(introduceeServiceId, idKeyPairs)
-          val d = TI_Data(null, TI_DatabaseGlue.Companion.State.PENDING, introducerServiceId, introduceeServiceId, name, phone, identityKey, null, timestamp)
+          val profileKey = if (recipientRecord.profileKey != null) {
+            encodeWithoutPadding(recipientRecord.profileKey)
+          } else ""
+          val d = TI_Data(
+            id = null,
+            state = TI_DatabaseGlue.Companion.State.PENDING,
+            introducerServiceId = introducerServiceId,
+            introduceeServiceId = introduceeServiceId,
+            introduceeName = name,
+            introduceeNumber = phone,
+            introduceeIdentityKey = identityKey,
+            introduceeProfileKey = profileKey,
+            predictedSecurityNumber = null,
+            timestamp = timestamp
+          )
           result.add(d)
         }
       }
@@ -503,7 +522,18 @@ object TI_Utils {
           }
           result[j].predictedSecurityNumber = o.getString(PREDICTED_FINGERPRINT_J)
         } else {
-          val d = TI_Data(null, TI_DatabaseGlue.Companion.State.PENDING, introducerServiceId, o.getString(SERVICE_ID_J), o.getString(NAME_J), o.getString(NUMBER_J), o.getString(IDENTITY_J), o.getString(PREDICTED_FINGERPRINT_J), timestamp)
+          val d = TI_Data(
+            id = null,
+            state = TI_DatabaseGlue.Companion.State.PENDING,
+            introducerServiceId = introducerServiceId,
+            introduceeServiceId = o.getString(SERVICE_ID_J),
+            introduceeName = o.getString(NAME_J),
+            introduceeNumber = o.getString(NUMBER_J),
+            introduceeIdentityKey = o.getString(IDENTITY_J),
+            introduceeProfileKey = o.getString(PROFILE_KEY_J),
+            predictedSecurityNumber = o.getString(PREDICTED_FINGERPRINT_J),
+            timestamp = timestamp
+          )
           result.add(d)
         }
       }

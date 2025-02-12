@@ -110,7 +110,6 @@ class ManageAdapter(
     private val introduceeAvatar: AvatarImageView = itemView.findViewById(R.id.introduceeAvatar);
     private val introduceeHeading: TextView = itemView.findViewById(R.id.introduceeHeading);
     private val introduceeInfo: TextView = itemView.findViewById(R.id.introduceeInfo);
-
     private val toggleGroup: MaterialButtonToggleGroup = itemView.findViewById(R.id.toggleTrust);
     private val acceptBtn: Button = itemView.findViewById(R.id.acceptIntro);
     private val rejectBtn: Button = itemView.findViewById(R.id.rejectIntro);
@@ -303,6 +302,7 @@ class ManageAdapter(
         introduceeNumber = d.introduceeNumber,
         introduceeIdentityKey = d.introduceeIdentityKey,
         predictedSecurityNumber = d.predictedSecurityNumber,
+        introduceeProfileKey = d.introduceeProfileKey,
         timestamp = d.timestamp
       )
     }

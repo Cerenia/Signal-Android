@@ -91,9 +91,11 @@ class ManageViewModel(
       override fun modifyIntroductionItem(introductionItem: Pair<TI_Data, IntroducerInformation>): Pair<TI_Data, IntroducerInformation> {
         val oldIntro = introductionItem.first
         val newIntroduction = TI_Data(
-          oldIntro.id, oldIntro.state, TI_Database.UNKNOWN_INTRODUCER_SERVICE_ID,
-          oldIntro.introduceeServiceId, oldIntro.introduceeName, oldIntro.introduceeNumber,
-          oldIntro.introduceeIdentityKey, oldIntro.predictedSecurityNumber, oldIntro.timestamp
+          id = oldIntro.id, state = oldIntro.state, introducerServiceId = TI_Database.UNKNOWN_INTRODUCER_SERVICE_ID,
+          introduceeServiceId = oldIntro.introduceeServiceId, introduceeName = oldIntro.introduceeName, introduceeNumber = oldIntro.introduceeNumber,
+          introduceeIdentityKey = oldIntro.introduceeIdentityKey,
+          introduceeProfileKey = oldIntro.introduceeProfileKey,
+          predictedSecurityNumber = oldIntro.predictedSecurityNumber, timestamp = oldIntro.timestamp
         )
         return Pair(newIntroduction, IntroducerInformation(forgottenPlaceholder, forgottenPlaceholder))
       }
@@ -116,10 +118,11 @@ class ManageViewModel(
         val newAcceptState = TI_DatabaseGlue.userToggledAccepted(oldIntroduction)
 
         val newIntroduction = TI_Data(
-          oldIntroduction.id, newAcceptState, oldIntroduction.introducerServiceId,
-          oldIntroduction.introduceeServiceId, oldIntroduction.introduceeName,
-          oldIntroduction.introduceeNumber, oldIntroduction.introduceeIdentityKey,
-          oldIntroduction.predictedSecurityNumber, oldIntroduction.timestamp
+          id = oldIntroduction.id, state = newAcceptState, introducerServiceId = oldIntroduction.introducerServiceId,
+          introduceeServiceId = oldIntroduction.introduceeServiceId, introduceeName = oldIntroduction.introduceeName,
+          introduceeNumber = oldIntroduction.introduceeNumber, introduceeIdentityKey = oldIntroduction.introduceeIdentityKey,
+          introduceeProfileKey = oldIntroduction.introduceeProfileKey,
+          predictedSecurityNumber = oldIntroduction.predictedSecurityNumber, timestamp = oldIntroduction.timestamp
         )
         return Pair(newIntroduction, introductionItem.second)
       }
@@ -141,10 +144,12 @@ class ManageViewModel(
         val newRejectedState = TI_DatabaseGlue.userToggledRejected(oldIntroduction)
 
         val newIntroduction = TI_Data(
-          oldIntroduction.id, newRejectedState, oldIntroduction.introducerServiceId,
-          oldIntroduction.introduceeServiceId, oldIntroduction.introduceeName,
-          oldIntroduction.introduceeNumber, oldIntroduction.introduceeIdentityKey,
-          oldIntroduction.predictedSecurityNumber, oldIntroduction.timestamp
+          id = oldIntroduction.id, state = newRejectedState, introducerServiceId = oldIntroduction.introducerServiceId,
+          introduceeServiceId = oldIntroduction.introduceeServiceId, introduceeName = oldIntroduction.introduceeName,
+          introduceeNumber = oldIntroduction.introduceeNumber, introduceeIdentityKey = oldIntroduction.introduceeIdentityKey,
+          introduceeProfileKey = oldIntroduction.introduceeProfileKey,
+          predictedSecurityNumber = oldIntroduction.predictedSecurityNumber,
+          timestamp = oldIntroduction.timestamp
         )
         return Pair(newIntroduction, introductionItem.second)
       }
@@ -204,28 +209,28 @@ class ManageViewModel(
   fun getIntroductions(): LiveData<List<Pair<TI_Data, IntroducerInformation>>> = introductions
 
   fun markIntroductionStale(introductionId: Long) {
-      iterateAndModify(introductionId, object : Modify {
-        override fun modifyIntroductionItem(introductionItem: Pair<TI_Data, IntroducerInformation>): Pair<TI_Data, IntroducerInformation> {
-          val oldIntroduction = introductionItem.first
-          val staleState = TI_DatabaseGlue.turnIntroductionStale(oldIntroduction)
+    iterateAndModify(introductionId, object : Modify {
+      override fun modifyIntroductionItem(introductionItem: Pair<TI_Data, IntroducerInformation>): Pair<TI_Data, IntroducerInformation> {
+        val oldIntroduction = introductionItem.first
+        val staleState = TI_DatabaseGlue.turnIntroductionStale(oldIntroduction)
+        val newIntroduction = TI_Data(
+          id = oldIntroduction.id, state = staleState, introducerServiceId = oldIntroduction.introducerServiceId,
+          introduceeServiceId = oldIntroduction.introduceeServiceId, introduceeName = oldIntroduction.introduceeName,
+          introduceeNumber = oldIntroduction.introduceeNumber, introduceeIdentityKey = oldIntroduction.introduceeIdentityKey,
+          introduceeProfileKey = oldIntroduction.introduceeProfileKey,
+          predictedSecurityNumber = oldIntroduction.predictedSecurityNumber, timestamp = oldIntroduction.timestamp
+        )
+        return Pair(newIntroduction, introductionItem.second)
+      }
 
-          val newIntroduction = TI_Data(
-            oldIntroduction.id, staleState, oldIntroduction.introducerServiceId,
-            oldIntroduction.introduceeServiceId, oldIntroduction.introduceeName,
-            oldIntroduction.introduceeNumber, oldIntroduction.introduceeIdentityKey,
-            oldIntroduction.predictedSecurityNumber, oldIntroduction.timestamp
-          )
-          return Pair(newIntroduction, introductionItem.second)
-        }
+      override fun databaseCall(introduction: TI_Data): Boolean {
+        return SignalDatabase.tiDatabase.staleIntroduction(introduction)
+      }
 
-        override fun databaseCall(introduction: TI_Data): Boolean {
-          return SignalDatabase.tiDatabase.staleIntroduction(introduction)
-        }
-
-        override fun errorMessage(introductionId: Long): String {
-          return "Failed to stale introduction: $introductionId"
-        }
-      })
+      override fun errorMessage(introductionId: Long): String {
+        return "Failed to stale introduction: $introductionId"
+      }
+    })
   }
 
   private interface Modify {
