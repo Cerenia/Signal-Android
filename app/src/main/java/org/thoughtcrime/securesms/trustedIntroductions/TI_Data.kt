@@ -16,6 +16,7 @@ data class TI_Data(
   val introduceeName: String?,
   val introduceeNumber: String?,
   val introduceeIdentityKey: String,
+  val introduceeProfileKey: String, // todo: change when all constructors fixed
   var predictedSecurityNumber: String?,
   val timestamp: Long
 ) : TISerializable {
@@ -31,6 +32,7 @@ data class TI_Data(
     builder.putOpt("introduceeName", introduceeName)
     builder.putOpt("introduceeNumber", introduceeNumber)
     builder.put("introduceeIdentityKey", introduceeIdentityKey)
+    builder.put("introduceeProfileKey", introduceeProfileKey)
     builder.putOpt("predictedSecurityNumber", predictedSecurityNumber)
     builder.put("timestamp", timestamp)
     return builder
@@ -78,8 +80,24 @@ data class TI_Data(
       } else {
         null
       }
+      val introduceeProfileKey = if (serialized.has("introduceeProfileKey")) {
+        serialized.getString("introduceeProfileKey")
+      } else {
+        ""
+      }
       val timestamp = serialized.getLong("timestamp")
-      return TI_Data(id, state, introducerServiceId, introduceeServiceId, introduceeName, introduceeNumber, introduceeIdentityKey, predictedSecurityNumber, timestamp)
+      return TI_Data(
+        id = id,
+        state = state,
+        introducerServiceId = introducerServiceId,
+        introduceeServiceId = introduceeServiceId,
+        introduceeName = introduceeName,
+        introduceeNumber = introduceeNumber,
+        introduceeIdentityKey = introduceeIdentityKey,
+        introduceeProfileKey = introduceeProfileKey,
+        predictedSecurityNumber = predictedSecurityNumber,
+        timestamp = timestamp
+      )
     }
   }
 }

@@ -335,8 +335,10 @@ class ManageListFragment(
       var introduceeRecipient = TI_Utils.getRecipientIdOrUnknown(serviceId)
       if (introduceeRecipient.isUnknown) {
         Log.i(TAG, "Introducee is unknown")
-        if (e164 == null) {
+        if (e164 == null || e164 == TI_Utils.UNDISCLOSED) {
           Log.e(TAG, "Introducee number is null")
+          Toast.makeText(context, "Could not lookup Signal user...", Toast.LENGTH_LONG).show()
+          return
         } else {
           Log.i(TAG, "Introducee number is $e164. Fetching new Recipient (CDSi lookup)")
           when (val lookup = RecipientRepository.lookupNewE164(AppDependencies.application.applicationContext, e164)) {

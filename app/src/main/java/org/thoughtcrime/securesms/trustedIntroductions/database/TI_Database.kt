@@ -71,6 +71,7 @@ class TI_Database(context: Context?, databaseHelper: SignalDatabase?) : Database
     name: String,
     number: String?,
     identityKey: String,
+    profileKey: String,
     predictedFingerprint: String,
     timestamp: Long
   ): ContentValues {
@@ -82,6 +83,7 @@ class TI_Database(context: Context?, databaseHelper: SignalDatabase?) : Database
     cv.put(INTRODUCEE_NAME, name)
     cv.put(INTRODUCEE_NUMBER, number)
     cv.put(INTRODUCEE_PUBLIC_IDENTITY_KEY, identityKey)
+    cv.put(INTRODUCEE_PROFILE_KEY, profileKey)
     cv.put(PREDICTED_FINGERPRINT, predictedFingerprint)
     cv.put(TIMESTAMP, timestamp)
     return cv
@@ -100,6 +102,7 @@ class TI_Database(context: Context?, databaseHelper: SignalDatabase?) : Database
       c.getString(c.getColumnIndex(INTRODUCEE_SERVICE_ID)),
       c.getString(c.getColumnIndex(INTRODUCEE_NAME)),
       c.getString(c.getColumnIndex(INTRODUCEE_NUMBER)),
+      c.getString(c.getColumnIndex(INTRODUCEE_PROFILE_KEY)),
       c.getString(c.getColumnIndex(INTRODUCEE_PUBLIC_IDENTITY_KEY)),
       c.getString(c.getColumnIndex(PREDICTED_FINGERPRINT)),
       timestamp.toString()
@@ -145,6 +148,7 @@ class TI_Database(context: Context?, databaseHelper: SignalDatabase?) : Database
     introduceeName: String,
     introduceeNumber: String,
     introduceeIdentityKey: String,
+    introduceeProfileKey: String,
     predictedSecurityNumber: String,
     timestamp: Long
   ): ContentValues {
@@ -156,6 +160,7 @@ class TI_Database(context: Context?, databaseHelper: SignalDatabase?) : Database
     cv.put(INTRODUCEE_NAME, introduceeName)
     cv.put(INTRODUCEE_NUMBER, introduceeNumber)
     cv.put(INTRODUCEE_PUBLIC_IDENTITY_KEY, introduceeIdentityKey)
+    cv.put(INTRODUCEE_PROFILE_KEY, introduceeProfileKey)
     cv.put(PREDICTED_FINGERPRINT, predictedSecurityNumber)
     cv.put(TIMESTAMP, timestamp)
     return cv
@@ -186,6 +191,7 @@ class TI_Database(context: Context?, databaseHelper: SignalDatabase?) : Database
     name: String,
     number: String?,
     identityKey: String,
+    profileKey: String,
     predictedFingerprint: String,
     timestamp: String
   ): ContentValues {
@@ -206,15 +212,16 @@ class TI_Database(context: Context?, databaseHelper: SignalDatabase?) : Database
     val timestampLong: Long = timestamp.toLong()
     Preconditions.checkArgument(timestampLong > 0)
     return buildContentValuesForUpdate(
-      introId,
-      TI_DatabaseGlue.Companion.State.forState(s),
-      introducerServiceId,
-      introduceeServiceId,
-      name,
-      number,
-      identityKey,
-      predictedFingerprint,
-      timestampLong
+      introductionId = introId,
+      state = TI_DatabaseGlue.Companion.State.forState(s),
+      introducerServiceId = introducerServiceId,
+      serviceId = introduceeServiceId,
+      name = name,
+      number = number,
+      identityKey = identityKey,
+      profileKey = profileKey,
+      predictedFingerprint = predictedFingerprint,
+      timestamp = timestampLong
     )
   }
 
@@ -228,15 +235,16 @@ class TI_Database(context: Context?, databaseHelper: SignalDatabase?) : Database
     Preconditions.checkNotNull(introduction.predictedSecurityNumber)
     val introduceeName: String = introduction.introduceeName ?: ""
     return buildContentValuesForUpdate(
-      introduction.id!!,
-      introduction.state,
-      introduction.introducerServiceId,
-      introduction.introduceeServiceId,
-      introduceeName,
-      introduction.introduceeNumber,
-      introduction.introduceeIdentityKey,
-      introduction.predictedSecurityNumber!!,
-      introduction.timestamp
+      introductionId = introduction.id!!,
+      state = introduction.state,
+      introducerServiceId = introduction.introducerServiceId,
+      serviceId = introduction.introduceeServiceId,
+      name = introduceeName,
+      number = introduction.introduceeNumber,
+      identityKey = introduction.introduceeIdentityKey,
+      profileKey = introduction.introduceeProfileKey,
+      predictedFingerprint = introduction.predictedSecurityNumber!!,
+      timestamp = introduction.timestamp
     )
   }
 
@@ -255,15 +263,16 @@ class TI_Database(context: Context?, databaseHelper: SignalDatabase?) : Database
     val introduceeName: String = introduction.introduceeName ?: ""
 
     return buildContentValuesForUpdate(
-      introduction.id!!,
-      newState,
-      introduction.introducerServiceId,
-      introduction.introduceeServiceId,
-      introduceeName,
-      introduction.introduceeNumber,
-      introduction.introduceeIdentityKey,
-      introduction.predictedSecurityNumber!!,
-      introduction.timestamp
+      introductionId = introduction.id!!,
+      state = newState,
+      introducerServiceId = introduction.introducerServiceId,
+      serviceId = introduction.introduceeServiceId,
+      name = introduceeName,
+      number = introduction.introduceeNumber,
+      identityKey = introduction.introduceeIdentityKey,
+      profileKey = introduction.introduceeProfileKey,
+      predictedFingerprint = introduction.predictedSecurityNumber!!,
+      timestamp = introduction.timestamp
     )
   }
 
@@ -286,15 +295,16 @@ class TI_Database(context: Context?, databaseHelper: SignalDatabase?) : Database
     val introduceeName: String = introduction.introduceeName ?: ""
 
     return buildContentValuesForUpdate(
-      introduction.id!!,
-      newState,
-      introduction.introducerServiceId,
-      introduction.introduceeServiceId,
-      introduceeName,
-      introduction.introduceeNumber,
-      introduction.introduceeIdentityKey,
-      introduction.predictedSecurityNumber!!,
-      introduction.timestamp
+      introductionId = introduction.id!!,
+      state = newState,
+      introducerServiceId = introduction.introducerServiceId,
+      serviceId = introduction.introduceeServiceId,
+      name = introduceeName,
+      number = introduction.introduceeNumber,
+      identityKey = introduction.introduceeIdentityKey,
+      profileKey = introduction.introduceeProfileKey,
+      predictedFingerprint = introduction.predictedSecurityNumber!!,
+      timestamp = introduction.timestamp
     )
   }
 
@@ -304,14 +314,15 @@ class TI_Database(context: Context?, databaseHelper: SignalDatabase?) : Database
     Preconditions.checkArgument(state == TI_DatabaseGlue.Companion.State.PENDING || state == TI_DatabaseGlue.Companion.State.PENDING_CONFLICTING || state == TI_DatabaseGlue.Companion.State.PENDING_UNKNOWN)
     val db: TI_DatabaseGlue = tiDatabase
     val values: ContentValues = db.buildContentValuesForInsert(
-      state,
-      data.introducerServiceId!!,
-      data.introduceeServiceId,
-      data.introduceeName!!,
-      data.introduceeNumber!!,
-      data.introduceeIdentityKey,
-      data.predictedSecurityNumber!!,
-      data.timestamp
+      state = state,
+      introducerServiceId = data.introducerServiceId!!,
+      introduceeServiceId = data.introduceeServiceId,
+      introduceeName = data.introduceeName!!,
+      introduceeNumber = data.introduceeNumber!!,
+      introduceeIdentityKey = data.introduceeIdentityKey,
+      introduceeProfileKey = data.introduceeProfileKey,
+      predictedSecurityNumber = data.predictedSecurityNumber!!,
+      timestamp = data.timestamp
     )
     val writeableDatabase: SQLiteDatabase = db.getSignalWritableDatabase()
     val id: Long = writeableDatabase.insert(TABLE_NAME, null, values)
@@ -456,9 +467,9 @@ class TI_Database(context: Context?, databaseHelper: SignalDatabase?) : Database
       val introduceeID: RecipientId = getRecipientIdOrUnknown(introduction.introduceeServiceId)
       if (!introduceeID.isUnknown) {
         val previousIntroduceeVerification: IdentityTableGlue.Companion.VerifiedStatus = tiIdentityTable.getVerifiedStatus(introduceeID)
-        if (previousIntroduceeVerification == null) {
-          throw AssertionError("Unexpected missing verification status for " + introduction.introduceeName)
-        }
+//        if (previousIntroduceeVerification == null) {
+//          throw AssertionError("Unexpected missing verification status for " + introduction.introduceeName)
+//        }
         tiIdentityTable.modifyIntroduceeVerification(introduction.introduceeServiceId, previousIntroduceeVerification, newState, logMessage)
       } // if introduceeID is unknown we do not have the recipient as a conversation partner yet and can skip any verification modification
 
@@ -494,7 +505,14 @@ class TI_Database(context: Context?, databaseHelper: SignalDatabase?) : Database
    */
   @SuppressLint("DefaultLocale")
   override fun atLeastOneIntroductionIsUnknown(introduceeServiceId: String): Boolean {
-    val selection: String = String.format("%s=? AND %s IN (%d,%d,%d)", INTRODUCEE_SERVICE_ID, STATE, TI_DatabaseGlue.Companion.State.PENDING_UNKNOWN.toInt(), TI_DatabaseGlue.Companion.State.ACCEPTED_UNKNOWN.toInt(), TI_DatabaseGlue.Companion.State.REJECTED_UNKNOWN.toInt())
+    val selection: String = String.format(
+      "%s=? AND %s IN (%d,%d,%d)",
+      INTRODUCEE_SERVICE_ID,
+      STATE,
+      TI_DatabaseGlue.Companion.State.PENDING_UNKNOWN.toInt(),
+      TI_DatabaseGlue.Companion.State.ACCEPTED_UNKNOWN.toInt(),
+      TI_DatabaseGlue.Companion.State.REJECTED_UNKNOWN.toInt()
+    )
     val args: Array<String> = buildArgs(introduceeServiceId)
     val writeableDatabase: SQLiteDatabase = getSignalWritableDatabase()
     val c: Cursor = writeableDatabase.query(TABLE_NAME, TI_ALL_PROJECTION, selection, args, null, null, null)
@@ -808,9 +826,21 @@ class TI_Database(context: Context?, databaseHelper: SignalDatabase?) : Database
         val introduceeName: String = cursor.getString(cursor.getColumnIndex(INTRODUCEE_NAME))
         val introduceeNumber: String = cursor.getString(cursor.getColumnIndex(INTRODUCEE_NUMBER))
         val introduceeIdentityKey: String = cursor.getString(cursor.getColumnIndex(INTRODUCEE_PUBLIC_IDENTITY_KEY))
+        val introduceeProfileKey: String = cursor.getString(cursor.getColumnIndex(INTRODUCEE_PROFILE_KEY))
         val securityNr: String = cursor.getString(cursor.getColumnIndex(PREDICTED_FINGERPRINT))
         val timestamp: Long = cursor.getLong(cursor.getColumnIndex(TIMESTAMP))
-        return TI_Data(introductionId, state, introducerServiceId, introduceeServiceId, introduceeName, introduceeNumber, introduceeIdentityKey, securityNr, timestamp)
+        return TI_Data(
+          id = introductionId,
+          state = state,
+          introducerServiceId = introducerServiceId,
+          introduceeServiceId = introduceeServiceId,
+          introduceeName = introduceeName,
+          introduceeNumber = introduceeNumber,
+          introduceeIdentityKey = introduceeIdentityKey,
+          introduceeProfileKey = introduceeProfileKey,
+          predictedSecurityNumber = securityNr,
+          timestamp = timestamp
+        )
       }
 
     val next: TI_Data?
@@ -860,6 +890,7 @@ class TI_Database(context: Context?, databaseHelper: SignalDatabase?) : Database
     private const val INTRODUCEE_PUBLIC_IDENTITY_KEY: String = "introducee_identity_key" // The one contained in the Introduction
     private const val INTRODUCEE_NAME: String = "introducee_name" // TODO: snapshot when introduction happened. Necessary? Or wrong approach?
     private const val INTRODUCEE_NUMBER: String = "introducee_number" // TODO: snapshot when introduction happened. Necessary? Or wrong approach?
+    private const val INTRODUCEE_PROFILE_KEY: String = "introducee_profile_key"
     private const val PREDICTED_FINGERPRINT: String = "predicted_fingerprint"
     private const val TIMESTAMP: String = "timestamp"
     private const val STATE: String = "state"
@@ -871,6 +902,7 @@ class TI_Database(context: Context?, databaseHelper: SignalDatabase?) : Database
       INTRODUCEE_PUBLIC_IDENTITY_KEY + " TEXT NOT NULL, " +
       INTRODUCEE_NAME + " TEXT NOT NULL, " +
       INTRODUCEE_NUMBER + " TEXT, " +
+      INTRODUCEE_PROFILE_KEY + " TEXT NOT NULL, " +
       PREDICTED_FINGERPRINT + " TEXT NOT NULL, " +
       TIMESTAMP + " INTEGER NOT NULL, " +
       STATE + " INTEGER NOT NULL);"
@@ -884,6 +916,7 @@ class TI_Database(context: Context?, databaseHelper: SignalDatabase?) : Database
       INTRODUCEE_PUBLIC_IDENTITY_KEY,
       INTRODUCEE_NAME,
       INTRODUCEE_NUMBER,
+      INTRODUCEE_PROFILE_KEY,
       PREDICTED_FINGERPRINT,
       TIMESTAMP,
       STATE
