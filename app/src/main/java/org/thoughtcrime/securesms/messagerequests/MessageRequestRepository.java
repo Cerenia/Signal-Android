@@ -92,7 +92,11 @@ public final class MessageRequestRepository {
     }
 
     // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
-    handleNewUnknownRecipient(recipient);
+    if (groupRecord.isEmpty()) {
+      handleNewUnknownRecipient(recipient);
+    } else {
+      Log.w(TAG, "TI: handleNewUnknownRecipient in the group context.");
+    }
     // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 
     return new MessageRequestRecipientInfo(

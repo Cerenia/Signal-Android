@@ -32,7 +32,7 @@ interface MessageRequestRepositoryGlue {
     @JvmStatic
     @WorkerThread
     fun handleNewUnknownRecipient(recipient: Recipient) {
-      val serviceId = recipient.requireServiceId()
+      val serviceId = recipient.requireServiceId() // todo: This will throw. Check if the assumption is fair or should be eased
       if (tiDatabase.atLeastOneIntroductionIsUnknown(serviceId.toString())) {
         // Fetch the identity key of the new recipient
         val bundles: List<PreKeyBundle>
