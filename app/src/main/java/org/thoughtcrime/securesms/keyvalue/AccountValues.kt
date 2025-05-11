@@ -84,6 +84,11 @@ class AccountValues internal constructor(store: KeyValueStore, context: Context)
     private const val KEY_ACCOUNT_REGISTERED_AT = "account.registered_at"
 
     private const val KEY_HAS_LINKED_DEVICES = "account.has_linked_devices"
+
+    private const val KEY_ACCOUNT_ENTROPY_POOL = "account.account_entropy_pool"
+    private const val KEY_RESTORED_ACCOUNT_ENTROPY_KEY = "account.restored_account_entropy_pool"
+
+    private val AEP_LOCK = ReentrantLock()
   }
 
   init {

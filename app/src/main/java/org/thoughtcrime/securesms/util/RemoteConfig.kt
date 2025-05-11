@@ -1091,22 +1091,6 @@ object RemoteConfig {
     hotSwappable = true
   )
 
-  /** Whether or not to show chat folders. */
-  @JvmStatic
-  val showChatFolders: Boolean by remoteBoolean(
-    key = "android.showChatFolders.2",
-    defaultValue = false,
-    hotSwappable = true
-  )
-
-  /** Whether or not to use the new pinned chat UI. */
-  @JvmStatic
-  val inlinePinnedChats: Boolean by remoteBoolean(
-    key = "android.inlinePinnedChats.2",
-    defaultValue = false,
-    hotSwappable = true
-  )
-
   @JvmStatic
   @get:JvmName("newCallUi")
   val newCallUi: Boolean by remoteBoolean(
@@ -1128,14 +1112,6 @@ object RemoteConfig {
     key = "android.largeScreenUI",
     defaultValue = false,
     hotSwappable = false
-  )
-
-  /** Whether or not this device supports the new storage service recordIkm encryption. */
-  @JvmStatic
-  val storageServiceEncryptionV2: Boolean by remoteBoolean(
-    key = "android.ssre2",
-    defaultValue = false,
-    hotSwappable = true
   )
 
   // endregion

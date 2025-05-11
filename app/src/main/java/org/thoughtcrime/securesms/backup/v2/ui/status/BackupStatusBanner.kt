@@ -182,26 +182,6 @@ fun BackupStatusBannerPreview() {
         data = BackupStatusData.RestoringMedia(
           bytesDownloaded = 55000.bytes,
           bytesTotal = 1253.mebiBytes,
-          restoreStatus = BackupStatusData.RestoreStatus.WAITING_FOR_WIFI
-        )
-      )
-
-      HorizontalDivider()
-
-      BackupStatus(
-        data = BackupStatusData.RestoringMedia(
-          bytesDownloaded = 55000.bytes,
-          bytesTotal = 1253.mebiBytes,
-          restoreStatus = BackupStatusData.RestoreStatus.WAITING_FOR_INTERNET
-        )
-      )
-
-      HorizontalDivider()
-
-      BackupStatus(
-        data = BackupStatusData.RestoringMedia(
-          bytesDownloaded = 55000.bytes,
-          bytesTotal = 1253.mebiBytes,
           restoreStatus = BackupStatusData.RestoreStatus.FINISHED
         )
       )

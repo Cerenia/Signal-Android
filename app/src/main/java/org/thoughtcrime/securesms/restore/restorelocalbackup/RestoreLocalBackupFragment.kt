@@ -241,7 +241,7 @@ class RestoreLocalBackupFragment : LoggingFragment(R.layout.fragment_restore_loc
   // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
   private fun presentTIBackupFileInfo(backupSize: Long, backupTimestamp: Long) {
     if (backupSize > 0) {
-      binding.tiBackupSizeText.text = getString(R.string.RegistrationActivity_ti_backup_size_s, Util.getPrettyFileSize(backupSize))
+      binding.tiBackupSizeText.text = getString(R.string.RegistrationActivity_ti_backup_size_s, backupSize.bytes.toUnitString())
     }
 
     if (backupTimestamp > 0) {

@@ -145,11 +145,6 @@ object BackupRepository {
     }
   }
 
-  @JvmStatic
-  fun skipMediaRestore() {
-    // TODO [backups] -- Clear the error as necessary
-  }
-
   /**
    * Triggers backup id reservation. As documented, this is safe to perform multiple times.
    */
@@ -158,19 +153,6 @@ object BackupRepository {
     val messageBackupKey = SignalStore.backup.messageBackupKey
     val mediaRootBackupKey = SignalStore.backup.mediaRootBackupKey
     return SignalNetwork.archive.triggerBackupIdReservation(messageBackupKey, mediaRootBackupKey, SignalStore.account.requireAci())
-  }
-
-  /**
-   * Refreshes backup via server
-   */
-  fun refreshBackup(): NetworkResult<Unit> {
-    return initBackupAndFetchAuth()
-      .then { accessPair ->
-        AppDependencies.archiveApi.refreshBackup(
-          aci = SignalStore.account.requireAci(),
-          archiveServiceAccess = accessPair.messageBackupAccess
-        )
-      }
   }
 
   /**

@@ -1044,7 +1044,10 @@ open class RecipientTable(context: Context, databaseHelper: SignalDatabase) : Da
     val profileKey: String? = (remoteKey ?: localKey)?.let { Base64.encodeWithPadding(it.serialize()) }
 
     if (remoteKey == null) {
-      Log.w(TAG, "Got an empty profile key while applying an account record update! The parsed local key is ${if (localKey != null) "present" else "not present"}. The raw local key is ${if (update.old.proto.profileKey.isNotEmpty()) "present" else "not present"}. The resulting key is ${if (profileKey != null) "present" else "not present"}.")
+      Log.w(
+        TAG,
+        "Got an empty profile key while applying an account record update! The parsed local key is ${if (localKey != null) "present" else "not present"}. The raw local key is ${if (update.old.proto.profileKey.isNotEmpty()) "present" else "not present"}. The resulting key is ${if (profileKey != null) "present" else "not present"}."
+      )
     }
 
     val values = ContentValues().apply {

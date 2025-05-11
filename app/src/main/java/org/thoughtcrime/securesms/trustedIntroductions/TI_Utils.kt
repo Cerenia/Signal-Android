@@ -310,7 +310,7 @@ object TI_Utils {
 
     // Now do the same for all introducees and wrap them in an array
     val introduceeData = JSONArray()
-    recipients.forEach { (recipientId: RecipientId?, recipientRecord: RecipientRecord?) ->
+    recipients.forEach { (recipientId: RecipientId, recipientRecord: RecipientRecord) ->
       try {
         val introducee = JSONObject()
         introducee.put(NAME_J, getSomeNonNullName(recipientId, recipientRecord))

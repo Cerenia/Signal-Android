@@ -236,18 +236,22 @@ public abstract class MessageRecord extends DisplayRecord {
       if (isOutgoing()) {
         if (isIdentityDuplexVerified()) {
           // todo: a custom UI icon with both handshake and qr could be cute ;)
-          return fromRecipient(getToRecipient(), r -> "You marked your safety number with " + r.getDisplayName(context) + " verified by QR and Trusted Introduction", R.drawable.ic_safety_number_16);
+//          return fromRecipient(getToRecipient(), r -> "You marked your safety number with " + r.getDisplayName(context) + " verified by QR and Trusted Introduction", R.drawable.ic_safety_number_16);
+          return fromRecipient(getToRecipient(), r -> "You marked your safety number with " + r.getDisplayName(context) + " verified by QR and Trusted Introduction", Glyph.SAFETY_NUMBER);
         }
         if (isIdentityVerifiedByQR()) {
-          // todo: qr symbol is 24, the others are 16.. should resize
-          return fromRecipient(getToRecipient(), r -> "You marked your safety number with " + r.getDisplayName(context) + " verified by QR", R.drawable.symbol_qrcode_24);
+//          return fromRecipient(getToRecipient(), r -> "You marked your safety number with " + r.getDisplayName(context) + " verified by QR", R.drawable.symbol_qrcode_24);
+          return fromRecipient(getToRecipient(), r -> "You marked your safety number with " + r.getDisplayName(context) + " verified by QR", Glyph.SAFETY_NUMBER);
         }
         if (isIdentityVerifiedByTI()) {
-          return fromRecipient(getToRecipient(), r -> "You marked your safety number with " + r.getDisplayName(context) + " verified by accepting a Trusted Introduction", R.drawable.ic_trusted_introduction);
+//          return fromRecipient(getToRecipient(), r -> "You marked your safety number with " + r.getDisplayName(context) + " verified by accepting aSignalSymbols Trusted Introduction", R.drawable.ic_trusted_introduction);
+          return fromRecipient(getToRecipient(), r -> "You marked your safety number with " + r.getDisplayName(context) + " verified by accepting aSignalSymbols Trusted Introduction", Glyph.SAFETY_NUMBER);
         }
-        return fromRecipient(getToRecipient(), r -> context.getString(R.string.MessageRecord_you_marked_your_safety_number_with_s_verified, r.getDisplayName(context) + " (manually)"), R.drawable.ic_safety_number_16);
+//        return fromRecipient(getToRecipient(), r -> context.getString(R.string.MessageRecord_you_marked_your_safety_number_with_s_verified, r.getDisplayName(context) + " (manually)"), R.drawable.ic_safety_number_16);
+        return fromRecipient(getToRecipient(), r -> context.getString(R.string.MessageRecord_you_marked_your_safety_number_with_s_verified, r.getDisplayName(context) + " (manually)"), Glyph.SAFETY_NUMBER);
       } else  {
-        return fromRecipient(getFromRecipient(), r -> context.getString(R.string.MessageRecord_you_marked_your_safety_number_with_s_verified_from_another_device, r.getDisplayName(context)), R.drawable.ic_safety_number_16);
+//        return fromRecipient(getFromRecipient(), r -> context.getString(R.string.MessageRecord_you_marked_your_safety_number_with_s_verified_from_another_device, r.getDisplayName(context)), R.drawable.ic_safety_number_16);
+        return fromRecipient(getFromRecipient(), r -> context.getString(R.string.MessageRecord_you_marked_your_safety_number_with_s_verified_from_another_device, r.getDisplayName(context)), Glyph.SAFETY_NUMBER);
       }
       // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
     } else if (isIdentityDefault()) {

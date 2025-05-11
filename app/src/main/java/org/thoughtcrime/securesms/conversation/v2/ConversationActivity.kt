@@ -102,13 +102,6 @@ open class ConversationActivity : PassphraseRequiredActivity(), VoiceNoteMediaCo
     }
   }
 
-  override fun onConfigurationChanged(newConfiguration: Configuration) {
-    super.onConfigurationChanged(newConfiguration)
-    if (ConfigurationUtil.isUiModeChanged(resources.configuration, newConfiguration)) {
-      recreate()
-    }
-  }
-
   private fun replaceFragment() {
     val fragment = ConversationFragment().apply {
       arguments = if (ConversationIntents.isBubbleIntentUri(intent.data)) {

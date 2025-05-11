@@ -109,7 +109,6 @@ dependencies {
   testImplementation(testLibs.assertk)
   testImplementation(testLibs.conscrypt.openjdk.uber)
   testImplementation(testLibs.mockk)
-  testImplementation(testLibs.hamcrest.hamcrest)
 
   testFixturesImplementation(libs.libsignal.client)
   testFixturesImplementation(testLibs.junit.junit)

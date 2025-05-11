@@ -18,7 +18,6 @@ import org.thoughtcrime.securesms.keyvalue.SvrValues;
 import org.thoughtcrime.securesms.net.SignalNetwork;
 import org.thoughtcrime.securesms.registration.data.RegistrationRepository;
 import org.thoughtcrime.securesms.registration.secondary.DeviceNameCipher;
-import org.thoughtcrime.securesms.util.RemoteConfig;
 import org.thoughtcrime.securesms.util.TextSecurePreferences;
 import org.whispersystems.signalservice.api.NetworkResultUtil;
 import org.whispersystems.signalservice.api.account.AccountAttributes;
@@ -51,12 +50,12 @@ public class RefreshAttributesJob extends BaseJob {
    */
   public RefreshAttributesJob(boolean forced) {
     this(new Job.Parameters.Builder()
-                           .addConstraint(NetworkConstraint.KEY)
-                           .setQueue("RefreshAttributesJob")
-                           .setMaxInstancesForFactory(2)
-                           .setLifespan(TimeUnit.DAYS.toMillis(30))
-                           .setMaxAttempts(Parameters.UNLIMITED)
-                           .build(),
+             .addConstraint(NetworkConstraint.KEY)
+             .setQueue("RefreshAttributesJob")
+             .setMaxInstancesForFactory(2)
+             .setLifespan(TimeUnit.DAYS.toMillis(30))
+             .setMaxAttempts(Parameters.UNLIMITED)
+             .build(),
          forced);
   }
 
@@ -105,7 +104,7 @@ public class RefreshAttributesJob extends BaseJob {
     String deviceName = SignalStore.account().getDeviceName();
     byte[] encryptedDeviceName = (deviceName == null) ? null : DeviceNameCipher.encryptDeviceName(deviceName.getBytes(StandardCharsets.UTF_8), SignalStore.account().getAciIdentityKey());
 
-    AccountAttributes.Capabilities capabilities = AppCapabilities.getCapabilities(svrValues.hasOptedInWithAccess() && !svrValues.hasOptedOut(), RemoteConfig.getStorageServiceEncryptionV2());
+    AccountAttributes.Capabilities capabilities = AppCapabilities.getCapabilities(svrValues.hasOptedInWithAccess() && !svrValues.hasOptedOut());
     Log.i(TAG, "Calling setAccountAttributes() reglockV2? " + !TextUtils.isEmpty(registrationLockV2) + ", pin? " + svrValues.hasPin() + ", access? " + svrValues.hasOptedInWithAccess() +
                "\n    Recovery password? " + !TextUtils.isEmpty(recoveryPassword) +
                "\n    Phone number discoverable : " + phoneNumberDiscoverable +

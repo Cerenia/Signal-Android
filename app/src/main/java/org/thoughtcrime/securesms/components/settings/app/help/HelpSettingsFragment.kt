@@ -85,7 +85,7 @@ class HelpSettingsFragment : ComposeFragment() {
 
         // TI_GLUE: eNT9XAHgq0lZdbQs2nfH start
         item {
-          SettingsFragmentsGlue.AddTextPref(R.string.HelpFragment__trusted_introductions_version, TI_Utils.TI_APK_VERSION)
+          SettingsFragmentsGlue.AddTextPref(resources.getString(R.string.HelpFragment__trusted_introductions_version), TI_Utils.TI_APK_VERSION)
         }
         // TI_GLUE: eNT9XAHgq0lZdbQs2nfH end
 

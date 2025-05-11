@@ -210,10 +210,6 @@ class CallLinkDetailsFragment : ComposeFragment(), CallLinkDetailsCallback {
   private fun toastCouldNotDeleteCallLink() {
     Snackbar.make(requireView(), R.string.CallLinkDetailsFragment__couldnt_delete_call_link, Snackbar.LENGTH_LONG).show()
   }
-
-  private fun toastCouldNotDeleteCallLink() {
-    Toast.makeText(requireContext(), R.string.CallLinkDetailsFragment__couldnt_delete_call_link, Toast.LENGTH_LONG).show()
-  }
 }
 
 private interface CallLinkDetailsCallback {

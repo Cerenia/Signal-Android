@@ -341,7 +341,7 @@ class ManageListFragment(
           return
         } else {
           Log.i(TAG, "Introducee number is $e164. Fetching new Recipient (CDSi lookup)")
-          when (val lookup = RecipientRepository.lookupNewE164(AppDependencies.application.applicationContext, e164)) {
+          when (val lookup = RecipientRepository.lookupNewE164(e164)) {
             is RecipientRepository.LookupResult.Success -> {
               introduceeRecipient = lookup.recipientId
               Log.i(TAG, "Got Recipient ID: ${introduceeRecipient.toLong()}")

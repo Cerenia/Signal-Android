@@ -331,10 +331,6 @@ class Recipient(
   val storageServiceEncryptionV2Capability: Capability
     get() = if (SignalStore.internal.forceSsre2Capability) Capability.SUPPORTED else capabilities.storageServiceEncryptionV2
 
-  /** The user's capability to handle the new storage record encryption scheme. */
-  val storageServiceEncryptionV2Capability: Capability
-    get() = if (SignalStore.internal.forceSsre2Capability) Capability.SUPPORTED else capabilities.storageServiceEncryptionV2
-
   /** The state around whether we can send sealed sender to this user. */
   val sealedSenderAccessMode: SealedSenderAccessMode = if (pni.isPresent && pni == serviceId) {
     SealedSenderAccessMode.DISABLED

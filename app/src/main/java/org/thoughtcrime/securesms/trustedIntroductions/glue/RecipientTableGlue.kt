@@ -48,7 +48,7 @@ object RecipientTableGlue {
 
   @JvmStatic
   fun getRecordsForSendingTI(recipientIds: Set<RecipientId>): Map<RecipientId, RecipientRecord> {
-    return SignalDatabase.recipients.getRecords(recipientIds)
+    return SignalDatabase.recipients.getExistingRecords(recipientIds)
   }
 
   @JvmStatic
@@ -96,6 +96,6 @@ object RecipientTableGlue {
         i(TAG, "Recipient with service ID $aci was not present in the database.")
       }
     }
-    return SignalDatabase.recipients.getRecords(recipientIds)
+    return SignalDatabase.recipients.getExistingRecords(recipientIds)
   }
 }
